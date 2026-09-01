@@ -2,110 +2,353 @@
 <html class="dark" dir="rtl" lang="fa">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>تایید پرداخت - مانهواچی</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>خرید اشتراک ویژه VIP - مانهواچی</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "void-black": "#050505",
+                        "panel-ink": "#0c0c0d",
+                        "primary-red": "#8b0000",
+                        "ember": "#ff3b30",
+                        "vip-gold": "#e8b64a",
+                    },
+                    fontFamily: {
+                        vazir: ["Vazirmatn", "system-ui", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #050505; color: #ffffff; font-family: 'Vazirmatn', sans-serif; }
+        :root{
+            --void:#050505;
+            --panel:#0c0c0d;
+            --line: rgba(255,255,255,.09);
+            --blood:#8b0000;
+            --ember:#ff3b30;
+            --gold:#e8b64a;
+        }
+        *{ font-variant-numeric: tabular-nums; }
+        body {
+            background-color: var(--void);
+            color: #f5f5f4;
+            font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
+            position: relative;
+        }
+        /* بافت هاف‌تون مانگا در پس‌زمینه صفحه */
+        body::before{
+            content:"";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image: radial-gradient(rgba(139,0,0,.35) 1px, transparent 1.3px);
+            background-size: 14px 14px;
+            mask-image: radial-gradient(ellipse 70% 55% at 50% 15%, black 0%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 15%, black 0%, transparent 70%);
+            opacity: .5;
+        }
+        main, header, footer { position: relative; z-index: 1; }
+
+        /* کارت با حاشیه پنلی سبک قاب کمیک */
+        .panel-card{
+            background: linear-gradient(180deg, var(--panel), #060607);
+            border: 1.5px solid var(--line);
+            box-shadow: 0 1px 0 rgba(255,255,255,.04) inset;
+        }
+        .panel-card:hover{ border-color: rgba(139,0,0,.55); }
+
+        /* کارت پیشنهادی با قاب دو لایه و بریدگی بلیت */
+        .panel-card--hero{
+            border: 2px solid var(--ember);
+            box-shadow: 0 0 0 1px rgba(255,59,48,.15), 0 25px 60px -20px rgba(139,0,0,.55);
+        }
+        .ticket-notch{
+            position: absolute;
+            top: 50%;
+            width: 22px; height: 22px;
+            background: var(--void);
+            border-radius: 999px;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        .ticket-notch::after{
+            content:"";
+            position:absolute; inset:0;
+            border-radius:999px;
+            box-shadow: 0 0 0 2px var(--ember) inset;
+        }
+
+        .price-num{
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            font-variation-settings: "wght" 800;
+        }
+
+        .halftone-burst{
+            background-image: radial-gradient(rgba(255,255,255,.9) 1px, transparent 1.2px);
+            background-size: 6px 6px;
+        }
+
+        @keyframes floatUp{
+            0%,100%{ transform: translateY(0); }
+            50%{ transform: translateY(-6px); }
+        }
+        .crown-float{ animation: floatUp 3.2s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce){
+            .crown-float{ animation: none; }
+            .panel-card, .panel-card--hero { transition: none !important; }
+        }
+
+        :focus-visible{
+            outline: 2px solid var(--ember);
+            outline-offset: 2px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex flex-col justify-between font-vazir selection:bg-red-900 selection:text-white">
 
-    <div class="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
-        
-        <!-- وضعیت در حال بارگذاری -->
-        <div id="loadingState" class="py-8 space-y-4">
-            <div class="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p class="text-sm text-zinc-300 font-medium">در حال بررسی و تایید تراکنش...</p>
-        </div>
-
-        <!-- وضعیت موفقیت -->
-        <div id="successState" class="hidden py-4 space-y-4">
-            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span class="material-symbols-outlined text-4xl">check_circle</span>
-            </div>
-            <h1 class="text-xl font-bold text-white">پرداخت با موفقیت انجام شد!</h1>
-            <p class="text-xs text-zinc-400 leading-relaxed">اشتراک VIP شما با موفقیت فعال شد. اکنون به تمامی فصول و قابلیت‌های ویژه دسترسی دارید.</p>
-            
-            <div class="bg-zinc-800/60 p-3 rounded-2xl text-xs text-zinc-300 font-mono my-4 border border-zinc-700/40">
-                کد پیگیری: <span id="trackIdDisp" class="font-bold text-emerald-400"></span>
-            </div>
-
-            <a href="/profile.html" class="block w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50">
-                ورود به پروفایل کاربری
+    <!-- هدر ساده -->
+    <header class="border-b border-red-900/25 bg-black/85 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="text-xl font-extrabold text-red-500 tracking-wide">مانهواچی</a>
+            <a href="/" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">
+                بازگشت به سایت
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
             </a>
         </div>
+    </header>
 
-        <!-- وضعیت خطا -->
-        <div id="errorState" class="hidden py-4 space-y-4">
-            <div class="w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span class="material-symbols-outlined text-4xl">cancel</span>
+    <!-- بخش اصلی معرفی پلن‌ها -->
+    <main class="max-w-5xl mx-auto px-4 py-14 sm:py-16 flex-1">
+
+        <div class="text-center max-w-xl mx-auto mb-14">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-vip-gold/10 border border-vip-gold/40 text-vip-gold text-xs font-bold mb-5">
+                <span class="material-symbols-outlined text-base crown-float">workspace_premium</span>
+                ارتقا به حساب ویژه
             </div>
-            <h1 class="text-xl font-bold text-white">پرداخت ناموفق بود</h1>
-            <p id="errorMsg" class="text-xs text-zinc-400 leading-relaxed">تراکنش توسط کاربر لغو شد یا خطایی در ارتباط با درگاه رخ داد.</p>
-            
-            <a href="/vip.html" class="block w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-all">
-                تلاش مجدد
-            </a>
+            <h1 class="text-3xl sm:text-4xl md:text-[2.75rem] font-extrabold mb-3.5 leading-tight">
+                دسترسی نامحدود به تمامی چپترها
+            </h1>
+            <p class="text-zinc-400 text-sm sm:text-[15px] leading-relaxed">
+                با تهیه اشتراک VIP مانهواچی، بدون محدودیت و زودتر از همه به چپترهای جدید دسترسی داشته باشید.
+            </p>
+            <div class="inline-flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-ember/10 border border-ember/40 text-ember text-[11px] font-bold">
+                <span class="material-symbols-outlined text-sm">local_fire_department</span>
+                ۵۰٪ تخفیف ویژه روی پلن‌های ماهانه و سه‌ماهه
+            </div>
         </div>
 
-    </div>
+        <!-- کارت‌های پلن اشتراک -->
+        <div class="grid md:grid-cols-3 gap-6 md:gap-5 md:items-stretch">
 
-   <script>
-    async function verifyPayment() {
-        // گرفتن پارامترهای آدرس URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const success = urlParams.get('success');
-        const trackId = urlParams.get('trackId') || urlParams.get('track_id');
+            <!-- پلن هفتگی -->
+            <div class="panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1">
+                <div>
+                    <h3 class="text-base font-bold text-zinc-200 mb-1.5">اشتراک هفتگی</h3>
+                    <p class="text-xs text-zinc-500 mb-7">مناسب برای تست و مطالعه کوتاه‌مدت</p>
+                    <div class="mb-7">
+                        <span class="price-num text-3xl text-white">۲۵,۰۰۰</span>
+                        <span class="text-xs text-zinc-500 mr-1">تومان</span>
+                    </div>
+                    <ul class="space-y-3.5 text-xs text-zinc-300 mb-9">
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> دسترسی کامل به چپترهای VIP</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> بدون تبلیغات مزاحم</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> پشتیبانی سریع</li>
+                    </ul>
+                </div>
+                <button onclick="startPayment('weekly', this)" class="w-full py-3.5 bg-zinc-800/80 hover:bg-primary-red border border-white/10 font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <span>خرید پلن هفتگی</span>
+                </button>
+            </div>
 
-        const loadingState = document.getElementById('loadingState');
-        const successState = document.getElementById('successState');
-        const errorState = document.getElementById('errorState');
+            <!-- پلن ماهانه (پیشنهادی) -->
+            <div class="panel-card--hero relative rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 md:scale-[1.04] md:my-1">
+                <span class="ticket-notch -right-[11px]"></span>
+                <span class="ticket-notch -left-[11px]"></span>
 
-        // اگر پرداخت از طرف بانک ناموفق بوده یا کد پیگیری نیست
-        if (success !== '1' || !trackId) {
-            loadingState?.classList.add('hidden');
-            errorState?.classList.remove('hidden');
-            return;
-        }
+                <div class="absolute -top-3.5 right-1/2 translate-x-1/2 bg-ember text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-950/50">
+                    محبوب‌ترین
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white mb-1.5 mt-1">اشتراک ماهانه</h3>
+                    <p class="text-xs text-zinc-400 mb-7">صرفه‌جویی در هزینه مطالعه</p>
+                    <div class="mb-2 flex items-baseline gap-2 flex-wrap">
+                        <span class="price-num text-3xl text-white">۵۵,۰۰۰</span>
+                        <span class="text-xs text-zinc-500">تومان</span>
+                        <span class="text-xs text-zinc-600 line-through">۱۱۰,۰۰۰</span>
+                    </div>
+                    <div class="inline-flex items-center gap-1 mb-6 text-[10px] font-bold text-vip-gold bg-vip-gold/10 border border-vip-gold/30 px-2 py-0.5 rounded-md">
+                        ۵۰٪ تخفیف محدود
+                    </div>
+                    <ul class="space-y-3.5 text-xs text-zinc-300 mb-9">
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-ember text-base">check</span> دسترسی کامل به چپترهای VIP</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-ember text-base">check</span> سرور دانلود و مشاهده اختصاصی</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-ember text-base">check</span> نشان اختصاصی 👑 VIP در پروفایل</li>
+                    </ul>
+                </div>
+                <button onclick="startPayment('monthly', this)" class="w-full py-3.5 bg-gradient-to-r from-ember to-primary-red hover:brightness-110 font-bold rounded-xl text-sm transition-all shadow-lg shadow-red-950/50 active:scale-95 flex items-center justify-center gap-2">
+                    <span>خرید پلن ماهانه</span>
+                </button>
+            </div>
 
-        try {
-            const res = await fetch('/purchase/verify', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ trackId: trackId })
-            });
+            <!-- پلن سه ماهه -->
+            <div class="panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1">
+                <div>
+                    <h3 class="text-base font-bold text-zinc-200 mb-1.5">اشتراک سه‌ماهه</h3>
+                    <p class="text-xs text-zinc-500 mb-7">برای خوره مانهواها و خوانندگان حرفه‌ای</p>
+                    <div class="mb-2 flex items-baseline gap-2 flex-wrap">
+                        <span class="price-num text-3xl text-white">۱۵۰,۰۰۰</span>
+                        <span class="text-xs text-zinc-500">تومان</span>
+                        <span class="text-xs text-zinc-600 line-through">۳۰۰,۰۰۰</span>
+                    </div>
+                    <div class="inline-flex items-center gap-1 mb-6 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                        بیشترین صرفه‌جویی
+                    </div>
+                    <ul class="space-y-3.5 text-xs text-zinc-300 mb-9">
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> تمامی امکانات پلن‌های قبلی</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> بیشترین میزان تخفیف</li>
+                    </ul>
+                </div>
+                <button onclick="startPayment('quarterly', this)" class="w-full py-3.5 bg-zinc-800/80 hover:bg-primary-red border border-white/10 font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <span>خرید پلن سه‌ماهه</span>
+                </button>
+            </div>
 
-            const data = await res.json();
+        </div>
 
-            if (res.ok && data.status === 100) {
-                // پرداخت توسط زی‌پال تایید شد و اکانت کاربر VIP شد
-                if (document.getElementById('trackIdDisp')) {
-                    document.getElementById('trackIdDisp').innerText = trackId;
+        <p class="text-center text-[11px] text-zinc-600 mt-10 flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">verified_user</span>
+            پرداخت امن، لغو در هر زمان از تنظیمات حساب کاربری
+        </p>
+
+    </main>
+
+    <footer class="border-t border-zinc-900 py-6 text-center text-xs text-zinc-600">
+        پرداخت‌های مانهواچی به صورت امن از طریق درگاه زی‌بال انجام می‌شوند.
+    </footer>
+
+    <!-- Supabase CDN + JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+
+    <script>
+        // تابع هوشمند برای شناسایی Supabase Client از همه منابع احتمالی
+        function getSupabaseInstance() {
+            if (window.supabaseClient) return window.supabaseClient;
+            if (window.supabase && typeof window.supabase.auth === 'object') return window.supabase;
+            if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                const SUPABASE_URL = "https://vumnujygswotstvwljaz.supabase.co";
+                const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E";
+                if (!window._spInstance) {
+                    window._spInstance = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 }
-                loadingState?.classList.add('hidden');
-                successState?.classList.remove('hidden');
-            } else {
-                throw new Error(data.message || "تایید تراکنش با خطا مواجه شد.");
+                return window._spInstance;
             }
-
-        } catch (err) {
-            loadingState?.classList.add('hidden');
-            if (document.getElementById('errorMsg')) {
-                document.getElementById('errorMsg').innerText = err.message || "خطا در تایید اشتراک VIP";
-            }
-            errorState?.classList.remove('hidden');
+            return null;
         }
-    }
 
-    // اجرای خودکار به محض لود شدن صفحه
-    document.addEventListener('DOMContentLoaded', verifyPayment);
-</script>
+        // تابع شروع پرداخت
+        // نکته امنیتی: دیگر amount/months از کلاینت فرستاده نمی‌شود،
+        // فقط "planKey" ارسال می‌شود و قیمت واقعی سمت سرور (edge function) تعیین می‌شود.
+        async function startPayment(planKey, btnElement) {
+            const client = getSupabaseInstance();
+
+            if (!client) {
+                alert("خطا در برقراری ارتباط با سیستم. لطفا صفحه را مجددا لود کنید.");
+                return;
+            }
+
+            // ۱. بررسی وضعیت لاگین
+            const { data: { session }, error: sessionErr } = await client.auth.getSession();
+
+            if (sessionErr || !session) {
+                showLoginRequiredModal();
+                return;
+            }
+
+            let originalText = "";
+            if (btnElement) {
+                btnElement.disabled = true;
+                originalText = btnElement.innerHTML;
+                btnElement.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> در حال اتصال...`;
+            }
+
+            try {
+                const response = await fetch('/purchase/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ planKey: planKey })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.trackId) {
+                    window.location.href = `https://gateway.zibal.ir/start/${result.trackId}`;
+                } else {
+                    throw new Error(result.message || "خطا در ایجاد درگاه پرداخت");
+                }
+            } catch (err) {
+                alert("خطا: " + err.message);
+                if (btnElement) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalText;
+                }
+            }
+        }
+
+        function showLoginRequiredModal() {
+            const modal = document.getElementById('loginRequiredModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('loginRequiredModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openAuthFromVip() {
+            closeLoginModal();
+            if (typeof openAuthModal === 'function') {
+                openAuthModal();
+            } else {
+                window.location.href = '/?action=login';
+            }
+        }
+    </script>
+    <!-- مدال هشدار عدم ورود به حساب -->
+<div id="loginRequiredModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-red-500/30 w-full max-w-sm rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(220,38,38,0.2)] animate-in fade-in zoom-in duration-200">
+        <div class="w-16 h-16 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <span class="material-symbols-outlined text-3xl">account_circle</span>
+        </div>
+
+        <h3 class="text-xl font-bold text-white mb-2">ابتدا وارد حساب شوید</h3>
+        <p class="text-zinc-400 text-sm mb-6 leading-relaxed">
+            برای خرید اشتراک ویژه و فعال‌سازی آن روی حسابتان، ابتدا باید وارد سایت شوید یا ثبت‌نام کنید.
+        </p>
+
+        <div class="flex flex-col gap-2.5">
+            <button onclick="openAuthFromVip()" class="w-full py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-sm rounded-xl hover:from-red-500 hover:to-rose-500 transition-all shadow-lg shadow-red-900/40">
+                ورود / ثبت‌نام
+            </button>
+            <button onclick="closeLoginModal()" class="w-full py-2.5 text-zinc-400 text-xs font-semibold hover:text-white transition-colors">
+                انصراف
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
