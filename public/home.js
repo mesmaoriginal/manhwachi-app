@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 async function loadTopRated() {
   try {
-    const response = await fetch('data/manhwas.json');
+    const response = await fetch('data/data.json');
     const data = await response.json();
 
     const listArray = Object.keys(data).map(slug => ({
@@ -359,7 +359,7 @@ async function loadTopRated() {
 // ==========================================
 async function fetchRandomManhwas() {
   try {
-    const response = await fetch('data/manhwas.json');
+    const response = await fetch('data/data.json');
     const data = await response.json();
 
     const listArray = Object.keys(data).map(slug => ({

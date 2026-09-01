@@ -110,7 +110,7 @@ const searchInput = document.getElementById('main-search');
 
     async function loadData() {
         try {
-            const response = await fetch('/data/manhwas.json'); 
+            const response = await fetch('/data/data.json'); 
             if (!response.ok) throw new Error('Failed to fetch local database.');
             const manhwaData = await response.json();
             

@@ -137,7 +137,7 @@
     async function loadLocalData() {
         if (itemsList.length > 0) return itemsList;
         try {
-            const response = await fetch('/data/manhwas.json'); 
+            const response = await fetch('/data/data.json'); 
             if (!response.ok) throw new Error('Failed to fetch local database.');
             const manhwaData = await response.json();
             

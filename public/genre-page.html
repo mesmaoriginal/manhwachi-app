@@ -496,7 +496,7 @@
                 pageTitle.innerHTML = `📖 مانهواهای ژانر ${targetGenre}`;
                 document.title = `مانهواهای ژانر ${targetGenre} - مانهواچی`;
 
-                const response = await fetch('data/manhwas.json');
+                const response = await fetch('data/data.json');
                 const data = await response.json();
 
                 // معادل‌های احتمالی ژانر برای فیلتر دقیق‌تر (فارسی و انگلیسی)
