@@ -107,7 +107,202 @@ app.get("/manga.php", (req, res) => {
   renderMangaPage(req, res, req.query.slug);
 });
 
-// ---------- بخش ۳: رله‌ی زیبال ----------
+// ---------- بخش ۳: خرید VIP (مستقیم، بدون pg_net) ----------
+// این بخش جایگزین Edge Function های zibal-request / zibal-verify شده.
+// چون این اپ (روی پارس‌پک) خروجی آزاد داره، هم مستقیم به Supabase REST/Auth
+// وصل میشه و هم مستقیم به زیبال - بدون واسطه‌ی Postgres/pg_net.
+
+const SUPABASE_URL = process.env.SUPABASE_URL; // مثلا: https://vumnujygswotstvwljaz.supabase.co
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT;
+const PURCHASE_CALLBACK_URL =
+  process.env.PURCHASE_CALLBACK_URL || "https://manhwachi.ir/vip-verify.html";
+
+// قیمت‌ها به ریال (زیبال مبلغ رو به ریال می‌گیره) + مدت هر پلن
+// این اعداد باید دقیقا با قیمت‌های نمایش داده شده در vip.html یکی باشن
+const PLAN_DEFS = {
+  weekly: { amount: 250000, days: 7 },
+  monthly: { amount: 550000, months: 1 },
+  quarterly: { amount: 1500000, months: 3 },
+};
+
+// کمکی: هدرهای PostgREST با Service Role (فقط سمت سرور استفاده میشه)
+function supabaseAdminHeaders(extra = {}) {
+  return {
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    ...extra,
+  };
+}
+
+// کمکی: گرفتن کاربر از روی access_token با Supabase Auth API
+async function getUserFromAccessToken(accessToken) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ۱) ساخت درخواست پرداخت
+app.post("/purchase/request", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || "";
+    const accessToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    if (!accessToken) {
+      return res.status(401).json({ message: "برای خرید ابتدا وارد حساب شوید." });
+    }
+
+    const { planKey } = req.body || {};
+    const plan = PLAN_DEFS[planKey];
+    if (!plan) {
+      return res.status(400).json({ message: "پلن انتخابی نامعتبر است." });
+    }
+
+    // احراز هویت کاربر
+    const user = await getUserFromAccessToken(accessToken);
+    if (!user || !user.id) {
+      return res.status(401).json({ message: "نشست کاربری نامعتبر است. دوباره وارد شوید." });
+    }
+
+    // ثبت رکورد pending در جدول payments
+    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/payments`, {
+      method: "POST",
+      headers: supabaseAdminHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      }),
+      body: JSON.stringify([
+        {
+          user_id: user.id,
+          plan_key: planKey,
+          amount: plan.amount,
+          status: "pending",
+        },
+      ]),
+    });
+    if (!insertRes.ok) {
+      throw new Error("ثبت تراکنش در پایگاه داده ناموفق بود: " + (await insertRes.text()));
+    }
+    const [paymentRecord] = await insertRes.json();
+
+    // ساخت تراکنش در زیبال
+    const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        merchant: ZIBAL_MERCHANT,
+        amount: plan.amount,
+        callbackUrl: PURCHASE_CALLBACK_URL,
+        description: `اشتراک VIP مانهواچی - پلن ${planKey}`,
+        orderId: String(paymentRecord.id),
+      }),
+    });
+    const zibalData = await zibalRes.json();
+
+    if (zibalData.result !== 100) {
+      throw new Error(zibalData.message || "خطا در ایجاد درگاه پرداخت.");
+    }
+
+    // ذخیره‌ی trackId روی همون رکورد
+    await fetch(`${SUPABASE_URL}/rest/v1/payments?id=eq.${paymentRecord.id}`, {
+      method: "PATCH",
+      headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ track_id: String(zibalData.trackId) }),
+    });
+
+    res.json({ trackId: zibalData.trackId });
+  } catch (err) {
+    res.status(400).json({ message: err.message || "خطا در ایجاد درگاه پرداخت." });
+  }
+});
+
+// ۲) تایید پرداخت و فعال‌سازی VIP
+app.post("/purchase/verify", async (req, res) => {
+  try {
+    const trackId = (req.body && (req.body.trackId || req.body.track_id) || "").toString();
+    if (!trackId) throw new Error("کد پیگیری ارائه نشده است.");
+
+    // تایید از سمت زیبال
+    const zibalRes = await fetch("https://gateway.zibal.ir/v1/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ merchant: ZIBAL_MERCHANT, trackId }),
+    });
+    const zibalData = await zibalRes.json();
+
+    // ۱۰۰ و ۱۰۱ یعنی موفق؛ ۲۰۱ یعنی قبلا verify شده (رفرش کاربر) - این هم موفقه
+    if (![100, 101, 201].includes(zibalData.result)) {
+      throw new Error(`پرداخت تایید نشد (کد خطا: ${zibalData.result})`);
+    }
+
+    // پیدا کردن رکورد تراکنش
+    const payRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&select=*`,
+      { headers: supabaseAdminHeaders() }
+    );
+    const payRows = await payRes.json();
+    const paymentRecord = payRows[0];
+    if (!paymentRecord) throw new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
+
+    // جلوگیری از تمدید تکراری (مثلا رفرش صفحه توسط کاربر)
+    if (paymentRecord.status === "success") {
+      return res.json({ status: 100, message: "تراکنش قبلاً ثبت شده است." });
+    }
+
+    // مدت اشتراک از روی جدول ثابت پلن‌ها، نه از ورودی کلاینت
+    const planKey = paymentRecord.plan_key;
+    const duration = PLAN_DEFS[planKey];
+    if (!duration) throw new Error("پلن ثبت‌شده برای این تراکنش نامعتبر است.");
+
+    const profRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}&select=vip_until`,
+      { headers: supabaseAdminHeaders() }
+    );
+    const profRows = await profRes.json();
+    const profile = profRows[0];
+
+    let currentVipDate = new Date();
+    if (profile?.vip_until && new Date(profile.vip_until) > new Date()) {
+      currentVipDate = new Date(profile.vip_until); // اگه هنوز VIP هست، به ادامه‌اش اضافه بشه
+    }
+    if (duration.days) currentVipDate.setDate(currentVipDate.getDate() + duration.days);
+    if (duration.months) currentVipDate.setMonth(currentVipDate.getMonth() + duration.months);
+
+    // فعال‌سازی VIP روی پروفایل
+    const updateProfRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}`,
+      {
+        method: "PATCH",
+        headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({
+          is_vip: true,
+          vip_until: currentVipDate.toISOString(),
+        }),
+      }
+    );
+    if (!updateProfRes.ok) throw new Error("بروزرسانی پروفایل کاربر ناموفق بود.");
+
+    // تغییر وضعیت تراکنش به موفق
+    await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
+      method: "PATCH",
+      headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ status: "success", ref_number: zibalData.refNumber }),
+    });
+
+    res.json({ status: 100, message: "اشتراک VIP با موفقیت فعال شد." });
+  } catch (err) {
+    res.status(400).json({ message: err.message || "خطا در تایید اشتراک VIP" });
+  }
+});
+
+// ---------- بخش ۴: رله‌ی قدیمی زیبال (نگه داشته شده برای سازگاری) ----------
 
 const RELAY_SECRET = process.env.RELAY_SECRET;
 
