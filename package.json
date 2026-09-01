@@ -1,0 +1,16 @@
+{
+  "name": "manhwachi-app",
+  "version": "1.0.0",
+  "description": "سایت manhwachi + رله پرداخت زیبال",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ejs": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
