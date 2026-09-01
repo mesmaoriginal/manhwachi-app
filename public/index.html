@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>مانهواچی | Manhwachi - مرجع خواندن مانهوا و مانگا آنلاین</title>
+  <meta name="description" content="مانهواچی بهترین منبع برای خواندن مانهوا، مانگا و کمیک‌های آنلاین با ترجمه فارسی و کیفیت بالا." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://manhwachi.ir/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Manhwachi" />
+  <meta property="og:title" content="مانهواچی | Manhwachi" />
+  <meta property="og:description" content="مرجع خواندن مانهوا و مانگا با ترجمه فارسی" />
+  <meta property="og:url" content="https://manhwachi.ir/" />
+  <meta property="og:image" content="https://manhwachi.ir/images/og-cover.jpg" />
+  <meta property="og:locale" content="fa_IR" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="مانهواچی | Manhwachi" />
+  <meta name="twitter:description" content="مرجع خواندن مانهوا و مانگا با ترجمه فارسی" />
+  <meta name="twitter:image" content="https://manhwachi.ir/images/og-cover.jpg" />
+
+  <!-- Icons -->
+  <link rel="icon" href="ManhwaChi/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="ManhwaChi/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="ManhwaChi/favicon-192x192.png" />
+  <link rel="apple-touch-icon" href="ManhwaChi/apple-touch-icon.png" />
+
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#DC2626",
+                        "on-primary": "#ffff",
+                        surface: "#000000",
+                        "surface-elevated": "#161616",
+                        "surface-container": "#1f1f1f",
+                        "on-surface": "#e2e2e2",
+                        "on-surface-variant": "#cbb8b8",
+                        "text-muted": "#8C8C8C",
+                    }
+                }
+            }
+        }
+    </script>
+  <!-- Structured Data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Manhwachi",
+    "url": "https://manhwachi.ir",
+    "logo": "https://manhwachi.ir/images/logo.png",
+    "sameAs": [
+      "https://t.me/ManhwaChiOfficial"
+    ]
+  }
+  </script>
+
+  <!-- Structured Data: WebSite -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Manhwachi",
+    "url": "https://manhwachi.ir",
+    "inLanguage": "fa-IR",
+    "description": "سایت خواندن مانهوا و مانگا با ترجمه فارسی",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://manhwachi.ir/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+    </script>
+
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-18XD50KTY3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-18XD50KTY3');
+</script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <!-- Google Fonts & Local Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <!-- استایل‌های ثابت هوم و اپلیکیشن -->
+    <link rel="stylesheet" href="home.css?v=13">
+
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+
+}
+        
+        body {
+            overflow: hidden;
+            height: 100%;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+                color: #ffffff;
+        }
+        
+        .app {
+            width: 100%;
+            height: 100vh;
+            background: rgb(0, 0, 0);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+
+    /* مخفی کردن اسکرول */
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* IE و Edge قدیمی */
+}
+
+.content::-webkit-scrollbar {
+    display: none;              /* Chrome, Edge, Safari */
+}
+
+        /* ==================== Bottom Navigation ==================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            max-width: 420px; 
+            height: 60px;
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 9999px;
+            border: 1px solid rgb(255, 255, 255);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            
+            /* انیمیشن روان برای حرکت به پایین و بالا */
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* کلاسی که نوار پایین را به سمت پایین خارج از صفحه هدایت می‌کند */
+        .bottom-nav.nav-hidden {
+            transform: translate(-50%, 150%) !important;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px 0;
+        }
+
+        .nav-icon {
+            width: 21px;
+            height: 21px;
+            object-fit: contain;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            margin-bottom: 5px;
+        }
+
+        .nav-text {
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-size: 12.5px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1;
+        }
+
+        /* حالت فعال */
+        .nav-item.active {
+            color: #ffffff;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.12) translateY(-2px);
+            filter: brightness(1.1) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+        }
+
+        .nav-item.active .nav-text {
+            font-size: 14.5px;
+            font-weight: 700;
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+        /* Hover */
+        .nav-item:hover:not(.active) {
+            color: #ddd;
+        }
+
+        .nav-item:hover:not(.active) .nav-icon {
+            transform: scale(1.12);
+        }
+
+
+
+
+
+
+
+        
+/* Drawer & Overlay Animations */
+        #mobile-drawer {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #drawer-overlay {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .drawer-open #mobile-drawer {
+            transform: translateX(0) !important;
+        }
+        .drawer-open #drawer-overlay {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+        .drawer-item {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .drawer-item:hover {
+            background: rgba(220, 38, 38, 0.12);
+            border-color: rgba(220, 38, 38, 0.3);
+            transform: translateX(-4px);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background-color: #DC2626;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="social-modal-overlay">
+  <div class="social-modal-card">
+    
+    <button class="close-btn">&times;</button>
+        <div class="items-platforme">
+            <!-- هدر و تیترها -->
+            <div class="modal-header">
+            <h2 class="title-main">مانهواچی برایِ توست!</h2>
+            <p class="subtitle">حمایت تو باعث ادامه‌ی این مسیر میشه...</p>
+            <p class="highlight-text">ما رو در شبکه‌های اجتماعی دنبال کن</p>
+            <p class="footer-subtext">تا همیشه به دنیای مانهواها متصل بمونی!</p>
+            </div>
+
+            <!-- بخش کارت‌های شبکه‌های اجتماعی -->
+            <div class="social-cards-container">
+            
+                    <!-- کارت اینستاگرام -->
+            <div class="social-card instagram-card">
+                <div class="card-content">
+                
+                <h3 class="card-title">اینستاگرام</h3>
+                
+                <a href="https://www.instagram.com/ManhwaChiOfficial" class="action-btn btn-purple">
+                    <span class="btn-icon"></span> فالو کن
+                </a>
+                </div>
+            </div>
+
+            <!-- کارت یوتیوب -->
+            <div class="social-card youtube-card">
+                <div class="card-content">
+                
+                <h3 class="card-title">یوتیوب</h3>
+                
+                <a href="https://youtube.com/@ManhwaChiOfficial" class="action-btn btn-red">
+                    <span class="btn-icon"></span> سابسکرایب کن
+                </a>
+                </div>
+            </div>
+
+            <!-- کارت تلگرام -->
+            <div class="social-card telegram-card">
+                <div class="card-content">
+                
+                <h3 class="card-title">تلگرام</h3>
+                
+                <a href="https://telegram.me/Manhwachiofficial" class="action-btn btn-blue">
+                    <span class="btn-icon"></span> عضو شو
+                </a>
+                </div>
+            </div>
+
+            </div>
+
+            <!-- فوتر پایین کادر -->
+            <div class="modal-footer">
+            <p class="footer-main-text">هر دنبال‌کننده، یک تارِ قوی‌تر برای تارعنکبوت <span>مانهواچی!</span></p>
+            <p class="footer-subtext-heart">♥ با حمایتت، این خانواده رو بزرگ‌تر کنیم.. ♥</p>
+            </div>
+                </div>
+  </div>
+</div>
+    <!-- Update Notification Modal -->
+<!-- Update Notification Modal
+<div id="updateModal" class="update-modal">
+    <div class="update-modal-content">
+        <div class="update-modal-icon">⚙️</div>
+        <h2 id="modalTitle" class="update-modal-title">سایت در حال بروزرسانی است</h2>
+        <p id="modalText" class="update-modal-text">
+            کاربران عزیز، ما در حال انجام تغییرات و ارتقای کامل وب‌سایت هستیم. 
+            ممکن است برخی از بخش‌ها به مرور تغییر کنند. از صبر و همراهی شما سپاسگزاریم!
+        </p>
+        <div class="modal-btn-group">
+            <button id="closeUpdateModal" class="update-modal-btn btn-equal bg-red">فهمیدم</button>
+            <button id="notUnderstoodModal" class="update-modal-btn btn-equal bg-gray">نفهمیدم</button>
+        </div>
+    </div>
+</div> -->
+<!-- Main Header -->
+<header class="sticky top-0 z-50 w-full bg-[#121212]/85 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+        
+        <!-- Right side: Logo & Toggle Button -->
+        <div class="flex items-center gap-4">
+            <!-- Mobile Menu Button -->
+            <button id="openDrawerBtn" aria-label="منو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
+
+            <!-- Brand Logo -->
+            <a href="/" class="flex items-center gap-3 group">
+                <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                <span class="font-bold text-xl tracking-tight text-white font-['Montserrat'] hidden sm:inline">
+                    Manhwa<span class="text-red-600">Chi</span>
+                </span>
+            </a>
+        </div>
+
+        <!-- Middle: Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-400">
+            <a href="/" class="hover:text-white transition nav-link flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-lg">home</span> خانه
+            </a>
+            <a href="/archive.html" class="hover:text-white transition nav-link flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-lg">grid_view</span> آرشیو مانهوا
+            </a>
+            <a href="/bookmarks.html" class="hover:text-white transition nav-link flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-lg">bookmark</span> نشان‌شده‌ها
+            </a>
+            <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="hover:text-white transition nav-link flex items-center gap-1.5 text-sky-400">
+                <span class="material-symbols-outlined text-lg">send</span> تلگرام
+            </a>
+        </nav>
+
+        <!-- Left Side Actions -->
+
+        <div class="flex items-center gap-3">
+            <!-- کانتینر نمایش پروفایل / VIP / ورود -->
+            <div id="userNavContainer" class="flex items-center gap-2">
+                
+            </div>
+
+            <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-xl">search</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Slide-over Drawer & Overlay -->
+<div id="drawerOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] opacity-0 invisible pointer-events-none transition-all duration-300"></div>
+
+<aside id="mobileDrawer" class="fixed top-0 right-0 bottom-0 w-[300px] sm:w-[340px] bg-[#141414] border-l border-white/10 z-[101] translate-x-full transition-transform duration-300 flex flex-col justify-between p-6 shadow-2xl">
+    <!-- Glow Effect Inside Drawer -->
+    <div class="absolute -top-20 -right-20 w-48 h-48 bg-red-600/20 blur-[90px] pointer-events-none"></div>
+
+    <div>
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between pb-6 mb-6 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-7 w-auto object-contain drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                <span class="font-bold text-lg text-white font-['Montserrat']">
+                    Manhwa<span class="text-red-600">Chi</span>
+                </span>
+            </div>
+            <button id="closeDrawerBtn" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+
+        <!-- Menu Navigation List -->
+        <nav class="space-y-3">
+            <!-- دکمه ورود/ثبت نام جهت درج در هدر -->
+            <button onclick="openAuthModal('login')" class="px-4 py-2 rounded-xl bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600 hover:text-white font-medium text-sm transition-all">
+            ورود / ثبت‌نام
+            </button>
+
+            <a href="https://manhwachi.ir/library-page.html" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/5 text-white font-medium hover:bg-red-600/10 transition-all">
+                <div class="w-9 h-9 rounded-xl bg-red-600/10 text-red-500 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">grid_view</span>
+                </div>
+                <span>لیست مانهواها</span>
+            </a>
+
+            <a href="/bookmarks.html" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/5 text-white font-medium hover:bg-red-600/10 transition-all">
+                <div class="w-9 h-9 rounded-xl bg-red-600/10 text-red-500 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">bookmark</span>
+                </div>
+                <span>نشان‌شده‌ها</span>
+            </a>
+
+            <a href="https://manhwachi.ir/Careers.html" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/5 text-white font-medium hover:bg-red-600/10 transition-all">
+                <div class="w-9 h-9 rounded-xl bg-red-600/10 text-red-500 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">group_add</span>
+                </div>
+                <span>همکاری با تیم</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="space-y-4 pt-6 border-t border-white/10">
+        <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold shadow-lg shadow-sky-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-2xl">send</span>
+                <span class="text-sm">کانال تلگرام مانهواچی</span>
+            </div>
+            <span class="material-symbols-outlined text-lg">chevron_left</span>
+        </a>
+
+        <p class="text-center text-xs text-gray-500 font-medium">
+            © ۲۰۲۶ مانهواچی - تمامی حقوق محفوظ است
+        </p>
+    </div>
+</aside>
+    <div class="app">
+        <!-- محتوای اصلی -->
+        <div class="content" id="app">
+            <div class="home-page" style="direction: rtl;">
+
+                <div id="sponsor-box" class="sponsor-box" style="display:none;">
+
+                <button class="close-ad" onclick="closeAd()">×</button>
+
+                <a id="sponsor-link" target="_blank" class="sponsor-link">
+
+                    <img id="sponsor-img" class="sponsor-img" />
+
+                    <div class="sponsor-text">
+
+                    <div id="sponsor-title" class="sponsor-title"></div>
+
+                    <div id="sponsor-desc" class="sponsor-desc"></div>
+
+                    <div class="sponsor-label">اسپانسر</div>
+
+                    </div>
+
+                </a>
+
+                </div>
+                
+
+
+
+                
+                <div class="spider-container">
+                <div class="left-legs">
+                    <div class="leg1"><div class="leg1"><div class="leg1"><div class="leg1"></div></div></div></div>
+                    <div class="leg2"><div class="leg2"><div class="leg2"><div class="leg2"></div></div></div></div>
+                    <div class="leg3"><div class="leg3"><div class="leg3"><div class="leg3"></div></div></div></div>
+                    <div class="leg4"><div class="leg4"><div class="leg4"><div class="leg4"></div></div></div></div>
+                </div>
+                <div class="right-legs">
+                    <div class="leg1"><div class="leg1"><div class="leg1"><div class="leg1"></div></div></div></div>
+                    <div class="leg2"><div class="leg2"><div class="leg2"><div class="leg2"></div></div></div></div>
+                    <div class="leg3"><div class="leg3"><div class="leg3"><div class="leg3"></div></div></div></div>
+                    <div class="leg4"><div class="leg4"><div class="leg4"><div class="leg4"></div></div></div></div>
+                </div>
+                </div>
+
+            
+                        <section class="slider" id="slider" aria-roledescription="carousel" aria-label="اسلایدر محصولات">
+                            <div class="track" id="track"></div>
+
+                            <div class="slider-ui">
+                            
+                            
+                            </div>
+                            
+                        </section>
+                        <div class="dots" id="dots" aria-label="انتخاب اسلاید"></div>
+
+                        <h2 class="title"><a href="#">آخرین آپدیت‌ها</a></h2>
+                            <div class="daily_list main">
+                                <!-- لیست خالی جهت رندر داینامیک -->
+                                <ul class="lst_type1 horizontal-scroll" id="todaysList">
+                                    <!-- آیتم‌ها توسط جاوااسکریپت جایگذاری می‌شوند -->
+                                </ul>
+                            </div>
+                        <div class="mw-banner-wrapper">
+                            <div class="mw-banner-container">
+                                <div class="mw-banner-content">
+                                    
+                                    
+                        
+                                    <!-- تیتر اصلی با استایل طلایی درخشان -->
+                                    <h1 class="mw-banner-title">
+                                        دعوت <br>
+                                        <span>به همکاری</span><br>
+                                        با مانواچی!
+                                    </h1>
+                        
+                                    <!-- زیرعنوان -->
+                                    <p class="mw-banner-subtitle">به تیم ما بپیوندید</p>
+                                    
+                        
+                                    <!-- دکمه درخواست مدرن -->
+                                    <div class="mw-banner-action">
+                                        <a href="Careers.html" class="mw-btn-glow">
+                                            <span>همین حالا درخواست دهید</span>
+                                            <svg class="mw-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                        
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Telegram Banner -->
+                        <section class="telegram-banner">
+                            <div class="telegram-banner-link">
+                                <div class="telegram-icon">
+                                    <img src="file/icons8-telegram-app-96.png" alt="Telegram">
+                                </div>
+                                <div class="telegram-content">
+                                    <div class="telegram-title">برای دسترسی سریع به چپترهای جدید</div>
+                                    <div class="telegram-subtitle">عضو کانال <strong>مانهواچی</strong> شوید</div>
+                                </div>
+                                <div class="banner-btn-group">
+                                    <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="telegram-btn">عضو شدن</a>
+                                    <button id="copyTelegramBtn" class="telegram-btn">کپی لینک</button>
+                                </div>
+                            </div>
+                        </section>
+
+
+
+                            
+                        <h2 class="title">
+                            <a href="">بهترین‌ها</a>
+                        </h2>
+
+                        <div class="toprated_list">
+                            <ul class="lst_type2" id="topRatedList">
+
+                            </ul>
+                        </div>
+                        <!-- Instagram Banner -->
+            <section class="instagram-banner">
+                <div class="instagram-banner-link">
+                    <div class="banner-btn-group">
+                        <a href="https://www.instagram.com/ManhwaChiOfficial" target="_blank" class="instagram-btn">فالو کردن</a>
+                        <button id="copyInstagramBtn" class="instagram-btn">کپی آیدی</button>
+                    </div>
+                    <div class="instagram-content">
+                        <div class="instagram-title">معرفی مانهوا و ادیت‌های خفن</div>
+                        <div class="instagram-subtitle">پیج <strong>اینستاگرام</strong> ما را دنبال کنید</div>
+                    </div>
+                    <div class="instagram-icon">
+                        <img src="file/icons8-instagram-96.png" alt="Instagram">
+                    </div>
+                </div>
+            </section>
+                    <div class="library-section">
+
+                        <div class="main-container">
+                            
+                            <!-- افکت ذرات تار عنکبوت پس‌زمینه (توسط JS مدیریت می‌شود) -->
+                            <div id="cobweb-canvas"></div>
+
+                            <!-- بخش بالایی: عنکبوت بزرگ و آیکون -->
+                        
+                            
+
+                            <!-- بخش متنی اصلی -->
+                            <div class="text-section">
+                                <h1 class="main-title">وارد کتابخانه <span class="highlight">مانهواچی</span> شوید</h1>
+                                <p class="sub-title">دنیایی از ماجراجویی، <span class="highlight-red">هیجان</span> و داستان‌های فراموش‌نشدنی در انتظار شماست</p>
+                            </div>
+
+                            <!-- دکمه ورود نئونی -->
+                            <div class="button-section " onclick="window.location.href='/library-page.html'">
+                                <button class="enter-button">
+                                    <div class="btn-glow"></div>
+                                    <span class="btn-icon">
+                                        <svg viewBox="0 0 24 24"><path d="M21 4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 16H4V6h16v14zM6 8h12v2H6zm0 4h12v2H6zm0 4h8v2H6z"/></svg>
+                                    </span>
+                                    <span class="btn-text" >ورود به کتابخانه</span>
+                                    <span class="btn-arrow">
+                                        <svg viewBox="0 0 24 24"><path d="M13 18l-1.4-1.4 4.6-4.6-4.6-4.6L13 6l6 6zm-6 0l-1.4-1.4 4.6-4.6-4.6-4.6L7 6l6 6z"/></svg>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                            
+
+                        </div>
+                    
+                    
+                </div>
+            <!-- Footer Section -->
+            <footer class="w-full bg-black border-t border-white/10 pt-12 pb-40 mt-16 text-on-surface-variant">
+                <div class="max-w-7xl mx-auto px-5">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-8 pb-10 border-b border-white/10">
+                        
+                        <!-- Col 1: Brand Info -->
+                        <div class="md:col-span-2 space-y-4">
+                            <a href="/" class="flex items-center gap-3">
+                                <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                                <span class="font-bold text-2xl text-white font-['Montserrat']">
+                                    Manhwa<span class="text-red-600">Chi</span>
+                                </span>
+                            </a>
+                            <p class="text-sm text-gray-400 leading-relaxed max-w-md">
+                                مرجع بروز و جامع خواندن آنلاین مانهوا و مانگا با ترجمه فارسی. جدیدترین چپترهای مانهواهای محبوب خود را با بهترین کیفیت و سرعت در مانهواچی دنبال کنید.
+                            </p>
+                        </div>
+
+                        <!-- Col 2: Quick Links -->
+                        <div>
+                            <h4 class="text-white font-bold text-base mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-red-600 text-xl">link</span>
+                                دسترسی سریع
+                            </h4>
+                            <ul class="space-y-2.5 text-sm">
+                                <li>
+                                    <a href="/" class="hover:text-red-500 transition-colors flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-xs">chevron_left</span> صفحه اصلی
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/library-page.html" class="hover:text-red-500 transition-colors flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-xs">chevron_left</span> آرشیو کامل مانهواها
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/bookmarks.html" class="hover:text-red-500 transition-colors flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-xs">chevron_left</span> نشان‌شده‌ها
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://manhwachi.ir/Careers.html" class="hover:text-red-500 transition-colors flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-xs">chevron_left</span> همکاری با تیم
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Col 3: Community & Social -->
+                        <div>
+                            <h4 class="text-white font-bold text-base mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-red-600 text-xl">forum</span>
+                                ارتباط با ما
+                            </h4>
+                            <p class="text-xs text-gray-400 mb-4 leading-relaxed">
+                                برای دریافت آخرین اخبار، اطلاع از انتشار چپترها و عضویت در جامعه مانهواچی به کانال تلگرام ما بپیوندید.
+                            </p>
+                            <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 font-semibold text-xs hover:bg-sky-500 hover:text-white transition-all">
+                                <span class="material-symbols-outlined text-lg">send</span>
+                                عضویت در کانال تلگرام
+                            </a>
+                        </div>
+
+                        <!-- Col 4: Enamad Trust Seal -->
+                        <div class="flex flex-col items-center md:items-start justify-start">
+                            <h4 class="text-white font-bold text-base mb-4 flex items-center gap-2 self-start">
+                                <span class="material-symbols-outlined text-red-600 text-xl">verified</span>
+                                نماد اعتماد
+                            </h4>
+                            <div class="bg-white/5 border border-white/10 rounded-xl p-2 hover:border-red-500/30 transition-all">
+                                <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7507606&Code=6OhZpFuAsslEizzI2ga4EX8kyLmmnWxv'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7507606&Code=6OhZpFuAsslEizzI2ga4EX8kyLmmnWxv' alt='نماد اعتماد الکترونیکی' style='cursor:pointer' code='6OhZpFuAsslEizzI2ga4EX8kyLmmnWxv'></a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Copyright -->
+                    <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+                        <p class="text-center sm:text-right">
+                            © ۲۰۲۶ تمامی حقوق این وب‌سایت برای مجموعه <span class="text-white font-bold font-['Montserrat']">ManhwaChi</span> محفوظ است.
+                        </p>
+                        <div class="flex items-center gap-4">
+                            <a href="#" class="hover:text-white transition-colors">قوانین و مقررات</a>
+                            <span>•</span>
+                            <a href="#" class="hover:text-white transition-colors">حریم خصوصی</a>
+                        </div>
+                    </div>
+
+                </div>
+            </footer>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-page="home" onclick="loadPage(this)">
+                <img class="nav-icon"
+                    src="file/dashboard-topor.png"
+                    data-outline="file/dashboard-tokhali.png"
+                    data-fill="file/dashboard-topor.png">
+                <span class="nav-text">خانه</span>
+            </div>
+
+            
+
+            <div class="nav-item" data-page="reels" onclick="loadPage(this)">
+                <img class="nav-icon"
+                    src="file/short-tokhali.png"
+                    data-outline="file/short-tokhali.png"
+                    data-fill="file/short-topor.png">
+                <span class="nav-text">ریلز</span>
+            </div>
+
+            <div class="nav-item" data-page="ganre" onclick="loadPage(this)">
+                <img class="nav-icon" style="width: 23px; height: 23px;"
+                    src="file/ganre-tokhali.png"
+                    data-outline="file/ganre-tokhali.png"
+                    data-fill="file/ganre-topor.png">
+                <span class="nav-text">ژانرها</span>
+            </div>
+            
+            <div class="nav-item" data-page="profile" onclick="loadPage(this)">
+                <img class="nav-icon"
+                    src="file/profile-tokhali.png"
+                    data-outline="file/profile-tokhali.png"
+                    data-fill="file/profile-topor.png">
+                <span class="nav-text">پروفایل</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- اسکریپت پایه هوم (اسلایدر و کدهای اصلی هوم شما) فقط یک بار اینجا لود می‌شود -->
+    <script src="home.js?v=3"></script>
+   <script>
+    async function initUserSession() {
+        const client = window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
+        if (!client) return;
+
+        const { data: { user } } = await client.auth.getUser();
+
+        const userNavContainer = document.getElementById('userNavContainer');
+        const drawerAuthBtn = document.querySelector('#mobileDrawer nav button');
+
+        if (user) {
+            const { data: profile } = await client
+                .from('profiles')
+                .select('is_vip, vip_until')
+                .eq('id', user.id)
+                .maybeSingle();
+
+            const now = new Date();
+            const isVip = profile?.is_vip && (!profile.vip_until || new Date(profile.vip_until) > now);
+
+            // ۱. به‌روزرسانی هدر
+            if (userNavContainer) {
+                userNavContainer.innerHTML = isVip 
+                    ? `<button onclick="loadPageByName('profile')" title="حساب کاربری" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+                        <span class="material-symbols-outlined text-base">verified</span>
+                        <span>اشتراک فعال</span>
+                    </button>`
+                    : `<a href="/vip.html" title="خرید اشتراک VIP" class="relative group overflow-hidden px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-bold text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_22px_rgba(220,38,38,0.7)] hover:scale-[1.03] active:scale-95 transition-all border border-red-500/40">
+                        <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></span>
+                        <span class="material-symbols-outlined text-base text-amber-300 group-hover:rotate-12 transition-transform">workspace_premium</span>
+                        <span>خرید اشتراک</span>
+                    </a>`;
+            }
+
+            // ۲. به‌روزرسانی منوی کشویی موبایل (Drawer)
+            if (drawerAuthBtn) {
+                drawerAuthBtn.outerHTML = `
+                    <div onclick="${isVip ? "loadPageByName('profile');" : "window.location.href='/vip.html';"} closeDrawer();" class="drawer-item flex items-center justify-between p-3.5 rounded-2xl ${isVip ? 'bg-emerald-950/30 border-emerald-500/30' : 'bg-gradient-to-r from-red-950/40 to-zinc-900 border-red-500/30'} border text-white font-medium hover:scale-[1.01] transition-all cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl ${isVip ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-600/20 text-red-400'} flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl">${isVip ? 'verified' : 'workspace_premium'}</span>
+                            </div>
+                            <span class="text-sm font-bold">${isVip ? 'حساب کاربری شما' : 'خرید اشتراک ویژه'}</span>
+                        </div>
+                        ${isVip 
+                            ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/30">فعال</span>' 
+                            : '<span class="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold shadow-md shadow-red-900/50">ارتقا</span>'}
+                    </div>
+                `;
+            }
+        } else {
+            // کاربر لاگین نیست -> باز هم برود به صفحه خرید اشتراک (vip.html)
+            if (userNavContainer) {
+                userNavContainer.innerHTML = `
+                    <a href="/vip.html" title="خرید اشتراک" class="relative group overflow-hidden px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-bold text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_22px_rgba(220,38,38,0.7)] hover:scale-[1.03] active:scale-95 transition-all border border-red-500/40">
+                        <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></span>
+                        <span class="material-symbols-outlined text-base text-amber-300 group-hover:rotate-12 transition-transform">workspace_premium</span>
+                        <span>خرید اشتراک</span>
+                    </a>
+                `;
+            }
+
+            if (drawerAuthBtn) {
+                drawerAuthBtn.setAttribute('onclick', "window.location.href='/vip.html'");
+                drawerAuthBtn.className = "drawer-item w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-red-950/40 to-zinc-900 border border-red-500/30 text-white font-medium hover:scale-[1.01] transition-all cursor-pointer";
+                drawerAuthBtn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-red-600/20 text-red-400 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-xl text-amber-300">workspace_premium</span>
+                        </div>
+                        <span class="text-sm font-bold">خرید اشتراک ویژه</span>
+                    </div>
+                    <span class="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold shadow-md shadow-red-900/50">خرید</span>
+                `;
+            }
+        }
+    }
+
+    function loadPageByName(pageName) {
+        const navItem = document.querySelector(`.bottom-nav .nav-item[data-page="${pageName}"]`);
+        if (navItem) {
+            loadPage(navItem);
+        }
+    }
+     document.addEventListener('DOMContentLoaded', initUserSession);
+</script>
+    <script>
+        
+        const app = document.getElementById("app");
+        const cache = {};
+
+        // محتوای استاتیک اولیه هوم را در کش ذخیره می‌کنیم
+        cache['home'] = app.innerHTML;
+        async function loadPage(el) {
+            const page = el.getAttribute('data-page');
+            
+            if (el.classList.contains('active')) return;
+
+            // ۱. مدیریت نمایش/مخفی‌سازی هدر
+            const header = document.querySelector('header');
+            if (header) {
+                if (page === 'reels') {
+                    header.classList.add('hidden');
+                } else {
+                    header.classList.remove('hidden');
+                }
+            }
+
+            // ۲. تغییر وضعیت visual آیکون‌های نوار پایین
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                const img = item.querySelector('.nav-icon');
+                if (img) {
+                    img.src = img.dataset.outline;
+                }
+            });
+
+            el.classList.add('active');
+            const img = el.querySelector('.nav-icon');
+            if (img) {
+                img.src = img.dataset.fill;
+            }
+
+            // ۳. پاکسازی CSS و JSهای دینامیک قبلی
+            document.querySelectorAll(".dynamic-css, .dynamic-js").forEach(e => e.remove());
+
+            // ۴. لود فایل استایل (profile.css)
+            if (page !== 'home') {
+                const css = document.createElement("link");
+                css.rel = "stylesheet";
+                css.href = `${page}.css?v=4`;
+                css.className = "dynamic-css";
+                document.head.appendChild(css);
+            }
+
+            try {
+                let html;
+                if (cache[page]) {
+                    html = cache[page];
+                } else {
+                    const response = await fetch(`${page}.html`);
+                    if (!response.ok) throw new Error();
+                    html = await response.text();
+                    cache[page] = html;
+                }
+                
+                app.innerHTML = html;
+
+                // ۵. اجرای اسکریپت‌های مربوط به هر صفحه
+                if (page !== 'home') {
+                    const script = document.createElement("script");
+                    script.src = `${page}.js?v=2`;
+                    script.className = "dynamic-js";
+                    document.body.appendChild(script);
+
+                    if (page === 'reels') {
+                        setTimeout(() => {
+                            if (typeof window.initReels === 'function') window.initReels();
+                        }, 100);
+                    } else if (page === 'profile') {
+                        setTimeout(() => {
+                            if (typeof window.loadUserProfile === 'function') window.loadUserProfile();
+                        }, 100);
+                    }
+                } else {
+                    setTimeout(() => {
+                        if (typeof window.initHome === 'function') window.initHome();
+                    }, 50);
+                }
+
+            } catch (e) {
+                app.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-white">
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold mb-3">404</h2>
+                            <p class="text-gray-400">صفحه مورد نظر پیدا نشد.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+    <script>
+        // گرفتن المان‌های مدال و دکمه بستن
+        const modalOverlay = document.querySelector('.social-modal-overlay');
+        const closeBtn = document.querySelector('.close-btn');
+
+        // ۱. بستن مدال با کلیک روی دکمه بستن (×)
+        closeBtn.addEventListener('click', () => {
+            modalOverlay.style.display = 'none';
+        });
+
+        // ۲. بستن مدال با کلیک روی فضای تاریک بیرون کادر
+        modalOverlay.addEventListener('click', (event) => {
+            if (event.target === modalOverlay) {
+            modalOverlay.style.display = 'none';
+            }
+        });
+
+
+
+// Drawer Toggle Logic
+const openDrawerBtn = document.getElementById('openDrawerBtn');
+const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+const drawerOverlay = document.getElementById('drawerOverlay');
+const mobileDrawer = document.getElementById('mobileDrawer');
+const bottomNav = document.querySelector('.bottom-nav'); // گرفتن المان نوار پایین
+
+function openDrawer() {
+    mobileDrawer.classList.remove('translate-x-full');
+    drawerOverlay.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
+    document.body.style.overflow = 'hidden'; // جلوگیری از اسکرول صفحه
+    
+    // هدایت Bottom Nav به خارج از صفحه (پایین)
+    if (bottomNav) {
+        bottomNav.classList.add('nav-hidden');
+    }
+}
+
+function closeDrawer() {
+    mobileDrawer.classList.add('translate-x-full');
+    drawerOverlay.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+    document.body.style.overflow = '';
+    
+    // بازگرداندن Bottom Nav به صفحه
+    if (bottomNav) {
+        bottomNav.classList.remove('nav-hidden');
+    }
+}
+
+openDrawerBtn.addEventListener('click', openDrawer);
+closeDrawerBtn.addEventListener('click', closeDrawer);
+drawerOverlay.addEventListener('click', closeDrawer);
+
+// بستن منو با کلید Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+});
+</script>
+<script>
+  // مقداردهی اولیه متغیر ایمیل موقت
+  let tempRegistrationEmail = "";
+
+  // تابع دسترسی امن به Supabase
+  function getSupabase() {
+    return window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
+  }
+
+  // ==================== توابع کنترل نمایش مودال ====================
+  function openAuthModal(tab = 'login') {
+    switchAuthTab(tab);
+    const modal = document.getElementById('authModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    hideAuthMessage();
+    document.getElementById('otpForm')?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+  }
+
+  function switchAuthTab(type) {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const otpForm = document.getElementById('otpForm');
+    const tabLoginBtn = document.getElementById('tabLoginBtn');
+    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+
+    hideAuthMessage();
+    otpForm?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+
+    const activeCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40";
+    const inactiveCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200";
+    const subtitle = document.getElementById('authSubtitle');
+
+    if (type === 'login') {
+      loginForm?.classList.remove('hidden');
+      registerForm?.classList.add('hidden');
+      if (tabLoginBtn) tabLoginBtn.className = activeCls;
+      if (tabRegisterBtn) tabRegisterBtn.className = inactiveCls;
+      if (subtitle) subtitle.textContent = "خوش برگشتی! برای ادامه وارد حساب خود شو";
+    } else {
+      loginForm?.classList.add('hidden');
+      registerForm?.classList.remove('hidden');
+      if (tabRegisterBtn) tabRegisterBtn.className = activeCls;
+      if (tabLoginBtn) tabLoginBtn.className = inactiveCls;
+      if (subtitle) subtitle.textContent = "چند قدم تا ساخت حساب جدیدت باقی مونده";
+    }
+  }
+
+  // ==================== نمایش/مخفی‌سازی رمز عبور ====================
+  function toggleAuthPassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const willShow = input.type === 'password';
+    input.type = willShow ? 'text' : 'password';
+    const icon = btn.querySelector('i');
+    if (icon) {
+      icon.classList.toggle('fa-eye', !willShow);
+      icon.classList.toggle('fa-eye-slash', willShow);
+    }
+  }
+
+  // ==================== مدیریت پیام‌های خطا، هشدار و موفقیت ====================
+  function showAuthMessage(msg, isError = false, type = null) {
+    const msgBox = document.getElementById('authMessage');
+    if (!msgBox) return;
+
+    const kind = type || (isError ? 'error' : 'success');
+    const styleMap = {
+      error:   { icon: 'fa-circle-exclamation',   classes: ['bg-red-500/10', 'text-red-400', 'border-red-500/30'] },
+      success: { icon: 'fa-circle-check',         classes: ['bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30'] },
+      warning: { icon: 'fa-triangle-exclamation', classes: ['bg-amber-500/10', 'text-amber-300', 'border-amber-500/30'] }
+    };
+    const cfg = styleMap[kind] || styleMap.error;
+
+    msgBox.classList.remove(
+      'hidden',
+      'bg-red-500/10', 'text-red-400', 'border-red-500/30',
+      'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30',
+      'bg-amber-500/10', 'text-amber-300', 'border-amber-500/30',
+      'authMsg-in'
+    );
+    msgBox.classList.add('border', ...cfg.classes);
+    // force re-trigger of the entrance animation
+    void msgBox.offsetWidth;
+    msgBox.classList.add('authMsg-in');
+
+    msgBox.innerHTML = '';
+    const iconEl = document.createElement('i');
+    iconEl.className = `fa-solid ${cfg.icon} mt-0.5 text-sm shrink-0`;
+    const textEl = document.createElement('span');
+    textEl.className = 'leading-5';
+    textEl.textContent = msg;
+    msgBox.appendChild(iconEl);
+    msgBox.appendChild(textEl);
+  }
+
+  function hideAuthMessage() {
+    const msgBox = document.getElementById('authMessage');
+    if (msgBox) msgBox.classList.add('hidden');
+  }
+
+  // ==================== سنجش قدرت رمز عبور ====================
+  function checkPasswordStrength(password) {
+    const bar = document.getElementById('passwordStrengthBar');
+    const text = document.getElementById('passwordStrengthText');
+    if (!bar || !text) return;
+
+    if (!password) {
+      bar.className = "h-1 rounded-full bg-zinc-700 transition-all duration-300 w-0";
+      text.innerText = "";
+      return;
+    }
+
+    let score = 0;
+    if (password.length >= 6) score += 1;
+    if (password.length >= 10) score += 1;
+    if (/[A-Z]/.test(password) || /[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    if (score <= 1) {
+      bar.className = "h-1 rounded-full bg-red-500 transition-all duration-300 w-1/3";
+      text.innerText = "رمز عبور ضعیف است";
+      text.className = "text-[11px] mt-1 text-red-400";
+    } else if (score === 2 || score === 3) {
+      bar.className = "h-1 rounded-full bg-yellow-500 transition-all duration-300 w-2/3";
+      text.innerText = "رمز عبور متوسط است";
+      text.className = "text-[11px] mt-1 text-yellow-400";
+    } else {
+      bar.className = "h-1 rounded-full bg-emerald-500 transition-all duration-300 w-full";
+      text.innerText = "رمز عبور بسیار قوی است ✓";
+      text.className = "text-[11px] mt-1 text-emerald-400";
+    }
+  }
+
+  // ==================== تابع ورود ====================
+  async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginSubmitBtn');
+
+    btn.disabled = true;
+    btn.innerText = "در حال بررسی...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { data, error } = await client.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error("ایمیل یا رمز عبور اشتباه است.");
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error("ایمیل شما هنوز تایید نشده است. ابتدا کد ارسال شده را تایید کنید.");
+        } else {
+          throw error;
+        }
+      }
+
+      showAuthMessage("با موفقیت وارد شدید!", false);
+      setTimeout(() => { location.reload(); }, 1000);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در ورود به حساب", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ورود به حساب";
+    }
+  }
+
+  // ==================== تابع ثبت‌نام ====================
+  async function handleRegister(e) {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('regFullName').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const btn = document.getElementById('regSubmitBtn');
+
+    if (!email.endsWith('@gmail.com')) {
+      showAuthMessage("تنها ایمیل‌های معتبر جیمیل (gmail.com@) مورد قبول است.", true);
+      return;
+    }
+
+    if (password.length < 6) {
+      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "در حال ارسال کد...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { data, error } = await client.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // اگر کاربر قبلاً ثبت‌نام و ایمیلش تایید شده باشد، Supabase به دلایل امنیتی
+      // خطا برنمی‌گرداند، ولی آرایه identities خالی برمی‌گردد. این تنها راه
+      // تشخیص «کاربر تکراری» در سمت کلاینت است.
+      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        switchAuthTab('login');
+        const loginEmailInput = document.getElementById('loginEmail');
+        if (loginEmailInput) {
+          loginEmailInput.value = email;
+          document.getElementById('loginPassword')?.focus();
+        }
+        showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن یا از «فراموشی رمز عبور» استفاده کن.", true, 'warning');
+        return;
+      }
+
+      tempRegistrationEmail = email;
+      const otpEmailDisplay = document.getElementById('otpEmailDisplay');
+      if (otpEmailDisplay) otpEmailDisplay.textContent = email;
+      showAuthMessage("کد ۶ رقمی تایید به جیمیل شما ارسال شد.", false);
+      
+      document.getElementById('registerForm').classList.add('hidden');
+      document.getElementById('otpForm').classList.remove('hidden');
+
+    } catch (err) {
+      if (err.message && err.message.toLowerCase().includes('already registered')) {
+        switchAuthTab('login');
+        const loginEmailInput = document.getElementById('loginEmail');
+        if (loginEmailInput) {
+          loginEmailInput.value = email;
+          document.getElementById('loginPassword')?.focus();
+        }
+        showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن.", true, 'warning');
+      } else {
+        showAuthMessage(err.message || "خطا در فرآیند ثبت‌نام", true);
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ارسال کد تایید به جیمیل";
+    }
+  }
+
+  // ==================== تابع فراموشی رمز عبور (ارسال لینک بازیابی) ====================
+  async function handleForgotPassword(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('forgotSubmitBtn');
+
+    btn.disabled = true;
+    btn.innerText = "در حال ارسال...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+
+      if (error) throw error;
+
+      showAuthMessage("لینک بازیابی رمز عبور به ایمیل شما ارسال شد. لطفاً صندوق ایمیل خود را بررسی کنید.", false);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در ارسال لینک بازیابی رمز عبور", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ارسال لینک بازیابی رمز عبور";
+    }
+  }
+
+  // ==================== تابع تنظیم رمز عبور جدید (بعد از کلیک روی لینک ایمیل) ====================
+  async function handleResetPassword(e) {
+    e.preventDefault();
+
+    const newPassword = document.getElementById('resetNewPassword').value;
+    const confirmNewPassword = document.getElementById('resetConfirmPassword').value;
+    const btn = document.getElementById('resetSubmitBtn');
+
+    if (newPassword.length < 6) {
+      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "در حال ثبت...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { error } = await client.auth.updateUser({ password: newPassword });
+
+      if (error) throw error;
+
+      showAuthMessage("رمز عبور شما با موفقیت تغییر کرد. اکنون می‌توانید وارد شوید.", false);
+      setTimeout(() => {
+        switchAuthTab('login');
+      }, 1200);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در تغییر رمز عبور", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ثبت رمز عبور جدید";
+    }
+  }
+
+  // نمایش فرم فراموشی رمز عبور
+  function showForgotPasswordForm() {
+    hideAuthMessage();
+    document.getElementById('loginForm')?.classList.add('hidden');
+    document.getElementById('registerForm')?.classList.add('hidden');
+    document.getElementById('otpForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.remove('hidden');
+  }
+
+  // بررسی رویداد بازیابی رمز عبور (وقتی کاربر روی لینک ایمیل کلیک می‌کند)
+  document.addEventListener('DOMContentLoaded', () => {
+    const client = getSupabase();
+    if (client && client.auth && typeof client.auth.onAuthStateChange === 'function') {
+      client.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          if (typeof openAuthModal === 'function') openAuthModal('login');
+          document.getElementById('loginForm')?.classList.add('hidden');
+          document.getElementById('registerForm')?.classList.add('hidden');
+          document.getElementById('otpForm')?.classList.add('hidden');
+          document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+          document.getElementById('resetPasswordForm')?.classList.remove('hidden');
+          showAuthMessage("لطفاً رمز عبور جدید خود را وارد کنید.", false);
+        }
+      });
+    }
+  });
+
+  // ==================== تابع تایید کد OTP ====================
+  async function handleVerifyOTP(e) {
+    e.preventDefault();
+    
+    const otpCode = document.getElementById('otpCode').value.trim();
+    const btn = document.getElementById('verifyOtpBtn');
+
+    btn.disabled = true;
+    btn.innerText = "در حال تایید...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { data, error } = await client.auth.verifyOtp({
+        email: tempRegistrationEmail,
+        token: otpCode,
+        type: 'signup'
+      });
+
+      if (error) throw error;
+
+      showAuthMessage("حساب شما با موفقیت تایید و فعال شد!", false);
+      setTimeout(() => { location.reload(); }, 1200);
+
+    } catch (err) {
+      showAuthMessage(err.message || "کد وارد شده اشتباه یا منقضی شده است.", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "تایید و فعال‌سازی حساب";
+    }
+  }
+
+async function handleLogout() {
+  const client = window.supabaseClient || window.supabase;
+  await client.auth.signOut();
+  location.reload();
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'login') {
+        if (typeof openAuthModal === 'function') {
+            openAuthModal('login');
+        }
+    }
+});
+
+
+
+</script>
+
+<!-- Auth Modal Animations -->
+<style>
+  @keyframes authBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes authCardIn {
+    from { opacity: 0; transform: scale(.92) translateY(14px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes authMsgIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes authGlow {
+    0%, 100% { opacity: .55; }
+    50%      { opacity: 1; }
+  }
+  #authModal.flex { animation: authBackdropIn .25s ease-out; }
+  #authModal.flex .auth-card { animation: authCardIn .4s cubic-bezier(.16,1,.3,1); }
+  .authMsg-in { animation: authMsgIn .3s ease-out; }
+  .auth-card { scrollbar-width: none; -ms-overflow-style: none; }
+  .auth-card::-webkit-scrollbar { display: none; }
+  .auth-orb { animation: authGlow 3.5s ease-in-out infinite; }
+  .auth-icon-input:focus ~ .auth-input-icon { color: #ef4444; }
+</style>
+
+<!-- Modal Container -->
+<div id="authModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/85 backdrop-blur-md p-4 transition-all duration-300">
+
+  <div class="auth-card relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-[28px] bg-gradient-to-b from-zinc-900 to-black border border-zinc-800/80 shadow-[0_25px_70px_-15px_rgba(220,38,38,0.35)] text-zinc-100 font-sans dir-rtl text-right">
+
+    <!-- نوار تزئینی بالای مودال -->
+    <div class="h-1.5 w-full bg-gradient-to-l from-red-700 via-red-500 to-red-700 rounded-t-[28px]"></div>
+
+    <!-- دکمه بستن -->
+    <button onclick="closeAuthModal()" aria-label="بستن" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/80 active:scale-90 transition-all z-10">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <div class="p-6 pt-7">
+
+      <!-- برند / لوگو -->
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="relative mb-3">
+          <div class="auth-orb absolute inset-0 rounded-2xl bg-red-600/40 blur-xl"></div>
+          <div class="relative w-14 h-14 rounded-2xl bg-zinc-800/80 border border-red-500/30 flex items-center justify-center overflow-hidden">
+            <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" class="w-8 h-8 object-contain" />
+          </div>
+        </div>
+        <h2 class="font-bold text-lg text-white font-['Montserrat']">Manhwa<span class="text-red-600">Chi</span></h2>
+        <p id="authSubtitle" class="text-xs text-zinc-400 mt-1">خوش برگشتی! برای ادامه وارد حساب خود شو</p>
+      </div>
+
+      <!-- تب‌ها (سگمنت شیشه‌ای) -->
+      <div class="flex items-center gap-1 bg-zinc-800/50 rounded-full p-1 mb-5 border border-zinc-700/40">
+        <button id="tabLoginBtn" type="button" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40">
+          ورود
+        </button>
+        <button id="tabRegisterBtn" type="button" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200">
+          عضویت جدید
+        </button>
+      </div>
+
+      <!-- باکس نمایش پیام‌ها -->
+      <div id="authMessage" class="hidden mb-4 p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all duration-300"></div>
+
+      <!-- ==================== فرم ورود ==================== -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="email" id="loginEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+        <div>
+          <label for="loginPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('loginPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+          <div class="text-left mt-1.5">
+            <button type="button" onclick="showForgotPasswordForm()" class="text-xs text-red-500 hover:text-red-400 transition-all">
+              رمز عبور را فراموش کرده‌اید؟
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="loginSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          ورود به حساب
+        </button>
+      </form>
+
+      <!-- ==================== فرم فراموشی رمز عبور ==================== -->
+      <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-4 hidden">
+        <div class="text-center mb-1">
+          <p class="text-xs text-zinc-300">ایمیل حساب خود را وارد کنید تا لینک بازیابی رمز عبور برایتان ارسال شود.</p>
+        </div>
+        <div>
+          <label for="forgotEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="email" id="forgotEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+        <button type="submit" id="forgotSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all">
+          ارسال لینک بازیابی رمز عبور
+        </button>
+        <div class="text-center">
+          <button type="button" onclick="switchAuthTab('login')" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">
+            بازگشت به ورود
+          </button>
+        </div>
+      </form>
+
+      <!-- ==================== فرم تنظیم رمز عبور جدید ==================== -->
+      <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
+        <div class="text-center mb-1">
+          <p class="text-xs text-zinc-300">رمز عبور جدید خود را وارد کنید.</p>
+        </div>
+        <div>
+          <label for="resetNewPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور جدید (حداقل ۶ کاراکتر)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="resetNewPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('resetNewPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label for="resetConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">تکرار رمز عبور جدید</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="resetConfirmPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+        <button type="submit" id="resetSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all">
+          ثبت رمز عبور جدید
+        </button>
+      </form>
+
+      <!-- ==================== فرم ثبت‌نام ==================== -->
+      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
+        <div>
+          <label for="regFullName" class="block text-xs font-medium text-zinc-400 mb-1">نام و نام خانوادگی</label>
+          <div class="relative">
+            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="text" id="regFullName" required placeholder="مثال: علی محمدی" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="regEmail" class="block text-xs font-medium text-zinc-400 mb-1">جیمیل (فقط Google Gmail)</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="email" id="regEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="regPassword" class="block text-xs font-medium text-zinc-400 mb-1">رمز عبور (حداقل ۶ کاراکتر)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="regPassword" oninput="checkPasswordStrength(this.value)" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('regPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+
+          <!-- نوار سنجش قدرت رمز عبور -->
+          <div class="mt-2">
+            <div class="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+              <div id="passwordStrengthBar" class="h-1 rounded-full bg-zinc-700 transition-all duration-300 w-0"></div>
+            </div>
+            <div id="passwordStrengthText"></div>
+          </div>
+        </div>
+
+        <div>
+          <label for="regConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1">تکرار رمز عبور</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="regConfirmPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('regConfirmPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="regSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+          ارسال کد تایید به جیمیل
+        </button>
+        <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
+      </form>
+
+      <!-- ==================== فرم ورود کد OTP ==================== -->
+      <form id="otpForm" onsubmit="handleVerifyOTP(event)" class="space-y-4 hidden">
+        <div class="text-center mb-2 flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-full bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-500">
+            <i class="fa-solid fa-envelope-open-text"></i>
+          </div>
+          <p class="text-xs text-zinc-300">کد ۶ رقمی ارسال‌شده به <span id="otpEmailDisplay" class="text-white font-semibold"></span> را وارد کنید:</p>
+        </div>
+        <div>
+          <input type="text" id="otpCode" maxlength="6" required placeholder="123456" class="w-full text-center tracking-[0.5em] text-xl font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-3 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+        </div>
+
+        <button type="submit" id="verifyOtpBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 font-bold text-sm text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-xs"></i>
+          تایید و فعال‌سازی حساب
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

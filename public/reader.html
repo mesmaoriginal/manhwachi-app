@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html class="dark" dir="rtl" lang="fa">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
+    <title id="dynamic-title">خواندن چپتر - مانهواچی</title>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            content: ["*"],
+            theme: {
+                extend: {
+                    colors: {
+                        "blood-glow": "rgba(139, 0, 0, 0.6)",
+                        "void-black": "#050505",
+                        "primary": "#ffb4a8",
+                        "primary-container": "#8b0000",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; overflow-x: hidden; user-select: none; scroll-behavior: smooth; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #8b0000; border-radius: 10px; }
+        .reading-progress-bar { transition: width 0.1s ease-out; }
+        #top-nav, #bottom-nav { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .ui-hidden #top-nav { transform: translateY(-100%); }
+        .ui-hidden #bottom-nav { transform: translateY(100%); }
+        .episode-modal { animation: modalPop 0.3s ease; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.95) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        /* استایل اختصاصی پلتفرم‌های مانهوا برای تصاویر بدون فاصله */
+        .manhwa-panel img { pointer-events: none; -webkit-user-drag: none; filter: contrast(1.02); }
+    </style>
+</head>
+<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
+
+    <!-- هدر بالایی هوشمند -->
+    <header id="top-nav" class="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-red-900/30 z-50 transition-all duration-300">
+        <div class="flex justify-between items-center px-4 py-3">
+            <div class="flex items-center gap-3">
+                <!-- دکمه هوشمند بازگشت به صفحه خود مانهوا -->
+                <button id="back-to-manhwa-btn" class="p-2 hover:text-red-400 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div>
+                    <h1 id="nav-manhwa-title" class="text-sm md:text-base font-bold leading-tight truncate max-w-[180px] md:max-w-xs">بارگذاری...</h1>
+                    <p class="text-xs text-gray-400 font-mono">چپتر <span id="nav-ch-num">1</span> • صفحه <span id="current-page">1</span>/<span id="total-pages">0</span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 md:gap-4">
+                <button onclick="toggleAutoScroll()" id="auto-scroll-btn" class="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 transition-colors">
+                    <span class="material-symbols-outlined text-base" id="auto-icon">play_arrow</span>
+                    <span id="auto-text">اسکرول خودکار</span>
+                </button>
+                <button onclick="toggleFullscreen()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-xl">fullscreen</span></button>
+                <button onclick="toggleSettings()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-xl">settings</span></button>
+            </div>
+        </div>
+        <div class="h-0.5 bg-red-900/30">
+            <div class="reading-progress-bar h-0.5 bg-gradient-to-r from-red-600 to-red-500 w-0 shadow-[0_0_10px_#b91c1c]" id="progress-bar"></div>
+        </div>
+    </header>
+
+    <!-- کانتینر اصلی مانهوا -->
+    <main class="pt-14 pb-20 w-full min-h-screen flex flex-col items-center justify-start" id="reader"></main>
+
+    <!-- بخش انتهای چپتر با پرفورمنس بالا -->
+    <div class="max-w-3xl mx-auto px-6 py-24 text-center border-t border-red-900/20" id="footer-container">
+        <div id="footer-status-icon" class="inline-flex items-center justify-center w-20 h-20 rounded-full border-2 border-red-600 mb-6 animate-pulse">
+            <span class="material-symbols-outlined text-5xl text-red-500">check_circle</span>
+        </div>
+        <h2 id="footer-status-title" class="text-3xl font-bold mb-3">چپتر به پایان رسید</h2>
+        <p id="footer-status-desc" class="text-gray-400 mb-8">عالی بود! آماده‌ای برای ادامه داستان؟</p>
+        <div id="footer-action-area">
+            <button id="next-ch-footer-btn" class="px-12 py-4 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20 rounded-2xl font-bold text-lg transition-all active:scale-95">چپتر بعدی</button>
+        </div>
+    </div>
+
+    <!-- نوار ناوبری پایینی پاپ‌آپ -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-red-900/30 z-50">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="nextPage()" class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"><span class="material-symbols-outlined">arrow_forward_ios</span><span class="text-xs">بعدی</span></button>
+            <button onclick="toggleEpisodeModal()" class="flex flex-col items-center text-red-400"><span class="material-symbols-outlined text-2xl">auto_stories</span><span class="text-xs font-medium">فصل‌ها</span></button>
+            <button onclick="prevPage()" class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"><span class="material-symbols-outlined">arrow_back_ios</span><span class="text-xs">قبلی</span></button>
+        </div>
+    </nav>
+
+    <!-- مودال لیست چپترها -->
+    <div id="episodeModal" class="fixed inset-0 bg-black/80 hidden flex items-end lg:items-center justify-center z-[100]">
+        <div class="episode-modal bg-[#0f0f0f] w-full max-w-lg lg:max-w-xl max-h-[85vh] rounded-t-3xl lg:rounded-3xl overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-5 border-b border-red-900/30">
+                <h2 class="text-xl font-bold">قسمت‌ها</h2>
+                <button onclick="toggleEpisodeModal()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-3xl">close</span></button>
+            </div>
+            <div class="flex-1 overflow-auto p-4 space-y-3 custom-scrollbar" id="modalEpisodeList"></div>
+        </div>
+    </div>
+
+    <!-- تنظیمات پرمیوم خواندن -->
+    <div id="settings-panel" class="fixed inset-0 bg-black/95 hidden flex-col z-[100]">
+        <div class="flex-1 p-6 overflow-auto max-w-xl mx-auto w-full">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-red-400"><span class="material-symbols-outlined">settings</span>تنظیمات خواندن</h2>
+            <div class="space-y-8">
+                <div>
+                    <label class="block text-sm mb-2 font-medium">روشنایی صفحه</label>
+                    <input type="range" min="20" max="100" value="100" id="brightness" class="w-full accent-red-600">
+                </div>
+                <div>
+                    <label class="block text-sm mb-2 font-medium">سرعت اسکرول خودکار</label>
+                    <input type="range" min="1" max="15" value="5" id="scroll-speed" class="w-full accent-red-600">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1"><span>بسیار آرام</span><span>سریع</span></div>
+                </div>
+                <div class="pt-4 border-t border-zinc-800">
+                    <p class="text-xs text-gray-500 text-center">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-4 border-t border-red-900/30 max-w-xl mx-auto w-full"><button onclick="toggleSettings()" class="w-full py-4 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">بستن تنظیمات</button></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        let slug = "the-forgotten-field";
+        let chNum = null; // مقدار اولیه null قرار داده شد تا حضور چپتر 0 بررسی شود
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const pathSegments = window.location.pathname.split('/').filter(seg => seg !== "");
+
+        // استخراج پارامتر چَپتر به شکلی که عدد 0 پذیرا باشد
+        if (urlParams.get('slug')) {
+            slug = urlParams.get('slug');
+            const chParam = urlParams.get('ch');
+            if (chParam !== null && chParam !== undefined && !isNaN(parseInt(chParam))) {
+                chNum = parseInt(chParam);
+            }
+        } else if (pathSegments.length >= 2) {
+            slug = pathSegments[1];
+            if (pathSegments[2] !== undefined && !isNaN(parseInt(pathSegments[2]))) {
+                chNum = parseInt(pathSegments[2]);
+            }
+        }
+
+        // دکمه هوشمند بازگشت به صفحه معرفی مانهواچی
+        document.getElementById('back-to-manhwa-btn').onclick = () => {
+            window.location.href = `/comic/${slug}`;
+        };
+
+        const { createClient } = supabase;
+        const db = createClient('https://vumnujygswotstvwljaz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
+        
+        let manhwaData = null;
+        let totalPanels = 0;
+        let isAutoScrolling = false;
+        let autoScrollAnimation = null;
+
+        const API_BASE_URL = "https://manhwachi.ir/api/get-chapter-images.php";
+
+        async function loadChapterPanels() {
+            const panelsContainer = document.getElementById('reader');
+            panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">در حال بارگذاری تصاویر...</div>`;
+
+            let authHeader = {};
+            try {
+                const { data: { session } } = await db.auth.getSession();
+                if (session?.access_token) {
+                    authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+                }
+            } catch (e) { /* کاربر لاگین نیست، مشکلی نیست */ }
+
+            try {
+                const res = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...authHeader },
+                    body: JSON.stringify({ slug, chapterNum: chNum })
+                });
+                const result = await res.json();
+
+                if (!res.ok) {
+                    panelsContainer.innerHTML = '';
+                    if (result.code === 'AUTH_REQUIRED') {
+                        panelsContainer.innerHTML = `
+                            <div class="text-center py-24 px-6">
+                                <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">lock</span>
+                                <h2 class="text-xl font-bold mb-2">برای خواندن این قسمت باید وارد حساب شوید</h2>
+                                <a href="/login.html" class="inline-block mt-4 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">ورود / ثبت‌نام</a>
+                            </div>`;
+                    } else if (result.code === 'VIP_REQUIRED') {
+                        panelsContainer.innerHTML = `
+                            <div class="text-center py-24 px-6">
+                                <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">workspace_premium</span>
+                                <h2 class="text-xl font-bold mb-2">این قسمت مخصوص کاربران VIP است</h2>
+                                <a href="/vip.html" class="inline-block mt-4 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">ارتقا به VIP</a>
+                            </div>`;
+                    } else {
+                        panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">${result.error || 'خطایی رخ داد.'}</div>`;
+                    }
+                    return;
+                }
+
+                const urls = result.urls || [];
+                if (urls.length === 0) {
+                    panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.</div>`;
+                    return;
+                }
+
+                panelsContainer.innerHTML = '';
+                urls.forEach((imgUrl, idx) => {
+                    const panel = document.createElement('div');
+                    panel.className = 'manhwa-panel w-full max-w-3xl flex justify-center items-center';
+                    panel.innerHTML = `<img src="${imgUrl}" class="w-full h-auto block opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0')" loading="${idx < 4 ? 'eager' : 'lazy'}" alt="صفحه ${idx + 1}">`;
+                    panelsContainer.appendChild(panel);
+                });
+
+                totalPanels = urls.length;
+                document.getElementById('total-pages').textContent = totalPanels;
+
+                restoreScrollPosition();
+            } catch (err) {
+                console.error(err);
+                panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">خطا در بارگذاری تصاویر. لطفاً دوباره تلاش کنید.</div>`;
+            }
+        }
+
+        async function initReader() {
+            try {
+                const res = await fetch('/data/data.json');
+                const data = await res.json();
+                manhwaData = data[slug];
+
+                if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) return;
+
+                // بررسی وجود چپتر 0 در صورت تعیین نشدن شماره چپتر از ورودی
+                if (chNum === null) {
+                    const hasZero = manhwaData.episodes.some(e => Number(e.num) === 0);
+                    chNum = hasZero ? 0 : 1;
+                }
+
+                const episode = manhwaData.episodes.find(e => Number(e.num) === chNum);
+                if (!episode) return;
+
+                document.title = `خواندن مانهوا ${manhwaData.title_fa} چپتر ${chNum} - مانهواچی`;
+                document.getElementById('nav-manhwa-title').textContent = manhwaData.title_fa;
+                document.getElementById('nav-ch-num').textContent = chNum;
+                document.getElementById('total-pages').textContent = "...";
+
+                const panelsContainer = document.getElementById('reader');
+                panelsContainer.innerHTML = '';
+                totalPanels = 0;
+
+                await loadChapterPanels();
+
+                // یافتن هوشمند چپتر بعدی (اعم از اینکه چپتر بعدی 1 باشد یا اعداد بالاتر)
+                const sortedEpisodes = [...manhwaData.episodes].sort((a, b) => Number(a.num) - Number(b.num));
+                const currentIndex = sortedEpisodes.findIndex(e => Number(e.num) === chNum);
+                const nextEpisode = (currentIndex !== -1 && currentIndex < sortedEpisodes.length - 1) ? sortedEpisodes[currentIndex + 1] : null;
+
+                if (nextEpisode) {
+                    document.getElementById('next-ch-footer-btn').onclick = () => {
+                        window.location.href = `/comic/${slug}/${nextEpisode.num}`;
+                    };
+                } else {
+                    document.getElementById('footer-status-icon').className = "inline-flex items-center justify-center w-20 h-20 rounded-full border-2 border-amber-500 mb-6 animate-pulse";
+                    document.getElementById('footer-status-icon').innerHTML = '<span class="material-symbols-outlined text-5xl text-amber-500">schedule</span>';
+                    document.getElementById('footer-status-title').textContent = "به انتهای داستان رسیدید";
+                    document.getElementById('footer-status-desc').textContent = "چپتر بعدی هنوز منتشر نشده است. مانهواچی به زودی آن را اضافه خواهد کرد!";
+                    document.getElementById('footer-action-area').innerHTML = `<span class="px-6 py-3 bg-zinc-900 border border-white/10 text-gray-400 rounded-2xl font-medium inline-block">در انتظار پارت جدید ⏳</span>`;
+                }
+
+                incrementChapterView();
+                saveUserBookmark();
+                saveReadingHistoryEntry();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function saveUserBookmark() {
+            localStorage.setItem(`bookmark_${slug}`, chNum);
+        }
+
+        // ثبت آخرین چپتر خونده‌شده در تاریخچه‌ی مطالعه (روی همین گوشی/مرورگر - localStorage)
+        // این کلید و ساختار دقیقاً همونیه که صفحه‌ی پروفایل (profile.js) می‌خونه
+        function saveReadingHistoryEntry() {
+            const READING_HISTORY_KEY = 'manhwachi_reading_history';
+            const READING_HISTORY_LIMIT = 40;
+
+            const coverPath = manhwaData?.cover_image ? `/manhwas/${slug}/${manhwaData.cover_image}` : '';
+
+            let history = [];
+            try {
+                const raw = JSON.parse(localStorage.getItem(READING_HISTORY_KEY));
+                if (Array.isArray(raw)) history = raw;
+            } catch (e) {
+                history = [];
+            }
+
+            history = history.filter(h => h.slug !== slug); // یک ردیف برای هر مانهوا، همیشه آخرین چپتر
+            history.unshift({
+                slug,
+                title: manhwaData?.title_fa || slug,
+                cover: coverPath,
+                chapter_number: chNum,
+                chapter_title: '',
+                url: `/comic/${slug}/${chNum}`,
+                timestamp: Date.now()
+            });
+
+            if (history.length > READING_HISTORY_LIMIT) {
+                history = history.slice(0, READING_HISTORY_LIMIT);
+            }
+
+            try {
+                localStorage.setItem(READING_HISTORY_KEY, JSON.stringify(history));
+            } catch (e) {
+                console.error('ذخیره‌ی تاریخچه‌ی خواندن با خطا مواجه شد:', e);
+            }
+        }
+
+        window.addEventListener('scroll', () => {
+            if(totalPanels > 0 && chNum !== null) {
+                localStorage.setItem(`scroll_pos_${slug}_${chNum}`, window.scrollY);
+            }
+        });
+
+        function restoreScrollPosition() {
+            const savedScroll = localStorage.getItem(`scroll_pos_${slug}_${chNum}`);
+            if (savedScroll) {
+                setTimeout(() => {
+                    window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+                }, 100);
+            }
+        }
+
+        function renderModalEpisodes() {
+            const container = document.getElementById('modalEpisodeList');
+            container.innerHTML = '';
+            if (!manhwaData) return;
+
+            manhwaData.episodes.forEach(ep => {
+                const epNum = Number(ep.num);
+                const isCurrent = epNum === chNum;
+                const div = document.createElement('div');
+                div.className = `flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98] ${isCurrent ? 'bg-red-950/40 border border-red-800/50' : 'bg-zinc-900 hover:bg-zinc-800 cursor-pointer'}`;
+                let statusHTML = ep.free 
+                    ? `<span class="text-green-400 text-sm font-bold">${isCurrent ? 'در حال خواندن' : 'رایگان'}</span>`
+                    : `<span class="text-amber-400 text-sm font-medium flex items-center gap-1"><span class="material-symbols-outlined">lock</span>قفل</span>`;
+
+                div.innerHTML = `
+                    <div class="w-16 h-12 bg-zinc-800 rounded-xl overflow-hidden relative flex-shrink-0">
+                        <img src="/manhwas/${slug}/chapterPictures/chapterpicture${epNum}.png" class="w-full h-full object-cover" alt="Ep ${epNum}">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium truncate ${isCurrent ? 'text-red-400' : ''}">قسمت ${epNum}</p>
+                        <p class="text-xs text-gray-500">${ep.date}</p>
+                    </div>
+                    ${statusHTML}
+                `;
+                if(!isCurrent) {
+                    div.onclick = () => {
+                        toggleEpisodeModal();
+                        if (ep.free) window.location.href = `/comic/${slug}/${epNum}`;
+                        else alert(`این قسمت قفل است.`);
+                    };
+                }
+                container.appendChild(div);
+            });
+        }
+
+        function toggleEpisodeModal() {
+            const modal = document.getElementById('episodeModal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) renderModalEpisodes();
+        }
+
+        let isUIHidden = true;
+        function toggleUI() {
+            isUIHidden = !isUIHidden;
+            if (isUIHidden) document.body.classList.add('ui-hidden');
+            else document.body.classList.remove('ui-hidden');
+        }
+
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = Math.min((scrollTop / docHeight) * 100, 100);
+            document.getElementById('progress-bar').style.width = `${scrollPercent}%`;
+
+            if (totalPanels > 0 && docHeight > 0) {
+                const currentPage = Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
+                document.getElementById('current-page').textContent = currentPage;
+            }
+        }
+
+        document.getElementById('reader').addEventListener('click', (e) => {
+            if (e.target.tagName === 'IMG' || e.target.closest('.manhwa-panel')) toggleUI();
+        });
+
+        function toggleAutoScroll() {
+            isAutoScrolling = !isAutoScrolling;
+            const btn = document.getElementById('auto-scroll-btn');
+            const icon = document.getElementById('auto-icon');
+            const text = document.getElementById('auto-text');
+            if (isAutoScrolling) {
+                icon.textContent = 'pause'; text.textContent = 'توقف'; btn.classList.add('text-red-500');
+                startAutoScroll();
+            } else {
+                icon.textContent = 'play_arrow'; text.textContent = 'اسکرول خودکار'; btn.classList.remove('text-red-500');
+                cancelAnimationFrame(autoScrollAnimation);
+            }
+        }
+
+        function startAutoScroll() {
+            function animate() {
+                if (!isAutoScrolling) return;
+                const speed = Number(document.getElementById('scroll-speed').value);
+                window.scrollBy(0, speed * 0.15);
+                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+                    toggleAutoScroll(); return;
+                }
+                autoScrollAnimation = requestAnimationFrame(animate);
+            }
+            autoScrollAnimation = requestAnimationFrame(animate);
+        }
+
+        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        function toggleSettings() { document.getElementById('settings-panel').classList.toggle('hidden'); }
+        function nextPage() { window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' }); }
+        function prevPage() { window.scrollBy({ top: -window.innerHeight * 0.85, behavior: 'smooth' }); }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+            if (e.key === 'ArrowLeft') prevPage();
+        });
+
+        window.addEventListener('scroll', updateProgress);
+
+        async function incrementChapterView() {
+            try { await db.rpc('increment_manhwa_views', { p_slug: slug }); } catch (err) { console.error(err); }
+        }
+
+        window.onload = () => {
+            initReader();
+            
+            document.getElementById('brightness').addEventListener('input', e => {
+                document.getElementById('reader').style.filter = `brightness(${e.target.value}%)`;
+            });
+        };
+    </script>
+</body>
+</html>

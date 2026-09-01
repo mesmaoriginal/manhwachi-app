@@ -1,0 +1,185 @@
+
+
+       <div class="profile">
+    <!-- کانتینر اصلی محتوای پروفایل (حتما باید این id وجود داشته باشه) -->
+    <div id="mainProfileContent">
+
+        <!-- ===================== کارت عضویت خواننده ===================== -->
+        <div class="panel id-card mb-8 shadow-2xl">
+            <div class="id-card__band"></div>
+
+            <div class="id-card__body">
+                <div class="id-card__identity">
+                    <!-- عکس پروفایل با امکان آپلود -->
+                    <div class="relative group">
+                        <div id="avatarContainer" class="avatar-frame flex items-center justify-center text-red-500 font-bold">
+                            <span id="avatarFallback" class="material-symbols-outlined text-6xl">account_circle</span>
+                            <img id="avatarImg" src="" alt="Avatar" class="w-full h-full object-cover hidden" />
+                        </div>
+
+                        <!-- دکمه تغییر عکس -->
+                        <label for="avatarInput" class="absolute bottom-1 left-1 bg-red-600 hover:bg-red-500 text-white p-2 rounded-xl cursor-pointer shadow-lg transition-transform hover:scale-110 flex items-center justify-center border border-white/20" title="تغییر عکس پروفایل">
+                            <span class="material-symbols-outlined text-sm">photo_camera</span>
+                        </label>
+                        <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" onchange="uploadAvatar(event)" />
+
+                        <!-- دکمه حذف عکس پروفایل — فقط وقتی عکسی ست شده باشه نمایش داده می‌شه -->
+                        <button type="button" id="removeAvatarBtn" onclick="removeAvatar()" title="حذف عکس پروفایل" class="hidden absolute bottom-1 right-1 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white p-2 rounded-xl shadow-lg transition-all flex items-center justify-center border border-white/20">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </div>
+
+                    <!-- نام و ایمیل -->
+                    <div class="id-card__meta">
+                        <span class="eyebrow-tag mb-1.5 block">شناسه‌ی خواننده</span>
+                        <div class="flex items-center flex-wrap gap-2">
+                            <h1 id="dispUsername" class="text-xl font-extrabold text-white">در حال بارگذاری...</h1>
+                            <span id="vipBadge" class="hidden px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">اشتراک فعال</span>
+                        </div>
+                        <p id="dispEmail" class="text-xs text-zinc-400 mt-1 dir-ltr text-right">---</p>
+                        <div class="text-[11px] text-zinc-500 mt-2 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm text-red-500">calendar_month</span>
+                            عضویت از <span id="dispCreatedAt" class="mono text-zinc-300">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تیکه‌ی کنده‌شده‌ی کارت با شماره عضویت -->
+                <div class="id-card__stub">
+                    <span class="id-card__stub-number mono">#<span id="dispMemberId">------</span></span>
+                    <div class="id-card__barcode"></div>
+                    <span class="id-card__stub-label">عضو مانهواچی</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== کارت‌های دسترسی سریع ===================== -->
+        <div class="quick-nav grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <a href="#bookmarksSection" class="panel">
+                <div class="w-10 h-10 rounded-xl bg-red-600/10 text-red-500 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined">bookmark</span>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-white">علامت‌گذاری‌ها</div>
+                    <div id="bookmarksCountHint" class="text-[11px] text-zinc-400 mt-0.5">مانهواهای ذخیره شده شما</div>
+                </div>
+            </a>
+
+            <a href="#historySection" class="panel">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined">history</span>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-white">تاریخچه خواندن</div>
+                    <div id="historyCountHint" class="text-[11px] text-zinc-400 mt-0.5">آخرین چاپترهای مطالعه شده</div>
+                </div>
+            </a>
+
+            <a href="#commentsSection" class="panel">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined">chat</span>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-white">دیدگاه‌های من</div>
+                    <div id="commentsCountHint" class="text-[11px] text-zinc-400 mt-0.5">مدیریت نظرات ثبت شده</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- ===================== وضعیت VIP + تنظیمات ===================== -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+            <!-- بلیط اشتراک VIP -->
+            <div class="panel ticket-pass">
+                <div>
+                    <span class="eyebrow-tag mb-3 block">وضعیت حساب</span>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span id="vipIcon" class="material-symbols-outlined text-zinc-500 text-3xl">workspace_premium</span>
+                        <h2 class="font-bold text-sm text-white">اشتراک ویژه</h2>
+                    </div>
+                    <div id="vipStatusText" class="text-xs text-zinc-400 leading-relaxed mb-6">
+                        در حال بررسی وضعیت اشتراک...
+                    </div>
+                </div>
+
+                <a href="/vip.html" id="vipActionBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center">
+                    ارتقاء به VIP
+                </a>
+            </div>
+
+            <!-- فرم ویرایش پروفایل -->
+            <div class="panel p-6 md:p-7 md:col-span-2">
+                <h2 class="font-bold text-sm text-white mb-4 flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                    <span class="eyebrow-tag">تنظیمات حساب</span>
+                </h2>
+
+                <form onsubmit="handleUpdateProfile(event)" class="space-y-4">
+                    <div id="msgBox" class="hidden p-3 rounded-xl text-xs"></div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">نام نمایش (نام و نام خانوادگی)</label>
+                        <input type="text" id="usernameInput" required class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all placeholder-zinc-600" placeholder="نام خود را وارد کنید..." />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">آدرس تصویر پروفایل (اختیاری)</label>
+                        <input type="url" id="avatarUrlInput" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all dir-ltr text-left placeholder-zinc-600" placeholder="https://example.com/avatar.jpg" />
+                        <span class="text-[11px] text-zinc-500 mt-1 block">می‌توانید مستقیم فایل آپلود کنید یا لینک عکس قرار دهید.</span>
+                    </div>
+
+                    <div class="pt-4 flex items-center gap-3">
+                        <button type="submit" id="saveBtn" class="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 font-bold text-xs text-white transition-all shadow-lg shadow-red-950/40">
+                            ذخیره تغییرات
+                        </button>
+                        <button type="button" onclick="handleLogout()" class="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">logout</span>
+                            خروج
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- ===================== علامت‌گذاری‌های من ===================== -->
+        <div id="bookmarksSection" class="panel p-6 md:p-7 mb-6 scroll-mt-24">
+            <span class="eyebrow-tag mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-500 text-lg align-middle">bookmark</span>
+                علامت‌گذاری‌های من
+            </span>
+            <div id="bookmarksList" class="shelf-grid mt-4">
+                <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
+            </div>
+        </div>
+
+        <!-- ===================== تاریخچه خواندن (فقط روی همین گوشی/مرورگر) ===================== -->
+        <div id="historySection" class="panel p-6 md:p-7 mb-6 scroll-mt-24">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                <span class="eyebrow-tag flex items-center gap-2">
+                    <span class="material-symbols-outlined text-red-500 text-lg align-middle">history</span>
+                    تاریخچه خواندن
+                </span>
+                <button type="button" onclick="clearReadingHistory()" class="text-[11px] text-zinc-500 hover:text-red-400 transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">delete_sweep</span>
+                    پاک کردن تاریخچه
+                </button>
+            </div>
+            <p class="text-[11px] text-zinc-500 mb-4">این تاریخچه فقط روی همین گوشی یا مرورگر ذخیره می‌شه و بین دستگاه‌ها سینک نمی‌شه.</p>
+            <div id="historyList" class="shelf-grid mt-4">
+                <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
+            </div>
+        </div>
+
+        <!-- ===================== دیدگاه‌های من ===================== -->
+        <div id="commentsSection" class="panel p-6 md:p-7 scroll-mt-24">
+            <span class="eyebrow-tag mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-500 text-lg align-middle">chat</span>
+                دیدگاه‌های من
+            </span>
+            <div id="commentsList" class="space-y-3 mt-4">
+                <p class="text-xs text-zinc-500">در حال بارگذاری...</p>
+            </div>
+        </div>
+
+    </div>
+</div>

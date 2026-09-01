@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="dark" lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>پنل مدیریت کامنت‌ها | ManhwaChi Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { primary: "#DC2626", surface: "#000000", "surface-elevated": "#161616", "surface-container": "#1f1f1f" },
+                    fontFamily: { sans: ['Vazirmatn', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-gray-200 font-sans min-h-screen p-4 md:p-8">
+
+    <!-- Auth Modal (فرم ورود) -->
+    <div id="loginSection" class="max-w-md mx-auto mt-20 bg-surface-elevated p-8 rounded-3xl border border-white/10 shadow-2xl">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-white mb-2">ورود ادمین‌ها</h1>
+            <p class="text-xs text-gray-400">ورود به پنل مدیریت نظرات مانهواچی</p>
+        </div>
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-xs mb-2">ایمیل ادمین</label>
+                <input type="email" id="adminEmail" required class="w-full bg-surface-container border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary">
+            </div>
+            <div>
+                <label class="block text-xs mb-2">رمز عبور</label>
+                <input type="password" id="adminPassword" required class="w-full bg-surface-container border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary">
+            </div>
+            <button type="submit" id="loginBtn" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-red-700 transition flex justify-center items-center gap-2">
+                ورود به پنل
+            </button>
+        </form>
+    </div>
+
+    <!-- Admin Panel Content (بعد از ورود) -->
+    <div id="adminDashboard" class="max-w-6xl mx-auto hidden space-y-6">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center bg-surface-elevated p-5 rounded-2xl border border-white/10 shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-400">خوش آمدید،</span>
+                    <h2 id="adminNameTag" class="text-lg font-bold text-white flex items-center gap-2"></h2>
+                </div>
+            </div>
+            <button id="logoutBtn" class="px-4 py-2 bg-red-600/20 text-primary border border-primary/30 rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">logout</span> خروج
+            </button>
+        </header>
+
+        <!-- Dynamic Stats Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-surface-elevated p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-gray-400">کامنت‌های در انتظار</p>
+                    <p id="statPending" class="text-2xl font-bold text-yellow-500 mt-1">0</p>
+                </div>
+                <span class="material-symbols-outlined text-yellow-500/20 text-4xl">hourglass_empty</span>
+            </div>
+            <div class="bg-surface-elevated p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-gray-400">کامنت‌های تایید شده</p>
+                    <p id="statApproved" class="text-2xl font-bold text-emerald-500 mt-1">0</p>
+                </div>
+                <span class="material-symbols-outlined text-emerald-500/20 text-4xl">check_circle</span>
+            </div>
+            <div class="bg-surface-elevated p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-gray-400">پاسخ‌های ثبت‌شده ادمین‌ها</p>
+                    <p id="statReplies" class="text-2xl font-bold text-primary mt-1">0</p>
+                </div>
+                <span class="material-symbols-outlined text-primary/20 text-4xl">forum</span>
+            </div>
+        </div>
+
+        <!-- Controls (Tabs & Search) -->
+        <div class="bg-surface-elevated p-4 rounded-2xl border border-white/10 space-y-4">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <!-- Tabs -->
+                <div class="flex gap-2 border-b border-white/10 pb-2">
+                    <button id="tabPending" onclick="switchTab('pending')" class="px-4 py-2 text-sm font-bold text-primary border-b-2 border-primary transition flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">pending_actions</span> در انتظار تایید
+                    </button>
+                    <button id="tabApproved" onclick="switchTab('approved')" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">verified</span> تایید شده‌ها
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative min-w-[260px]">
+                    <span class="material-symbols-outlined absolute right-3 top-2.5 text-gray-500 text-sm">search</span>
+                    <input type="text" id="searchInput" oninput="renderComments()" placeholder="جستجو بر اساس نام، متن یا اسلاگ..." class="w-full bg-surface-container border border-white/10 rounded-xl pr-9 pl-4 py-2 text-xs text-white focus:outline-none focus:border-primary">
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Container -->
+        <div id="adminCommentsList" class="space-y-4"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const { createClient } = supabase;
+        const db = createClient('https://vumnujygswotstvwljaz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
+
+        let currentAdmin = null;
+        let currentTab = 'pending';
+        let cachedMessages = [];
+        let cachedReplies = [];
+
+        async function checkAuth() {
+            const { data: { session } } = await db.auth.getSession();
+            if (session) {
+                const { data: adminData } = await db.from('admins').select('*').eq('id', session.user.id).single();
+                if (adminData) {
+                    currentAdmin = adminData;
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('adminDashboard').classList.remove('hidden');
+                    document.getElementById('adminNameTag').innerHTML = `${adminData.display_name} <span class="text-xs px-2 py-0.5 bg-primary/20 text-primary border border-primary/40 rounded-md font-semibold">${adminData.role_tag}</span>`;
+                    
+                    setupRealtime();
+                    loadDashboardData();
+                } else {
+                    alert("حساب کاربری شما دسترسی ادمین ندارد.");
+                    await db.auth.signOut();
+                }
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> در حال بررسی...`;
+
+            const { error } = await db.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert("ورود ناموفق: " + error.message);
+                btn.disabled = false;
+                btn.innerHTML = "ورود به پنل";
+            } else {
+                checkAuth();
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await db.auth.signOut();
+            window.location.reload();
+        });
+
+        // مدیریت تغییر تب‌ها
+        window.switchTab = function(tab) {
+            currentTab = tab;
+            const pBtn = document.getElementById('tabPending');
+            const aBtn = document.getElementById('tabApproved');
+
+            if (tab === 'pending') {
+                pBtn.className = "px-4 py-2 text-sm font-bold text-primary border-b-2 border-primary transition flex items-center gap-2";
+                aBtn.className = "px-4 py-2 text-sm font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition flex items-center gap-2";
+            } else {
+                aBtn.className = "px-4 py-2 text-sm font-bold text-primary border-b-2 border-primary transition flex items-center gap-2";
+                pBtn.className = "px-4 py-2 text-sm font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition flex items-center gap-2";
+            }
+            renderComments();
+        }
+
+        async function loadDashboardData() {
+            const list = document.getElementById('adminCommentsList');
+            if (cachedMessages.length === 0) {
+                list.innerHTML = '<div class="text-center py-12 text-gray-500 flex justify-center items-center gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span> در حال دریافت اطلاعات...</div>';
+            }
+
+            const [{ data: messages }, { data: replies }] = await Promise.all([
+                db.from('messages').select('*').order('created_at', { ascending: false }),
+                db.from('replies').select('*').order('created_at', { ascending: true })
+            ]);
+
+            cachedMessages = messages || [];
+            cachedReplies = replies || [];
+
+            updateStats();
+            renderComments();
+        }
+
+        function updateStats() {
+            const pendingCount = cachedMessages.filter(m => !m.approved).length;
+            const approvedCount = cachedMessages.filter(m => m.approved).length;
+
+            document.getElementById('statPending').textContent = pendingCount;
+            document.getElementById('statApproved').textContent = approvedCount;
+            document.getElementById('statReplies').textContent = cachedReplies.length;
+        }
+
+        function renderComments() {
+            const list = document.getElementById('adminCommentsList');
+            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            // فیلتر بر اساس تب فعال
+            let filtered = cachedMessages.filter(m => currentTab === 'pending' ? !m.approved : m.approved);
+
+            // فیلتر بر اساس جستجو
+            if (searchQuery) {
+                filtered = filtered.filter(m => 
+                    (m.name && m.name.toLowerCase().includes(searchQuery)) ||
+                    (m.text && m.text.toLowerCase().includes(searchQuery)) ||
+                    (m.manhwa_slug && m.manhwa_slug.toLowerCase().includes(searchQuery))
+                );
+            }
+
+            if (!filtered.length) {
+                list.innerHTML = `<p class="text-center py-12 text-gray-500">هیچ نظری در این بخش یافت نشد.</p>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            filtered.forEach(msg => {
+                const repliesForMsg = cachedReplies.filter(r => r.message_id === msg.id);
+
+                const repliesHtml = repliesForMsg.map(reply => `
+                    <div class="bg-surface-container border border-white/5 rounded-xl p-3 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-white flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-xs text-primary">shield</span>
+                                ${escapeHtml(reply.admin_name || 'ادمین')} 
+                                <span class="text-[10px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">${escapeHtml(reply.admin_role || 'پاسخ')}</span>
+                            </span>
+                            <span class="text-[10px] text-gray-500 font-mono" dir="ltr">${new Date(reply.created_at).toLocaleDateString('fa-IR')}</span>
+                        </div>
+                        <p class="text-gray-300 pr-5 leading-relaxed">${escapeHtml(reply.reply_text)}</p>
+                    </div>
+                `).join('');
+
+                const card = document.createElement('div');
+                card.className = "bg-surface-elevated p-5 rounded-2xl border border-white/10 space-y-4 hover:border-white/20 transition shadow-sm";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-bold text-white text-base">${escapeHtml(msg.name)}</span>
+                            <span class="text-xs text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md mr-2">اسلاگ: ${escapeHtml(msg.manhwa_slug)}</span>
+                        </div>
+                        <span class="text-xs text-gray-500 font-mono" dir="ltr">${new Date(msg.created_at).toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'})} - ${new Date(msg.created_at).toLocaleDateString('fa-IR')}</span>
+                    </div>
+
+                    <p class="text-sm text-gray-200 leading-relaxed bg-surface-container/50 p-3 rounded-xl border border-white/5">${escapeHtml(msg.text)}</p>
+                    
+                    ${repliesHtml ? `<div class="space-y-2 pt-2 border-r-2 border-primary/40 pr-3">${repliesHtml}</div>` : ''}
+
+                    <div class="pt-3 border-t border-white/5 space-y-3">
+                        <textarea id="reply-input-${msg.id}" rows="2" class="w-full bg-surface-container border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-primary placeholder:text-gray-600" placeholder="پاسخ ادمین به این نظر (اختیاری)..."></textarea>
+                        
+                        <div class="flex gap-2 justify-end flex-wrap">
+                            <button onclick="deleteComment(${msg.id})" class="px-4 py-2 bg-red-950/40 text-red-400 border border-red-800/40 rounded-xl text-xs font-bold hover:bg-red-900/60 transition flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">delete</span> حذف
+                            </button>
+
+                            ${!msg.approved ? `
+                                <button onclick="approveOnly(${msg.id})" class="px-4 py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold hover:bg-emerald-600 hover:text-white transition flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">check</span> فقط تایید کامنت
+                                </button>
+                                <button onclick="approveAndReply(${msg.id})" class="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-red-700 transition flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">send</span> تایید و ارسال پاسخ
+                                </button>
+                            ` : `
+                                <button onclick="sendReplyOnly(${msg.id})" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">send</span> ارسال پاسخ جدید
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // ۱. فقط تایید نظر بدون ارسال پاسخ
+        window.approveOnly = async function(msgId) {
+            const { error } = await db.from('messages').update({ approved: true }).eq('id', msgId);
+            if (error) return alert("خطا در تایید نظر: " + error.message);
+            loadDashboardData();
+        }
+
+        // ۲. تایید نظر + ارسال پاسخ ادمین همزمان
+        window.approveAndReply = async function(msgId) {
+            const replyText = document.getElementById(`reply-input-${msgId}`).value.trim();
+            if (!replyText) return alert("لطفا متن پاسخ را وارد کنید یا از دکمه «فقط تایید کامنت» استفاده کنید.");
+
+            const { error: updateErr } = await db.from('messages').update({ approved: true }).eq('id', msgId);
+            if (updateErr) return alert("خطا در تایید نظر: " + updateErr.message);
+
+            await db.from('replies').insert({
+                message_id: msgId,
+                reply_text: replyText,
+                admin_id: currentAdmin.id,
+                admin_name: currentAdmin.display_name,
+                admin_role: currentAdmin.role_tag
+            });
+
+            loadDashboardData();
+        }
+
+        // ۳. ارسال پاسخ جدید برای کامنت‌هایی که قبلاً تایید شده‌اند
+        window.sendReplyOnly = async function(msgId) {
+            const replyText = document.getElementById(`reply-input-${msgId}`).value.trim();
+            if (!replyText) return alert("لطفا متن پاسخ را بنویسید.");
+
+            const { error: replyErr } = await db.from('replies').insert({
+                message_id: msgId,
+                reply_text: replyText,
+                admin_id: currentAdmin.id,
+                admin_name: currentAdmin.display_name,
+                admin_role: currentAdmin.role_tag
+            });
+
+            if (replyErr) return alert("خطا در ثبت پاسخ: " + replyErr.message);
+
+            document.getElementById(`reply-input-${msgId}`).value = '';
+            loadDashboardData();
+        }
+
+        // ۴. حذف نظر
+        window.deleteComment = async function(msgId) {
+            if (!confirm("آیا از حذف این نظر اطمینان دارید؟")) return;
+            await db.from('messages').delete().eq('id', msgId);
+            loadDashboardData();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function setupRealtime() {
+            db.channel('admin_realtime_messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, loadDashboardData).subscribe();
+            db.channel('admin_realtime_replies').on('postgres_changes', { event: '*', schema: 'public', table: 'replies' }, loadDashboardData).subscribe();
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

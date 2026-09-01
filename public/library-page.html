@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کتابخانه مانهواچی</title>
+    <style>
+        :root {
+            --primary-gold: #FFD54F;
+            --shadow-gold: rgba(255, 213, 79, 0.45);
+            --overlay-red: rgba(28, 4, 4, 0.93);
+            --bg-dark: #0a0a0a;
+            --card-bg: #141414;
+            --text-light: #ffffff;
+            --text-muted: #b3b3b3;
+            --border-glow: rgba(255, 255, 255, 0.08);
+            --transition-smooth: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* هدر وب‌سایت */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* دکمه بازگشت هدر */
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .back-button svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* گرید کارت‌ها */
+        .manhwa-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1100px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        /* کارت مانهوا */
+        .manhwa-card {
+            position: relative;
+            aspect-ratio: 2 / 3;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 
+                        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            user-select: none;
+            background-color: var(--card-bg);
+            transition: var(--transition-smooth);
+            will-change: transform;
+            animation: cardAppear 0.4s ease forwards;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        @keyframes cardAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .manhwa-card:hover:not(.preview-mode) {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 
+                        0 0 0 1px var(--border-glow);
+        }
+
+        .manhwa-card.clicked-twice {
+            transform: scale(0.96) !important;
+            transition: transform 0.15s ease;
+        }
+
+        .card-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .manhwa-card:hover:not(.preview-mode) .card-cover {
+            transform: scale(1.04);
+        }
+
+        .card-ui {
+            position: absolute;
+            transition: var(--transition-smooth);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .manhwa-title {
+            top: 16px;
+            left: 16px;
+            background: rgba(10, 10, 10, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), 
+                        inset 0 1px 1px rgba(255,255,255,0.1);
+            z-index: 4;
+            max-width: 80%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .manhwa-card.preview-mode .manhwa-title {
+            color: var(--primary-gold);
+            background: rgba(10, 10, 10, 0.85);
+            text-shadow: 0 0 12px var(--shadow-gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5), 
+                        inset 0 1px 1px rgba(255,213,79,0.2);
+        }
+
+        .bottom-info {
+            bottom: 18px;
+            width: 100%;
+            padding: 0 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .genre, .origin, .rating {
+            background: rgba(10, 10, 10, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), 
+                        inset 0 1px 1px rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rating {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            color: var(--primary-gold);
+        }
+
+        .manhwa-card.preview-mode .bottom-info,
+        .manhwa-card.preview-mode .rating {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+        }
+
+        .red-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay-red);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        visibility 0.35s;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .manhwa-card.preview-mode .red-overlay {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .synopsis {
+            font-size: 0.85rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #e6e6e6;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            font-weight: 400;
+        }
+
+        .click-again-hint {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary-gold);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 14px;
+            width: 85%;
+            letter-spacing: -0.2px;
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.85; text-shadow: 0 0 5px rgba(255,213,79,0.1); }
+            50% { opacity: 1; text-shadow: 0 0 12px var(--shadow-gold); }
+        }
+
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 4;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ffd54f, #ffb300);
+            transform-origin: right;
+            box-shadow: 0 0 8px var(--shadow-gold);
+        }
+
+        .manhwa-card.preview-mode .progress-container {
+            opacity: 1;
+        }
+
+        .manhwa-card.preview-mode .progress-bar {
+            animation: shrinkBar 4s linear forwards;
+        }
+
+        @keyframes shrinkBar {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        /* استایل مینی‌مال صفحه‌بندی (Pagination) */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0 60px 0;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .pagination-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text-light);
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            user-select: none;
+        }
+
+        .pagination-btn:hover:not(.disabled):not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* کلید صفحه فعال */
+        .pagination-btn.active {
+            background: var(--primary-gold);
+            color: #000;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 15px var(--shadow-gold);
+        }
+
+        /* کلیدهای غیرفعال (قبلی در صفحه اول یا بعدی در صفحه آخر) */
+        .pagination-btn.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* استایل فلش‌های ناوبری */
+        .pagination-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* مدیا کوئری‌ها */
+        @media (max-width: 960px) {
+            .header-section { padding: 0 10px; }
+            .manhwa-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+                padding: 0 10px;
+            }
+            h2 { font-size: 1.7rem; }
+            .back-button { padding: 8px 16px; font-size: 0.85rem; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 30px 12px; }
+            .header-section { margin-bottom: 25px; }
+            h2 { font-size: 1.3rem; gap: 8px; }
+            .back-button {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+                border-radius: 8px;
+            }
+            .back-button svg { width: 14px; height: 14px; }
+            .manhwa-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+            .manhwa-title { 
+                font-size: 0.8rem; 
+                padding: 6px 10px; 
+                top: 10px; 
+                left: 10px; 
+            }
+            .bottom-info { bottom: 12px; padding: 0 10px; }
+            .genre, .origin, .rating {
+                font-size: 0.72rem;
+                padding: 4px 8px;
+            }
+            .rating { bottom: 12px; }
+            .red-overlay { padding: 14px; }
+            .synopsis { font-size: 0.78rem; -webkit-line-clamp: 4; margin-bottom: 15px; }
+            .click-again-hint { font-size: 0.7rem; padding-top: 10px; }
+            .pagination-container { gap: 5px; padding: 8px 12px; margin-bottom: 40px;}
+            .pagination-btn { min-width: 32px; height: 32px; font-size: 0.8rem; border-radius: 8px;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h2>📖 کتابخانه مانهواچی</h2>
+        <a class="back-button" onclick="goBack()">
+            <span>بازگشت</span>
+            <svg viewBox="0 0 24 24">
+                <path d="M5 12h14M5 12l6 6M5 12l6-6"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- گرید مانهواها -->
+    <div class="manhwa-grid" id="manhwaGrid"></div>
+
+    <!-- ناوبری صفحه‌بندی -->
+    <div class="pagination-container" id="pagination"></div>
+
+    <script>
+        const grid = document.getElementById('manhwaGrid');
+        const pagination = document.getElementById('pagination');
+
+        let manhwaList = [];      // لیست کامل مانهواها
+        let currentPage = 1;      // صفحه پیش‌فرض
+        const LIMIT = 9;          // نمایش ۹ مانهوا در هر صفحه (مشابه نتایج گوگل)
+
+        function goBack() {
+            if (document.referrer !== "") {
+                window.history.back();
+            } else {
+                window.location.href = "/";
+            }
+        }
+
+        async function loadManhwas() {
+            try {
+                const response = await fetch('data/manhwas.json');
+                const data = await response.json();
+
+                // تبدیل آبجکت به آرایه
+                manhwaList = Object.keys(data).map(slug => ({
+                    slug: slug,
+                    ...data[slug]
+                }));
+
+                // رندر کردن صفحه اول
+                renderPage(1);
+
+            } catch (error) {
+                console.error("خطا در بارگذاری اطلاعات مانهواها:", error);
+                grid.innerHTML = `<p style="color: #ff5252; text-align: center; width: 100%; font-weight: bold; margin-top: 40px;">خطا در لود اطلاعات کتابخانه مانهواچی!</p>`;
+                pagination.style.display = 'none';
+            }
+        }
+
+        // تابع رندر مانهواهای صفحه خاص
+        function renderPage(page) {
+            currentPage = page;
+            grid.innerHTML = ''; // پاکسازی گرید قبلی
+
+            const startIndex = (page - 1) * LIMIT;
+            const endIndex = startIndex + LIMIT;
+            const currentBatch = manhwaList.slice(startIndex, endIndex);
+
+            currentBatch.forEach(manhwa => {
+                const cardHTML = createCardHTML(manhwa.slug, manhwa);
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+
+            // ساخت و آپدیت دکمه‌های صفحه‌بندی
+            renderPagination();
+
+            // فعال‌سازی کلیک کارت‌ها
+            setupCardEvents();
+
+            // اسکرول نرم به بالا هنگام تغییر صفحه
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // تابع تولید کدهای HTML کارت مانهوا
+        function createCardHTML(slug, manhwa) {
+            const firstGenre = manhwa.genres && manhwa.genres.length > 0 ? manhwa.genres[0] : 'نامشخص';
+            const description = manhwa.description ? manhwa.description.trim() : 'توضیحاتی برای این مانهوا ثبت نشده است.';
+
+            return `
+                <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${slug}">
+                    <img src="manhwas/${slug}/${manhwa.cover_image}" alt="${manhwa.title_fa}" class="card-cover" onerror="this.src='https://picsum.photos/400/600?random=${slug}'">
+                    
+                    <div class="card-ui manhwa-title">${manhwa.title_fa}</div>
+                    
+                    <div class="card-ui bottom-info">
+                        <span class="genre">${firstGenre}</span>
+                        <span class="origin">${manhwa.origin}</span>
+                    </div>
+                    <div class="card-ui rating">⭐ ${manhwa.score || '0.0'}</div>
+
+                    <div class="red-overlay">
+                        <p class="synopsis">${description}</p>
+                        <div class="click-again-hint">دوباره کلیک کنید تا وارد صفحه شوید</div>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // تابع تولید و مدیریت دکمه‌های ناوبری صفحات
+        function renderPagination() {
+            const totalPages = Math.ceil(manhwaList.length / LIMIT);
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            } else {
+                pagination.style.display = 'flex';
+            }
+
+            // دکمه صفحه قبلی (قبلی)
+            const prevDisabled = currentPage === 1 ? 'disabled' : '';
+            pagination.insertAdjacentHTML('beforeend', `
+                <button class="pagination-btn ${prevDisabled}" onclick="if(${currentPage} > 1) renderPage(${currentPage - 1})">
+                    <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            `);
+
+            // دکمه صفحات عددی
+            for (let i = 1; i <= totalPages; i++) {
+                const activeClass = currentPage === i ? 'active' : '';
+                pagination.insertAdjacentHTML('beforeend', `
+                    <button class="pagination-btn ${activeClass}" onclick="renderPage(${i})">${i}</button>
+                `);
+            }
+
+            // دکمه صفحه بعدی (بعدی)
+            const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+            pagination.insertAdjacentHTML('beforeend', `
+                <button class="pagination-btn ${nextDisabled}" onclick="if(${currentPage} < ${totalPages}) renderPage(${currentPage + 1})">
+                    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+            `);
+        }
+
+        function setupCardEvents() {
+            document.querySelectorAll('.manhwa-card').forEach(card => {
+                card.replaceWith(card.cloneNode(true));
+            });
+
+            document.querySelectorAll('.manhwa-card').forEach(card => {
+                let timer = null;
+
+                card.addEventListener('click', function(e) {
+                    const targetLink = this.getAttribute('data-link');
+                    
+                    if (!this.classList.contains('preview-mode')) {
+                        e.preventDefault();
+                        
+                        document.querySelectorAll('.manhwa-card').forEach(c => {
+                            if(c !== card) {
+                                resetCard(c);
+                            }
+                        });
+
+                        this.classList.add('preview-mode');
+
+                        timer = setTimeout(() => {
+                            resetCard(card);
+                        }, 4000);
+
+                        card.dataset.timerId = timer;
+
+                    } else {
+                        if (timer) clearTimeout(timer);
+                        if (card.dataset.timerId) clearTimeout(parseInt(card.dataset.timerId));
+                        
+                        this.classList.add('clicked-twice');
+                        
+                        setTimeout(() => {
+                            window.location.href = targetLink;
+                        }, 200);
+                    }
+                });
+            });
+        }
+
+        function resetCard(card) {
+            card.classList.remove('preview-mode');
+            card.classList.remove('clicked-twice');
+            if (card.dataset.timerId) {
+                clearTimeout(parseInt(card.dataset.timerId));
+                delete card.dataset.timerId;
+            }
+        }
+
+        loadManhwas();
+    </script>
+</body>
+</html>

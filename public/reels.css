@@ -1,0 +1,372 @@
+.reel-container { 
+    scroll-snap-type: y mandatory; 
+    -webkit-overflow-scrolling: touch; 
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    height: 100dvh !important; /* اضافه کردن این خط برای تثبیت ارتفاع کل کانتینر */
+}
+.reel-container::-webkit-scrollbar { display: none; }
+.reel { 
+    scroll-snap-align: start; 
+    scroll-snap-stop: always; 
+    height: 100dvh !important; /* تغییر از h-screen یا مقادیر دیگر به این مقدار */
+}
+
+/* ۳. ویدیو کانتینر باید کل ریل رو پوشش بده و مرکز باشه */
+.video-container {
+    position: absolute; /* تغییر از relative به absolute */
+    inset: 0; /* پوشش کامل از هر ۴ طرف */
+    width: 100%; 
+    height: 100%; 
+    background-color: #000; 
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* حذف کامل دکمه پلی/استاپ وسط ویدیو در مرورگرهای موبایل */
+video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+}
+
+/* حذف تمامی نوارها و کنترلرهای تزریقی مرورگر */
+video::-webkit-media-controls {
+    display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+video::-webkit-media-controls-panel {
+    display: none !important;
+}
+/* ۴. استایل ویدیو برای قرارگیری دقیق در مرکز بدون تغییر سایز ناگهانی */
+.video-container video {
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+    background-color: #000;
+    pointer-events: auto;
+}
+
+/* --- استایل جدید آیکون صدا (گرد با بک‌گراند تیره و بلور ملایم) --- */
+.volume-indicator-box {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 9999px; /* دایره کامل */
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* انیمیشن محو شدن سریع آیکون ولوم */
+@keyframes pingOnce {
+    0% { transform: scale(0.6); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+.animate-ping-once {
+    animation: pingOnce 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.heart-pop {
+    position: fixed; 
+    font-size: 75px; 
+    color: #ef4444; 
+    pointer-events: none; 
+    z-index: 50;
+    animation: heartPopAnim 800ms ease forwards;
+    text-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+@keyframes heartPopAnim {
+    0% { transform: scale(0.2) translateY(0); opacity: 0; }
+    30% { transform: scale(1.3) translateY(-40px); }
+    100% { transform: scale(0.7) translateY(-140px); opacity: 0; }
+}
+
+/* Comments Bottom Sheet */
+.comments-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    direction: rtl;
+    height: 75vh; /* بهینه برای دسترسی شست و کیبورد گوشی */
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    transform: translateY(100%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -15px 35px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 0;
+    overflow: hidden;
+}
+
+/* هدر شیک و فیکس شده */
+.comments-header {
+    position: relative;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.drag-area {
+    width: 100%;
+    padding: 6px 0 12px 0;
+    display: flex;
+    justify-content: center;
+    cursor: grab;
+}
+
+.drag-area:active {
+    cursor: grabbing;
+}
+
+.handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    transition: background 0.2s;
+}
+
+.drag-area:hover .handle {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* بخش اسکرول لیست نظرات */
+#comments-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* انیمیشن نرم ورود نظرات */
+.comment-item {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: commentIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes commentIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* فرم درج کامنت چسبیده به پایین */
+.comment-input-area {
+    padding: 16px 15px 92px 16px;
+    background: rgba(10, 10, 10, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+
+/* استایل فیلدهای درون فرم */
+.comment-form-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-username-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.comment-username-input:focus {
+    border-color: rgba(255, 91, 91, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.comment-text-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.comment-text-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 20px;
+    padding: 10px 16px;
+    padding-left: 50px; /* فضا برای دکمه ارسال */
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    resize: none;
+    max-height: 100px;
+}
+
+.comment-text-input:focus {
+    border-color: rgba(255, 91, 91, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* دکمه ارسال شیک و گرد در سمت چپ فیلد متنی */
+.comment-submit-btn {
+    position: absolute;
+    left: 6px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ff5b5b;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(255, 91, 91, 0.3);
+}
+
+.comment-submit-btn:active {
+    transform: scale(0.9);
+}
+
+.comment-submit-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.manhwa-card {
+    direction: ltr;
+    position:relative;
+    width:100%;
+    height:52px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:0 18px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.16);
+    overflow:hidden;
+    transition:.25s;
+    color:#fff;
+}
+.manhwa-card:active {
+    transform:scale(.97);
+}
+.manhwa-card::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:999px;
+    padding:1px;
+    background: linear-gradient(90deg, rgba(255,60,60,.95), rgba(255,120,120,.6), rgba(255,60,60,.95));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+.manhwa-card::after {
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    left:-70px;
+    top:-65px;
+    background: radial-gradient(circle, rgba(255,45,45,.45), rgba(255,45,45,0));
+    filter:blur(25px);
+    animation:redGlow 4s linear infinite;
+    pointer-events:none;
+}
+.book-icon {
+    font-size:30px;
+    color:#ff5b5b;
+    filter: drop-shadow(0 0 10px rgba(255,0,0,.9));
+    z-index:2;
+}
+.title-reels {
+    flex:1;
+    font-size:15px;
+    font-weight:500;
+    color:white;
+    z-index:2;
+}
+.title-reels strong {
+    margin-right:8px;
+    color:#ffb6b6;
+    font-weight:700;
+}
+.arrow {
+    color:white;
+    opacity:.9;
+    z-index:2;
+}
+@keyframes redGlow {
+    0% { transform:translateX(-20px); opacity:.5; }
+    50% { transform:translateX(260px); opacity:1; }
+    100% { transform:translateX(520px); opacity:.5; }
+}
+.reel-description {
+    color:white;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    -webkit-line-clamp:2;
+    transition:.25s;
+}
+.reel-description.expanded {
+    display:block;
+}
+.more-text {
+    color:#d1d5db;
+    font-size:14px;
+    cursor:pointer;
+    user-select:none;
+}
+.reel-description.collapsed {
+    -webkit-line-clamp:2;
+}
+.creator-avatar-container {
+    width: 48px;         /* سایز کل دایره (کمی بزرگتر از خود عکس) */
+    height: 48px;
+    border-radius: 50%;  /* تبدیل به دایره کامل */
+    border: 3px solid white; /* این همان استروک سفید دایره‌ای است */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;    
+    background: #222;    
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); 
+    flex-shrink: 0;     
+}
+
+.creator-avatar-img {
+    width: 100%;       
+    height: 100%;
+    object-fit: cover;   /* حفظ تناسب عکس و پر کردن کامل دایره */
+    border-radius: 50%;  /* اطمینان از اینکه خود عکس هم دایره‌ای بریده می‌شود */
+}

@@ -1,0 +1,55 @@
+
+
+
+
+    <div id="reels-feed" class="flex-1 overflow-y-auto reel-container h-full" style="bottom: 100px;"></div>
+
+    
+    <!-- Comments Bottom Sheet -->
+    <!-- پس‌زمینه تیره هنگام باز شدن کامنت‌ها -->
+<div id="comments-overlay" class="hidden fixed inset-0 bg-black/60 z-50 backdrop-blur-sm transition-opacity" onclick="closeComments()"></div>
+
+<!-- پنل کامنت‌ها -->
+<div id="comments-sheet" class="comments-sheet">
+    <!-- هدر با قابلیت Drag -->
+    <div class="comments-header">
+        <div class="drag-area">
+            <div class="handle"></div>
+        </div>
+        <div class="flex items-center justify-between px-2">
+            <span class="text-white font-bold text-base">نظرات کاربران</span>
+            <button onclick="closeComments()" class="text-white/40 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- لیست اسکرول شونده نظرات -->
+    <div id="comments-list">
+        <!-- کامنت‌ها به صورت داینامیک اینجا رندر می‌شوند -->
+    </div>
+
+    <!-- فرم ارسال کامنت جدید بهینه شده -->
+    <div class="comment-input-area">
+        <div class="comment-form-inputs">
+            <!-- نام کاربری -->
+            <input type="text" id="username-input" class="comment-username-input" placeholder="نام شما..." maxlength="50">
+            
+            <!-- متن کامنت و دکمه ارسال -->
+            <div class="comment-text-wrapper">
+                <input type="text" id="comment-input" class="comment-text-input" placeholder="نظر خود را بنویسید..." maxlength="500">
+                <button id="submit-comment-btn" onclick="postComment()" class="comment-submit-btn">
+                    <span class="material-symbols-outlined text-lg">send</span>
+                </button>
+            </div>
+            
+            <!-- شمارنده کاراکتر -->
+            <div class="flex justify-start px-2">
+                <span id="char-count" class="text-[10px] text-gray-500">۰/۵۰۰</span>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Overlay -->
+
+

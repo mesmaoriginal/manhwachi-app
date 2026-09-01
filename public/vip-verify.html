@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html class="dark" dir="rtl" lang="fa">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تایید پرداخت - مانهواچی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Vazirmatn', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
+        
+        <!-- وضعیت در حال بارگذاری -->
+        <div id="loadingState" class="py-8 space-y-4">
+            <div class="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p class="text-sm text-zinc-300 font-medium">در حال بررسی و تایید تراکنش...</p>
+        </div>
+
+        <!-- وضعیت موفقیت -->
+        <div id="successState" class="hidden py-4 space-y-4">
+            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span class="material-symbols-outlined text-4xl">check_circle</span>
+            </div>
+            <h1 class="text-xl font-bold text-white">پرداخت با موفقیت انجام شد!</h1>
+            <p class="text-xs text-zinc-400 leading-relaxed">اشتراک VIP شما با موفقیت فعال شد. اکنون به تمامی فصول و قابلیت‌های ویژه دسترسی دارید.</p>
+            
+            <div class="bg-zinc-800/60 p-3 rounded-2xl text-xs text-zinc-300 font-mono my-4 border border-zinc-700/40">
+                کد پیگیری: <span id="trackIdDisp" class="font-bold text-emerald-400"></span>
+            </div>
+
+            <a href="/profile.html" class="block w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50">
+                ورود به پروفایل کاربری
+            </a>
+        </div>
+
+        <!-- وضعیت خطا -->
+        <div id="errorState" class="hidden py-4 space-y-4">
+            <div class="w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span class="material-symbols-outlined text-4xl">cancel</span>
+            </div>
+            <h1 class="text-xl font-bold text-white">پرداخت ناموفق بود</h1>
+            <p id="errorMsg" class="text-xs text-zinc-400 leading-relaxed">تراکنش توسط کاربر لغو شد یا خطایی در ارتباط با درگاه رخ داد.</p>
+            
+            <a href="/vip.html" class="block w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-all">
+                تلاش مجدد
+            </a>
+        </div>
+
+    </div>
+
+   <script>
+    async function verifyPayment() {
+        // گرفتن پارامترهای آدرس URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const trackId = urlParams.get('trackId') || urlParams.get('track_id');
+
+        const loadingState = document.getElementById('loadingState');
+        const successState = document.getElementById('successState');
+        const errorState = document.getElementById('errorState');
+
+        // اگر پرداخت از طرف بانک ناموفق بوده یا کد پیگیری نیست
+        if (success !== '1' || !trackId) {
+            loadingState?.classList.add('hidden');
+            errorState?.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E";
+
+            const res = await fetch('https://vumnujygswotstvwljaz.supabase.co/functions/v1/zibal-verify', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_KEY}` // اضافه کردن این خط خطای 401 را رفع می‌کند
+                },
+                body: JSON.stringify({ trackId: trackId })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.status === 100) {
+                // پرداخت توسط زی‌پال تایید شد و اکانت کاربر VIP شد
+                if (document.getElementById('trackIdDisp')) {
+                    document.getElementById('trackIdDisp').innerText = trackId;
+                }
+                loadingState?.classList.add('hidden');
+                successState?.classList.remove('hidden');
+            } else {
+                throw new Error(data.message || "تایید تراکنش با خطا مواجه شد.");
+            }
+
+        } catch (err) {
+            loadingState?.classList.add('hidden');
+            if (document.getElementById('errorMsg')) {
+                document.getElementById('errorMsg').innerText = err.message || "خطا در تایید اشتراک VIP";
+            }
+            errorState?.classList.remove('hidden');
+        }
+    }
+
+    // اجرای خودکار به محض لود شدن صفحه
+    document.addEventListener('DOMContentLoaded', verifyPayment);
+</script>
+</body>
+</html>

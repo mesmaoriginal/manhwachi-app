@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html class="dark" lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- SEO Meta Tags -->
+    <title><%= seo_title %></title>
+    <meta name="description" content="<%= seo_desc %>">
+    <link rel="canonical" href="<%= canonical_url %>" />
+
+    <!-- Open Graph / Facebook / Telegram -->
+    <meta property="og:type" content="book" />
+    <meta property="og:site_name" content="مانهواچی" />
+    <meta property="og:title" content="<%= seo_title %>" />
+    <meta property="og:description" content="<%= seo_desc %>" />
+    <meta property="og:image" content="<%= full_cover_url %>" />
+    <meta property="og:url" content="<%= canonical_url %>" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<%= seo_title %>" />
+    <meta name="twitter:description" content="<%= seo_desc %>" />
+    <meta name="twitter:image" content="<%= full_cover_url %>" />
+
+    <!-- Favicons -->
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/ManhwaChi/favicon-192x192.png" />
+    <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
+
+    <!-- Google Structured Data (Schema.org) for SEO Rich Snippets -->
+    <% if (manhwa) { %>
+    <script type="application/ld+json">
+    <%- JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Book",
+      "name": title_en,
+      "alternateName": title_fa,
+      "description": raw_desc,
+      "image": full_cover_url,
+      "url": canonical_url,
+      "inLanguage": "fa",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": String(score),
+        "bestRating": "10",
+        "worstRating": "1",
+        "ratingCount": "100"
+      }
+    }) %>
+    </script>
+    <% } %>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-18XD50KTY3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-18XD50KTY3');
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#DC2626",
+                        "on-primary": "#ffff",
+                        surface: "#000000",
+                        "surface-elevated": "#161616",
+                        "surface-shadow":"#241717 ",
+                        "surface-container": "#1f1f1f",
+                        "on-surface": "#e2e2e2",
+                        "on-surface-variant": "#cbb8b8",
+                        "text-muted": "#8C8C8C",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-scrim {
+            background: linear-gradient(to top, #000000 10%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+        }
+        .text-shadow-glow {
+            text-shadow: 0 0 20px rgb(220 38 38 / var(--tw-bg-opacity, 1));
+        }
+        .episode-card {
+            transition: all 0.3s ease;
+        }
+        .episode-card:hover {
+            transform: translateX(-10px);
+            background-color: #2a2a2a;
+        }
+        @media (min-width: 1024px) {
+            .text-shadow-glow { text-shadow: none; }
+            .episode-card:hover { transform: translateY(-4px); background-color: #2a2a2a; }
+        }
+        .border-white {
+            --tw-border-opacity: 1;
+            border-color: rgb(255 255 255 / 27%);
+        }
+        .manhwa-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .manhwa-card::before {
+            content: "";
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background: #dc2626;
+            opacity: 0.15;
+            filter: blur(120px);
+            top: -220px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1f1f1f; }
+        ::-webkit-scrollbar-thumb { background: rgb(220 38 38 / var(--tw-bg-opacity, 1)); border-radius: 10px; }
+
+        .reply-box { margin-top:12px; padding:16px; background:#1f1f1f; border-radius:16px; border:1px solid rgba(255,255,255,0.08); }
+        .reply-thread {
+            border-right: 3px solid rgba(255, 255, 255, 0.08);
+            margin-right: 8px;
+            padding-right: 14px;
+            background: rgba(255, 255, 255, 0.015);
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-radius: 0 12px 12px 0;
+            transition: all 0.2s ease;
+        }
+        .reply-thread:hover {
+            border-right-color: rgba(220, 38, 38, 0.5);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .admin-reply {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border: 1px solid rgba(220, 38, 38, 0.25);
+            border-right: 3px solid #DC2626;
+            border-radius: 16px;
+            padding: 14px 16px;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.05);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .comment-animate { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .description-text { max-height: 132px; }
+        .description-text.expanded { max-height: 2000px; }
+        .description-fade.hidden-fade { opacity: 0; }
+        #descriptionToggleBtn.flex-visible { display: flex; }
+
+        .telegram-banner{
+            margin:28px 0;
+            padding:0 18px;
+        }
+        .telegram-banner-link{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+            width:100%;
+            padding:18px 22px;
+            border-radius:22px;
+            text-decoration:none;
+            color:#fff;
+            background:linear-gradient(135deg,#229ED9,#1668c7);
+            box-shadow: 0 12px 35px rgba(34,158,217,.28), inset 0 1px rgba(255,255,255,.15);
+            position:relative;
+            overflow:hidden;
+        }
+        .telegram-banner-link::before{
+            content:"";
+            position:absolute;
+            top:-70px;
+            right:-40px;
+            width:180px;
+            height:180px;
+            background:rgba(255,255,255,.12);
+            border-radius:50%;
+        }
+        #copyTelegramBtn {
+            border:none;
+            cursor:pointer;
+            font-family:inherit;
+        }
+        .telegram-icon{
+            width:64px;
+            height:64px;
+            flex-shrink:0;
+            border-radius:50%;
+            background:rgba(255,255,255,.15);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            backdrop-filter:blur(8px);
+        }
+        .telegram-icon img{ width:38px; height:38px; }
+        .telegram-content{ flex:1; margin:0 10px; }
+        .telegram-title{ font-size:17px; font-weight:700; margin-bottom:5px; }
+        .telegram-subtitle{ font-size:14px; opacity:.95; }
+        .telegram-btn{
+            background:#fff;
+            color:#1b84d6;
+            padding:12px 22px;
+            border-radius:14px;
+            font-weight:700;
+            transition:.25s;
+            white-space:nowrap;
+        }
+        .telegram-banner-link:hover .telegram-btn{ transform:scale(1.06); }
+        
+        @media(max-width:700px){
+            .telegram-banner-link{ padding:16px; }
+            .telegram-icon{ width:52px; height:52px; }
+            .telegram-icon img{ width:30px; height:30px; }
+            .telegram-title{ font-size:15px; }
+            .telegram-subtitle{ font-size:13px; }
+            .telegram-btn{ padding:10px 16px; font-size:13px; }
+        }
+
+        #mobile-drawer { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+        #drawer-overlay { transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .drawer-open #mobile-drawer { transform: translateX(0) !important; }
+        .drawer-open #drawer-overlay { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+        .drawer-item { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .drawer-item:hover {
+            background: rgba(220, 38, 38, 0.12);
+            border-color: rgba(220, 38, 38, 0.3);
+            transform: translateX(-4px);
+        }
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background-color: #DC2626;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface font-body min-h-screen">
+
+    <div id="successModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-5 z-[999] opacity-0 pointer-events-none transition-all duration-300">
+        <div class="relative bg-surface-elevated rounded-3xl p-8 max-w-md w-full border border-white/10 overflow-hidden">
+            <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 bg-primary/20 blur-[100px]"></div>
+            <div class="relative z-10 text-center">
+                <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-green-500/15 flex items-center justify-center"><span class="material-symbols-outlined text-green-400 text-5xl">check_circle</span></div>
+                <h3 class="text-2xl font-bold mb-3">نظر ثبت شد</h3>
+                <p class="text-on-surface-variant leading-relaxed mb-6">نظر شما با موفقیت ارسال شد و پس از بررسی توسط مدیریت در بخش نظرات نمایش داده خواهد شد.</p>
+                <button id="closeSuccessModal" class="w-full h-12 bg-primary rounded-2xl font-semibold hover:opacity-90 transition">متوجه شدم</button>
+            </div>
+        </div>
+    </div>
+
+<!-- Auth Modal Animations -->
+<style>
+  @keyframes authBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes authCardIn {
+    from { opacity: 0; transform: scale(.92) translateY(14px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes authMsgIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes authGlow {
+    0%, 100% { opacity: .55; }
+    50%      { opacity: 1; }
+  }
+  #authModal.flex { animation: authBackdropIn .25s ease-out; }
+  #authModal.flex .auth-card { animation: authCardIn .4s cubic-bezier(.16,1,.3,1); }
+  .authMsg-in { animation: authMsgIn .3s ease-out; }
+  .auth-card { scrollbar-width: none; -ms-overflow-style: none; }
+  .auth-card::-webkit-scrollbar { display: none; }
+  .auth-orb { animation: authGlow 3.5s ease-in-out infinite; }
+  .auth-icon-input:focus ~ .auth-input-icon { color: #ef4444; }
+</style>
+
+<!-- Modal Container -->
+<div id="authModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/85 backdrop-blur-md p-4 transition-all duration-300">
+
+  <div class="auth-card relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-[28px] bg-gradient-to-b from-zinc-900 to-black border border-zinc-800/80 shadow-[0_25px_70px_-15px_rgba(220,38,38,0.35)] text-zinc-100 font-sans dir-rtl text-right">
+
+    <!-- نوار تزئینی بالای مودال -->
+    <div class="h-1.5 w-full bg-gradient-to-l from-red-700 via-red-500 to-red-700 rounded-t-[28px]"></div>
+
+    <!-- دکمه بستن -->
+    <button onclick="closeAuthModal()" aria-label="بستن" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/80 active:scale-90 transition-all z-10">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <div class="p-6 pt-7">
+
+      <!-- برند / لوگو -->
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="relative mb-3">
+          <div class="auth-orb absolute inset-0 rounded-2xl bg-red-600/40 blur-xl"></div>
+          <div class="relative w-14 h-14 rounded-2xl bg-zinc-800/80 border border-red-500/30 flex items-center justify-center overflow-hidden">
+            <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" class="w-8 h-8 object-contain" />
+          </div>
+        </div>
+        <h2 class="font-bold text-lg text-white font-['Montserrat']">Manhwa<span class="text-red-600">Chi</span></h2>
+        <p id="authSubtitle" class="text-xs text-zinc-400 mt-1">خوش برگشتی! برای ادامه وارد حساب خود شو</p>
+      </div>
+
+      <!-- تب‌ها (سگمنت شیشه‌ای) -->
+      <div class="flex items-center gap-1 bg-zinc-800/50 rounded-full p-1 mb-5 border border-zinc-700/40">
+        <button id="tabLoginBtn" type="button" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40">
+          ورود
+        </button>
+        <button id="tabRegisterBtn" type="button" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200">
+          عضویت جدید
+        </button>
+      </div>
+
+      <!-- باکس نمایش پیام‌ها -->
+      <div id="authMessage" class="hidden mb-4 p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all duration-300"></div>
+
+      <!-- ==================== فرم ورود ==================== -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="email" id="loginEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+        <div>
+          <label for="loginPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('loginPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+          <div class="text-left mt-1.5">
+            <button type="button" onclick="showForgotPasswordForm()" class="text-xs text-red-500 hover:text-red-400 transition-all">
+              رمز عبور را فراموش کرده‌اید؟
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="loginSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          ورود به حساب
+        </button>
+      </form>
+
+      <!-- ==================== فرم فراموشی رمز عبور ==================== -->
+      <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-4 hidden">
+        <div class="text-center mb-1">
+          <p class="text-xs text-zinc-300">ایمیل حساب خود را وارد کنید تا لینک بازیابی رمز عبور برایتان ارسال شود.</p>
+        </div>
+        <div>
+          <label for="forgotEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="email" id="forgotEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+        <button type="submit" id="forgotSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all">
+          ارسال لینک بازیابی رمز عبور
+        </button>
+        <div class="text-center">
+          <button type="button" onclick="switchAuthTab('login')" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">
+            بازگشت به ورود
+          </button>
+        </div>
+      </form>
+
+      <!-- ==================== فرم تنظیم رمز عبور جدید ==================== -->
+      <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
+        <div class="text-center mb-1">
+          <p class="text-xs text-zinc-300">رمز عبور جدید خود را وارد کنید.</p>
+        </div>
+        <div>
+          <label for="resetNewPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور جدید (حداقل ۶ کاراکتر)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="resetNewPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('resetNewPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label for="resetConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">تکرار رمز عبور جدید</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="resetConfirmPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+        <button type="submit" id="resetSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all">
+          ثبت رمز عبور جدید
+        </button>
+      </form>
+
+      <!-- ==================== فرم ثبت‌نام ==================== -->
+      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
+        <div>
+          <label for="regFullName" class="block text-xs font-medium text-zinc-400 mb-1">نام و نام خانوادگی</label>
+          <div class="relative">
+            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="text" id="regFullName" required placeholder="مثال: علی محمدی" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="regEmail" class="block text-xs font-medium text-zinc-400 mb-1">جیمیل (فقط Google Gmail)</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="email" id="regEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="regPassword" class="block text-xs font-medium text-zinc-400 mb-1">رمز عبور (حداقل ۶ کاراکتر)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="regPassword" oninput="checkPasswordStrength(this.value)" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('regPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+
+          <!-- نوار سنجش قدرت رمز عبور -->
+          <div class="mt-2">
+            <div class="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+              <div id="passwordStrengthBar" class="h-1 rounded-full bg-zinc-700 transition-all duration-300 w-0"></div>
+            </div>
+            <div id="passwordStrengthText"></div>
+          </div>
+        </div>
+
+        <div>
+          <label for="regConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1">تکرار رمز عبور</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="regConfirmPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('regConfirmPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="regSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+          ارسال کد تایید به جیمیل
+        </button>
+        <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
+      </form>
+
+      <!-- ==================== فرم ورود کد OTP ==================== -->
+      <form id="otpForm" onsubmit="handleVerifyOTP(event)" class="space-y-4 hidden">
+        <div class="text-center mb-2 flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-full bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-500">
+            <i class="fa-solid fa-envelope-open-text"></i>
+          </div>
+          <p class="text-xs text-zinc-300">کد ۶ رقمی ارسال‌شده به <span id="otpEmailDisplay" class="text-white font-semibold"></span> را وارد کنید:</p>
+        </div>
+        <div>
+          <input type="text" id="otpCode" maxlength="6" required placeholder="123456" class="w-full text-center tracking-[0.5em] text-xl font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-3 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+        </div>
+
+        <button type="submit" id="verifyOtpBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 font-bold text-sm text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-xs"></i>
+          تایید و فعال‌سازی حساب
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+    <!-- Main Header -->
+    <header class="sticky top-0 z-50 w-full bg-surface/85 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="openDrawerBtn" aria-label="منو" class="w-10 h-10 rounded-2xl bg-surface-elevated border border-white/10 flex items-center justify-center text-on-surface hover:text-primary hover:border-primary/40 active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-2xl">menu</span>
+                </button>
+                <a href="/" class="flex items-center gap-3 group">
+                    <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                    <span class="font-bold text-xl tracking-tight text-white font-['Montserrat'] hidden sm:inline">
+                        Manhwa<span class="text-primary">Chi</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-on-surface-variant">
+                <a href="/" class="hover:text-white transition nav-link flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">home</span> خانه</a>
+                <a href="/library-page.html" class="hover:text-white transition nav-link flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">grid_view</span> آرشیو مانهوا</a>
+                <a href="/bookmarks.html" class="hover:text-white transition nav-link flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">bookmark</span> نشان‌شده‌ها</a>
+                <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="hover:text-white transition nav-link flex items-center gap-1.5 text-sky-400"><span class="material-symbols-outlined text-lg">send</span> تلگرام</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <button id="accountBtn" aria-label="حساب کاربری" class="h-10 min-w-[2.5rem] px-2.5 rounded-2xl bg-surface-elevated border border-white/10 flex items-center justify-center gap-1.5 text-on-surface hover:text-primary hover:border-primary/40 active:scale-95 transition-all">
+                    <span id="accountBtnIcon" class="material-symbols-outlined text-xl">person</span>
+                    <span id="accountBtnName" class="hidden text-sm font-bold text-primary max-w-[90px] truncate"></span>
+                </button>
+                <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-surface-elevated border border-white/10 flex items-center justify-center text-on-surface hover:text-primary hover:border-primary/40 active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-xl">search</span>
+                </a>
+                <a href="/cooperation.html" class="hidden sm:flex items-center gap-2 px-4 h-10 bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white rounded-2xl text-xs font-bold transition-all duration-300">
+                    <span class="material-symbols-outlined text-base">group_add</span> همکاری با ما
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Slide-over Drawer -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] opacity-0 invisible pointer-events-none transition-all duration-300"></div>
+    <aside id="mobileDrawer" class="fixed top-0 right-0 bottom-0 w-[300px] sm:w-[340px] bg-surface-elevated border-l border-white/10 z-[101] translate-x-full transition-transform duration-300 flex flex-col justify-between p-6 shadow-2xl">
+        <div class="absolute -top-20 -right-20 w-48 h-48 bg-primary/20 blur-[90px] pointer-events-none"></div>
+        <div>
+            <div class="flex items-center justify-between pb-6 mb-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-7 w-auto object-contain drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                    <span class="font-bold text-lg text-white font-['Montserrat']">Manhwa<span class="text-primary">Chi</span></span>
+                </div>
+                <button id="closeDrawerBtn" class="w-9 h-9 rounded-xl bg-surface-container border border-white/10 flex items-center justify-center text-on-surface hover:text-primary active:scale-95 transition">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+            <nav class="space-y-3">
+                <a href="https://manhwachi.ir/" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-surface-container/60 border border-white/5 text-white font-medium">
+                    <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-outlined text-xl">home</span></div>
+                    <span>صفحه اصلی</span>
+                </a>
+                <a href="https://manhwachi.ir/library-page.html" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-surface-container/60 border border-white/5 text-white font-medium">
+                    <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-outlined text-xl">grid_view</span></div>
+                    <span>لیست مانهواها</span>
+                </a>
+                <a href="/bookmarks.html" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-surface-container/60 border border-white/5 text-white font-medium">
+                    <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-outlined text-xl">bookmark</span></div>
+                    <span>نشان‌شده‌ها</span>
+                </a>
+                <a href="https://manhwachi.ir/Careers.html" class="drawer-item flex items-center gap-3.5 p-3.5 rounded-2xl bg-surface-container/60 border border-white/5 text-white font-medium">
+                    <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-outlined text-xl">group_add</span></div>
+                    <span>همکاری با تیم</span>
+                </a>
+            </nav>
+        </div>
+        <div class="space-y-4 pt-6 border-t border-white/10">
+            <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold shadow-lg shadow-sky-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl">send</span>
+                    <span class="text-sm">کانال تلگرام مانهواچی</span>
+                </div>
+                <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </a>
+            <p class="text-center text-xs text-text-muted font-medium">© ۲۰۲۶ مانهواچی - تمامی حقوق محفوظ است</p>
+        </div>
+    </aside>
+
+    <main class="pb-20">
+        <!-- Hero + Info Wrapper: on tablet/desktop this becomes a 2-column grid (cover left, info right).
+             Note: page is dir="rtl", so in a CSS grid, column line 1 is on the RIGHT and the last line is on the LEFT.
+             The info block explicitly takes columns 1-8 (right side) and the cover explicitly takes columns 9-12 (left side),
+             so the layout is correct regardless of grid auto-placement/order quirks under RTL. -->
+        <div class="lg:max-w-7xl lg:mx-auto lg:px-8 lg:pt-10 lg:grid lg:grid-cols-12 lg:gap-x-10 lg:gap-y-7 lg:items-start">
+
+        <!-- Hero Section (cover image + title/genre/meta overlay) -->
+        <section class="relative w-full h-[520px] md:h-[620px] overflow-hidden lg:contents">
+            <img id="dynamic-cover" class="w-full object-cover object-top scale-105 lg:static lg:col-start-9 lg:col-span-4 lg:row-start-1 lg:row-span-4 lg:h-auto lg:aspect-[3/4] lg:scale-100 lg:rounded-3xl lg:shadow-2xl lg:shadow-black/60 lg:sticky lg:top-24"
+                 src="<%= cover_url %>"
+                 alt="<%= title_en %> cover"/>
+
+            <div class="absolute inset-0 glass-scrim lg:hidden"></div>
+
+            <div class="absolute bottom-0 left-0 right-0 px-5 pb-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-1 lg:px-0 lg:pb-6 lg:pt-1 lg:border-b lg:border-white/10">
+                <div id="mainname" style="width: 100%; direction: ltr;">
+                    <div id="type" class="flex gap-2 mb-3 lg:flex-wrap" style="direction: ltr;">
+                        <span class="px-4 py-1 bg-primary text-on-primary text-xs font-bold rounded-full"><%= origin %></span>
+                        <% genres.forEach(function(g) { %>
+                            <span class="px-4 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-full"><%= g %></span>
+                        <% }); %>
+                    </div>
+                    <h1 id="manhwaTitle"
+                        class="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tighter text-shadow-glow cursor-pointer max-w-[70%] lg:max-w-full"
+                        style="direction: ltr; font-family: Montserrat, sans-serif;">
+                        <%= title_en %>
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 mt-4 lg:mt-6 text-sm lg:text-base">
+                    <div class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-primary text-yellow-500">star</span>
+                        <span id="dynamic-score" class="font-bold"><%= score %></span>
+                    </div>
+                    <span>توسط <span id="dynamic-scans" class="text-primary font-medium"><%= scans_by %></span></span>
+                    <span id="viewCount" class="flex items-center gap-1">
+                        <span class="material-symbols-outlined">visibility</span>
+                        <span id="viewNumber">0</span> بازدید
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action buttons -->
+        <section class="px-5 -mt-6 relative z-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-3 lg:px-0 lg:mt-2">
+            <div class="flex gap-3 lg:max-w-md">
+                <button id="readBtn" class="flex-1 bg-primary text-on-primary h-14 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-primary/40">
+                    <span>شروع خواندن</span>
+                </button>
+                <button id="bookmarkBtn" aria-label="نشان کردن" class="w-14 h-14 border-2 border-primary text-primary rounded-2xl flex items-center justify-center active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-3xl">bookmark_add</span>
+                </button>
+                <button id="shareBtn" aria-label="اشتراک‌گذاری" class="w-14 h-14 border-2 border-primary text-primary rounded-2xl flex items-center justify-center active:scale-95 transition-all relative">
+                    <svg id="shareIcon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/>
+                        <line x1="8.6" y1="10.6" x2="15.4" y2="6.4" stroke="currentColor" stroke-width="2"/>
+                        <line x1="8.6" y1="13.4" x2="15.4" y2="17.6" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats (type / translated chapters) -->
+        <section class="px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-4 lg:px-0 lg:mt-2">
+            <div class="grid grid-cols-2 gap-4 mb-5 lg:max-w-md">
+                <div class="bg-surface-elevated rounded-2xl p-4 border border-white/5">
+                    <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">collections_bookmark</span>نوع</div>
+                    <div id="dynamic-type-label" class="text-lg font-bold text-white"><%= type %></div>
+                </div>
+                <div class="bg-surface-elevated rounded-2xl p-4 border border-white/5">
+                    <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">format_list_numbered</span>چپترهای ترجمه شده</div>
+                    <div id="dynamic-chapters-count" class="text-lg font-bold text-white"><%= episodes.length %></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Description: right under the title on desktop (positioned via lg:row-start-2 regardless of DOM order, so it can sit here in the DOM to keep the correct mobile stacking order: actions -> stats -> description) -->
+        <section class="px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-2 lg:px-0 lg:mt-0">
+            <div class="bg-surface-elevated p-7 md:p-9 rounded-3xl border border-white/5 manhwa-card lg:bg-transparent lg:p-0 lg:border-0 lg:rounded-none">
+                <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2 lg:hidden"><span class="material-symbols-outlined text-primary">menu_book</span>خلاصه داستان</h2>
+                <div id="descriptionWrapper" class="relative">
+                    <p id="dynamic-description" class="description-text text-on-surface-variant leading-relaxed text-[15.5px] lg:text-base text-balance overflow-hidden transition-[max-height] duration-500 ease-in-out">
+                        <%= (manhwa && manhwa.description) ? manhwa.description : '' %>
+                    </p>
+                    <div id="descriptionFade" class="description-fade absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface-shadow to-transparent pointer-events-none transition-opacity duration-500 lg:from-surface"></div>
+                </div>
+                <button id="descriptionToggleBtn" class="hidden mt-4 items-center gap-1.5 text-primary text-sm font-bold hover:text-red-400 active:scale-95 transition-all">
+                    <span id="descriptionToggleText">توضیحات بیشتر</span>
+                    <span id="descriptionToggleIcon" class="material-symbols-outlined text-lg">expand_more</span>
+                </button>
+            </div>
+        </section>
+        </div>
+        <!-- End Hero + Info Wrapper -->
+
+        <!-- Telegram Banner -->
+        <section class="telegram-banner lg:max-w-7xl lg:mx-auto">
+            <div class="telegram-banner-link">
+                <div class="telegram-icon">
+                    <img src="../../file/icons8-telegram-app-96.png" alt="Telegram">
+                </div>
+                <div class="telegram-content">
+                    <div class="telegram-title">برای دسترسی سریع‌تر به چپترهای جدید</div>
+                    <div class="telegram-subtitle">عضو کانال <strong>مانهواچی</strong> شوید</div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="telegram-btn text-center">عضو شدن</a>
+                    <button id="copyTelegramBtn" class="telegram-btn">کپی لینک</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Episodes List Section -->
+        <section class="mt-10 px-5 lg:max-w-7xl lg:mx-auto lg:px-8">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-2xl font-bold">قسمت‌ها</h3>
+                <button id="sortBtn" class="text-white flex items-center gap-1 text-sm font-medium transition-colors ">جدیدترین اول <span class="material-symbols-outlined">swap_vert</span></button>
+            </div>
+
+            <div id="subscriptionBanner" class="mb-5 <%= has_locked ? 'flex' : 'hidden' %> items-center gap-3 bg-amber-500/10 border border-amber-500/25 text-amber-400 rounded-2xl px-5 py-3.5 text-sm font-semibold">
+                <span class="material-symbols-outlined text-xl">workspace_premium</span>
+                این مانهوا اشتراکی است
+            </div>
+            
+            <div class="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4" id="episodeList">
+                <%
+                // رندر ۴ چپتر اول مستقیم در HTML برای خزش ربات گوگل
+                var initial_episodes = episodes.slice(0, 4);
+                initial_episodes.forEach(function(ep) {
+                    var ep_num = ep.num;
+                    var is_free = !!ep.free;
+                    var ep_link = "/reader.html?slug=" + encodeURIComponent(slug) + "&ch=" + ep_num;
+                %>
+                <a href="<%= ep_link %>" data-free="<%= is_free ? '1' : '0' %>" data-num="<%= ep_num %>" class="flex items-center gap-4 p-4 rounded-2xl episode-card bg-surface-elevated">
+                    <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
+                        <img src="/manhwas/<%= encodeURIComponent(slug) %>/chapterPictures/chapterpicture<%= ep_num %>.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep <%= ep_num %>" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#<%= ep_num %></span></div>
+                        <% if (!is_free) { %>
+                        <div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>
+                        <% } %>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-white">چپتر <%= ep_num %></p>
+                        <p class="text-xs text-text-muted mt-1"><%= ep.date || '' %></p>
+                    </div>
+                    <% if (is_free) { %>
+                        <span class="text-sm font-bold text-green-500">رایگان</span>
+                    <% } else { %>
+                        <span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>
+                    <% } %>
+                </a>
+                <% }); %>
+            </div>
+
+            <button id="showMoreBtn" class="w-full mt-8 py-4 border border-white rounded-2xl font-medium " style="border-color: rgb(255 255 255 / 27%); color: #ffffffa6;">نمایش قسمت‌های بیشتر</button>
+        </section>
+
+        <!-- Similar Manhwas Section -->
+        <section id="similarSection" class="mt-12 px-5 lg:max-w-7xl lg:mx-auto lg:px-8 hidden">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">auto_awesome</span>
+                    مانهواهای مشابه
+                </h3>
+            </div>
+            <div id="similarList" class="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x"></div>
+        </section>
+
+        <!-- Comments Section -->
+        <section id="commentsAnchor" class="mt-12 px-5 lg:max-w-4xl lg:mx-auto lg:px-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold">نظرات <span id="commentCount" class="text-on-surface-variant text-lg font-normal">(۰)</span></h3>
+                <span class="text-sm text-text-muted">جدیدترین</span>
+            </div>
+            
+            <div id="messagesList" class="space-y-6 mb-8"></div>
+            
+            <!-- Pagination Controls -->
+            <div id="paginationContainer" class="flex justify-center items-center gap-2 mb-10 hidden">
+                <button id="prevPageBtn" class="w-10 h-10 rounded-xl bg-surface-elevated border border-white/10 flex items-center justify-center text-on-surface disabled:opacity-40 disabled:pointer-events-none hover:border-primary/50 transition">
+                    <span class="material-symbols-outlined text-xl">chevron_right</span>
+                </button>
+                <div id="pageNumbers" class="flex gap-2"></div>
+                <button id="nextPageBtn" class="w-10 h-10 rounded-xl bg-surface-elevated border border-white/10 flex items-center justify-center text-on-surface disabled:opacity-40 disabled:pointer-events-none hover:border-primary/50 transition">
+                    <span class="material-symbols-outlined text-xl">chevron_left</span>
+                </button>
+            </div>
+
+            <div class="bg-surface-elevated border border-white/5 rounded-3xl p-6 shadow-xl">
+                <div id="commentAuthorArea" class="mb-5"></div>
+                <form id="messageForm" class="space-y-5">
+                    <div>
+                        <textarea id="messageText" maxlength="500" required rows="4" class="w-full bg-surface-container border border-white/10 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-3xl px-5 py-4 text-on-surface placeholder:text-on-surface-variant resize-none transition-all" placeholder="نظر خود را بنویسید..."></textarea>
+                        <div class="text-right mt-2"><span id="charCount" class="text-xs text-text-muted">۰ / ۵۰۰</span></div>
+                    </div>
+                    <button type="submit" class="w-full bg-primary hover:bg-red-600 active:scale-95 transition-all text-on-primary h-14 rounded-2xl font-semibold text-lg">ارسال نظر</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="w-full bg-black border-t border-white/10 pt-12 pb-8 mt-16 text-on-surface-variant">
+        <div class="max-w-7xl mx-auto px-5">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 pb-10 border-b border-white/10">
+                <div class="md:col-span-2 space-y-4">
+                    <a href="/" class="flex items-center gap-3">
+                        <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                        <span class="font-bold text-2xl text-white font-['Montserrat']">Manhwa<span class="text-primary">Chi</span></span>
+                    </a>
+                    <p class="text-sm text-text-muted leading-relaxed max-w-md">
+                        مرجع بروز و جامع خواندن آنلاین مانهوا و مانگا با ترجمه فارسی. جدیدترین چپترهای مانهواهای محبوب خود را با بهترین کیفیت و سرعت در مانهواچی دنبال کنید.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-base mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl">link</span>دسترسی سریع</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="/" class="hover:text-primary transition-colors flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">chevron_left</span> صفحه اصلی</a></li>
+                        <li><a href="/library-page.html" class="hover:text-primary transition-colors flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">chevron_left</span> آرشیو کامل مانهواها</a></li>
+                        <li><a href="/bookmarks.html" class="hover:text-primary transition-colors flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">chevron_left</span> نشان‌شده‌ها</a></li>
+                        <li><a href="/Careers.html" class="hover:text-primary transition-colors flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">chevron_left</span> همکاری با تیم</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-base mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl">forum</span>ارتباط با ما</h4>
+                    <p class="text-xs text-text-muted mb-4">برای دریافت آخرین اخبار، اطلاع از انتشار چپترها و عضویت در جامعه مانهواچی به کانال تلگرام ما بپیوندید.</p>
+                    <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 font-semibold text-xs hover:bg-sky-500 hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-lg">send</span>
+                        عضویت در کانال تلگرام
+                    </a>
+                </div>
+
+                <!-- Col 4: Enamad Trust Seal -->
+                <div class="flex flex-col items-center md:items-start justify-start">
+                    <h4 class="text-white font-bold text-base mb-4 flex items-center gap-2 self-start"><span class="material-symbols-outlined text-primary text-xl">verified</span>نماد اعتماد</h4>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-2 hover:border-primary/30 transition-all">
+                        <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7507606&Code=6OhZpFuAsslEizzI2ga4EX8kyLmmnWxv'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7507606&Code=6OhZpFuAsslEizzI2ga4EX8kyLmmnWxv' alt='نماد اعتماد الکترونیکی' style='cursor:pointer' code='6OhZpFuAsslEizzI2ga4EX8kyLmmnWxv'></a>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted">
+                <p class="text-center sm:text-right">© ۲۰۲۶ تمامی حقوق این وب‌سایت برای مجموعه <span class="text-white font-bold font-['Montserrat']">ManhwaChi</span> محفوظ است.</p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="hover:text-white transition-colors">قوانین و مقررات</a>
+                    <span>•</span>
+                    <a href="#" class="hover:text-white transition-colors">حریم خصوصی</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const { createClient } = supabase;
+        const db = createClient('https://vumnujygswotstvwljaz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
+        window.supabaseClient = db; // برای هماهنگی با اسکریپت مودال ورود/ثبت‌نام
+        
+        const MANHWA_SLUG = <%- JSON.stringify(slug) %>;
+        let englishTitle = <%- JSON.stringify(title_en) %>;
+        let persianTitle = <%- JSON.stringify(title_fa) %>;
+        const SUBSCRIPTION_PAGE_URL = '/vip.html';
+
+        // وضعیت اشتراک کاربر — بعد از هر تغییر لاگین دوباره خونده می‌شه
+        let currentUserSubscribed = false;
+        let subscriptionChecked = false;
+
+        async function refreshSubscriptionStatus() {
+            subscriptionChecked = false;
+            if (!currentUser) {
+                currentUserSubscribed = false;
+                subscriptionChecked = true;
+                return;
+            }
+            try {
+                const { data, error } = await db
+                    .from('profiles')
+                    .select('is_vip, vip_until')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (error || !data) {
+                    currentUserSubscribed = false;
+                } else {
+                    const notExpired = !data.vip_until || new Date(data.vip_until) > new Date();
+                    currentUserSubscribed = !!data.is_vip && notExpired;
+                }
+            } catch (err) {
+                console.error('خطا در بررسی وضعیت اشتراک:', err);
+                currentUserSubscribed = false;
+            } finally {
+                subscriptionChecked = true;
+                // اگه لیست چپترها قبلاً رندر شده بود، دوباره رندرش کن تا آیکون قفل
+                // برای کاربر مشترک درست به‌روز بشه
+                if (typeof allEpisodes !== 'undefined' && allEpisodes.length > 0) {
+                    renderEpisodes();
+                }
+                // برای چپترهای اولیه‌ای که سمت سرور (PHP) رندر شدن و ممکنه هنوز
+                // جایگزین نشده باشن، اگه کاربر مشترکه قفل‌ها رو فوراً حذف کن
+                if (currentUserSubscribed) {
+                    document.querySelectorAll('#episodeList .chapter-lock-overlay').forEach(el => el.remove());
+                }
+            }
+        }
+
+        function escapeHtml(text) { if (!text) return ''; const div = document.createElement("div"); div.textContent = text; return div.innerHTML; }
+
+        // ==========================================
+        // Auth (login/signup) — comments now require an account
+        // ==========================================
+        let currentUser = null;
+
+        function getDisplayName(user) {
+            if (!user) return '';
+            return user.user_metadata?.display_name || (user.email ? user.email.split('@')[0] : 'کاربر');
+        }
+
+  // مقداردهی اولیه متغیر ایمیل موقت
+  let tempRegistrationEmail = "";
+
+  // تابع دسترسی امن به Supabase
+  function getSupabase() {
+    return window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
+  }
+
+  // ==================== توابع کنترل نمایش مودال ====================
+  function openAuthModal(tab = 'login') {
+    switchAuthTab(tab);
+    const modal = document.getElementById('authModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    hideAuthMessage();
+    document.getElementById('otpForm')?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+  }
+
+  function switchAuthTab(type) {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const otpForm = document.getElementById('otpForm');
+    const tabLoginBtn = document.getElementById('tabLoginBtn');
+    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+
+    hideAuthMessage();
+    otpForm?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+
+    const activeCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40";
+    const inactiveCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200";
+    const subtitle = document.getElementById('authSubtitle');
+
+    if (type === 'login') {
+      loginForm?.classList.remove('hidden');
+      registerForm?.classList.add('hidden');
+      if (tabLoginBtn) tabLoginBtn.className = activeCls;
+      if (tabRegisterBtn) tabRegisterBtn.className = inactiveCls;
+      if (subtitle) subtitle.textContent = "خوش برگشتی! برای ادامه وارد حساب خود شو";
+    } else {
+      loginForm?.classList.add('hidden');
+      registerForm?.classList.remove('hidden');
+      if (tabRegisterBtn) tabRegisterBtn.className = activeCls;
+      if (tabLoginBtn) tabLoginBtn.className = inactiveCls;
+      if (subtitle) subtitle.textContent = "چند قدم تا ساخت حساب جدیدت باقی مونده";
+    }
+  }
+
+  // ==================== نمایش/مخفی‌سازی رمز عبور ====================
+  function toggleAuthPassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const willShow = input.type === 'password';
+    input.type = willShow ? 'text' : 'password';
+    const icon = btn.querySelector('i');
+    if (icon) {
+      icon.classList.toggle('fa-eye', !willShow);
+      icon.classList.toggle('fa-eye-slash', willShow);
+    }
+  }
+
+  // ==================== مدیریت پیام‌های خطا، هشدار و موفقیت ====================
+  function showAuthMessage(msg, isError = false, type = null) {
+    const msgBox = document.getElementById('authMessage');
+    if (!msgBox) return;
+
+    const kind = type || (isError ? 'error' : 'success');
+    const styleMap = {
+      error:   { icon: 'fa-circle-exclamation',   classes: ['bg-red-500/10', 'text-red-400', 'border-red-500/30'] },
+      success: { icon: 'fa-circle-check',         classes: ['bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30'] },
+      warning: { icon: 'fa-triangle-exclamation', classes: ['bg-amber-500/10', 'text-amber-300', 'border-amber-500/30'] }
+    };
+    const cfg = styleMap[kind] || styleMap.error;
+
+    msgBox.classList.remove(
+      'hidden',
+      'bg-red-500/10', 'text-red-400', 'border-red-500/30',
+      'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30',
+      'bg-amber-500/10', 'text-amber-300', 'border-amber-500/30',
+      'authMsg-in'
+    );
+    msgBox.classList.add('border', ...cfg.classes);
+    // force re-trigger of the entrance animation
+    void msgBox.offsetWidth;
+    msgBox.classList.add('authMsg-in');
+
+    msgBox.innerHTML = '';
+    const iconEl = document.createElement('i');
+    iconEl.className = `fa-solid ${cfg.icon} mt-0.5 text-sm shrink-0`;
+    const textEl = document.createElement('span');
+    textEl.className = 'leading-5';
+    textEl.textContent = msg;
+    msgBox.appendChild(iconEl);
+    msgBox.appendChild(textEl);
+  }
+
+  function hideAuthMessage() {
+    const msgBox = document.getElementById('authMessage');
+    if (msgBox) msgBox.classList.add('hidden');
+  }
+
+  // ==================== سنجش قدرت رمز عبور ====================
+  function checkPasswordStrength(password) {
+    const bar = document.getElementById('passwordStrengthBar');
+    const text = document.getElementById('passwordStrengthText');
+    if (!bar || !text) return;
+
+    if (!password) {
+      bar.className = "h-1 rounded-full bg-zinc-700 transition-all duration-300 w-0";
+      text.innerText = "";
+      return;
+    }
+
+    let score = 0;
+    if (password.length >= 6) score += 1;
+    if (password.length >= 10) score += 1;
+    if (/[A-Z]/.test(password) || /[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    if (score <= 1) {
+      bar.className = "h-1 rounded-full bg-red-500 transition-all duration-300 w-1/3";
+      text.innerText = "رمز عبور ضعیف است";
+      text.className = "text-[11px] mt-1 text-red-400";
+    } else if (score === 2 || score === 3) {
+      bar.className = "h-1 rounded-full bg-yellow-500 transition-all duration-300 w-2/3";
+      text.innerText = "رمز عبور متوسط است";
+      text.className = "text-[11px] mt-1 text-yellow-400";
+    } else {
+      bar.className = "h-1 rounded-full bg-emerald-500 transition-all duration-300 w-full";
+      text.innerText = "رمز عبور بسیار قوی است ✓";
+      text.className = "text-[11px] mt-1 text-emerald-400";
+    }
+  }
+
+  // ==================== تابع ورود ====================
+  async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginSubmitBtn');
+
+    btn.disabled = true;
+    btn.innerText = "در حال بررسی...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { data, error } = await client.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error("ایمیل یا رمز عبور اشتباه است.");
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error("ایمیل شما هنوز تایید نشده است. ابتدا کد ارسال شده را تایید کنید.");
+        } else {
+          throw error;
+        }
+      }
+
+      showAuthMessage("با موفقیت وارد شدید!", false);
+      setTimeout(() => { location.reload(); }, 1000);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در ورود به حساب", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ورود به حساب";
+    }
+  }
+
+  // ==================== تابع ثبت‌نام ====================
+  async function handleRegister(e) {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('regFullName').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const btn = document.getElementById('regSubmitBtn');
+
+    if (!email.endsWith('@gmail.com')) {
+      showAuthMessage("تنها ایمیل‌های معتبر جیمیل (gmail.com@) مورد قبول است.", true);
+      return;
+    }
+
+    if (password.length < 6) {
+      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "در حال ارسال کد...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { data, error } = await client.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // اگر کاربر قبلاً ثبت‌نام و ایمیلش تایید شده باشد، Supabase به دلایل امنیتی
+      // خطا برنمی‌گرداند، ولی آرایه identities خالی برمی‌گردد. این تنها راه
+      // تشخیص «کاربر تکراری» در سمت کلاینت است.
+      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        switchAuthTab('login');
+        const loginEmailInput = document.getElementById('loginEmail');
+        if (loginEmailInput) {
+          loginEmailInput.value = email;
+          document.getElementById('loginPassword')?.focus();
+        }
+        showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن یا از «فراموشی رمز عبور» استفاده کن.", true, 'warning');
+        return;
+      }
+
+      tempRegistrationEmail = email;
+      const otpEmailDisplay = document.getElementById('otpEmailDisplay');
+      if (otpEmailDisplay) otpEmailDisplay.textContent = email;
+      showAuthMessage("کد ۶ رقمی تایید به جیمیل شما ارسال شد.", false);
+      
+      document.getElementById('registerForm').classList.add('hidden');
+      document.getElementById('otpForm').classList.remove('hidden');
+
+    } catch (err) {
+      if (err.message && err.message.toLowerCase().includes('already registered')) {
+        switchAuthTab('login');
+        const loginEmailInput = document.getElementById('loginEmail');
+        if (loginEmailInput) {
+          loginEmailInput.value = email;
+          document.getElementById('loginPassword')?.focus();
+        }
+        showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن.", true, 'warning');
+      } else {
+        showAuthMessage(err.message || "خطا در فرآیند ثبت‌نام", true);
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ارسال کد تایید به جیمیل";
+    }
+  }
+
+  // ==================== تابع فراموشی رمز عبور (ارسال لینک بازیابی) ====================
+  async function handleForgotPassword(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('forgotSubmitBtn');
+
+    btn.disabled = true;
+    btn.innerText = "در حال ارسال...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+
+      if (error) throw error;
+
+      showAuthMessage("لینک بازیابی رمز عبور به ایمیل شما ارسال شد. لطفاً صندوق ایمیل خود را بررسی کنید.", false);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در ارسال لینک بازیابی رمز عبور", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ارسال لینک بازیابی رمز عبور";
+    }
+  }
+
+  // ==================== تابع تنظیم رمز عبور جدید (بعد از کلیک روی لینک ایمیل) ====================
+  async function handleResetPassword(e) {
+    e.preventDefault();
+
+    const newPassword = document.getElementById('resetNewPassword').value;
+    const confirmNewPassword = document.getElementById('resetConfirmPassword').value;
+    const btn = document.getElementById('resetSubmitBtn');
+
+    if (newPassword.length < 6) {
+      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "در حال ثبت...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { error } = await client.auth.updateUser({ password: newPassword });
+
+      if (error) throw error;
+
+      showAuthMessage("رمز عبور شما با موفقیت تغییر کرد. اکنون می‌توانید وارد شوید.", false);
+      setTimeout(() => {
+        switchAuthTab('login');
+      }, 1200);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در تغییر رمز عبور", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ثبت رمز عبور جدید";
+    }
+  }
+
+  // نمایش فرم فراموشی رمز عبور
+  function showForgotPasswordForm() {
+    hideAuthMessage();
+    document.getElementById('loginForm')?.classList.add('hidden');
+    document.getElementById('registerForm')?.classList.add('hidden');
+    document.getElementById('otpForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.remove('hidden');
+  }
+
+  // بررسی رویداد بازیابی رمز عبور (وقتی کاربر روی لینک ایمیل کلیک می‌کند)
+  document.addEventListener('DOMContentLoaded', () => {
+    const client = getSupabase();
+    if (client && client.auth && typeof client.auth.onAuthStateChange === 'function') {
+      client.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          if (typeof openAuthModal === 'function') openAuthModal('login');
+          document.getElementById('loginForm')?.classList.add('hidden');
+          document.getElementById('registerForm')?.classList.add('hidden');
+          document.getElementById('otpForm')?.classList.add('hidden');
+          document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+          document.getElementById('resetPasswordForm')?.classList.remove('hidden');
+          showAuthMessage("لطفاً رمز عبور جدید خود را وارد کنید.", false);
+        }
+      });
+    }
+  });
+
+  // ==================== تابع تایید کد OTP ====================
+  async function handleVerifyOTP(e) {
+    e.preventDefault();
+    
+    const otpCode = document.getElementById('otpCode').value.trim();
+    const btn = document.getElementById('verifyOtpBtn');
+
+    btn.disabled = true;
+    btn.innerText = "در حال تایید...";
+
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+
+      const { data, error } = await client.auth.verifyOtp({
+        email: tempRegistrationEmail,
+        token: otpCode,
+        type: 'signup'
+      });
+
+      if (error) throw error;
+
+      showAuthMessage("حساب شما با موفقیت تایید و فعال شد!", false);
+      setTimeout(() => { location.reload(); }, 1200);
+
+    } catch (err) {
+      showAuthMessage(err.message || "کد وارد شده اشتباه یا منقضی شده است.", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "تایید و فعال‌سازی حساب";
+    }
+  }
+
+async function handleLogout() {
+  const client = window.supabaseClient || window.supabase;
+  await client.auth.signOut();
+  location.reload();
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'login') {
+        if (typeof openAuthModal === 'function') {
+            openAuthModal('login');
+        }
+    }
+});
+
+        function renderCommentAuthorArea() {
+            const area = document.getElementById('commentAuthorArea');
+            if (!area) return;
+            if (currentUser) {
+                const name = getDisplayName(currentUser);
+                area.innerHTML = `
+                    <div class="flex items-center justify-between bg-surface-container rounded-2xl px-5 py-3.5 border border-white/10">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white font-bold text-sm">${escapeHtml(name[0] || '?')}</div>
+                            <span class="text-sm text-on-surface">نظر با نام <span class="font-bold text-white">${escapeHtml(name)}</span> ثبت می‌شه</span>
+                        </div>
+                    </div>`;
+            } else {
+                area.innerHTML = `
+                    <button type="button" id="promptLoginBtn" class="w-full flex items-center justify-center gap-2 bg-surface-container border border-dashed border-white/15 rounded-2xl px-5 py-4 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all">
+                        <span class="material-symbols-outlined text-lg">login</span>
+                        برای ثبت نظر وارد حساب شو یا ثبت‌نام کن
+                    </button>`;
+                document.getElementById('promptLoginBtn')?.addEventListener('click', () => { openAuthModal('login'); });
+            }
+        }
+
+        function updateAccountBtnUI() {
+            const icon = document.getElementById('accountBtnIcon');
+            const nameSpan = document.getElementById('accountBtnName');
+            const btn = document.getElementById('accountBtn');
+            if (!icon || !btn || !nameSpan) return;
+            if (currentUser) {
+                const name = getDisplayName(currentUser);
+                icon.textContent = 'account_circle';
+                icon.classList.add('text-primary');
+                nameSpan.textContent = name;
+                nameSpan.classList.remove('hidden');
+                btn.classList.add('border-primary/40');
+                btn.title = name + ' — مشاهده پروفایل';
+            } else {
+                icon.textContent = 'person';
+                icon.classList.remove('text-primary');
+                nameSpan.textContent = '';
+                nameSpan.classList.add('hidden');
+                btn.classList.remove('border-primary/40');
+                btn.title = 'ورود به حساب';
+            }
+        }
+
+        document.getElementById('accountBtn').addEventListener('click', () => {
+            if (currentUser) {
+                window.location.href = '/profile.html';
+            } else {
+                openAuthModal('login');
+            }
+        });
+
+        db.auth.onAuthStateChange((_event, session) => {
+            currentUser = session?.user || null;
+            updateAccountBtnUI();
+            renderCommentAuthorArea();
+            refreshSubscriptionStatus();
+        });
+
+        (async () => {
+            const { data: { session } } = await db.auth.getSession();
+            currentUser = session?.user || null;
+            updateAccountBtnUI();
+            renderCommentAuthorArea();
+            await refreshSubscriptionStatus();
+        })();
+
+        let allEpisodes = [];
+        let visibleCount = 4;
+        let isNewestFirst = true;
+
+        let currentCommentPage = 1;
+        const commentsPerPage = 5;
+        let globalMainMessages = [];
+        let globalUserReplies = [];
+        let globalAdminReplies = [];
+        let globalProfilesMap = {};
+
+        function getCommentAuthorName(msg) {
+            if (msg && msg.user_id && globalProfilesMap[msg.user_id]) return globalProfilesMap[msg.user_id];
+            return (msg && msg.name) || 'کاربر';
+        }
+
+        async function loadDynamicContent() {
+            try {
+                const res = await fetch(`/data/data.json?v=${Date.now()}`);
+                const data = await res.json();
+                const manhwa = data[MANHWA_SLUG];
+
+                if (!manhwa) return;
+
+                englishTitle = manhwa.title_en;
+                persianTitle = manhwa.title_fa;
+                allEpisodes = manhwa.episodes || [];
+
+                renderSimilarManhwas(data, MANHWA_SLUG, manhwa.genres || []);
+                renderEpisodes();
+            } catch (err) {
+                console.error("خطا در بارگذاری دیتای داینامیک:", err);
+            }
+        }
+
+        function renderEpisodes() {
+            const container = document.getElementById('episodeList');
+            container.innerHTML = '';
+
+            const subBanner = document.getElementById('subscriptionBanner');
+            if (subBanner) {
+                const hasLocked = allEpisodes.some(ep => !ep.free);
+                subBanner.classList.toggle('hidden', !hasLocked);
+                subBanner.classList.toggle('flex', hasLocked);
+            }
+
+            let sortedEpisodes = [...allEpisodes];
+            if (!isNewestFirst) sortedEpisodes.reverse();
+
+            const visibleEpisodes = sortedEpisodes.slice(0, visibleCount);
+            visibleEpisodes.forEach(ep => {
+                const a = document.createElement('a');
+                let isFree = ep.free;
+                a.href = `/reader.html?slug=${MANHWA_SLUG}&ch=${ep.num}`;
+                a.dataset.free = isFree ? '1' : '0';
+                a.dataset.num = ep.num;
+
+                a.className = `flex items-center gap-4 p-4 rounded-2xl episode-card bg-surface-elevated`;
+                let statusHTML = isFree 
+                    ? `<span class="text-sm font-bold text-green-500">رایگان</span>`
+                    : `<span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>`;
+
+                a.innerHTML = `
+                    <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
+                        <img src="/manhwas/${MANHWA_SLUG}/chapterPictures/chapterpicture${ep.num}.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#${ep.num}</span></div>
+                        ${(!isFree && !currentUserSubscribed) ? `<div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>` : ''}
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-white">چپتر ${ep.num}</p>
+                        <p class="text-xs text-text-muted mt-1">${ep.date}</p>
+                    </div>
+                    ${statusHTML}
+                `;
+                container.appendChild(a);
+            });
+
+            const showMoreBtn = document.getElementById('showMoreBtn');
+            const remaining = allEpisodes.length - visibleCount;
+            if (remaining <= 0) {
+                showMoreBtn.textContent = "همه قسمت‌ها نمایش داده شد";
+                showMoreBtn.disabled = true;
+            } else {
+                showMoreBtn.textContent = `نمایش ${Math.min(25, remaining)} قسمت بیشتر`;
+            }
+        }
+
+        document.getElementById('showMoreBtn').addEventListener('click', () => {
+            visibleCount += 25;
+            if (visibleCount > allEpisodes.length) visibleCount = allEpisodes.length;
+            renderEpisodes();
+        });
+
+        document.getElementById('sortBtn').addEventListener('click', () => {
+            isNewestFirst = !isNewestFirst;
+            document.getElementById('sortBtn').innerHTML = isNewestFirst 
+                ? `جدیدترین اول <span class="material-symbols-outlined">swap_vert</span>` 
+                : `قدیمی‌ترین اول <span class="material-symbols-outlined">swap_vert</span>`;
+            renderEpisodes();
+        });
+
+        // بررسی دسترسی به یک چپتر: اگه رایگانه مستقیم بره، وگرنه بر اساس
+        // لاگین/اشتراک کاربر یا به صفحه خرید اشتراک بره یا به صفحه ریدر
+        // (بررسی نهایی و دقیق‌تر خود صفحه ریدر انجام می‌شه)
+        async function goToChapter(epNum, isFree) {
+            const readerUrl = `/reader.html?slug=${MANHWA_SLUG}&ch=${epNum}`;
+
+            if (isFree) {
+                window.location.href = readerUrl;
+                return;
+            }
+
+            if (!currentUser) {
+                window.location.href = SUBSCRIPTION_PAGE_URL;
+                return;
+            }
+
+            if (!subscriptionChecked) {
+                await refreshSubscriptionStatus();
+            }
+
+            window.location.href = currentUserSubscribed ? readerUrl : SUBSCRIPTION_PAGE_URL;
+        }
+
+        document.getElementById('episodeList').addEventListener('click', (e) => {
+            const card = e.target.closest('a[data-num]');
+            if (!card) return;
+            e.preventDefault();
+            const isFree = card.dataset.free === '1';
+            goToChapter(card.dataset.num, isFree);
+        });
+
+        document.getElementById('readBtn').addEventListener('click', () => {
+            if (allEpisodes && allEpisodes.length > 0) {
+                const firstEp = [...allEpisodes].sort((a, b) => Number(a.num) - Number(b.num))[0];
+                goToChapter(firstEp.num, !!firstEp.free);
+            } else {
+                goToChapter(1, false);
+            }
+        });
+
+        const titleElement = document.getElementById("manhwaTitle");
+        const typeElement = document.getElementById("type");
+        const mainname = document.getElementById("mainname");
+        let isPersian = false;
+        
+        if (titleElement) {
+            titleElement.addEventListener("click", () => {
+                isPersian = !isPersian;
+                if (isPersian) {
+                    titleElement.textContent = persianTitle || englishTitle;
+                    titleElement.style.fontFamily = "Vazirmatn, sans-serif";
+                    typeElement.style.direction = "rtl";
+                    titleElement.style.direction = "rtl";
+                    mainname.style.direction = "rtl";
+                } else {
+                    titleElement.textContent = englishTitle;
+                    titleElement.style.fontFamily = "Montserrat, sans-serif";
+                    titleElement.style.direction = "ltr";
+                    typeElement.style.direction = "ltr";
+                    mainname.style.direction = "ltr";
+                }
+            });
+        }
+
+        const openDrawerBtn = document.getElementById('openDrawerBtn');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+
+        function openDrawer() {
+            mobileDrawer.classList.remove('translate-x-full');
+            drawerOverlay.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDrawer() {
+            mobileDrawer.classList.add('translate-x-full');
+            drawerOverlay.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+            document.body.style.overflow = '';
+        }
+
+        openDrawerBtn.addEventListener('click', openDrawer);
+        closeDrawerBtn.addEventListener('click', closeDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDrawer();
+        });
+
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', async () => {
+                const shareData = {
+                    title: persianTitle || englishTitle,
+                    text: `مانهوای ${persianTitle || englishTitle} رو توی مانهواچی بخون`,
+                    url: window.location.href
+                };
+                try {
+                    if (navigator.share) {
+                        await navigator.share(shareData);
+                    } else {
+                        await navigator.clipboard.writeText(shareData.url);
+                        const shareIcon = document.getElementById('shareIcon');
+                        const originalSvg = shareIcon.outerHTML;
+                        shareIcon.outerHTML = '<svg id="shareIcon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        shareBtn.classList.add('bg-primary', 'text-white');
+                        setTimeout(() => {
+                            document.getElementById('shareIcon').outerHTML = originalSvg;
+                            shareBtn.classList.remove('bg-primary', 'text-white');
+                        }, 1800);
+                    }
+                } catch (err) {
+                    if (err.name !== 'AbortError') console.error('خطا در اشتراک‌گذاری:', err);
+                }
+            });
+        }
+
+        (function initDescriptionToggle() {
+            const p = document.getElementById('dynamic-description');
+            const fade = document.getElementById('descriptionFade');
+            const btn = document.getElementById('descriptionToggleBtn');
+            const text = document.getElementById('descriptionToggleText');
+            const icon = document.getElementById('descriptionToggleIcon');
+            if (!p || !btn || !fade) return;
+
+            requestAnimationFrame(() => {
+                if (p.scrollHeight > p.clientHeight + 4) {
+                    btn.classList.remove('hidden');
+                    btn.classList.add('flex-visible');
+                } else {
+                    fade.classList.add('hidden-fade');
+                }
+            });
+
+            let expanded = false;
+            btn.addEventListener('click', () => {
+                expanded = !expanded;
+                p.classList.toggle('expanded', expanded);
+                fade.classList.toggle('hidden-fade', expanded);
+                text.textContent = expanded ? 'نمایش کمتر' : 'توضیحات بیشتر';
+                icon.textContent = expanded ? 'expand_less' : 'expand_more';
+                if (!expanded) {
+                    document.getElementById('descriptionWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        })();
+
+        document.getElementById("copyTelegramBtn").addEventListener("click", async () => {
+            const telegramLink = "@ManhwaChiOfficial";
+            await navigator.clipboard.writeText(telegramLink);
+            const btn = document.getElementById("copyTelegramBtn");
+            btn.textContent = "کپی شد ✓";
+            setTimeout(() => { btn.textContent = "کپی لینک"; }, 2000);
+        });
+
+        function initComments() {
+            const messageForm = document.getElementById('messageForm');
+            const messageTextArea = document.getElementById('messageText');
+            const charCount = document.getElementById('charCount');
+
+            messageTextArea.addEventListener('input', () => charCount.textContent = `${messageTextArea.value.length} / 500`);
+
+            messageForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentUser) {
+                    openAuthModal('login');
+                    return;
+                }
+                const name = getDisplayName(currentUser);
+                const text = messageTextArea.value.trim();
+                if (!text || text.length < 2) return alert('نظر باید حداقل ۲ کاراکتر باشد');
+
+                const submitBtn = messageForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                try {
+                    const { error } = await db.from('messages').insert({
+                        name, text, manhwa_slug: MANHWA_SLUG, approved: false, user_id: currentUser.id
+                    });
+                    if (error) throw error;
+                    messageForm.reset();
+                    charCount.textContent = '۰ / ۵۰۰';
+                    showSuccessModal();
+                } catch (err) {
+                    console.error('خطا در ارسال نظر:', err);
+                    alert('خطایی پیش اومد، دوباره تلاش کن.');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+
+            async function loadMessages() {
+                const { data: messages } = await db.from('messages')
+                    .select('*')
+                    .eq('manhwa_slug', MANHWA_SLUG)
+                    .eq('approved', true)
+                    .order('created_at', { ascending: false });
+                
+                const { data: adminReplies } = await db.from('replies').select('*').order('created_at', { ascending: true });
+                
+                if (!messages) return;
+                
+                globalUserReplies = messages.filter(msg => msg.parent_message_id !== null);
+                globalAdminReplies = adminReplies || [];
+                globalMainMessages = messages.filter(msg => msg.parent_message_id === null);
+
+                // گرفتن full_name کاربران از جدول profiles در Supabase
+                const commentUserIds = [...new Set(messages.map(m => m.user_id).filter(Boolean))];
+                if (commentUserIds.length > 0) {
+                    const { data: profilesData } = await db.from('profiles').select('id, full_name').in('id', commentUserIds);
+                    globalProfilesMap = {};
+                    (profilesData || []).forEach(p => { globalProfilesMap[p.id] = p.full_name; });
+                } else {
+                    globalProfilesMap = {};
+                }
+                
+                document.getElementById('commentCount').textContent = `(${globalMainMessages.length})`;
+                
+                renderCommentsPage();
+                setupPagination();
+            }
+            
+            loadMessages();
+            db.channel('realtime_comments').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, loadMessages).subscribe();
+            db.channel('realtime_replies').on('postgres_changes', { event: '*', schema: 'public', table: 'replies' }, loadMessages).subscribe();
+        }
+        
+        function renderCommentsPage() {
+            const messagesList = document.getElementById('messagesList');
+            messagesList.innerHTML = '';
+            
+            const startIndex = (currentCommentPage - 1) * commentsPerPage;
+            const endIndex = startIndex + commentsPerPage;
+            const pageMessages = globalMainMessages.slice(startIndex, endIndex);
+
+            if (pageMessages.length === 0) {
+                messagesList.innerHTML = '<p class="text-text-muted text-center py-4 text-sm">هنوز نظری ثبت نشده است.</p>';
+                return;
+            }
+
+            pageMessages.forEach(msg => {
+                const userReplies = globalUserReplies
+                    .filter(reply => reply.parent_message_id === msg.id)
+                    .map(r => ({
+                        ...r,
+                        is_admin: false,
+                        content: r.text
+                    }));
+
+                const adminReplies = globalAdminReplies
+                    .filter(reply => reply.message_id === msg.id || reply.parent_message_id === msg.id)
+                    .map(r => ({
+                        ...r,
+                        is_admin: true,
+                        content: r.reply_text || r.text || r.content
+                    }));
+
+                const allRepliesSorted = [...userReplies, ...adminReplies].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+                const repliesHtml = allRepliesSorted.map(reply => {
+                    const replyDate = new Date(reply.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) + ' - ' + new Date(reply.created_at).toLocaleDateString('fa-IR');
+
+                    if (reply.is_admin) {
+                        return `
+                            <div class="admin-reply relative overflow-hidden my-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+                                            <span class="material-symbols-outlined text-xs font-bold">shield</span>
+                                        </div>
+                                        <div class="text-white font-bold text-xs flex items-center gap-1.5">
+                                            ${escapeHtml(reply.admin_name || 'مدیریت مانهواچی')}
+                                            <span class="bg-primary/20 text-primary border border-primary/30 text-[10px] px-2 py-0.5 rounded-md font-semibold">
+                                                ${escapeHtml(reply.admin_role || 'ادمین')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] text-text-muted font-mono" dir="ltr">${replyDate}</span>
+                                </div>
+                                <p class="text-on-surface-variant leading-relaxed text-[14px] pr-9">${escapeHtml(reply.content)}</p>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="reply-thread my-3">
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span class="font-semibold text-sm text-gray-200 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-primary/60"></span>
+                                        ${escapeHtml(getCommentAuthorName(reply))}
+                                    </span>
+                                    <span class="text-[11px] text-text-muted font-mono" dir="ltr">${replyDate}</span>
+                                </div>
+                                <p class="text-on-surface-variant text-[14px] leading-relaxed pr-3.5">${escapeHtml(reply.content)}</p>
+                            </div>
+                        `;
+                    }
+                }).join('');
+
+                const div = document.createElement('div');
+                div.className = 'bg-surface-elevated/70 backdrop-blur-md border border-white/10 hover:border-primary/30 rounded-3xl p-6 transition-all comment-animate shadow-sm';
+                const authorName = getCommentAuthorName(msg);
+                div.innerHTML = `
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-lg shadow-red-500/20">
+                            ${escapeHtml(authorName?.[0] || '?')}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <p class="font-bold text-white text-base">${escapeHtml(authorName)}</p>
+                                <span class="text-xs text-text-muted font-mono" dir="ltr">${new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(msg.created_at).toLocaleDateString('fa-IR')}</span>
+                            </div>
+                            <p class="mt-2.5 text-[15.2px] leading-relaxed text-on-surface-variant">${escapeHtml(msg.text)}</p>
+                            
+                            <button onclick="toggleReplyForm(${msg.id})" class="mt-3 text-primary hover:text-red-400 flex items-center gap-1.5 text-xs font-semibold transition bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-xl w-fit">
+                                <span class="material-symbols-outlined text-sm">reply</span>پاسخ به نظر
+                            </button>
+                            
+                            <div id="reply-form-${msg.id}" class="reply-box hidden"></div>
+                            ${repliesHtml ? `<div class="mt-4 pt-2 border-r-2 border-white/5 pr-2">${repliesHtml}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                messagesList.appendChild(div);
+            });
+        }
+
+        function renderSimilarManhwas(allData, currentSlug, currentGenres = []) {
+            const similarSection = document.getElementById('similarSection');
+            const similarList = document.getElementById('similarList');
+            if (!similarSection || !similarList) return;
+
+            const otherSlugs = Object.keys(allData).filter(slug => slug !== currentSlug);
+            if (otherSlugs.length === 0) return;
+
+            const scoredManhwas = otherSlugs.map(slug => {
+                const item = allData[slug];
+                const sharedGenres = (item.genres || []).filter(g => currentGenres.includes(g)).length;
+                return { slug, ...item, scoreMatch: sharedGenres };
+            });
+
+            scoredManhwas.sort((a, b) => b.scoreMatch - a.scoreMatch);
+            const similarItems = scoredManhwas.slice(0, 10);
+
+            similarList.innerHTML = '';
+            similarItems.forEach(item => {
+                const card = document.createElement('a');
+                card.href = `/manga.php?slug=${item.slug}`;
+                card.className = 'snap-start flex-shrink-0 w-36 sm:w-44 bg-surface-elevated border border-white/5 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 group';
+
+                card.innerHTML = `
+                    <div class="relative w-full h-48 sm:h-56 bg-zinc-800 overflow-hidden">
+                        <img src="/manhwas/${item.slug}/${item.cover_image}" 
+                             alt="${escapeHtml(item.title_fa || item.title_en)}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             loading="lazy"
+                             onerror="this.src='/ManhwaChi/favicon-192x192.png'" />
+                        <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-yellow-400 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">star</span>
+                            <span>${item.score || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-sm text-white line-clamp-1 group-hover:text-primary transition-colors" dir="rtl">
+                            ${escapeHtml(item.title_fa || item.title_en)}
+                        </h4>
+                        <p class="text-xs text-text-muted mt-1 line-clamp-1" dir="ltr">
+                            ${escapeHtml(item.title_en)}
+                        </p>
+                    </div>
+                `;
+                similarList.appendChild(card);
+            });
+
+            similarSection.classList.remove('hidden');
+        }
+
+        function setupPagination() {
+            const paginationContainer = document.getElementById('paginationContainer');
+            const pageNumbers = document.getElementById('pageNumbers');
+            const totalPages = Math.ceil(globalMainMessages.length / commentsPerPage);
+
+            if (totalPages <= 1) {
+                paginationContainer.classList.add('hidden');
+                return;
+            }
+            paginationContainer.classList.remove('hidden');
+            pageNumbers.innerHTML = '';
+
+            document.getElementById('prevPageBtn').disabled = currentCommentPage === 1;
+            document.getElementById('nextPageBtn').disabled = currentCommentPage === totalPages;
+
+            const createPageBtn = (pageNum) => {
+                const btn = document.createElement('button');
+                btn.className = `w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${pageNum === currentCommentPage ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105' : 'bg-surface-elevated border border-white/10 text-on-surface hover:border-primary/40'}`;
+                btn.textContent = pageNum;
+                btn.onclick = () => {
+                    currentCommentPage = pageNum;
+                    renderCommentsPage();
+                    setupPagination();
+                    document.getElementById('commentsAnchor').scrollIntoView({ behavior: 'smooth' });
+                };
+                return btn;
+            };
+
+            const createDots = () => {
+                const span = document.createElement('span');
+                span.className = 'w-8 h-10 flex items-end justify-center text-text-muted font-bold select-none pb-1';
+                span.textContent = '...';
+                return span;
+            };
+
+            const maxVisible = 1;
+            let pagesToRender = [];
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentCommentPage - maxVisible && i <= currentCommentPage + maxVisible)) {
+                    pagesToRender.push(i);
+                }
+            }
+
+            let lastPage = 0;
+            pagesToRender.forEach(pageNum => {
+                if (lastPage > 0 && pageNum - lastPage > 1) {
+                    pageNumbers.appendChild(createDots());
+                }
+                pageNumbers.appendChild(createPageBtn(pageNum));
+                lastPage = pageNum;
+            });
+
+            document.getElementById('prevPageBtn').onclick = () => {
+                if (currentCommentPage > 1) {
+                    currentCommentPage--;
+                    renderCommentsPage();
+                    setupPagination();
+                    document.getElementById('commentsAnchor').scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            document.getElementById('nextPageBtn').onclick = () => {
+                if (currentCommentPage < totalPages) {
+                    currentCommentPage++;
+                    renderCommentsPage();
+                    setupPagination();
+                    document.getElementById('commentsAnchor').scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+        }
+
+        window.toggleReplyForm = function(messageId) {
+            if (!currentUser) {
+                openAuthModal('login');
+                return;
+            }
+
+            const form = document.getElementById(`reply-form-${messageId}`);
+            document.querySelectorAll('.reply-box').forEach(el => {
+                if (el.id !== `reply-form-${messageId}`) el.classList.add('hidden');
+            });
+            
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                const name = getDisplayName(currentUser);
+                form.innerHTML = `
+                    <div class="space-y-3 mt-3 animate-fadeIn">
+                        <p class="text-xs text-text-muted">پاسخ با نام <span class="text-white font-bold">${escapeHtml(name)}</span> ثبت می‌شه</p>
+                        <textarea id="reply-text-${messageId}" rows="3" maxlength="400" class="w-full bg-surface-container border border-white/10 rounded-2xl px-4 py-3 text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="پاسخ خود را بنویسید..."></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="submitReply(${messageId})" id="reply-btn-${messageId}" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-red-600 active:scale-95 transition-all shadow-lg shadow-primary/20">ارسال پاسخ</button>
+                            <button onclick="cancelReply(${messageId})" class="px-5 border border-white/10 py-2.5 rounded-xl text-sm hover:bg-white/5 transition-all">لغو</button>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        window.submitReply = async function(messageId) {
+            if (!currentUser) {
+                openAuthModal('login');
+                return;
+            }
+
+            const textInput = document.getElementById(`reply-text-${messageId}`);
+            const btn = document.getElementById(`reply-btn-${messageId}`);
+
+            const name = getDisplayName(currentUser);
+            const text = textInput ? textInput.value.trim() : '';
+
+            if (!text || text.length < 2) return alert("متن پاسخ کوتاه است");
+
+            try {
+                btn.disabled = true;
+                btn.textContent = "در حال ارسال...";
+
+                const { error } = await db.from('messages').insert({
+                    name: name,
+                    text: text,
+                    manhwa_slug: MANHWA_SLUG,
+                    approved: false,
+                    parent_message_id: messageId,
+                    user_id: currentUser.id
+                });
+
+                if (error) throw error;
+
+                cancelReply(messageId);
+                showSuccessModal();
+            } catch (err) {
+                console.error("خطا در ارسال پاسخ:", err);
+                alert("خطایی رخ داد. لطفا دوباره تلاش کنید.");
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "ارسال پاسخ";
+                }
+            }
+        };
+
+        window.cancelReply = function(messageId) { 
+            const form = document.getElementById(`reply-form-${messageId}`);
+            if (form) form.classList.add('hidden'); 
+        };
+
+        function showSuccessModal() { 
+            const modal = document.getElementById("successModal"); 
+            modal.classList.remove("opacity-0", "pointer-events-none"); 
+            modal.classList.add("opacity-100"); 
+        }
+
+        document.getElementById("closeSuccessModal").addEventListener("click", () => {
+            const modal = document.getElementById("successModal");
+            modal.classList.remove("opacity-100");
+            modal.classList.add("opacity-0", "pointer-events-none");
+        });
+
+        async function updateViewCountDisplay() {
+            const { data } = await db.from('manhwa_stats').select('views').eq('slug', MANHWA_SLUG).single();
+            if (data) document.getElementById('viewNumber').textContent = Number(data.views || 0);
+        }
+
+        function setupBookmarkLogic() {
+            const bookmarkBtn = document.getElementById('bookmarkBtn');
+            if (!bookmarkBtn) return;
+        
+            let bookmarks = JSON.parse(localStorage.getItem('manhwachi_bookmarks')) || [];
+            let isBookmarked = bookmarks.some(b => b.slug === MANHWA_SLUG);
+        
+            function updateBookmarkButtonUI() {
+                if (isBookmarked) {
+                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-black font-bold" style="font-variation-settings: 'FILL' 1;">bookmark</span>`;
+                    bookmarkBtn.className = "w-14 h-14 bg-primary border-2 border-primary rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-lg shadow-primary/50";
+                } else {
+                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary">bookmark_add</span>`;
+                    bookmarkBtn.className = "w-14 h-14 border-2 border-primary text-primary bg-transparent rounded-2xl flex items-center justify-center active:scale-95 transition-all hover:bg-primary/10";
+                }
+            }
+        
+            updateBookmarkButtonUI();
+        
+            bookmarkBtn.addEventListener('click', () => {
+                bookmarks = JSON.parse(localStorage.getItem('manhwachi_bookmarks')) || [];
+                
+                if (isBookmarked) {
+                    bookmarks = bookmarks.filter(b => b.slug !== MANHWA_SLUG);
+                    isBookmarked = false;
+                } else {
+                    const coverSrc = document.getElementById('dynamic-cover').getAttribute('src');
+                    const itemToSave = {
+                        slug: MANHWA_SLUG,
+                        title_en: englishTitle,
+                        title_fa: persianTitle,
+                        cover: coverSrc,
+                        savedAt: new Date().toISOString()
+                    };
+                    bookmarks.push(itemToSave);
+                    isBookmarked = true;
+                }
+        
+                localStorage.setItem('manhwachi_bookmarks', JSON.stringify(bookmarks));
+                updateBookmarkButtonUI();
+            });
+        }
+
+        window.onload = () => {
+            loadDynamicContent().then(() => {
+                setupBookmarkLogic();
+            });
+            initComments();
+            updateViewCountDisplay();
+        };
+    </script>
+</body>
+</html>

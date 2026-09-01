@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دعوت به همکاری | مانهواچی</title>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase.js"></script>
+
+    <!-- Google Fonts & Local Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+    
+    <style>
+        :root {
+            --primary-color: #DC2626;
+            --secondary-color: #ff6767ff;
+            --bg-color: #130f0f;
+            --card-bg: #241a1a;
+            --text-color: #f1f2f6;
+            --text-muted: #b2bec3;
+            --accent-color: #ce0000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .header h1 span {
+            color: var(--primary-color);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 20px rgba(231, 92, 92, 0.2);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            background: rgba(231, 92, 92, 0.2);
+            color: var(--secondary-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 15px;
+            align-self: center;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .footer-note {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border-right: 4px solid var(--accent-color);
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .footer-note p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        
+        /* استایل مودال (پاپ‌آپ) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .modal {
+            background: var(--card-bg); width: 90%; max-width: 450px;
+            padding: 25px; border-radius: 16px; border: 1px solid var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: right; position: relative;
+        }
+        .modal h3 { margin-bottom: 15px; margin-top: 20px; color: #fff; font-size: 1.3rem; }
+        .close-btn { position: absolute; top: 15px; left: 15px; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+        
+        /* فرم */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+            background: #0f0f13; color: #fff; font-size: 0.95rem; outline: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-color); }
+        
+        .radio-group { display: flex; gap: 15px; margin-top: 5px; }
+        .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; color: #fff; }
+
+        .submit-btn { width: 100%; padding: 12px; background: var(--accent-color); color: #ffffff; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>به خانواده <span>مانهواچی</span> بپیوندید!</h1>
+        <p>اگر عاشق دنیای مانهوا هستید، اینجا بهترین جا برای رشد و همکاری مشترکه.</p>
+    </div>
+
+    <div class="cards-grid">
+        <!-- کارت اول: مشاور و پیشنهاد دهنده -->
+        <div class="card">
+            <div>
+                <div class="card-icon">💡</div>
+                <span class="badge">ویژه مانهواباز های حرفه‌ای</span>
+                <h3>مشاور و پیشنهاددهنده</h3>
+                <p>به ما کمک کن بهترین و داغ‌ترین عنوان‌ها رو برای قرار گرفتن تو سایت انتخاب کنیم</p>
+            </div>
+            <button class="btn" onclick="openModal('مشاور و پیشنهاددهنده')">ثبت درخواست</button>
+        </div>
+
+        <!-- کارت دوم: تیم‌های ترجمه -->
+        <div class="card">
+            <div>
+                <div class="card-icon">🚀</div>
+                <span class="badge">همکاری با کانال‌ها</span>
+                <h3>تیم‌های ترجمه تلگرام</h3>
+                <p>کارای ترجمه‌شده کانال تلگرامتون رو توی مانهواچی با نام و لینک مستقیم کانال خودتون قرار می‌دیم تا دیده‌شدن و ممبرهای کانالتون چند برابر بشه.</p>
+            </div>
+            <button class="btn" onclick="openModal(' تیم ترجمه تلگرامی')">ثبت درخواست</button>
+        </div>
+
+        <!-- کارت سوم: تایپیست -->
+        <div class="card">
+            <div>
+                <div class="card-icon">💻</div>
+                <span class="badge">آموزش رایگان</span>
+                <h3>تایپیست (ادیتور)</h3>
+                <p>فرقی نمی‌کنه حرفه‌ای هستی یا کاملاً مبتدی؛ اگه فقط یک سیستم یا لپ‌تاپ داری، می‌تونی بیای تو تیم ما. صفر تا صد ادیت و ادیتور شدن رو خودمون بهت یاد می‌دیم!</p>
+            </div>
+            <button class="btn" onclick="openModal('تایپیست')">ثبت درخواست</button>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <p>📌 <strong>چطور شروع کنم؟</strong> کافیه روی دکمه هر بخش کلیک کنی تا مستقیماً به آیدی پشتیبانی تلگرام وصل بشی و با هم صحبت کنیم!</p>
+    </div>
+</div>
+
+<!-- مودال فرم دریافت اطلاعات -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <h3 id="modalTitle">فرم درخواست همکاری</h3>
+        
+        <form id="applyForm">
+            <input type="hidden" id="roleInput">
+
+            <div class="form-group">
+                <label>نام و نام خانوادگی:</label>
+                <input type="text" id="fullName" required placeholder="مثلاً: علی محمدی">
+            </div>
+
+            <div class="form-group">
+                <label>سن:</label>
+                <input type="number" id="age" required placeholder="مثلاً: 18">
+            </div>
+
+            <div class="form-group">
+                <label>پلتفرم ارتباطی را انتخاب کنید:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="platform" value="تلگرام" checked onclick="updateSocialLabel()"> تلگرام</label>
+                    <label><input type="radio" name="platform" value="روبیکا" onclick="updateSocialLabel()"> روبیکا</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label id="socialLabel">آیدی تلگرام:</label>
+                <input type="text" id="socialId" required placeholder="@username">
+            </div>
+
+            <div class="form-group">
+                <label>توضیحات و سابقه (اختیاری):</label>
+                <textarea id="bio" rows="3" placeholder="کمی درباره خودت و تجربه‌هات بگو..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">ارسال اطلاعات</button>
+        </form>
+    </div>
+</div>
+<script>
+    
+    // 2. مدیریت مودال
+    function openModal(role) {
+        document.getElementById('roleInput').value = role;
+        document.getElementById('modalTitle').innerText = 'فرم درخواست: ' + role;
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.getElementById('applyForm').reset();
+    }
+
+    // 3. تغییر لیبل آیدی (تلگرام / روبیکا)
+    function updateSocialLabel() {
+        const platform = document.querySelector('input[name="platform"]:checked').value;
+        document.getElementById('socialLabel').innerText = `آیدی ${platform}:`;
+    }
+
+    // 4. ارسال اطلاعات به Supabase
+    document.getElementById('applyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'در حال ارسال...';
+
+        const role = document.getElementById('roleInput').value;
+        const fullName = document.getElementById('fullName').value;
+        const age = document.getElementById('age').value;
+        const platform = document.querySelector('input[name="platform"]:checked').value;
+        const socialId = document.getElementById('socialId').value;
+        const bio = document.getElementById('bio').value;
+
+        // ارسال به جدول applications
+        const { data, error } = await supabaseClient
+            .from('applications')
+            .insert([
+                { 
+                    role: role, 
+                    full_name: fullName, 
+                    age: age, 
+                    platform: platform, 
+                    social_id: socialId, 
+                    bio: bio 
+                }
+            ]);
+
+        if (error) {
+            alert('خطایی رخ داد: ' + error.message);
+        } else {
+            alert('اطلاعات شما با موفقیت ثبت شد! به زودی با شما ارتباط می‌گیریم.');
+            closeModal();
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'ارسال اطلاعات';
+    });
+</script>
+
+</body>
+</html>
