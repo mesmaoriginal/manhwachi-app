@@ -401,29 +401,47 @@ async function buildSignedUrls(slug, chapterNum) {
   return urls;
 }
 
+// خواندن data.json و پیدا کردن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر
+// (جایگزین کوئری زدن به جدول episodes روی Supabase - همون فایلی که renderMangaPage هم می‌خونه)
+function findEpisodeFromJson(slug, chapterNum) {
+  const jsonPath = path.join(__dirname, "data", "data.json");
+  let data = {};
+  try {
+    if (fs.existsSync(jsonPath)) {
+      data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    }
+  } catch (err) {
+    console.error("خطا در خواندن data.json:", err);
+    return { readError: true };
+  }
+
+  const manhwa = data[slug];
+  if (!manhwa || !Array.isArray(manhwa.episodes)) {
+    return { episode: null };
+  }
+
+  // شماره چپتر رو به عدد تبدیل می‌کنیم چون توی JSON به صورت عدد ذخیره شده
+  const numTarget = Number(chapterNum);
+  const episode = manhwa.episodes.find((ep) => Number(ep.num) === numTarget);
+  return { episode: episode || null };
+}
+
 app.post("/api/get-chapter-images", async (req, res) => {
   try {
     const { slug, chapterNum } = req.body || {};
 
-    if (!slug || !chapterNum) {
+    // نکته: چون چپتر شماره 0 هم معتبره، نباید با !chapterNum چک بشه
+    // (چون !0 === true و اون رو اشتباهاً «ناقص» حساب می‌کرد)
+    if (!slug || chapterNum === undefined || chapterNum === null || chapterNum === "") {
       return res.status(400).json({ error: "پارامترهای ناقص" });
     }
 
-    // ۱. چک وضعیت چپتر (رایگان یا VIP) از جدول episodes روی Supabase
-    const epRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/episodes?slug=eq.${encodeURIComponent(slug)}&num=eq.${encodeURIComponent(chapterNum)}&select=is_free`,
-      { headers: supabaseAdminHeaders() }
-    );
-    const epRows = await epRes.json();
+    // ۱. چک وضعیت چپتر (رایگان یا قفل) مستقیم از data.json
+    const { episode, readError } = findEpisodeFromJson(slug, chapterNum);
 
-    // لاگ دقیق برای دیباگ: اگه epRes.ok نباشه یا epRows آرایه نباشه،
-    // یعنی مشکل از env varهای Supabase یا خود درخواسته، نه نبود چپتر
-    if (!epRes.ok || !Array.isArray(epRows)) {
-      console.error("خطای Supabase در گرفتن episode:", epRes.status, epRows);
-      return res.status(500).json({ error: "خطا در ارتباط با دیتابیس" });
+    if (readError) {
+      return res.status(500).json({ error: "خطا در خواندن اطلاعات مانهوا" });
     }
-
-    const episode = epRows[0];
 
     if (!episode) {
       console.warn(`چپتر پیدا نشد برای slug=${slug} num=${chapterNum}`);
@@ -431,7 +449,7 @@ app.post("/api/get-chapter-images", async (req, res) => {
     }
 
     // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده
-    if (episode.is_free) {
+    if (episode.free) {
       const urls = await buildSignedUrls(slug, chapterNum);
       if (urls.length === 0) {
         return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
