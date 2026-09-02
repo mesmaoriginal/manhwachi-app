@@ -1,243 +1,467 @@
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, follow">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دعوت به همکاری | مانهواچی</title>
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/js/supabase.js"></script>
 
-    <!-- Google Fonts & Local Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+    <!-- Google Fonts & Font-Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
             --primary-color: #DC2626;
-            --secondary-color: #ff6767ff;
-            --bg-color: #130f0f;
-            --card-bg: #241a1a;
-            --text-color: #f1f2f6;
-            --text-muted: #b2bec3;
-            --accent-color: #ce0000;
+            --primary-hover: #fa5454;
+            --primary-glow: rgba(225, 29, 29, 0.35);
+            --bg-color: #0B0B0E;
+            --card-bg: rgba(22, 22, 29, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --input-bg: #14141B;
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-family: 'Vazirmatn', -apple-system, sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(225, 29, 72, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(225, 29, 72, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1080px;
             width: 100%;
             text-align: center;
         }
 
+        /* Header */
         .header {
-            margin-bottom: 40px;
+            margin-bottom: 50px;
+        }
+
+        .header .badge-top {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(225, 29, 72, 0.1);
+            border: 1px solid rgba(225, 29, 72, 0.3);
+            color: var(--primary-hover);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 18px;
         }
 
         .header h1 {
-            font-size: 2.2rem;
-            color: #fff;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #FFFFFF;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
         }
 
         .header h1 span {
-            color: var(--primary-color);
+            background: linear-gradient(135deg, #fa5454, #DC2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .header p {
             color: var(--text-muted);
             font-size: 1.1rem;
+            font-weight: 300;
         }
 
+        /* Grid & Cards */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
 
         .card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 30px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 32px 24px;
+            border: 1px solid var(--card-border);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             position: relative;
             overflow: hidden;
+            text-align: right;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            transition: opacity 0.35s ease;
         }
 
         .card:hover {
             transform: translateY(-8px);
-            border-color: var(--primary-color);
-            box-shadow: 0 10px 20px rgba(231, 92, 92, 0.2);
+            border-color: rgba(225, 29, 72, 0.4);
+            box-shadow: 0 15px 35px var(--primary-glow);
         }
 
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon-wrapper {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-hover);
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            background: rgba(225, 29, 29, 0.12);
+            color: #ff7575;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 12px;
         }
 
         .card h3 {
-            font-size: 1.4rem;
-            margin-bottom: 12px;
-            color: #fff;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #FFFFFF;
         }
 
         .card p {
             color: var(--text-muted);
             font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .badge {
-            background: rgba(231, 92, 92, 0.2);
-            color: var(--secondary-color);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-bottom: 15px;
-            align-self: center;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            font-weight: 300;
         }
 
         .btn {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color), #ea2525);
+            color: #FFFFFF;
             text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: opacity 0.2s;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
         .btn:hover {
-            opacity: 0.9;
+            background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+            box-shadow: 0 6px 20px var(--primary-glow);
         }
 
+        /* Footer Note */
         .footer-note {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            border-right: 4px solid var(--accent-color);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px 25px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            border-right: 4px solid var(--primary-color);
             text-align: right;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-note i {
+            color: var(--primary-hover);
+            font-size: 1.2rem;
         }
 
         .footer-note p {
             color: var(--text-muted);
             font-size: 0.95rem;
-            line-height: 1.5;
+            margin: 0;
         }
 
-        
-        /* استایل مودال (پاپ‌آپ) */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(5, 5, 8, 0.82);
+            backdrop-filter: blur(8px);
             display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            opacity: 0; pointer-events: none; transition: all 0.3s ease;
             z-index: 1000;
+            padding: 20px;
         }
+        
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         
         .modal {
-            background: var(--card-bg); width: 90%; max-width: 450px;
-            padding: 25px; border-radius: 16px; border: 1px solid var(--primary-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: right; position: relative;
+            background: #14141C;
+            width: 100%; max-width: 460px;
+            padding: 30px; border-radius: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+            text-align: right; position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
-        .modal h3 { margin-bottom: 15px; margin-top: 20px; color: #fff; font-size: 1.3rem; }
-        .close-btn { position: absolute; top: 15px; left: 15px; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
-        
-        /* فرم */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-muted); }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-            background: #0f0f13; color: #fff; font-size: 0.95rem; outline: none;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-color); }
-        
-        .radio-group { display: flex; gap: 15px; margin-top: 5px; }
-        .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; color: #fff; }
 
-        .submit-btn { width: 100%; padding: 12px; background: var(--accent-color); color: #ffffff; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .modal h3 { color: #fff; font-size: 1.25rem; font-weight: 700; }
+        
+        .close-btn { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: none; color: var(--text-muted); 
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        
+        .close-btn:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+        
+        /* Form */
+        .form-group { margin-bottom: 18px; }
+        
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-size: 0.88rem; 
+            color: #D1D5DB; 
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px 14px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.08);
+            background: var(--input-bg); 
+            color: #fff; font-size: 0.95rem; outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group textarea { resize: vertical; }
+
+        .form-group input:focus, .form-group textarea:focus { 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+        }
+        
+        .radio-group { 
+            display: flex; gap: 12px; margin-top: 6px; 
+        }
+
+        .radio-btn {
+            flex: 1;
+            position: relative;
+        }
+
+        .radio-btn input {
+            position: absolute; opacity: 0; width: 0; height: 0;
+        }
+
+        .radio-btn label {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px; cursor: pointer;
+            color: var(--text-muted); font-size: 0.9rem;
+            transition: all 0.2s ease;
+            margin-bottom: 0;
+        }
+
+        .radio-btn input:checked + label {
+            border-color: var(--primary-color);
+            background: rgba(225, 29, 72, 0.1);
+            color: #FFF;
+            font-weight: 700;
+        }
+
+        .submit-btn { 
+            width: 100%; padding: 14px; 
+            background: linear-gradient(135deg, var(--primary-color), #DC2626);
+            color: #ffffff; font-weight: 700; border: none; 
+            border-radius: 10px; cursor: pointer; margin-top: 10px; 
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+        }
+
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .form-group input.input-error {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+        }
+
+        .field-error {
+            color: var(--primary-hover);
+            font-size: 0.8rem;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .field-error.show { display: block; }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .modal { padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
+        <div class="badge-top">
+            <i class="fa-solid fa-users"></i>
+            پیوستن به تیم
+        </div>
         <h1>به خانواده <span>مانهواچی</span> بپیوندید!</h1>
         <p>اگر عاشق دنیای مانهوا هستید، اینجا بهترین جا برای رشد و همکاری مشترکه.</p>
     </div>
 
     <div class="cards-grid">
-        <!-- کارت اول: مشاور و پیشنهاد دهنده -->
+        <!-- کارت اول: مترجم -->
         <div class="card">
             <div>
-                <div class="card-icon">💡</div>
-                <span class="badge">ویژه مانهواباز های حرفه‌ای</span>
-                <h3>مشاور و پیشنهاددهنده</h3>
-                <p>به ما کمک کن بهترین و داغ‌ترین عنوان‌ها رو برای قرار گرفتن تو سایت انتخاب کنیم</p>
+                <div class="card-icon-wrapper">
+                    <i class="fa-solid fa-language"></i>
+                </div>
+                <span class="badge">نیازمند تسلط به زبان</span>
+                <h3>مترجم</h3>
+                <p>اگه به انگلیسی مسلطی و عاشق مانهوایی، بیا مترجم تیم ما شو و متن‌ها رو روون و بی‌نقص به فارسی ترحمه کن.</p>
             </div>
-            <button class="btn" onclick="openModal('مشاور و پیشنهاددهنده')">ثبت درخواست</button>
+            <button class="btn" onclick="openModal('مترجم')">
+                ثبت درخواست
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
         </div>
 
-        <!-- کارت دوم: تیم‌های ترجمه -->
+        <!-- کارت دوم: کلینر -->
         <div class="card">
             <div>
-                <div class="card-icon">🚀</div>
-                <span class="badge">همکاری با کانال‌ها</span>
-                <h3>تیم‌های ترجمه تلگرام</h3>
-                <p>کارای ترجمه‌شده کانال تلگرامتون رو توی مانهواچی با نام و لینک مستقیم کانال خودتون قرار می‌دیم تا دیده‌شدن و ممبرهای کانالتون چند برابر بشه.</p>
+                <div class="card-icon-wrapper">
+                    <i class="fa-solid fa-eraser"></i>
+                </div>
+                <span class="badge">آموزش رایگان</span>
+                <h3>کلینر</h3>
+                <p>کار شما پاک‌سازی و آماده‌سازی صفحات خام مانهواست؛ حذف متن اصلی و تمیزکاری تصاویر قبل از تایپ. اگر بهش علاقه داری، جای تو همینجاست.</p>
             </div>
-            <button class="btn" onclick="openModal(' تیم ترجمه تلگرامی')">ثبت درخواست</button>
+            <button class="btn" onclick="openModal('کلینر')">
+                ثبت درخواست
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
         </div>
 
         <!-- کارت سوم: تایپیست -->
         <div class="card">
             <div>
-                <div class="card-icon">💻</div>
+                <div class="card-icon-wrapper">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
                 <span class="badge">آموزش رایگان</span>
                 <h3>تایپیست (ادیتور)</h3>
-                <p>فرقی نمی‌کنه حرفه‌ای هستی یا کاملاً مبتدی؛ اگه فقط یک سیستم یا لپ‌تاپ داری، می‌تونی بیای تو تیم ما. صفر تا صد ادیت و ادیتور شدن رو خودمون بهت یاد می‌دیم!</p>
+                <p>فرقی نمی‌کنه حرفه‌ای هستی یا کاملاً مبتدی؛ خیلی راحت می‌تونی بیای تو تیم ما. صفر تا صد ادیت و ادیتور شدن رو خودمون بهت یاد می‌دیم!</p>
             </div>
-            <button class="btn" onclick="openModal('تایپیست')">ثبت درخواست</button>
+            <button class="btn" onclick="openModal('تایپیست')">
+                ثبت درخواست
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+        </div>
+
+        <!-- کارت چهارم: کانال تلگرام -->
+        <div class="card">
+            <div>
+                <div class="card-icon-wrapper">
+                    <i class="fa-solid fa-rocket"></i>
+                </div>
+                <span class="badge">همکاری با کانال‌ها</span>
+                <h3>تیم‌های ترجمه تلگرام</h3>
+                <p>اگر کانال تلگرام دارید مانهوا های  ترجمه‌شده خودتون رو توی مانهواچی با نام و لینک مستقیم کانال خودتون قرار می‌دیم تا دیده‌ بشن و ممبرهای کانالتون چند برابر بشه.</p>
+            </div>
+            <button class="btn" onclick="openModal('تیم ترجمه تلگرامی')">
+                ثبت درخواست
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
         </div>
     </div>
 
     <div class="footer-note">
-        <p>📌 <strong>چطور شروع کنم؟</strong> کافیه روی دکمه هر بخش کلیک کنی تا مستقیماً به آیدی پشتیبانی تلگرام وصل بشی و با هم صحبت کنیم!</p>
+        <i class="fa-solid fa-circle-info"></i>
+        <p><strong>چطور شروع کنم؟</strong> کافیه روی دکمه هر بخش کلیک کنی و فرم رو پر کنی، تیم ما سریعاً درخواستت رو بررسی می‌کنه!</p>
     </div>
 </div>
 
-<!-- مودال فرم دریافت اطلاعات -->
+<!-- مودال فرم -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-        <h3 id="modalTitle">فرم درخواست همکاری</h3>
+        <div class="modal-header">
+            <h3 id="modalTitle">فرم درخواست همکاری</h3>
+            <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
         
         <form id="applyForm">
             <input type="hidden" id="roleInput">
@@ -253,16 +477,23 @@
             </div>
 
             <div class="form-group">
-                <label>پلتفرم ارتباطی را انتخاب کنید:</label>
+                <label>پلتفرم ارتباطی اصلی را انتخاب کنید:</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="platform" value="تلگرام" checked onclick="updateSocialLabel()"> تلگرام</label>
-                    <label><input type="radio" name="platform" value="روبیکا" onclick="updateSocialLabel()"> روبیکا</label>
+                    <div class="radio-btn">
+                        <input type="radio" id="p-telegram" name="platform" value="تلگرام" checked onclick="updateSocialLabel()">
+                        <label for="p-telegram"> تلگرام</label>
+                    </div>
+                    <div class="radio-btn">
+                        <input type="radio" id="p-rubika" name="platform" value="روبیکا" onclick="updateSocialLabel()">
+                        <label for="p-rubika"> روبیکا</label>
+                    </div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label id="socialLabel">آیدی تلگرام:</label>
                 <input type="text" id="socialId" required placeholder="@username">
+                <span class="field-error" id="socialIdError">آیدی باید با @ شروع بشه و بین ۴ تا ۳۲ کاراکتر انگلیسی، عدد یا آندرلاین (_) باشه.</span>
             </div>
 
             <div class="form-group">
@@ -274,9 +505,9 @@
         </form>
     </div>
 </div>
+
 <script>
-    
-    // 2. مدیریت مودال
+    // مدیریت مودال
     function openModal(role) {
         document.getElementById('roleInput').value = role;
         document.getElementById('modalTitle').innerText = 'فرم درخواست: ' + role;
@@ -288,25 +519,78 @@
         document.getElementById('applyForm').reset();
     }
 
-    // 3. تغییر لیبل آیدی (تلگرام / روبیکا)
+    // تغییر لیبل آیدی (تلگرام / روبیکا)
     function updateSocialLabel() {
         const platform = document.querySelector('input[name="platform"]:checked').value;
         document.getElementById('socialLabel').innerText = `آیدی ${platform}:`;
+        // با تغییر پلتفرم، خطای قبلی پاک بشه
+        clearSocialIdError();
     }
 
-    // 4. ارسال اطلاعات به Supabase
+    // بررسی معتبر بودن آیدی: باید با @ شروع بشه، فقط حروف انگلیسی/عدد/آندرلاین باشه،
+    // طول درست داشته باشه و کاملاً عددی/تکراری (چرت‌وپرت) نباشه
+    function isValidSocialId(value) {
+        const id = value.trim();
+
+        // باید با @ شروع بشه و بعدش ۴ تا ۳۲ کاراکتر مجاز (حرف انگلیسی/عدد/آندرلاین)
+        const pattern = /^@[A-Za-z0-9_]{4,32}$/;
+        if (!pattern.test(id)) return false;
+
+        const username = id.slice(1);
+
+        // باید حداقل یک حرف انگلیسی داشته باشه (فقط عدد یا فقط آندرلاین قبول نیست)
+        if (!/[A-Za-z]/.test(username)) return false;
+
+        // رد کردن ورودی‌های چرت مثل تکرار یک کاراکتر (مثلاً @aaaaaaa یا @1111111)
+        if (/^(.)\1+$/.test(username)) return false;
+
+        return true;
+    }
+
+    function showSocialIdError() {
+        document.getElementById('socialId').classList.add('input-error');
+        document.getElementById('socialIdError').classList.add('show');
+    }
+
+    function clearSocialIdError() {
+        document.getElementById('socialId').classList.remove('input-error');
+        document.getElementById('socialIdError').classList.remove('show');
+    }
+
+    // پاک کردن خطا موقع تایپ مجدد
+    document.getElementById('socialId').addEventListener('input', clearSocialIdError);
+
+    // ارسال اطلاعات به Supabase
     document.getElementById('applyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
+        const socialIdInput = document.getElementById('socialId');
+        const socialId = socialIdInput.value.trim();
+        const fullNameInput = document.getElementById('fullName');
+        const fullName = fullNameInput.value.trim();
+
+        // اعتبارسنجی آیدی: اگه خالی، اشتباه یا چرت‌وپرت بود، اصلاً ارسال نشه
+        if (!isValidSocialId(socialId)) {
+            showSocialIdError();
+            socialIdInput.focus();
+            return;
+        }
+        clearSocialIdError();
+
+        // اعتبارسنجی نام (حداقل دو حرف، فقط حروف فارسی/انگلیسی و فاصله)
+        if (!/^[A-Za-zآ-یءa-zA-Z\s]{3,50}$/.test(fullName)) {
+            alert('لطفاً نام و نام خانوادگی معتبر وارد کن (فقط حروف، بدون عدد یا کاراکتر عجیب).');
+            fullNameInput.focus();
+            return;
+        }
+
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerText = 'در حال ارسال...';
 
         const role = document.getElementById('roleInput').value;
-        const fullName = document.getElementById('fullName').value;
         const age = document.getElementById('age').value;
         const platform = document.querySelector('input[name="platform"]:checked').value;
-        const socialId = document.getElementById('socialId').value;
         const bio = document.getElementById('bio').value;
 
         // ارسال به جدول applications
