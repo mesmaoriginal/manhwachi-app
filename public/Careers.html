@@ -369,6 +369,34 @@
             .header h1 { font-size: 1.8rem; }
             .modal { padding: 20px; }
         }
+
+        /* Closed / full-capacity state */
+        .card.closed {
+            opacity: 0.6;
+        }
+
+        .card.closed:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--card-border);
+        }
+
+        .badge-closed {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+        }
+
+        .btn.btn-disabled {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn.btn-disabled:hover {
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -385,7 +413,7 @@
 
     <div class="cards-grid">
         <!-- کارت اول: مترجم -->
-        <div class="card">
+        <div class="card" data-role="مترجم">
             <div>
                 <div class="card-icon-wrapper">
                     <i class="fa-solid fa-language"></i>
@@ -401,7 +429,7 @@
         </div>
 
         <!-- کارت دوم: کلینر -->
-        <div class="card">
+        <div class="card" data-role="کلینر">
             <div>
                 <div class="card-icon-wrapper">
                     <i class="fa-solid fa-eraser"></i>
@@ -417,7 +445,7 @@
         </div>
 
         <!-- کارت سوم: تایپیست -->
-        <div class="card">
+        <div class="card" data-role="تایپیست">
             <div>
                 <div class="card-icon-wrapper">
                     <i class="fa-solid fa-laptop-code"></i>
@@ -433,7 +461,7 @@
         </div>
 
         <!-- کارت چهارم: کانال تلگرام -->
-        <div class="card">
+        <div class="card" data-role="تیم ترجمه تلگرامی">
             <div>
                 <div class="card-icon-wrapper">
                     <i class="fa-solid fa-rocket"></i>
@@ -507,8 +535,62 @@
 </div>
 
 <script>
+    // ============================================
+    // ⚙️ تنظیمات ظرفیت هر بخش
+    // برای بستن ثبت‌نام یک بخش، مقدار جلوش رو false کن.
+    // برای باز کردن دوباره، بذارش true.
+    // ============================================
+    const roleCapacity = {
+        'مترجم': false,
+        'کلینر': true,
+        'تایپیست': true,
+        'تیم ترجمه تلگرامی': true
+    };
+    // ============================================
+
+    // اعمال وضعیت بسته/باز بودن روی کارت‌ها
+    function applyRoleCapacity() {
+        document.querySelectorAll('.card[data-role]').forEach(card => {
+            const role = card.getAttribute('data-role');
+            const isOpen = roleCapacity[role] !== false; // پیش‌فرض: باز
+
+            const btn = card.querySelector('.btn');
+            const badge = card.querySelector('.badge');
+
+            if (!isOpen) {
+                card.classList.add('closed');
+                if (badge) {
+                    badge.classList.add('badge-closed');
+                    badge.dataset.originalText = badge.dataset.originalText || badge.innerText;
+                    badge.innerText = 'ظرفیت تکمیل شد';
+                }
+                if (btn) {
+                    btn.classList.add('btn-disabled');
+                    btn.disabled = true;
+                    btn.innerHTML = 'ظرفیت تکمیل است <i class="fa-solid fa-lock"></i>';
+                }
+            } else {
+                card.classList.remove('closed');
+                if (badge) {
+                    badge.classList.remove('badge-closed');
+                    if (badge.dataset.originalText) badge.innerText = badge.dataset.originalText;
+                }
+                if (btn) {
+                    btn.classList.remove('btn-disabled');
+                    btn.disabled = false;
+                    btn.innerHTML = 'ثبت درخواست <i class="fa-solid fa-arrow-left"></i>';
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', applyRoleCapacity);
+
     // مدیریت مودال
     function openModal(role) {
+        // جلوگیری از باز شدن فرم برای بخش‌هایی که ظرفیتشون تکمیله
+        if (roleCapacity[role] === false) return;
+
         document.getElementById('roleInput').value = role;
         document.getElementById('modalTitle').innerText = 'فرم درخواست: ' + role;
         document.getElementById('modalOverlay').classList.add('active');
