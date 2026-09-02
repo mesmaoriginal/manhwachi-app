@@ -1660,7 +1660,7 @@ text-align: right;   /* راست‌چین */
     margin-top: 33px;
     background-size:cover;
     background-position:center;
-        background-image: url("./blood-moon.png");
+        background-image: url("./file/blood-moon.webp");
 
     margin-bottom: 33px;
     border: 2px solid var(--neon-red);
@@ -2045,7 +2045,7 @@ text-align: right;   /* راست‌چین */
  border-radius: 30px;
   padding: 3% 2.5% 2% 2.5%;
   
-  background-image: url('file/back.png');
+  background-image: url('file/back.webp');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -2130,19 +2130,19 @@ text-align: right;   /* راست‌چین */
 }
 
 .instagram-card {
-  background-image: url('file/Instagram-back.png');
+  background-image: url('file/Instagram-back.webp');
   
  
 }
 
 .youtube-card {
-  background-image: url('file/youtyube-back.png');
+  background-image: url('file/youtyube-back.webp');
   
   
 }
 
 .telegram-card {
-  background-image: url('file/Telegram-back.png');
+  background-image: url('file/Telegram-back.webp');
   
  
 }
@@ -2256,7 +2256,7 @@ text-align: right;   /* راست‌چین */
     /* ⚠️ خیلی مهم: عدد زیر را بر اساس عرض و ارتفاع واقعی عکس بک‌گراندت تنظیم کن.
        مثلا اگر عکست 1920 در 1080 است، میشه 1920 / 1080 */
     aspect-ratio: 1920 / 1080; 
-    background-image: url('file/optimized_by.jpg'); 
+    background-image: url('file/optimized_by.webp'); 
     background-size: 100% 100%; /* باعث میشه تمام عکس بدون هیچ برشی کامل ظاهر بشه */
     background-position: center;
     background-repeat: no-repeat;

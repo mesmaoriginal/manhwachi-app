@@ -12,33 +12,33 @@ const slides = [
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/4/manhwa-back4.jpg",
-    product: "src-mobi/slider/4/manhwa-cover4.png",
-    link: "https://manhwachi.ir/comic/regressed-mercenary-machinations" // <-- آدرس لینک اضافه شد
+    bg: "src-mobi/slider/4/manhwa-back4.webp",
+    product: "src-mobi/slider/4/manhwa-cover4.webp",
+    link: "https://manhwachi.ir/comic/regressed-mercenary-machinations"
   },
   {
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/3/manhwa-back3.jpg",
-    product: "src-mobi/slider/3/manhwa-cover3.png",
-    link: "https://manhwachi.ir/comic/The-Knight-Only-Lives-Today" // <-- آدرس لینک اضافه شد
+    bg: "src-mobi/slider/3/manhwa-back3.webp",
+    product: "src-mobi/slider/3/manhwa-cover3.webp",
+    link: "https://manhwachi.ir/comic/the-100-curses-of-illeston-mansion"
   },
   {
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/2/manhwa-back2.jpg",
-    product: "src-mobi/slider/2/manhwa-cover2.png",
-    link: "https://manhwachi.ir/comic/the-white-tiger-clans-baby-cotton-ball" // <-- آدرس لینک اضافه شد
+    bg: "src-mobi/slider/2/manhwa-back2.webp",
+    product: "src-mobi/slider/2/manhwa-cover2.webp",
+    link: "https://manhwachi.ir/comic/the-white-tiger-clans-baby-cotton-ball"
   },
   {
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/1/manhwa-back1.jpg",
-    product: "src-mobi/slider/1/manhwa-cover1.png",
-    link: "https://manhwachi.ir/comic/shadow-system" // <-- آدرس لینک اضافه شد
+    bg: "src-mobi/slider/1/manhwa-back1.webp",
+    product: "src-mobi/slider/1/manhwa-cover1.webp",
+    link: "https://manhwachi.ir/comic/the-forgotten-field"
   }
 ];
 
@@ -602,3 +602,53 @@ async function renderLatestFromJSON() {
         listContainer.innerHTML = `<li class="p-4 text-xs text-center" style="color: #ff2a5f;">خطا در بارگذاری اطلاعات.</li>`;
     }
 }
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("updateModal");
+    const title = document.getElementById("modalTitle");
+    const text = document.getElementById("modalText");
+    const btnUnderstand = document.getElementById("closeUpdateModal");
+    const btnNotUnderstand = document.getElementById("notUnderstoodModal");
+
+    let stage = 1;
+
+    // دکمه فهمیدم اصلی (در هر مرحله‌ای کلیک شود، مودال را می‌بندد)
+    btnUnderstand.addEventListener("click", () => {
+        modal.classList.add("hidden");
+    });
+
+    // مدیریت کلیک روی دکمه نفهمیدم
+    btnNotUnderstand.addEventListener("click", () => {
+        if (stage === 1) {
+            // رفتن به مرحله دوم
+            title.textContent = "جرئت یبار دیگه بگو نفهمیدم😊";
+            text.textContent = "سایت در حال بروز رسانیهههه";
+            
+            // دکمه فهمیدم بزرگ می‌شود
+            btnUnderstand.className = "update-modal-btn btn-stage2-large bg-red";
+            
+            // دکمه نفهمیدم کوچولو و طوسی باقی می‌ماند
+            btnNotUnderstand.className = "update-modal-btn btn-stage2-small bg-gray";
+            
+            stage = 2; // تغییر وضعیت به مرحله بعد
+        } 
+        else if (stage === 2) {
+            // رفتن به مرحله سوم
+            title.textContent = "حالا فهمیدی؟ ";
+            text.textContent = "";
+            
+            // دکمه نفهمیدم تبدیل به فهمیدم می‌شود
+            btnNotUnderstand.textContent = "فهمیدم";
+            
+            // هر دو دکمه هم‌اندازه (btn-equal) و هر دو قرمز (bg-red) می‌شوند
+            btnUnderstand.className = "update-modal-btn btn-equal bg-red";
+            btnNotUnderstand.className = "update-modal-btn btn-equal bg-red";
+
+            // در این مرحله، کلیک روی دکمه دوم هم مودال را می‌بندد
+            btnNotUnderstand.addEventListener("click", () => {
+                modal.classList.add("hidden");
+            });
+            
+            stage = 3;
+        }
+    });
+});
