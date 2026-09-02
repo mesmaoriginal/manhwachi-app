@@ -347,6 +347,130 @@ app.post("/zibal/verify", checkSecret, async (req, res) => {
   }
 });
 
+// ---------- بخش ۵: تصاویر چپتر (signed URL موقت از باکت پارس‌پک) ----------
+const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+const PARSPACK_ENDPOINT = process.env.PARSPACK_ENDPOINT; // مثلا https://c797245.parspack.net
+const PARSPACK_ACCESS_KEY = process.env.PARSPACK_ACCESS_KEY;
+const PARSPACK_SECRET_KEY = process.env.PARSPACK_SECRET_KEY;
+const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET; // مثلا c797245
+const SIGNED_URL_TTL_SECONDS = 300; // ۵ دقیقه
+
+const s3 = new S3Client({
+  endpoint: PARSPACK_ENDPOINT,
+  region: "default", // پارس‌پک S3-Compatible هست، region واقعی لازم نداره ولی SDK این فیلد رو می‌خواد
+  credentials: {
+    accessKeyId: PARSPACK_ACCESS_KEY,
+    secretAccessKey: PARSPACK_SECRET_KEY,
+  },
+  forcePathStyle: true, // برای S3-Compatible storageهای غیر AWS لازمه
+});
+
+// همه‌ی کلیدهای موجود توی باکت زیر مسیر این چپتر رو لیست می‌کنه
+// (به‌جای اینکه از کلاینت بخوایم تعداد صفحات رو بفرسته)
+async function getChapterImageKeys(slug, chapterNum) {
+  const prefix = `${slug}/CH${chapterNum}/srcCH${chapterNum}/`;
+  const keys = [];
+  let continuationToken;
+
+  do {
+    const command = new ListObjectsV2Command({
+      Bucket: PARSPACK_BUCKET,
+      Prefix: prefix,
+      ContinuationToken: continuationToken,
+    });
+    const response = await s3.send(command);
+    (response.Contents || []).forEach((obj) => keys.push(obj.Key));
+    continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+  } while (continuationToken);
+
+  // چون اسم فایل‌ها zero-padded هستن (001.webp, 002.webp, ...) sort الفبایی همون ترتیب صفحات رو میده
+  keys.sort();
+  return keys;
+}
+
+async function buildSignedUrls(slug, chapterNum) {
+  const keys = await getChapterImageKeys(slug, chapterNum);
+  const urls = [];
+  for (const key of keys) {
+    const command = new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key });
+    const url = await getSignedUrl(s3, command, { expiresIn: SIGNED_URL_TTL_SECONDS });
+    urls.push(url);
+  }
+  return urls;
+}
+
+app.post("/api/get-chapter-images", async (req, res) => {
+  try {
+    const { slug, chapterNum } = req.body || {};
+
+    if (!slug || !chapterNum) {
+      return res.status(400).json({ error: "پارامترهای ناقص" });
+    }
+
+    // ۱. چک وضعیت چپتر (رایگان یا VIP) از جدول episodes روی Supabase
+    const epRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/episodes?slug=eq.${encodeURIComponent(slug)}&num=eq.${encodeURIComponent(chapterNum)}&select=is_free`,
+      { headers: supabaseAdminHeaders() }
+    );
+    const epRows = await epRes.json();
+    const episode = epRows[0];
+
+    if (!episode) {
+      return res.status(404).json({ error: "چپتر پیدا نشد" });
+    }
+
+    // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده
+    if (episode.is_free) {
+      const urls = await buildSignedUrls(slug, chapterNum);
+      if (urls.length === 0) {
+        return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
+      }
+      return res.json({ urls });
+    }
+
+    // ۳. چپتر VIP است -> باید کاربر لاگین و مشترک باشه
+    const authHeader = req.headers.authorization || "";
+    const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    if (!accessToken) {
+      return res
+        .status(401)
+        .json({ error: "برای این قسمت باید وارد حساب شوید", code: "AUTH_REQUIRED" });
+    }
+
+    const user = await getUserFromAccessToken(accessToken);
+    if (!user || !user.id) {
+      return res
+        .status(401)
+        .json({ error: "نشست شما نامعتبر است، دوباره وارد شوید", code: "AUTH_REQUIRED" });
+    }
+
+    const profRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=is_vip`,
+      { headers: supabaseAdminHeaders() }
+    );
+    const profRows = await profRes.json();
+    const profile = profRows[0];
+
+    if (!profile?.is_vip) {
+      return res
+        .status(403)
+        .json({ error: "این قسمت مخصوص کاربران VIP است", code: "VIP_REQUIRED" });
+    }
+
+    // ۴. کاربر مجازه -> URLهای امضاشده رو بده
+    const urls = await buildSignedUrls(slug, chapterNum);
+    if (urls.length === 0) {
+      return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
+    }
+    return res.json({ urls });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "خطای داخلی سرور" });
+  }
+});
+
 app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
