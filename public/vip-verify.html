@@ -35,7 +35,7 @@
                 کد پیگیری: <span id="trackIdDisp" class="font-bold text-emerald-400"></span>
             </div>
 
-            <a href="/" class="block w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50">
+            <a href="/profile.html" class="block w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50">
                 ورود به پروفایل کاربری
             </a>
         </div>
@@ -74,13 +74,10 @@
         }
 
         try {
-            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E";
-
-            const res = await fetch('https://vumnujygswotstvwljaz.supabase.co/functions/v1/zibal-verify', {
+            const res = await fetch('/purchase/verify', {
                 method: 'POST',
                 headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_KEY}` // اضافه کردن این خط خطای 401 را رفع می‌کند
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ trackId: trackId })
             });
