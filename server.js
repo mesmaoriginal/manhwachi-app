@@ -415,9 +415,18 @@ app.post("/api/get-chapter-images", async (req, res) => {
       { headers: supabaseAdminHeaders() }
     );
     const epRows = await epRes.json();
+
+    // لاگ دقیق برای دیباگ: اگه epRes.ok نباشه یا epRows آرایه نباشه،
+    // یعنی مشکل از env varهای Supabase یا خود درخواسته، نه نبود چپتر
+    if (!epRes.ok || !Array.isArray(epRows)) {
+      console.error("خطای Supabase در گرفتن episode:", epRes.status, epRows);
+      return res.status(500).json({ error: "خطا در ارتباط با دیتابیس" });
+    }
+
     const episode = epRows[0];
 
     if (!episode) {
+      console.warn(`چپتر پیدا نشد برای slug=${slug} num=${chapterNum}`);
       return res.status(404).json({ error: "چپتر پیدا نشد" });
     }
 
