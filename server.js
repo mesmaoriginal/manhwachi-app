@@ -370,7 +370,7 @@ const s3 = new S3Client({
 // همه‌ی کلیدهای موجود توی باکت زیر مسیر این چپتر رو لیست می‌کنه
 // (به‌جای اینکه از کلاینت بخوایم تعداد صفحات رو بفرسته)
 async function getChapterImageKeys(slug, chapterNum) {
-  const prefix = `${slug}/CH${chapterNum}/srcCH${chapterNum}/`;
+  const prefix = `manhwas/${slug}/CH${chapterNum}/srcCH${chapterNum}/`;
   const keys = [];
   let continuationToken;
 
