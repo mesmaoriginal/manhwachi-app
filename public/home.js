@@ -33,7 +33,7 @@ const slides = [
     link: "https://manhwachi.ir/comic/the-white-tiger-clans-baby-cotton-ball" // <-- آدرس لینک اضافه شد
   },
   {
-    title: "سیستم سایه: برترین شکارچی",
+    title: "",
     kicker: "",
     subtitle: "",
     bg: "src-mobi/slider/1/manhwa-back1.jpg",
@@ -61,6 +61,24 @@ const genreNames = {
 
 function toPersianNumber(value) {
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+}
+
+// ==========================================
+// کش کردن دیتای data.json تا هر سه بخش (برترین‌ها،
+// تصادفی، آخرین آپدیت‌ها) فقط یک بار آن را دانلود و
+// پردازش کنند، نه سه بار جداگانه.
+// ==========================================
+let _manhwaDataPromise = null;
+function getManhwaData() {
+  if (!_manhwaDataPromise) {
+    _manhwaDataPromise = fetch('data/data.json').then((response) => {
+      if (!response.ok) {
+        throw new Error(`خطای HTTP: ${response.status}`);
+      }
+      return response.json();
+    });
+  }
+  return _manhwaDataPromise;
 }
 
 // ==========================================
@@ -301,8 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 async function loadTopRated() {
   try {
-    const response = await fetch('data/data.json');
-    const data = await response.json();
+    const data = await getManhwaData();
 
     const listArray = Object.keys(data).map(slug => ({
       slug: slug,
@@ -359,8 +376,7 @@ async function loadTopRated() {
 // ==========================================
 async function fetchRandomManhwas() {
   try {
-    const response = await fetch('data/data.json');
-    const data = await response.json();
+    const data = await getManhwaData();
 
     const listArray = Object.keys(data).map(slug => ({
       slug: slug,
@@ -524,13 +540,7 @@ async function renderLatestFromJSON() {
     if (!listContainer) return;
 
     try {
-        const response = await fetch('data/data.json'); 
-        
-        if (!response.ok) {
-            throw new Error(`خطای HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await getManhwaData();
 
         // استخراج و مرتب‌سازی داده‌ها
         const items = Object.entries(data).map(([slug, item]) => {

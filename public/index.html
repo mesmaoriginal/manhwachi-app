@@ -102,9 +102,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
     
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
+    <!-- Supabase (برای رندر اولیه لازم نیست، defer شد) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase.js" defer></script>
     <!-- استایل‌های ثابت هوم و اپلیکیشن -->
     <link rel="stylesheet" href="home.css?v=13">
 
@@ -277,11 +277,29 @@
         .nav-link:hover::after {
             width: 100%;
         }
+
+        /* هدر sticky با backdrop-blur-xl (۲۴px) روی هر فریم اسکرول
+           دوباره repaint می‌شه و روی گوشی‌های ضعیف باعث افت فریم/لگ اسکرول
+           می‌شه. روی موبایل مقدار بلور رو کاهش می‌دیم تا اسکرول روان‌تر بشه. */
+        @media (max-width: 768px) {
+            header.sticky {
+                -webkit-backdrop-filter: blur(6px);
+                backdrop-filter: blur(6px);
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="social-modal-overlay">
+    <!--
+      ⚙️ کلید روشن/خاموش کردن کادر عضویت در شبکه‌های اجتماعی
+      هر وقت نخواستید این کادر نمایش داده بشه، مقدار زیر رو بذارید false
+      هر وقت خواستید دوباره نمایش داده بشه، مقدار زیر رو بذارید true
+    -->
+    <script>
+      window.SHOW_JOIN_MODAL = false; // true = نمایش داده بشه | false = نمایش داده نشه
+    </script>
+    <div class="social-modal-overlay" id="socialModalOverlay">
   <div class="social-modal-card">
     
     <button class="close-btn">&times;</button>
@@ -343,6 +361,12 @@
                 </div>
   </div>
 </div>
+    <script>
+      // جلوگیری از چشمک زدن کادر هنگام لود صفحه، وقتی خاموش باشه
+      if (window.SHOW_JOIN_MODAL === false) {
+        document.getElementById('socialModalOverlay').style.display = 'none';
+      }
+    </script>
     <!-- Update Notification Modal -->
 <!-- Update Notification Modal
 <div id="updateModal" class="update-modal">
@@ -974,17 +998,22 @@
         const modalOverlay = document.querySelector('.social-modal-overlay');
         const closeBtn = document.querySelector('.close-btn');
 
-        // ۱. بستن مدال با کلیک روی دکمه بستن (×)
-        closeBtn.addEventListener('click', () => {
+        // اگه کلید SHOW_JOIN_MODAL روی false باشه، کادر اصلاً نمایش داده نمی‌شه
+        if (window.SHOW_JOIN_MODAL === false) {
             modalOverlay.style.display = 'none';
-        });
+        } else {
+            // ۱. بستن مدال با کلیک روی دکمه بستن (×)
+            closeBtn.addEventListener('click', () => {
+                modalOverlay.style.display = 'none';
+            });
 
-        // ۲. بستن مدال با کلیک روی فضای تاریک بیرون کادر
-        modalOverlay.addEventListener('click', (event) => {
-            if (event.target === modalOverlay) {
-            modalOverlay.style.display = 'none';
-            }
-        });
+            // ۲. بستن مدال با کلیک روی فضای تاریک بیرون کادر
+            modalOverlay.addEventListener('click', (event) => {
+                if (event.target === modalOverlay) {
+                modalOverlay.style.display = 'none';
+                }
+            });
+        }
 
 
 
