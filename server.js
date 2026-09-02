@@ -171,7 +171,27 @@ app.post("/purchase/request", async (req, res) => {
       return res.status(401).json({ message: "نشست کاربری نامعتبر است. دوباره وارد شوید." });
     }
 
-    // ثبت رکورد pending در جدول payments
+    // ساخت تراکنش در زیبال (اول اینجا، چون ستون track_id در جدول payments
+    // اجباریه (NOT NULL) و باید قبل از ساخت رکورد از زیبال گرفته بشه)
+    const orderId = require("crypto").randomUUID();
+    const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        merchant: ZIBAL_MERCHANT,
+        amount: plan.amount,
+        callbackUrl: PURCHASE_CALLBACK_URL,
+        description: `اشتراک VIP مانهواچی - پلن ${planKey}`,
+        orderId,
+      }),
+    });
+    const zibalData = await zibalRes.json();
+
+    if (zibalData.result !== 100) {
+      throw new Error(zibalData.message || "خطا در ایجاد درگاه پرداخت.");
+    }
+
+    // حالا که trackId داریم، رکورد pending رو با track_id پر می‌سازیم
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/payments`, {
       method: "POST",
       headers: supabaseAdminHeaders({
@@ -184,38 +204,13 @@ app.post("/purchase/request", async (req, res) => {
           plan_key: planKey,
           amount: plan.amount,
           status: "pending",
+          track_id: String(zibalData.trackId),
         },
       ]),
     });
     if (!insertRes.ok) {
       throw new Error("ثبت تراکنش در پایگاه داده ناموفق بود: " + (await insertRes.text()));
     }
-    const [paymentRecord] = await insertRes.json();
-
-    // ساخت تراکنش در زیبال
-    const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        merchant: ZIBAL_MERCHANT,
-        amount: plan.amount,
-        callbackUrl: PURCHASE_CALLBACK_URL,
-        description: `اشتراک VIP مانهواچی - پلن ${planKey}`,
-        orderId: String(paymentRecord.id),
-      }),
-    });
-    const zibalData = await zibalRes.json();
-
-    if (zibalData.result !== 100) {
-      throw new Error(zibalData.message || "خطا در ایجاد درگاه پرداخت.");
-    }
-
-    // ذخیره‌ی trackId روی همون رکورد
-    await fetch(`${SUPABASE_URL}/rest/v1/payments?id=eq.${paymentRecord.id}`, {
-      method: "PATCH",
-      headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ track_id: String(zibalData.trackId) }),
-    });
 
     res.json({ trackId: zibalData.trackId });
   } catch (err) {
