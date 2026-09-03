@@ -542,10 +542,27 @@ async function renderLatestFromJSON() {
     try {
         const data = await getManhwaData();
 
-        // استخراج و مرتب‌سازی داده‌ها
+        // تبدیل تاریخ شمسی "1405/06/10" به عدد قابل مقایسه (مثلاً 14050610)
+        // تا مرتب‌سازی بر اساس جدیدترین تاریخ درست انجام بشه
+        function dateToSortable(dateStr) {
+            if (!dateStr) return 0;
+            const parts = dateStr.split('/').map(Number);
+            if (parts.length !== 3 || parts.some(isNaN)) return 0;
+            const [y, m, d] = parts;
+            return y * 10000 + m * 100 + d;
+        }
+
+        // استخراج و پیدا کردن واقعیِ جدیدترین قسمتِ هر مانهوا
+        // (بدون فرض این‌که episodes[0] همیشه جدیدترینه)
         const items = Object.entries(data).map(([slug, item]) => {
-            const hasEpisodes = item.episodes && item.episodes.length > 0;
-            const latestEp = hasEpisodes ? item.episodes[0] : { num: 0, date: '' };
+            const episodes = item.episodes || [];
+            let latestEp = { num: 0, date: '' };
+
+            episodes.forEach(ep => {
+                if (dateToSortable(ep.date) >= dateToSortable(latestEp.date)) {
+                    latestEp = ep;
+                }
+            });
 
             return {
                 slug: slug,
@@ -556,8 +573,8 @@ async function renderLatestFromJSON() {
             };
         });
 
-        // مرتب‌سازی بر اساس چپتر
-        items.sort((a, b) => b.latestEpNum - a.latestEpNum);
+        // مرتب‌سازی بر اساس جدیدترین تاریخ آپدیت (نزولی)
+        items.sort((a, b) => dateToSortable(b.latestEpDate) - dateToSortable(a.latestEpDate));
 
         // ۵ تای اول
         const top5 = items.slice(0, 5);
@@ -569,7 +586,6 @@ async function renderLatestFromJSON() {
             const mainGenre = item.genres && item.genres.length > 0 ? item.genres[0] : 'مانهوا';
             const titleFa = item.title_fa || item.title_en;
 
-            // بج دسترسی
             const accessBadge = item.isVip 
                 ? `<span class="badge-access badge-vip">اشتراکی</span>`
                 : `<span class="badge-access badge-free">رایگان</span>`;
