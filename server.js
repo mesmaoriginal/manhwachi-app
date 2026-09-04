@@ -1,8 +1,9 @@
 // server.js
-// این فایل سه کار انجام می‌دهد:
+// این فایل کارهای زیر رو انجام می‌دهد:
 // ۱) نمایش فایل‌های استاتیک سایت (HTML/CSS) از پوشه‌ی public
 // ۲) نمایش صفحه‌ی مانهوا (که قبلاً manga.php بود) با EJS - همان منطق PHP قبلی
 // ۳) رله‌ی درخواست‌های پرداخت بین سایت و زیبال (چون Supabase از ایران رد نمی‌شود)
+// ۴) تصاویر چپتر با signed URL موقت از باکت پارس‌پک، با کش برای جلوگیری از 429
 
 const express = require("express");
 const fs = require("fs");
@@ -19,8 +20,6 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static("public"));
 
 // ---------- بخش ۲: صفحه‌ی مانهوا (جایگزین manga.php + آدرس زیبای comic/) ----------
-// این تابع منطق مشترک رندر صفحه‌ی مانهوا رو نگه می‌داره تا هم از مسیر
-// قدیمی /manga.php?slug=... و هم مسیر جدید و زیبای /comic/:slug قابل استفاده باشه
 function renderMangaPage(req, res, slugRaw) {
   const slug = (slugRaw || "").toString().trim();
 
@@ -36,7 +35,6 @@ function renderMangaPage(req, res, slugRaw) {
 
   const manhwa = data[slug] || null;
 
-  // تابع کمکی معادل strip_tags در PHP
   function stripTags(str) {
     return (str || "").replace(/<[^>]*>/g, "");
   }
@@ -97,37 +95,29 @@ function renderMangaPage(req, res, slugRaw) {
   res.render("manga", vars);
 }
 
-// آدرس زیبا و اصلی (همونی که گوگل ایندکس کرده و کارت‌های سایت باید بهش لینک بدن)
 app.get("/comic/:slug", (req, res) => {
   renderMangaPage(req, res, req.params.slug);
 });
 
-// آدرس قدیمی؛ برای سازگاری نگه داشته شده تا اگه جایی هنوز لینک قدیمی هست خراب نشه
 app.get("/manga.php", (req, res) => {
   renderMangaPage(req, res, req.query.slug);
 });
 
 // ---------- بخش ۳: خرید VIP (مستقیم، بدون pg_net) ----------
-// این بخش جایگزین Edge Function های zibal-request / zibal-verify شده.
-// چون این اپ (روی پارس‌پک) خروجی آزاد داره، هم مستقیم به Supabase REST/Auth
-// وصل میشه و هم مستقیم به زیبال - بدون واسطه‌ی Postgres/pg_net.
 
-const SUPABASE_URL = process.env.SUPABASE_URL; // مثلا: https://vumnujygswotstvwljaz.supabase.co
+const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT;
 const PURCHASE_CALLBACK_URL =
   process.env.PURCHASE_CALLBACK_URL || "https://manhwachi.ir/vip-verify.html";
 
-// قیمت‌ها به ریال (زیبال مبلغ رو به ریال می‌گیره) + مدت هر پلن
-// این اعداد باید دقیقا با قیمت‌های نمایش داده شده در vip.html یکی باشن
 const PLAN_DEFS = {
   weekly: { amount: 250000, days: 7 },
   monthly: { amount: 550000, months: 1 },
   quarterly: { amount: 1500000, months: 3 },
 };
 
-// کمکی: هدرهای PostgREST با Service Role (فقط سمت سرور استفاده میشه)
 function supabaseAdminHeaders(extra = {}) {
   return {
     apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -136,7 +126,6 @@ function supabaseAdminHeaders(extra = {}) {
   };
 }
 
-// کمکی: گرفتن کاربر از روی access_token با Supabase Auth API
 async function getUserFromAccessToken(accessToken) {
   const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: {
@@ -148,7 +137,6 @@ async function getUserFromAccessToken(accessToken) {
   return res.json();
 }
 
-// ۱) ساخت درخواست پرداخت
 app.post("/purchase/request", async (req, res) => {
   try {
     const authHeader = req.headers.authorization || "";
@@ -165,14 +153,11 @@ app.post("/purchase/request", async (req, res) => {
       return res.status(400).json({ message: "پلن انتخابی نامعتبر است." });
     }
 
-    // احراز هویت کاربر
     const user = await getUserFromAccessToken(accessToken);
     if (!user || !user.id) {
       return res.status(401).json({ message: "نشست کاربری نامعتبر است. دوباره وارد شوید." });
     }
 
-    // ساخت تراکنش در زیبال (اول اینجا، چون ستون track_id در جدول payments
-    // اجباریه (NOT NULL) و باید قبل از ساخت رکورد از زیبال گرفته بشه)
     const orderId = require("crypto").randomUUID();
     const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
       method: "POST",
@@ -191,7 +176,6 @@ app.post("/purchase/request", async (req, res) => {
       throw new Error(zibalData.message || "خطا در ایجاد درگاه پرداخت.");
     }
 
-    // حالا که trackId داریم، رکورد pending رو با track_id پر می‌سازیم
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/payments`, {
       method: "POST",
       headers: supabaseAdminHeaders({
@@ -218,13 +202,11 @@ app.post("/purchase/request", async (req, res) => {
   }
 });
 
-// ۲) تایید پرداخت و فعال‌سازی VIP
 app.post("/purchase/verify", async (req, res) => {
   try {
     const trackId = (req.body && (req.body.trackId || req.body.track_id) || "").toString();
     if (!trackId) throw new Error("کد پیگیری ارائه نشده است.");
 
-    // تایید از سمت زیبال
     const zibalRes = await fetch("https://gateway.zibal.ir/v1/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -232,12 +214,10 @@ app.post("/purchase/verify", async (req, res) => {
     });
     const zibalData = await zibalRes.json();
 
-    // ۱۰۰ و ۱۰۱ یعنی موفق؛ ۲۰۱ یعنی قبلا verify شده (رفرش کاربر) - این هم موفقه
     if (![100, 101, 201].includes(zibalData.result)) {
       throw new Error(`پرداخت تایید نشد (کد خطا: ${zibalData.result})`);
     }
 
-    // پیدا کردن رکورد تراکنش
     const payRes = await fetch(
       `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&select=*`,
       { headers: supabaseAdminHeaders() }
@@ -246,12 +226,10 @@ app.post("/purchase/verify", async (req, res) => {
     const paymentRecord = payRows[0];
     if (!paymentRecord) throw new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
 
-    // جلوگیری از تمدید تکراری (مثلا رفرش صفحه توسط کاربر)
     if (paymentRecord.status === "success") {
       return res.json({ status: 100, message: "تراکنش قبلاً ثبت شده است." });
     }
 
-    // مدت اشتراک از روی جدول ثابت پلن‌ها، نه از ورودی کلاینت
     const planKey = paymentRecord.plan_key;
     const duration = PLAN_DEFS[planKey];
     if (!duration) throw new Error("پلن ثبت‌شده برای این تراکنش نامعتبر است.");
@@ -265,12 +243,11 @@ app.post("/purchase/verify", async (req, res) => {
 
     let currentVipDate = new Date();
     if (profile?.vip_until && new Date(profile.vip_until) > new Date()) {
-      currentVipDate = new Date(profile.vip_until); // اگه هنوز VIP هست، به ادامه‌اش اضافه بشه
+      currentVipDate = new Date(profile.vip_until);
     }
     if (duration.days) currentVipDate.setDate(currentVipDate.getDate() + duration.days);
     if (duration.months) currentVipDate.setMonth(currentVipDate.getMonth() + duration.months);
 
-    // فعال‌سازی VIP روی پروفایل
     const updateProfRes = await fetch(
       `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}`,
       {
@@ -284,7 +261,6 @@ app.post("/purchase/verify", async (req, res) => {
     );
     if (!updateProfRes.ok) throw new Error("بروزرسانی پروفایل کاربر ناموفق بود.");
 
-    // تغییر وضعیت تراکنش به موفق
     await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
       method: "PATCH",
       headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
@@ -337,12 +313,10 @@ app.post("/zibal/verify", checkSecret, async (req, res) => {
   }
 });
 
-// ---------- بخش ۵: تصاویر چپتر (signed URL موقت از باکت پارس‌پک) ----------
-
+// ---------- بخش ۵: تصاویر چپتر (signed URL موقت از باکت پارس‌پک + کش) ----------
 
 const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { NodeHttpHandler } = require("@smithy/node-http-handler"); // برای تنظیم retry دستی در صورت نیاز
 
 const PARSPACK_ENDPOINT = process.env.PARSPACK_ENDPOINT;
 const PARSPACK_ACCESS_KEY = process.env.PARSPACK_ACCESS_KEY;
@@ -350,8 +324,7 @@ const PARSPACK_SECRET_KEY = process.env.PARSPACK_SECRET_KEY;
 const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 const SIGNED_URL_TTL_SECONDS = 300; // مدت اعتبار لینک امضاشده (۵ دقیقه)
 
-// چون لیست فایل‌های یک چپتر منتشرشده عملاً هیچ‌وقت عوض نمی‌شه،
-// یک کش طولانی (۶ ساعت) براش کافیه. عدد رو هرجور خواستید عوض کنید.
+// لیست فایل‌های یک چپتر منتشرشده عملاً هیچ‌وقت عوض نمی‌شه، پس کش طولانی کافیه
 const KEYS_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // ۶ ساعت
 
 const s3 = new S3Client({
@@ -362,19 +335,12 @@ const s3 = new S3Client({
     secretAccessKey: PARSPACK_SECRET_KEY,
   },
   forcePathStyle: true,
-  // اگه هنوز بعد از کش هم گاهی 429 دیدید، backoff رتریِ خودِ SDK رو
-  // می‌تونید اینجا شخصی‌سازی کنید (maxAttempts پیش‌فرض 3 هست):
-  maxAttempts: 5,
+  maxAttempts: 5, // retry بیشتر برای مقاومت در برابر 429 موقت
 });
 
-// ---------------------------------------------------------------
 // کش نتیجه‌ی ListObjectsV2 + جلوگیری از درخواست موازیِ تکراری
-// ---------------------------------------------------------------
-// ساختار هر ورودی کش: { keys, expiresAt }
-const chapterKeysCache = new Map();
-// نگه‌داری Promise های در حال اجرا، تا اگه ۱۰۰ کاربر همزمان یه
-// چپتر رو باز کردن، فقط یک درخواست واقعی به S3 بره نه ۱۰۰ تا
-const inFlightRequests = new Map();
+const chapterKeysCache = new Map(); // cacheKey -> { keys, expiresAt }
+const inFlightRequests = new Map(); // cacheKey -> Promise در حال اجرا
 
 function getCacheKey(slug, chapterNum) {
   return `${slug}::${chapterNum}`;
@@ -396,6 +362,7 @@ async function fetchChapterImageKeysFromS3(slug, chapterNum) {
     continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
   } while (continuationToken);
 
+  // چون اسم فایل‌ها zero-padded هستن (001.webp, 002.webp, ...) sort الفبایی همون ترتیب صفحات رو میده
   keys.sort();
   return keys;
 }
@@ -409,8 +376,7 @@ async function getChapterImageKeys(slug, chapterNum) {
     return cached.keys;
   }
 
-  // ۲. اگه همین الان یه درخواست دیگه برای همین چپتر در حال اجراست،
-  //    منتظرش بمون به‌جای اینکه یه درخواست جدید به S3 بزنی
+  // ۲. اگه همین الان یه درخواست دیگه برای همین چپتر در حال اجراست، منتظرش بمون
   if (inFlightRequests.has(cacheKey)) {
     return inFlightRequests.get(cacheKey);
   }
@@ -425,8 +391,7 @@ async function getChapterImageKeys(slug, chapterNum) {
       });
       return keys;
     } catch (err) {
-      // اگه S3 خطا داد (مثلا 429) ولی یه نسخه‌ی قدیمی (منقضی‌شده) از قبل
-      // در کش داریم، بهتره همون رو برگردونیم تا کاربر 500 نگیره
+      // اگه S3 خطا داد (مثلا 429) ولی نسخه‌ی قدیمی در کش داریم، همون رو برگردون تا 500 نگیره کاربر
       if (cached) {
         console.warn(
           `S3 list failed for ${cacheKey}, serving stale cache instead:`,
@@ -446,7 +411,7 @@ async function getChapterImageKeys(slug, chapterNum) {
 
 async function buildSignedUrls(slug, chapterNum) {
   const keys = await getChapterImageKeys(slug, chapterNum);
-  // getSignedUrl شبکه‌ای نیست (فقط امضای محلی)، پس نیازی به کش جدا نداره
+  // getSignedUrl شبکه‌ای نیست (فقط امضای محلی)، نیازی به کش جدا نداره
   const urls = await Promise.all(
     keys.map((key) => {
       const command = new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key });
@@ -457,9 +422,109 @@ async function buildSignedUrls(slug, chapterNum) {
 }
 
 // اختیاری: اگه چپتر جدیدی آپلود کردید و می‌خواید کش فوراً پاک بشه
-// (مثلا از یه endpoint ادمین یا اسکریپت آپلودتون صداش بزنید)
 function invalidateChapterCache(slug, chapterNum) {
   chapterKeysCache.delete(getCacheKey(slug, chapterNum));
 }
 
-module.exports = { getChapterImageKeys, buildSignedUrls, invalidateChapterCache };
+// خواندن data.json و پیدا کردن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر
+function findEpisodeFromJson(slug, chapterNum) {
+  const jsonPath = path.join(__dirname, "data", "data.json");
+  let data = {};
+  try {
+    if (fs.existsSync(jsonPath)) {
+      data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    }
+  } catch (err) {
+    console.error("خطا در خواندن data.json:", err);
+    return { readError: true };
+  }
+
+  const manhwa = data[slug];
+  if (!manhwa || !Array.isArray(manhwa.episodes)) {
+    return { episode: null };
+  }
+
+  const numTarget = Number(chapterNum);
+  const episode = manhwa.episodes.find((ep) => Number(ep.num) === numTarget);
+  return { episode: episode || null };
+}
+
+app.post("/api/get-chapter-images", async (req, res) => {
+  try {
+    const { slug, chapterNum } = req.body || {};
+
+    // نکته: چون چپتر شماره 0 هم معتبره، نباید با !chapterNum چک بشه
+    if (!slug || chapterNum === undefined || chapterNum === null || chapterNum === "") {
+      return res.status(400).json({ error: "پارامترهای ناقص" });
+    }
+
+    // ۱. چک وضعیت چپتر (رایگان یا قفل) مستقیم از data.json
+    const { episode, readError } = findEpisodeFromJson(slug, chapterNum);
+
+    if (readError) {
+      return res.status(500).json({ error: "خطا در خواندن اطلاعات مانهوا" });
+    }
+
+    if (!episode) {
+      console.warn(`چپتر پیدا نشد برای slug=${slug} num=${chapterNum}`);
+      return res.status(404).json({ error: "چپتر پیدا نشد" });
+    }
+
+    // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده
+    if (episode.free) {
+      const urls = await buildSignedUrls(slug, chapterNum);
+      if (urls.length === 0) {
+        return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
+      }
+      return res.json({ urls });
+    }
+
+    // ۳. چپتر VIP است -> باید کاربر لاگین و مشترک باشه
+    const authHeader = req.headers.authorization || "";
+    const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    if (!accessToken) {
+      return res
+        .status(401)
+        .json({ error: "برای این قسمت باید وارد حساب شوید", code: "AUTH_REQUIRED" });
+    }
+
+    const user = await getUserFromAccessToken(accessToken);
+    if (!user || !user.id) {
+      return res
+        .status(401)
+        .json({ error: "نشست شما نامعتبر است، دوباره وارد شوید", code: "AUTH_REQUIRED" });
+    }
+
+    const profRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=is_vip`,
+      { headers: supabaseAdminHeaders() }
+    );
+    const profRows = await profRes.json();
+    const profile = profRows[0];
+
+    if (!profile?.is_vip) {
+      return res
+        .status(403)
+        .json({ error: "این قسمت مخصوص کاربران VIP است", code: "VIP_REQUIRED" });
+    }
+
+    // ۴. کاربر مجازه -> URLهای امضاشده رو بده
+    const urls = await buildSignedUrls(slug, chapterNum);
+    if (urls.length === 0) {
+      return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
+    }
+    return res.json({ urls });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "خطای داخلی سرور" });
+  }
+});
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`سرور روی پورت ${PORT} روشن شد`);
+});
