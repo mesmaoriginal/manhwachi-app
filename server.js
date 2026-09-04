@@ -338,28 +338,49 @@ app.post("/zibal/verify", checkSecret, async (req, res) => {
 });
 
 // ---------- بخش ۵: تصاویر چپتر (signed URL موقت از باکت پارس‌پک) ----------
+
+
 const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { NodeHttpHandler } = require("@smithy/node-http-handler"); // برای تنظیم retry دستی در صورت نیاز
 
-const PARSPACK_ENDPOINT = process.env.PARSPACK_ENDPOINT; // مثلا https://c797245.parspack.net
+const PARSPACK_ENDPOINT = process.env.PARSPACK_ENDPOINT;
 const PARSPACK_ACCESS_KEY = process.env.PARSPACK_ACCESS_KEY;
 const PARSPACK_SECRET_KEY = process.env.PARSPACK_SECRET_KEY;
-const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET; // مثلا c797245
-const SIGNED_URL_TTL_SECONDS = 300; // ۵ دقیقه
+const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
+const SIGNED_URL_TTL_SECONDS = 300; // مدت اعتبار لینک امضاشده (۵ دقیقه)
+
+// چون لیست فایل‌های یک چپتر منتشرشده عملاً هیچ‌وقت عوض نمی‌شه،
+// یک کش طولانی (۶ ساعت) براش کافیه. عدد رو هرجور خواستید عوض کنید.
+const KEYS_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // ۶ ساعت
 
 const s3 = new S3Client({
   endpoint: PARSPACK_ENDPOINT,
-  region: "default", // پارس‌پک S3-Compatible هست، region واقعی لازم نداره ولی SDK این فیلد رو می‌خواد
+  region: "default",
   credentials: {
     accessKeyId: PARSPACK_ACCESS_KEY,
     secretAccessKey: PARSPACK_SECRET_KEY,
   },
-  forcePathStyle: true, // برای S3-Compatible storageهای غیر AWS لازمه
+  forcePathStyle: true,
+  // اگه هنوز بعد از کش هم گاهی 429 دیدید، backoff رتریِ خودِ SDK رو
+  // می‌تونید اینجا شخصی‌سازی کنید (maxAttempts پیش‌فرض 3 هست):
+  maxAttempts: 5,
 });
 
-// همه‌ی کلیدهای موجود توی باکت زیر مسیر این چپتر رو لیست می‌کنه
-// (به‌جای اینکه از کلاینت بخوایم تعداد صفحات رو بفرسته)
-async function getChapterImageKeys(slug, chapterNum) {
+// ---------------------------------------------------------------
+// کش نتیجه‌ی ListObjectsV2 + جلوگیری از درخواست موازیِ تکراری
+// ---------------------------------------------------------------
+// ساختار هر ورودی کش: { keys, expiresAt }
+const chapterKeysCache = new Map();
+// نگه‌داری Promise های در حال اجرا، تا اگه ۱۰۰ کاربر همزمان یه
+// چپتر رو باز کردن، فقط یک درخواست واقعی به S3 بره نه ۱۰۰ تا
+const inFlightRequests = new Map();
+
+function getCacheKey(slug, chapterNum) {
+  return `${slug}::${chapterNum}`;
+}
+
+async function fetchChapterImageKeysFromS3(slug, chapterNum) {
   const prefix = `manhwas/${slug}/CH${chapterNum}/srcCH${chapterNum}/`;
   const keys = [];
   let continuationToken;
@@ -375,124 +396,70 @@ async function getChapterImageKeys(slug, chapterNum) {
     continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
   } while (continuationToken);
 
-  // چون اسم فایل‌ها zero-padded هستن (001.webp, 002.webp, ...) sort الفبایی همون ترتیب صفحات رو میده
   keys.sort();
   return keys;
 }
 
+async function getChapterImageKeys(slug, chapterNum) {
+  const cacheKey = getCacheKey(slug, chapterNum);
+
+  // ۱. اگه در کش معتبر هست، همون رو برگردون - بدون تماس با S3
+  const cached = chapterKeysCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.keys;
+  }
+
+  // ۲. اگه همین الان یه درخواست دیگه برای همین چپتر در حال اجراست،
+  //    منتظرش بمون به‌جای اینکه یه درخواست جدید به S3 بزنی
+  if (inFlightRequests.has(cacheKey)) {
+    return inFlightRequests.get(cacheKey);
+  }
+
+  // ۳. درخواست واقعی به S3 (فقط یک نسخه از این در آن واحد اجرا میشه)
+  const promise = (async () => {
+    try {
+      const keys = await fetchChapterImageKeysFromS3(slug, chapterNum);
+      chapterKeysCache.set(cacheKey, {
+        keys,
+        expiresAt: Date.now() + KEYS_CACHE_TTL_MS,
+      });
+      return keys;
+    } catch (err) {
+      // اگه S3 خطا داد (مثلا 429) ولی یه نسخه‌ی قدیمی (منقضی‌شده) از قبل
+      // در کش داریم، بهتره همون رو برگردونیم تا کاربر 500 نگیره
+      if (cached) {
+        console.warn(
+          `S3 list failed for ${cacheKey}, serving stale cache instead:`,
+          err.message
+        );
+        return cached.keys;
+      }
+      throw err;
+    } finally {
+      inFlightRequests.delete(cacheKey);
+    }
+  })();
+
+  inFlightRequests.set(cacheKey, promise);
+  return promise;
+}
+
 async function buildSignedUrls(slug, chapterNum) {
   const keys = await getChapterImageKeys(slug, chapterNum);
-  const urls = [];
-  for (const key of keys) {
-    const command = new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key });
-    const url = await getSignedUrl(s3, command, { expiresIn: SIGNED_URL_TTL_SECONDS });
-    urls.push(url);
-  }
+  // getSignedUrl شبکه‌ای نیست (فقط امضای محلی)، پس نیازی به کش جدا نداره
+  const urls = await Promise.all(
+    keys.map((key) => {
+      const command = new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key });
+      return getSignedUrl(s3, command, { expiresIn: SIGNED_URL_TTL_SECONDS });
+    })
+  );
   return urls;
 }
 
-// خواندن data.json و پیدا کردن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر
-// (جایگزین کوئری زدن به جدول episodes روی Supabase - همون فایلی که renderMangaPage هم می‌خونه)
-function findEpisodeFromJson(slug, chapterNum) {
-  const jsonPath = path.join(__dirname, "data", "data.json");
-  let data = {};
-  try {
-    if (fs.existsSync(jsonPath)) {
-      data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-    }
-  } catch (err) {
-    console.error("خطا در خواندن data.json:", err);
-    return { readError: true };
-  }
-
-  const manhwa = data[slug];
-  if (!manhwa || !Array.isArray(manhwa.episodes)) {
-    return { episode: null };
-  }
-
-  // شماره چپتر رو به عدد تبدیل می‌کنیم چون توی JSON به صورت عدد ذخیره شده
-  const numTarget = Number(chapterNum);
-  const episode = manhwa.episodes.find((ep) => Number(ep.num) === numTarget);
-  return { episode: episode || null };
+// اختیاری: اگه چپتر جدیدی آپلود کردید و می‌خواید کش فوراً پاک بشه
+// (مثلا از یه endpoint ادمین یا اسکریپت آپلودتون صداش بزنید)
+function invalidateChapterCache(slug, chapterNum) {
+  chapterKeysCache.delete(getCacheKey(slug, chapterNum));
 }
 
-app.post("/api/get-chapter-images", async (req, res) => {
-  try {
-    const { slug, chapterNum } = req.body || {};
-
-    // نکته: چون چپتر شماره 0 هم معتبره، نباید با !chapterNum چک بشه
-    // (چون !0 === true و اون رو اشتباهاً «ناقص» حساب می‌کرد)
-    if (!slug || chapterNum === undefined || chapterNum === null || chapterNum === "") {
-      return res.status(400).json({ error: "پارامترهای ناقص" });
-    }
-
-    // ۱. چک وضعیت چپتر (رایگان یا قفل) مستقیم از data.json
-    const { episode, readError } = findEpisodeFromJson(slug, chapterNum);
-
-    if (readError) {
-      return res.status(500).json({ error: "خطا در خواندن اطلاعات مانهوا" });
-    }
-
-    if (!episode) {
-      console.warn(`چپتر پیدا نشد برای slug=${slug} num=${chapterNum}`);
-      return res.status(404).json({ error: "چپتر پیدا نشد" });
-    }
-
-    // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده
-    if (episode.free) {
-      const urls = await buildSignedUrls(slug, chapterNum);
-      if (urls.length === 0) {
-        return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
-      }
-      return res.json({ urls });
-    }
-
-    // ۳. چپتر VIP است -> باید کاربر لاگین و مشترک باشه
-    const authHeader = req.headers.authorization || "";
-    const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    if (!accessToken) {
-      return res
-        .status(401)
-        .json({ error: "برای این قسمت باید وارد حساب شوید", code: "AUTH_REQUIRED" });
-    }
-
-    const user = await getUserFromAccessToken(accessToken);
-    if (!user || !user.id) {
-      return res
-        .status(401)
-        .json({ error: "نشست شما نامعتبر است، دوباره وارد شوید", code: "AUTH_REQUIRED" });
-    }
-
-    const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=is_vip`,
-      { headers: supabaseAdminHeaders() }
-    );
-    const profRows = await profRes.json();
-    const profile = profRows[0];
-
-    if (!profile?.is_vip) {
-      return res
-        .status(403)
-        .json({ error: "این قسمت مخصوص کاربران VIP است", code: "VIP_REQUIRED" });
-    }
-
-    // ۴. کاربر مجازه -> URLهای امضاشده رو بده
-    const urls = await buildSignedUrls(slug, chapterNum);
-    if (urls.length === 0) {
-      return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
-    }
-    return res.json({ urls });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "خطای داخلی سرور" });
-  }
-});
-
-app.get("/health", (req, res) => {
-  res.json({ ok: true });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`سرور روی پورت ${PORT} روشن شد`);
-});
+module.exports = { getChapterImageKeys, buildSignedUrls, invalidateChapterCache };
