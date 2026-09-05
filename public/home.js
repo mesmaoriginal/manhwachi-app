@@ -559,7 +559,10 @@ async function renderLatestFromJSON() {
             let latestEp = { num: 0, date: '' };
 
             episodes.forEach(ep => {
-                if (dateToSortable(ep.date) >= dateToSortable(latestEp.date)) {
+                if (dateToSortable(ep.date) > dateToSortable(latestEp.date)) {
+                    latestEp = ep;
+                } else if (dateToSortable(ep.date) === dateToSortable(latestEp.date) && (ep.num || 0) > (latestEp.num || 0)) {
+                    // اگر چند چپتر تاریخ یکسان داشتن، اونی که شماره‌ی بزرگتری داره (واقعاً جدیدتره) انتخاب بشه
                     latestEp = ep;
                 }
             });
