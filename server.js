@@ -420,6 +420,15 @@ app.post("/api/get-chapter-images", async (req, res) => {
 // پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه
 let cachedDataJson = null;
 
+// هر وقت پنل ادمین یه تغییری تو data.json بده (اضافه/ویرایش/حذف چپتر یا
+// مانهوا)، dataStore.js این رویداد رو ساطع می‌کنه. با شنیدنش، کش رو پاک
+// می‌کنیم تا دفعه‌ی بعد که کسی /data/data.json رو صدا بزنه، دوباره از
+// روی دیسک خونده بشه و نسخه‌ی تازه برگرده.
+const { dataEvents, DATA_UPDATED } = require("./lib/dataEvents");
+dataEvents.on(DATA_UPDATED, () => {
+  cachedDataJson = null;
+});
+
 app.get("/data/data.json", (req, res) => {
   // اگه قبلاً کش شده، از کش برگردون (سرعت بالاتر، خوندن کمتر از دیسک)
   if (cachedDataJson) {
