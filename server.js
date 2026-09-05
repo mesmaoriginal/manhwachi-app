@@ -12,6 +12,10 @@ const app = express();
 
 app.use(express.json());
 
+// ---------- پنل ادمین (مدیریت مانهواها و چپترها بدون ویرایش دستی data.json) ----------
+const { router: adminRouter } = require("./admin/adminRouter");
+app.use("/admin", adminRouter);
+
 // ---------- تنظیمات EJS برای صفحه‌ی مانهوا ----------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -314,117 +318,9 @@ app.post("/zibal/verify", checkSecret, async (req, res) => {
 });
 
 // ---------- بخش ۵: تصاویر چپتر (signed URL موقت از باکت پارس‌پک + کش) ----------
-
-const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-
-const PARSPACK_ENDPOINT = process.env.PARSPACK_ENDPOINT;
-const PARSPACK_ACCESS_KEY = process.env.PARSPACK_ACCESS_KEY;
-const PARSPACK_SECRET_KEY = process.env.PARSPACK_SECRET_KEY;
-const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
-const SIGNED_URL_TTL_SECONDS = 300; // مدت اعتبار لینک امضاشده (۵ دقیقه)
-
-// لیست فایل‌های یک چپتر منتشرشده عملاً هیچ‌وقت عوض نمی‌شه، پس کش طولانی کافیه
-const KEYS_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // ۶ ساعت
-
-const s3 = new S3Client({
-  endpoint: PARSPACK_ENDPOINT,
-  region: "default",
-  credentials: {
-    accessKeyId: PARSPACK_ACCESS_KEY,
-    secretAccessKey: PARSPACK_SECRET_KEY,
-  },
-  forcePathStyle: true,
-  maxAttempts: 5, // retry بیشتر برای مقاومت در برابر 429 موقت
-});
-
-// کش نتیجه‌ی ListObjectsV2 + جلوگیری از درخواست موازیِ تکراری
-const chapterKeysCache = new Map(); // cacheKey -> { keys, expiresAt }
-const inFlightRequests = new Map(); // cacheKey -> Promise در حال اجرا
-
-function getCacheKey(slug, chapterNum) {
-  return `${slug}::${chapterNum}`;
-}
-
-async function fetchChapterImageKeysFromS3(slug, chapterNum) {
-  const prefix = `manhwas/${slug}/CH${chapterNum}/srcCH${chapterNum}/`;
-  const keys = [];
-  let continuationToken;
-
-  do {
-    const command = new ListObjectsV2Command({
-      Bucket: PARSPACK_BUCKET,
-      Prefix: prefix,
-      ContinuationToken: continuationToken,
-    });
-    const response = await s3.send(command);
-    (response.Contents || []).forEach((obj) => keys.push(obj.Key));
-    continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
-  } while (continuationToken);
-
-  // چون اسم فایل‌ها zero-padded هستن (001.webp, 002.webp, ...) sort الفبایی همون ترتیب صفحات رو میده
-  keys.sort();
-  return keys;
-}
-
-async function getChapterImageKeys(slug, chapterNum) {
-  const cacheKey = getCacheKey(slug, chapterNum);
-
-  // ۱. اگه در کش معتبر هست، همون رو برگردون - بدون تماس با S3
-  const cached = chapterKeysCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.keys;
-  }
-
-  // ۲. اگه همین الان یه درخواست دیگه برای همین چپتر در حال اجراست، منتظرش بمون
-  if (inFlightRequests.has(cacheKey)) {
-    return inFlightRequests.get(cacheKey);
-  }
-
-  // ۳. درخواست واقعی به S3 (فقط یک نسخه از این در آن واحد اجرا میشه)
-  const promise = (async () => {
-    try {
-      const keys = await fetchChapterImageKeysFromS3(slug, chapterNum);
-      chapterKeysCache.set(cacheKey, {
-        keys,
-        expiresAt: Date.now() + KEYS_CACHE_TTL_MS,
-      });
-      return keys;
-    } catch (err) {
-      // اگه S3 خطا داد (مثلا 429) ولی نسخه‌ی قدیمی در کش داریم، همون رو برگردون تا 500 نگیره کاربر
-      if (cached) {
-        console.warn(
-          `S3 list failed for ${cacheKey}, serving stale cache instead:`,
-          err.message
-        );
-        return cached.keys;
-      }
-      throw err;
-    } finally {
-      inFlightRequests.delete(cacheKey);
-    }
-  })();
-
-  inFlightRequests.set(cacheKey, promise);
-  return promise;
-}
-
-async function buildSignedUrls(slug, chapterNum) {
-  const keys = await getChapterImageKeys(slug, chapterNum);
-  // getSignedUrl شبکه‌ای نیست (فقط امضای محلی)، نیازی به کش جدا نداره
-  const urls = await Promise.all(
-    keys.map((key) => {
-      const command = new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key });
-      return getSignedUrl(s3, command, { expiresIn: SIGNED_URL_TTL_SECONDS });
-    })
-  );
-  return urls;
-}
-
-// اختیاری: اگه چپتر جدیدی آپلود کردید و می‌خواید کش فوراً پاک بشه
-function invalidateChapterCache(slug, chapterNum) {
-  chapterKeysCache.delete(getCacheKey(slug, chapterNum));
-}
+// منطق S3 به lib/chapterCache.js منتقل شد تا هم اینجا و هم پنل ادمین
+// (برای دکمه‌ی "بررسی همگام‌سازی") از یک نمونه‌ی مشترک استفاده کنن.
+const { buildSignedUrls } = require("./lib/chapterCache");
 
 // خواندن data.json و پیدا کردن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر
 function findEpisodeFromJson(slug, chapterNum) {
@@ -518,6 +414,30 @@ app.post("/api/get-chapter-images", async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: "خطای داخلی سرور" });
   }
+});
+// ---------- دادن data.json به کلاینت (سمت مرورگر) به صورت امن ----------
+// چون data.json بیرون از پوشه‌ی public قرار داره، مرورگر مستقیم بهش دسترسی نداره
+// پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه
+let cachedDataJson = null;
+
+app.get("/data/data.json", (req, res) => {
+  // اگه قبلاً کش شده، از کش برگردون (سرعت بالاتر، خوندن کمتر از دیسک)
+  if (cachedDataJson) {
+    return res.type("application/json").send(cachedDataJson);
+  }
+
+  // مسیر فایل رو خودِ کد مشخص می‌کنه، نه ورودی کاربر
+  // پس امکان path traversal (مثل ../../etc/passwd) وجود نداره
+  const jsonPath = path.join(__dirname, "data", "data.json");
+
+  fs.readFile(jsonPath, "utf-8", (err, content) => {
+    if (err) {
+      console.error("خطا در خواندن data.json برای کلاینت:", err);
+      return res.status(500).json({ error: "خطا در خواندن اطلاعات" });
+    }
+    cachedDataJson = content; // کش کردن برای درخواست‌های بعدی، تا از دیسک دوباره نخونه
+    res.type("application/json").send(content);
+  });
 });
 
 app.get("/health", (req, res) => {

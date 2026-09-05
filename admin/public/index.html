@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>پنل مدیریت مانهواچی</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Tahoma, "Vazirmatn", sans-serif;
+    background: #0f1115;
+    color: #e6e6e6;
+    margin: 0;
+    padding: 24px;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #999; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: #191b22;
+    border: 1px solid #2a2d38;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  h2 { font-size: 16px; margin: 0 0 12px; color: #f0a500; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 6px; text-align: right; border-bottom: 1px solid #2a2d38; }
+  th { color: #999; font-weight: normal; }
+  button {
+    background: #2a2d38; color: #e6e6e6; border: 1px solid #3a3d4a;
+    padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;
+    margin-inline-end: 4px;
+  }
+  button:hover { background: #34384a; }
+  button.primary { background: #f0a500; color: #111; border-color: #f0a500; font-weight: bold; }
+  button.danger { background: #4a2020; border-color: #6a2a2a; }
+  input, select, textarea {
+    background: #0f1115; color: #e6e6e6; border: 1px solid #3a3d4a;
+    border-radius: 6px; padding: 7px 8px; font-size: 13px; width: 100%;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .badge { padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+  .badge.vip { background: #4a2f00; color: #f0a500; }
+  .badge.free { background: #123a25; color: #4ade80; }
+  .msg { padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
+  .msg.err { background: #4a2020; color: #ffb0b0; }
+  .msg.ok { background: #123a25; color: #a6f0c6; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: #7ec8ff; font-size: 13px; }
+  .warn { color: #f0a500; }
+  .missing { color: #ff8080; }
+  #newForm { display: none; }
+</style>
+</head>
+<body>
+  <h1>پنل مدیریت مانهواچی</h1>
+  <div class="sub">مدیریت مانهواها و چپترها بدون دست زدن دستی به data.json</div>
+
+  <div id="globalMsg"></div>
+
+  <div class="card">
+    <h2>مانهوای جدید</h2>
+    <button class="primary" onclick="toggleNewForm()">+ افزودن مانهوای جدید</button>
+    <div id="newForm" style="margin-top:12px;">
+      <div class="grid">
+        <div><label>Slug (فقط انگلیسی و خط تیره)</label><input id="n_slug" placeholder="my-new-manhwa" /></div>
+        <div><label>عنوان انگلیسی</label><input id="n_title_en" /></div>
+        <div><label>عنوان فارسی</label><input id="n_title_fa" /></div>
+        <div><label>منشا (کره‌ای/چینی/...)</label><input id="n_origin" value="کره ای" /></div>
+        <div><label>نوع</label><input id="n_type" value="مانهوا" /></div>
+        <div><label>ژانرها (با کاما جدا کن)</label><input id="n_genres" placeholder="اکشن, فانتزی" /></div>
+        <div><label>امتیاز</label><input id="n_score" value="0.0" /></div>
+        <div><label>تیم ترجمه</label><input id="n_scans_by" /></div>
+        <div><label>نام فایل کاور</label><input id="n_cover" placeholder="cover.webp" /></div>
+        <div><label><input type="checkbox" id="n_vip" style="width:auto;" /> VIP باشد</label></div>
+      </div>
+      <div style="margin-top:8px;"><label>توضیحات</label><textarea id="n_desc" rows="3"></textarea></div>
+      <div style="margin-top:10px;">
+        <button class="primary" onclick="createManga()">ثبت مانهوا</button>
+        <button onclick="toggleNewForm()">انصراف</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>لیست مانهواها</h2>
+    <table>
+      <thead>
+        <tr><th>عنوان</th><th>Slug</th><th>وضعیت</th><th>تعداد چپتر</th><th>آخرین چپتر</th><th></th></tr>
+      </thead>
+      <tbody id="mangaList"><tr><td colspan="6">در حال بارگذاری...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div id="detailArea"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function showMsg(target, text, ok) {
+  target.innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${text}</div>`;
+  setTimeout(() => { target.innerHTML = ''; }, 5000);
+}
+
+async function api(url, opts) {
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'خطای ناشناخته');
+  return data;
+}
+
+function toggleNewForm() {
+  const f = $('newForm');
+  f.style.display = f.style.display === 'none' || !f.style.display ? 'block' : 'none';
+}
+
+async function createManga() {
+  try {
+    await api('/admin/api/manga', {
+      method: 'POST',
+      body: JSON.stringify({
+        slug: $('n_slug').value.trim(),
+        title_en: $('n_title_en').value.trim(),
+        title_fa: $('n_title_fa').value.trim(),
+        origin: $('n_origin').value.trim(),
+        type: $('n_type').value.trim(),
+        genres: $('n_genres').value,
+        score: $('n_score').value.trim(),
+        scans_by: $('n_scans_by').value.trim(),
+        cover_image: $('n_cover').value.trim(),
+        is_vip: $('n_vip').checked,
+        description: $('n_desc').value.trim(),
+      }),
+    });
+    showMsg($('globalMsg'), 'مانهوا با موفقیت اضافه شد.', true);
+    toggleNewForm();
+    loadList();
+  } catch (err) {
+    showMsg($('globalMsg'), err.message, false);
+  }
+}
+
+async function loadList() {
+  const list = await api('/admin/api/manga');
+  const tbody = $('mangaList');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6">هنوز مانهوایی ثبت نشده.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(m => `
+    <tr>
+      <td>${m.title_fa || m.title_en}</td>
+      <td>${m.slug}</td>
+      <td>${m.is_vip ? '<span class="badge vip">VIP</span>' : '<span class="badge free">رایگان</span>'}</td>
+      <td>${m.episodeCount}</td>
+      <td>${m.lastEpisode ?? '-'}</td>
+      <td>
+        <button onclick="openDetail('${m.slug}')">مدیریت</button>
+        <button class="danger" onclick="deleteManga('${m.slug}')">حذف</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function deleteManga(slug) {
+  if (!confirm(`مطمئنی می‌خوای «${slug}» رو کامل حذف کنی؟`)) return;
+  try {
+    await api('/admin/api/manga/' + encodeURIComponent(slug), { method: 'DELETE' });
+    showMsg($('globalMsg'), 'حذف شد.', true);
+    $('detailArea').innerHTML = '';
+    loadList();
+  } catch (err) {
+    showMsg($('globalMsg'), err.message, false);
+  }
+}
+
+async function openDetail(slug) {
+  const m = await api('/admin/api/manga/' + encodeURIComponent(slug));
+  const episodesRows = (m.episodes || []).sort((a,b) => b.num - a.num).map(ep => `
+    <tr>
+      <td>${ep.num}</td>
+      <td><input value="${ep.date || ''}" onchange="editEpisode('${slug}', ${ep.num}, {date: this.value})" /></td>
+      <td>
+        <select onchange="editEpisode('${slug}', ${ep.num}, {free: this.value === 'true'})">
+          <option value="true" ${ep.free ? 'selected' : ''}>رایگان</option>
+          <option value="false" ${!ep.free ? 'selected' : ''}>VIP</option>
+        </select>
+      </td>
+      <td><button class="danger" onclick="deleteEpisode('${slug}', ${ep.num})">حذف</button></td>
+    </tr>
+  `).join('');
+
+  $('detailArea').innerHTML = `
+    <div class="card">
+      <h2>مدیریت: ${m.title_fa || m.title_en} <span style="color:#666;font-size:12px;">(${slug})</span></h2>
+      <div id="detailMsg"></div>
+
+      <div class="row">
+        <button class="primary" onclick="quickAddEpisode('${slug}')">+ افزودن چپتر جدید (خودکار)</button>
+        <button onclick="checkSync('${slug}')">بررسی همگام‌سازی با S3</button>
+      </div>
+      <div id="syncResult"></div>
+
+      <table>
+        <thead><tr><th>شماره</th><th>تاریخ</th><th>وضعیت</th><th></th></tr></thead>
+        <tbody>${episodesRows || '<tr><td colspan="4">هنوز چپتری ثبت نشده.</td></tr>'}</tbody>
+      </table>
+
+      <details>
+        <summary>افزودن چپتر با شماره و تاریخ دلخواه</summary>
+        <div class="grid" style="margin-top:8px;">
+          <div><label>شماره چپتر</label><input id="e_num_${slug}" type="number" /></div>
+          <div><label>تاریخ (شمسی، خالی = امروز)</label><input id="e_date_${slug}" placeholder="1405/06/15" /></div>
+        </div>
+        <label style="margin-top:8px;"><input type="checkbox" id="e_free_${slug}" checked style="width:auto;" /> رایگان</label>
+        <div style="margin-top:8px;"><button class="primary" onclick="manualAddEpisode('${slug}')">افزودن</button></div>
+      </details>
+
+      <details style="margin-top:16px;">
+        <summary>ویرایش اطلاعات مانهوا</summary>
+        <div class="grid" style="margin-top:8px;">
+          <div><label>عنوان فارسی</label><input id="m_title_fa" value="${m.title_fa || ''}" /></div>
+          <div><label>عنوان انگلیسی</label><input id="m_title_en" value="${m.title_en || ''}" /></div>
+          <div><label>ژانرها</label><input id="m_genres" value="${(m.genres || []).join(', ')}" /></div>
+          <div><label>امتیاز</label><input id="m_score" value="${m.score || ''}" /></div>
+          <div><label>تیم ترجمه</label><input id="m_scans_by" value="${m.scans_by || ''}" /></div>
+          <div><label><input type="checkbox" id="m_vip" ${m.is_vip ? 'checked' : ''} style="width:auto;" /> VIP باشد</label></div>
+        </div>
+        <div style="margin-top:8px;"><label>توضیحات</label><textarea id="m_desc" rows="3">${m.description || ''}</textarea></div>
+        <div style="margin-top:8px;"><button class="primary" onclick="saveMangaEdit('${slug}')">ذخیره تغییرات</button></div>
+      </details>
+    </div>
+  `;
+}
+
+async function quickAddEpisode(slug) {
+  try {
+    const r = await api(`/admin/api/manga/${encodeURIComponent(slug)}/episodes`, {
+      method: 'POST', body: JSON.stringify({}),
+    });
+    showMsg($('detailMsg'), `چپتر ${r.num} اضافه شد.`, true);
+    openDetail(slug);
+    loadList();
+  } catch (err) { showMsg($('detailMsg'), err.message, false); }
+}
+
+async function manualAddEpisode(slug) {
+  try {
+    const num = $(`e_num_${slug}`).value;
+    const date = $(`e_date_${slug}`).value;
+    const free = $(`e_free_${slug}`).checked;
+    await api(`/admin/api/manga/${encodeURIComponent(slug)}/episodes`, {
+      method: 'POST', body: JSON.stringify({ num: num || undefined, date: date || undefined, free }),
+    });
+    showMsg($('detailMsg'), 'چپتر اضافه شد.', true);
+    openDetail(slug);
+    loadList();
+  } catch (err) { showMsg($('detailMsg'), err.message, false); }
+}
+
+async function editEpisode(slug, num, patch) {
+  try {
+    await api(`/admin/api/manga/${encodeURIComponent(slug)}/episodes/${num}`, {
+      method: 'PUT', body: JSON.stringify(patch),
+    });
+  } catch (err) { alert(err.message); }
+}
+
+async function deleteEpisode(slug, num) {
+  if (!confirm(`چپتر ${num} حذف شود؟`)) return;
+  try {
+    await api(`/admin/api/manga/${encodeURIComponent(slug)}/episodes/${num}`, { method: 'DELETE' });
+    openDetail(slug);
+    loadList();
+  } catch (err) { alert(err.message); }
+}
+
+async function saveMangaEdit(slug) {
+  try {
+    await api('/admin/api/manga/' + encodeURIComponent(slug), {
+      method: 'PUT',
+      body: JSON.stringify({
+        title_fa: $('m_title_fa').value,
+        title_en: $('m_title_en').value,
+        genres: $('m_genres').value,
+        score: $('m_score').value,
+        scans_by: $('m_scans_by').value,
+        is_vip: $('m_vip').checked,
+        description: $('m_desc').value,
+      }),
+    });
+    showMsg($('detailMsg'), 'ذخیره شد.', true);
+    loadList();
+  } catch (err) { showMsg($('detailMsg'), err.message, false); }
+}
+
+async function checkSync(slug) {
+  const box = $('syncResult');
+  box.innerHTML = 'در حال بررسی...';
+  try {
+    const r = await api(`/admin/api/sync-check/${encodeURIComponent(slug)}`);
+    let html = '<div class="card" style="margin-top:10px;">';
+    if (r.missingInJson.length) {
+      html += `<div class="missing">این چپترها روی S3 آپلود شدن ولی تو JSON ثبت نشدن: ${r.missingInJson.join(', ')}</div>`;
+      html += r.missingInJson.map(n => `<button onclick="addSpecificEpisode('${slug}', ${n})">+ افزودن چپتر ${n}</button>`).join(' ');
+    } else {
+      html += '<div style="color:#4ade80;">همه‌ی چپترهای آپلودشده تو JSON هم ثبت شدن ✓</div>';
+    }
+    if (r.missingInS3.length) {
+      html += `<div class="warn" style="margin-top:8px;">این چپترها تو JSON هستن ولی هنوز عکسی روی S3 براشون پیدا نشد: ${r.missingInS3.join(', ')}</div>`;
+    }
+    html += '</div>';
+    box.innerHTML = html;
+  } catch (err) {
+    box.innerHTML = `<div class="msg err">${err.message}</div>`;
+  }
+}
+
+async function addSpecificEpisode(slug, num) {
+  try {
+    await api(`/admin/api/manga/${encodeURIComponent(slug)}/episodes`, {
+      method: 'POST', body: JSON.stringify({ num, free: true }),
+    });
+    openDetail(slug);
+    loadList();
+    checkSync(slug);
+  } catch (err) { alert(err.message); }
+}
+
+loadList();
+</script>
+</body>
+</html>
