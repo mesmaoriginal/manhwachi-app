@@ -12,6 +12,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { dataEvents, DATA_UPDATED } = require("../lib/dataEvents");
 
 const DATA_DIR = path.join(__dirname, "..", "data");
 const DATA_PATH = path.join(DATA_DIR, "data.json");
@@ -57,6 +58,9 @@ function writeDataToDisk(data) {
   const tmpPath = DATA_PATH + ".tmp";
   fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf-8");
   fs.renameSync(tmpPath, DATA_PATH);
+  // به بقیه‌ی ماژول‌ها (مثل روت /data/data.json تو server.js) خبر بده
+  // که فایل عوض شده، تا هر کش قدیمی‌ای که نگه داشتن رو باطل کنن.
+  dataEvents.emit(DATA_UPDATED);
 }
 
 // mutatorFn یک تابع sync هست که data رو مستقیم تغییر می‌ده (in-place).
