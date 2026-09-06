@@ -621,53 +621,53 @@ async function renderLatestFromJSON() {
         listContainer.innerHTML = `<li class="p-4 text-xs text-center" style="color: #ff2a5f;">خطا در بارگذاری اطلاعات.</li>`;
     }
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("updateModal");
-    const title = document.getElementById("modalTitle");
-    const text = document.getElementById("modalText");
-    const btnUnderstand = document.getElementById("closeUpdateModal");
-    const btnNotUnderstand = document.getElementById("notUnderstoodModal");
+// document.addEventListener("DOMContentLoaded", () => {
+//     const modal = document.getElementById("updateModal");
+//     const title = document.getElementById("modalTitle");
+//     const text = document.getElementById("modalText");
+//     const btnUnderstand = document.getElementById("closeUpdateModal");
+//     const btnNotUnderstand = document.getElementById("notUnderstoodModal");
 
-    let stage = 1;
+//     let stage = 1;
 
-    // دکمه فهمیدم اصلی (در هر مرحله‌ای کلیک شود، مودال را می‌بندد)
-    btnUnderstand.addEventListener("click", () => {
-        modal.classList.add("hidden");
-    });
+//     // دکمه فهمیدم اصلی (در هر مرحله‌ای کلیک شود، مودال را می‌بندد)
+//     btnUnderstand.addEventListener("click", () => {
+//         modal.classList.add("hidden");
+//     });
 
-    // مدیریت کلیک روی دکمه نفهمیدم
-    btnNotUnderstand.addEventListener("click", () => {
-        if (stage === 1) {
-            // رفتن به مرحله دوم
-            title.textContent = "جرئت یبار دیگه بگو نفهمیدم😊";
-            text.textContent = "سایت در حال بروز رسانیهههه";
+//     // مدیریت کلیک روی دکمه نفهمیدم
+//     btnNotUnderstand.addEventListener("click", () => {
+//         if (stage === 1) {
+//             // رفتن به مرحله دوم
+//             title.textContent = "جرئت یبار دیگه بگو نفهمیدم😊";
+//             text.textContent = "سایت در حال بروز رسانیهههه";
             
-            // دکمه فهمیدم بزرگ می‌شود
-            btnUnderstand.className = "update-modal-btn btn-stage2-large bg-red";
+//             // دکمه فهمیدم بزرگ می‌شود
+//             btnUnderstand.className = "update-modal-btn btn-stage2-large bg-red";
             
-            // دکمه نفهمیدم کوچولو و طوسی باقی می‌ماند
-            btnNotUnderstand.className = "update-modal-btn btn-stage2-small bg-gray";
+//             // دکمه نفهمیدم کوچولو و طوسی باقی می‌ماند
+//             btnNotUnderstand.className = "update-modal-btn btn-stage2-small bg-gray";
             
-            stage = 2; // تغییر وضعیت به مرحله بعد
-        } 
-        else if (stage === 2) {
-            // رفتن به مرحله سوم
-            title.textContent = "حالا فهمیدی؟ ";
-            text.textContent = "";
+//             stage = 2; // تغییر وضعیت به مرحله بعد
+//         } 
+//         else if (stage === 2) {
+//             // رفتن به مرحله سوم
+//             title.textContent = "حالا فهمیدی؟ ";
+//             text.textContent = "";
             
-            // دکمه نفهمیدم تبدیل به فهمیدم می‌شود
-            btnNotUnderstand.textContent = "فهمیدم";
+//             // دکمه نفهمیدم تبدیل به فهمیدم می‌شود
+//             btnNotUnderstand.textContent = "فهمیدم";
             
-            // هر دو دکمه هم‌اندازه (btn-equal) و هر دو قرمز (bg-red) می‌شوند
-            btnUnderstand.className = "update-modal-btn btn-equal bg-red";
-            btnNotUnderstand.className = "update-modal-btn btn-equal bg-red";
+//             // هر دو دکمه هم‌اندازه (btn-equal) و هر دو قرمز (bg-red) می‌شوند
+//             btnUnderstand.className = "update-modal-btn btn-equal bg-red";
+//             btnNotUnderstand.className = "update-modal-btn btn-equal bg-red";
 
-            // در این مرحله، کلیک روی دکمه دوم هم مودال را می‌بندد
-            btnNotUnderstand.addEventListener("click", () => {
-                modal.classList.add("hidden");
-            });
+//             // در این مرحله، کلیک روی دکمه دوم هم مودال را می‌بندد
+//             btnNotUnderstand.addEventListener("click", () => {
+//                 modal.classList.add("hidden");
+//             });
             
-            stage = 3;
-        }
-    });
-});
+//             stage = 3;
+//         }
+//     });
+// });
