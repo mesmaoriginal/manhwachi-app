@@ -503,6 +503,11 @@
     "cover_image": "7-days-from-now-i-will-save-the-cursed-duke.webp",
     "episodes": [
       {
+        "num": 3,
+        "date": "1405/06/15",
+        "free": false
+      },
+      {
         "num": 2,
         "date": "1405/06/04",
         "free": true
