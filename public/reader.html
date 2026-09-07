@@ -110,7 +110,7 @@
         #reading-toc-track { position: fixed; top: 0; bottom: 0; left: 4px; width: 3px; z-index: 40; }
     </style>
 </head>
-<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white theme-black">
+<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden theme-black">
 
     <!-- هدر بالایی هوشمند -->
     <header id="top-nav" class="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-red-900/30 z-50 transition-all duration-300">
@@ -238,9 +238,14 @@
                     <button id="haptic-toggle" onclick="toggleHapticSetting()" class="toggle-switch"><div class="knob"></div></button>
                 </div>
                 <div class="pt-4 border-t border-zinc-800 space-y-3">
-                    <button onclick="reportIssue()" class="w-full flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm font-medium transition-colors">
-                        <span class="material-symbols-outlined text-lg text-amber-500">flag</span>گزارش مشکل در این قسمت
+                    <button id="report-issue-btn" onclick="toggleReportForm()" class="w-full flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm font-medium transition-colors">
+                        <span class="material-symbols-outlined text-lg text-amber-500">flag</span>
+                        <span id="report-issue-label">گزارش مشکل در این قسمت</span>
                     </button>
+                    <div id="report-form" class="hidden space-y-2">
+                        <textarea id="report-message" rows="3" maxlength="500" placeholder="مشکل رو توضیح بدید (مثلاً: تصویر صفحه ۵ باز نمیشه)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none focus:border-red-700 resize-none"></textarea>
+                        <button id="report-submit-btn" onclick="submitReport()" class="w-full py-2.5 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold transition-colors">ارسال گزارش</button>
+                    </div>
                     <p class="text-xs text-gray-500 text-center">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
                 </div>
             </div>
@@ -465,6 +470,7 @@
                 incrementChapterView();
                 saveUserBookmark();
                 saveReadingHistoryEntry();
+                updateReportButtonUI();
             } catch (err) {
                 console.error(err);
             }
@@ -613,7 +619,7 @@
             });
         });
 
-        let isUIHidden = false;
+        let isUIHidden = true;
         function toggleUI() {
             isUIHidden = !isUIHidden;
             if (isUIHidden) document.body.classList.add('ui-hidden');
@@ -875,11 +881,71 @@
             vibrate(10);
         }
 
-        // ================= گزارش مشکل در چپتر (بدون نیاز به بک‌اند جدید) =================
-        function reportIssue() {
-            const subject = encodeURIComponent(`گزارش مشکل - ${slug} چپتر ${chNum}`);
-            const body = encodeURIComponent(`سلام،\nدر مانهوای «${manhwaData?.title_fa || slug}»، چپتر ${chNum}، مشکل زیر رو مشاهده کردم:\n\n(توضیح مشکل رو اینجا بنویسید)\n\nصفحه فعلی: ${document.getElementById('current-page')?.textContent || '-'}`);
-            window.location.href = `mailto:support@manhwachi.com?subject=${subject}&body=${body}`;
+        // ================= گزارش مشکل در چپتر (ثبت داخل دیتابیس سایت، هر کاربر برای هر چپتر فقط یک‌بار) =================
+        const REPORT_KEY_PREFIX = 'reported_chapter_';
+        function reportKey() { return `${REPORT_KEY_PREFIX}${slug}_${chNum}`; }
+        function reportAlreadySent() { return localStorage.getItem(reportKey()) === '1'; }
+
+        function updateReportButtonUI() {
+            const btn = document.getElementById('report-issue-btn');
+            const label = document.getElementById('report-issue-label');
+            if (!btn) return;
+            if (reportAlreadySent()) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                label.textContent = 'قبلاً گزارش شده ✓';
+                document.getElementById('report-form').classList.add('hidden');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                label.textContent = 'گزارش مشکل در این قسمت';
+            }
+        }
+
+        function toggleReportForm() {
+            if (reportAlreadySent()) {
+                showToast('برای این قسمت قبلاً گزارش ارسال کرده‌اید', [], 3000);
+                return;
+            }
+            document.getElementById('report-form').classList.toggle('hidden');
+        }
+
+        async function submitReport() {
+            if (reportAlreadySent()) { showToast('قبلاً گزارش شده است', [], 2500); return; }
+
+            const messageEl = document.getElementById('report-message');
+            const message = messageEl.value.trim();
+            if (!message) { showToast('لطفاً توضیح مشکل را بنویسید', [], 2500); return; }
+
+            const submitBtn = document.getElementById('report-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'در حال ارسال...';
+
+            // قفل فوری سمت کاربر قبل از پاسخ سرور، تا حتی با چند بار کلیک سریع هم درخواست تکراری نره
+            localStorage.setItem(reportKey(), '1');
+
+            try {
+                const { error } = await db.from('chapter_reports').insert({
+                    slug,
+                    chapter_num: chNum,
+                    message,
+                    page: document.getElementById('current-page')?.textContent || null
+                });
+                if (error) throw error;
+
+                updateReportButtonUI();
+                messageEl.value = '';
+                showToast('گزارش شما ثبت شد، ممنون از همکاری شما 🙏', [], 4000);
+            } catch (err) {
+                console.error('Report submit error:', err);
+                localStorage.removeItem(reportKey()); // چون ارسال ناموفق بود، اجازه‌ی تلاش مجدد رو بده
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'ارسال گزارش';
+                showToast('ارسال گزارش با خطا مواجه شد. لطفاً دوباره تلاش کنید.', [], 3500);
+                return;
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'ارسال گزارش';
         }
 
         document.addEventListener('fullscreenchange', () => {

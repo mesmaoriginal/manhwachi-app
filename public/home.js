@@ -1,11 +1,21 @@
 "use strict";
 
 // تعریف متغیرهای گلوبال اسلایدر برای دسترسی و بازنشانی راحت‌تر
-let slider, track, dots;
+let slider, track, dots, prevBtn, nextBtn;
 let width, index, current, target;
 let startX, startOffset, lastX, lastTime, velocity, isDragging;
 let rafId = 0;
 let slideNodes = [];
+
+// عرض واقعی اسلایدر را برمی‌گرداند (نه عرض کل پنجره) تا در صفحات
+// بزرگ که محتوا محدود به یک عرض حداکثری‌ست، اسلایدها درست چیده شوند
+function getSliderWidth() {
+  if (slider) {
+    const rect = slider.getBoundingClientRect();
+    if (rect.width) return rect.width;
+  }
+  return window.innerWidth;
+}
 
 const slides = [
   {
@@ -100,14 +110,17 @@ window.initHome = function() {
   slider = document.getElementById("slider");
   track = document.getElementById("track");
   dots = document.getElementById("dots");
+  prevBtn = document.getElementById("sliderPrevBtn");
+  nextBtn = document.getElementById("sliderNextBtn");
 
   if (slider && track && dots) {
     // تمیز کردن محتوای قبلی اسلایدر قبل از ساخت مجدد
     track.innerHTML = "";
     dots.innerHTML = "";
 
-    // مقداردهی اولیه موقعیت‌ها
-    width = window.innerWidth;
+    // مقداردهی اولیه موقعیت‌ها (بر اساس عرض واقعی خود اسلایدر،
+    // نه کل پنجره؛ چون در صفحات بزرگ محتوا محدود به یک عرض حداکثری‌ست)
+    width = getSliderWidth();
     index = 3; 
     current = -3 * width;
     target = -3 * width;
@@ -130,6 +143,17 @@ window.initHome = function() {
     slider.addEventListener("pointermove", onPointerMove, { passive: true });
     slider.addEventListener("pointerup", onPointerUp);
     slider.addEventListener("pointercancel", onPointerUp);
+
+    // دکمه‌های فلش قبلی/بعدی (مخصوص نمایش دسکتاپ/ویندوز)
+    if (prevBtn && nextBtn) {
+      prevBtn.replaceWith(prevBtn.cloneNode(true));
+      nextBtn.replaceWith(nextBtn.cloneNode(true));
+      prevBtn = document.getElementById("sliderPrevBtn");
+      nextBtn = document.getElementById("sliderNextBtn");
+
+      prevBtn.addEventListener("click", () => goTo(index - 1));
+      nextBtn.addEventListener("click", () => goTo(index + 1));
+    }
   } else {
     console.warn("المان‌های اسلایدر یافت نشدند.");
   }
@@ -207,6 +231,9 @@ function updateUi() {
       dot.classList.toggle("is-active", dotIndex === realIndex() - 1);
     });
   }
+
+  if (prevBtn) prevBtn.disabled = index <= 0;
+  if (nextBtn) nextBtn.disabled = index >= slides.length - 1;
 }
 
 function applyTransforms() {
@@ -285,7 +312,7 @@ function onPointerUp(event) {
 
 function onResize() {
   if (!slider) return;
-  width = window.innerWidth;
+  width = getSliderWidth();
   slideNodes.forEach(({ item }, position) => {
     item.style.transform = `translate3d(${position * width}px, 0, 0)`;
   });

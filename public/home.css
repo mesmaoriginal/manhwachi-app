@@ -1090,6 +1090,84 @@ text-align: right;   /* راست‌چین */
         box-shadow: 0 0 22px var(--red-soft);
       }
 
+      /* ==========================================================
+         اسلایدر در صفحات بزرگ (دسکتاپ/ویندوز): ابعاد بزرگ‌تر، حس
+         کارت شیشه‌ای شکیل، تایپوگرافی متعادل و فلش‌های ناوبری
+         ========================================================== */
+      .slider-nav {
+        display: none;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #fff;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 7;
+        font-size: 1.05rem;
+        opacity: .75;
+        transition: opacity .25s ease, background .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+      }
+
+      .slider-nav-prev { left: 18px; }
+      .slider-nav-next { right: 18px; }
+
+      .slider-nav:hover {
+        opacity: 1;
+        background: var(--primary);
+        border-color: transparent;
+        box-shadow: 0 8px 24px rgba(220, 38, 38, .45);
+        transform: translateY(-50%) scale(1.06);
+      }
+
+      .slider-nav:active { transform: translateY(-50%) scale(0.94); }
+
+      .slider-nav:disabled {
+        opacity: .25;
+        cursor: default;
+        pointer-events: none;
+        box-shadow: none;
+      }
+
+      @media (min-width: 768px) {
+        .slider-nav { display: flex; }
+      }
+
+      @media (min-width: 1024px) {
+        .slider {
+          height: 460px;
+          border-radius: 22px;
+          box-shadow: 0 30px 70px -18px rgba(0, 0, 0, .75), 0 0 0 1px rgba(255, 255, 255, .06);
+        }
+
+        .headline { font-size: clamp(2.1rem, 3.4vw, 3.6rem); }
+        .subtitle { font-size: 1.05rem; }
+        .product { height: 80%; }
+
+        .slider-nav { width: 52px; height: 52px; font-size: 1.2rem; }
+        .slider-nav-prev { left: 26px; }
+        .slider-nav-next { right: 26px; }
+
+        .dots { gap: 12px; padding-block: 26px; }
+        .dot { width: 40px; }
+        .dot.is-active { width: 64px; }
+      }
+
+      @media (min-width: 1440px) {
+        .slider {
+          height: 540px;
+        }
+
+        .headline { font-size: clamp(2.4rem, 3vw, 4rem); }
+      }
+
       @keyframes red-aura {
         from {
           text-shadow:
@@ -1138,7 +1216,30 @@ text-align: right;   /* راست‌چین */
 :root {
         --w: 12px;
         --h: 2px;
-        
+        --primary: #DC2626;
+        --red-soft: rgba(220, 38, 38, .65);
+      }
+
+      /* ==========================================================
+         نمایش شکیل در صفحات با عرض بزرگ (دسکتاپ / ویندوز)
+         محدود کردن عرض محتوا و وسط‌چین کردن آن هم‌راستا با هدر
+         ========================================================== */
+      .home-page {
+        width: 100%;
+      }
+
+      @media (min-width: 1024px) {
+        .home-page {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding-inline: 20px;
+        }
+      }
+
+      @media (min-width: 1440px) {
+        .home-page {
+          max-width: 1400px;
+        }
       }
 
       
