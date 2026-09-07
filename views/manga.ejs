@@ -42,6 +42,7 @@
       "image": full_cover_url,
       "url": canonical_url,
       "inLanguage": "fa",
+      "datePublished": (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : ''),
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": String(score),
@@ -658,6 +659,13 @@
                     <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">format_list_numbered</span>چپترهای ترجمه شده</div>
                     <div id="dynamic-chapters-count" class="text-lg font-bold text-white"><%= episodes.length %></div>
                 </div>
+                <% var _releaseDate = (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : ''); %>
+                <% if (_releaseDate) { %>
+                <div class="bg-surface-elevated rounded-2xl p-4 border border-white/5 col-span-2">
+                    <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">calendar_month</span>تاریخ پخش</div>
+                    <div id="dynamic-release-date" class="text-lg font-bold text-white"><%= _releaseDate %></div>
+                </div>
+                <% } %>
             </div>
         </section>
 
@@ -1368,7 +1376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('accountBtn').addEventListener('click', () => {
             if (currentUser) {
-                window.location.href = '/profile.html';
+                window.location.href = '/?page=profile';
             } else {
                 openAuthModal('login');
             }
