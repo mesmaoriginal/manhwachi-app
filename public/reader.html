@@ -2,12 +2,26 @@
 <html class="dark" dir="rtl" lang="fa">
 <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport" />
+    <meta name="theme-color" content="#050505" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- این تگ‌ها به بعضی مرورگرهای موبایل (به‌خصوص اندروید و مرورگرهای چینی مثل UC/QQ) کمک می‌کنن
+         که هنگام ورود به حالت تمام‌صفحه، صفحه به‌صورت خودکار افقی نچرخه -->
+    <meta name="screen-orientation" content="portrait" />
+    <meta name="x5-orientation" content="portrait" />
+    <meta name="full-screen" content="yes" />
+    <meta name="x5-fullscreen" content="true" />
     <title id="dynamic-title">خواندن چپتر - مانهواچی</title>
     <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <!-- preconnect به دامنه‌ی S3/پارس‌پک برای سریع‌تر شدن شروع دانلود تصاویر -->
+    <!-- نکته: دامنه‌ی واقعی باکت پارس‌پک رو اینجا جایگزین کن (مثلاً https://xxxxx.s3.ir-thr-at1.arvanstorage.ir یا آدرس واقعی پارس‌پک) -->
+    <link rel="preconnect" href="https://s3.parspack.net" crossorigin />
+    <link rel="dns-prefetch" href="https://s3.parspack.net" />
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -35,10 +49,68 @@
         .episode-modal { animation: modalPop 0.3s ease; }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.95) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         /* استایل اختصاصی پلتفرم‌های مانهوا برای تصاویر بدون فاصله */
-        .manhwa-panel img { pointer-events: none; -webkit-user-drag: none; filter: contrast(1.02); }
+        .manhwa-panel img { pointer-events: none; -webkit-user-drag: none; filter: contrast(1.02); touch-action: pan-y; }
+
+        /* ===== تم‌های پس‌زمینه (کاهش خستگی چشم) ===== */
+        body.theme-black { background-color: #050505; }
+        body.theme-gray { background-color: #1c1c1e; }
+        body.theme-sepia { background-color: #2b2620; }
+
+        /* ===== حالت خواندن پیوسته (وبتون) - پیش‌فرض ===== */
+        #reader.mode-vertical { flex-direction: column; }
+        #reader.mode-vertical .manhwa-panel { width: var(--panel-width, 100%); transition: width 0.2s ease; }
+
+        /* ===== حالت خواندن صفحه‌ای (کشویی افقی، مثل مانگا) ===== */
+        #reader.mode-paged {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            width: 100vw;
+            height: calc(100vh - 3.5rem);
+            scrollbar-width: none;
+        }
+        #reader.mode-paged::-webkit-scrollbar { display: none; }
+        #reader.mode-paged .manhwa-panel {
+            flex: 0 0 100vw;
+            width: 100vw;
+            height: 100%;
+            scroll-snap-align: center;
+        }
+        #reader.mode-paged .manhwa-panel img { max-height: 100%; width: auto; max-width: 100%; margin: 0 auto; touch-action: none; }
+
+        /* ===== زوم با دابل‌تپ روی تصویر ===== */
+        .manhwa-panel img { transition: transform 0.25s ease; transform-origin: center center; }
+        .manhwa-panel img.zoomed { transform: scale(2); cursor: zoom-out; }
+
+        /* ===== توست‌های اعلان کوچک (ادامه‌ی خواندن، لینک کپی و ...) ===== */
+        .reader-toast {
+            position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: rgba(15,15,15,0.97); border: 1px solid rgba(139,0,0,0.4); border-radius: 16px;
+            padding: 12px 16px; z-index: 200; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease; max-width: 92vw;
+        }
+        .reader-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+        /* ===== دکمه‌های چیپ برای انتخاب گزینه‌ها در تنظیمات ===== */
+        .chip-btn { padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; background: #18181b; border: 1px solid transparent; transition: all 0.2s; }
+        .chip-btn.active { background: rgba(139,0,0,0.25); border-color: #b91c1c; color: #ffb4a8; }
+
+        /* ===== سوییچ روشن/خاموش تنظیمات ===== */
+        .toggle-switch { width: 46px; height: 26px; border-radius: 999px; background: #27272a; position: relative; transition: background 0.2s; flex-shrink: 0; }
+        .toggle-switch.on { background: #b91c1c; }
+        .toggle-switch .knob { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: transform 0.2s; }
+        .toggle-switch.on .knob { transform: translateX(-20px); }
+
+        .theme-swatch { width: 40px; height: 40px; border-radius: 999px; border: 2px solid transparent; }
+        .theme-swatch.active { border-color: #ef4444; }
+
+        #reading-toc-track { position: fixed; top: 0; bottom: 0; left: 4px; width: 3px; z-index: 40; }
     </style>
 </head>
-<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
+<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white theme-black">
 
     <!-- هدر بالایی هوشمند -->
     <header id="top-nav" class="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-red-900/30 z-50 transition-all duration-300">
@@ -50,7 +122,7 @@
                 </button>
                 <div>
                     <h1 id="nav-manhwa-title" class="text-sm md:text-base font-bold leading-tight truncate max-w-[180px] md:max-w-xs">بارگذاری...</h1>
-                    <p class="text-xs text-gray-400 font-mono">چپتر <span id="nav-ch-num">1</span> • صفحه <span id="current-page">1</span>/<span id="total-pages">0</span></p>
+                    <p class="text-xs text-gray-400 font-mono">چپتر <span id="nav-ch-num">1</span> • صفحه <span id="current-page">1</span>/<span id="total-pages">0</span> <span id="pages-left-wrap" class="text-gray-600">• <span id="pages-left"></span></span></p>
                 </div>
             </div>
             <div class="flex items-center gap-2 md:gap-4">
@@ -58,7 +130,7 @@
                     <span class="material-symbols-outlined text-base" id="auto-icon">play_arrow</span>
                     <span id="auto-text">اسکرول خودکار</span>
                 </button>
-                <button onclick="toggleFullscreen()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-xl">fullscreen</span></button>
+                <button onclick="toggleFullscreen()" id="fullscreen-btn" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-xl">fullscreen</span></button>
                 <button onclick="toggleSettings()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-xl">settings</span></button>
             </div>
         </div>
@@ -68,7 +140,9 @@
     </header>
 
     <!-- کانتینر اصلی مانهوا -->
-    <main class="pt-14 pb-20 w-full min-h-screen flex flex-col items-center justify-start" id="reader"></main>
+    <main class="pt-14 pb-20 w-full min-h-screen flex items-center justify-start mode-vertical" id="reader"></main>
+    <!-- توست‌های اعلان (ادامه‌ی خواندن و پیام‌های کوتاه) -->
+    <div id="reader-toast" class="reader-toast"></div>
 
     <!-- بخش انتهای چپتر با پرفورمنس بالا -->
     <div class="max-w-3xl mx-auto px-6 py-24 text-center border-t border-red-900/20" id="footer-container">
@@ -98,6 +172,12 @@
                 <h2 class="text-xl font-bold">قسمت‌ها</h2>
                 <button onclick="toggleEpisodeModal()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-3xl">close</span></button>
             </div>
+            <div class="px-5 pt-4">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">search</span>
+                    <input id="episode-search" type="text" inputmode="numeric" placeholder="جستجوی شماره قسمت..." class="w-full bg-zinc-900 border border-zinc-800 focus:border-red-700 rounded-xl py-2.5 pr-10 pl-3 text-sm outline-none">
+                </div>
+            </div>
             <div class="flex-1 overflow-auto p-4 space-y-3 custom-scrollbar" id="modalEpisodeList"></div>
         </div>
     </div>
@@ -108,6 +188,18 @@
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-red-400"><span class="material-symbols-outlined">settings</span>تنظیمات خواندن</h2>
             <div class="space-y-8">
                 <div>
+                    <label class="block text-sm mb-2 font-medium">حالت خواندن</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="mode-vertical-btn" onclick="setReadingMode('vertical')" class="chip-btn flex items-center justify-center gap-2"><span class="material-symbols-outlined text-lg">swap_vert</span>پیوسته (وبتون)</button>
+                        <button id="mode-paged-btn" onclick="setReadingMode('paged')" class="chip-btn flex items-center justify-center gap-2"><span class="material-symbols-outlined text-lg">view_carousel</span>صفحه‌ای (مانگا)</button>
+                    </div>
+                </div>
+                <div id="image-width-row">
+                    <label class="block text-sm mb-2 font-medium">عرض تصاویر</label>
+                    <input type="range" min="60" max="100" value="100" id="image-width" class="w-full accent-red-600">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1"><span>باریک‌تر</span><span>عرض کامل</span></div>
+                </div>
+                <div>
                     <label class="block text-sm mb-2 font-medium">روشنایی صفحه</label>
                     <input type="range" min="20" max="100" value="100" id="brightness" class="w-full accent-red-600">
                 </div>
@@ -116,7 +208,39 @@
                     <input type="range" min="1" max="15" value="5" id="scroll-speed" class="w-full accent-red-600">
                     <div class="flex justify-between text-xs text-gray-500 mt-1"><span>بسیار آرام</span><span>سریع</span></div>
                 </div>
-                <div class="pt-4 border-t border-zinc-800">
+                <div>
+                    <label class="block text-sm mb-3 font-medium">تم پس‌زمینه</label>
+                    <div class="flex items-center gap-4">
+                        <button onclick="setTheme('black')" data-theme="black" class="theme-swatch" style="background:#050505"></button>
+                        <button onclick="setTheme('gray')" data-theme="gray" class="theme-swatch" style="background:#1c1c1e"></button>
+                        <button onclick="setTheme('sepia')" data-theme="sepia" class="theme-swatch" style="background:#2b2620"></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm mb-2 font-medium">پرش سریع به صفحه</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="page-jump-input" min="1" placeholder="شماره صفحه" class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-700">
+                        <button onclick="jumpToPage()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold">برو</button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium">جلوگیری از خاموشی صفحه</p>
+                        <p class="text-xs text-gray-500 mt-0.5">مناسب مطالعه طولانی</p>
+                    </div>
+                    <button id="wakelock-toggle" onclick="toggleWakeLockSetting()" class="toggle-switch"><div class="knob"></div></button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium">لرزش لمسی (هپتیک)</p>
+                        <p class="text-xs text-gray-500 mt-0.5">بازخورد لرزشی هنگام لمس دکمه‌ها</p>
+                    </div>
+                    <button id="haptic-toggle" onclick="toggleHapticSetting()" class="toggle-switch"><div class="knob"></div></button>
+                </div>
+                <div class="pt-4 border-t border-zinc-800 space-y-3">
+                    <button onclick="reportIssue()" class="w-full flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm font-medium transition-colors">
+                        <span class="material-symbols-outlined text-lg text-amber-500">flag</span>گزارش مشکل در این قسمت
+                    </button>
                     <p class="text-xs text-gray-500 text-center">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
                 </div>
             </div>
@@ -161,6 +285,48 @@
 
         const API_BASE_URL = "/api/get-chapter-images";
 
+        // مدیریت تصاویری که دانلودشون شکست می‌خوره (لینک امضاشده منقضی شده،
+        // خطای 429 پارس‌پک، یا قطعی موقت شبکه). به‌جای اینکه صفحه برای همیشه
+        // سفید بمونه، چند بار با تأخیر بیشتر دوباره امتحان می‌کنیم و اگه بازم
+        // شکست خورد، دکمه‌ی «تلاش مجدد» دستی نشون می‌دیم.
+        const MAX_IMAGE_RETRIES = 3;
+        function handleImageError(imgEl) {
+            const retryCount = parseInt(imgEl.dataset.retryCount || '0', 10);
+
+            if (retryCount < MAX_IMAGE_RETRIES) {
+                imgEl.dataset.retryCount = retryCount + 1;
+                const delayMs = 800 * Math.pow(2, retryCount); // 800ms, 1600ms, 3200ms
+                setTimeout(() => {
+                    // cache-buster ساده تا مرورگر واقعاً دوباره درخواست بزنه
+                    const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
+                    imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
+                }, delayMs);
+                return;
+            }
+
+            // بعد از چند تلاش ناموفق، به‌جای عکس شکسته یک باکس با دکمه‌ی تلاش مجدد نشون بده
+            imgEl.dataset.broken = 'true';
+            imgEl.classList.add('hidden');
+            if (imgEl.nextElementSibling?.classList.contains('image-retry-box')) return;
+
+            const retryBox = document.createElement('div');
+            retryBox.className = 'image-retry-box w-full aspect-[3/4] max-h-[70vh] bg-zinc-900 border border-red-900/30 rounded-xl flex flex-col items-center justify-center gap-3 text-gray-400';
+            retryBox.innerHTML = `
+                <span class="material-symbols-outlined text-4xl text-red-500">broken_image</span>
+                <p class="text-sm">این تصویر بارگذاری نشد</p>
+                <button class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold text-white">تلاش مجدد</button>
+            `;
+            retryBox.querySelector('button').onclick = () => {
+                imgEl.dataset.retryCount = '0';
+                imgEl.classList.remove('hidden');
+                imgEl.classList.add('opacity-0');
+                retryBox.remove();
+                const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
+                imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
+            };
+            imgEl.after(retryBox);
+        }
+
         async function loadChapterPanels() {
             const panelsContainer = document.getElementById('reader');
             panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">در حال بارگذاری تصاویر...</div>`;
@@ -203,17 +369,41 @@
                     return;
                 }
 
-                const urls = result.urls || [];
+                let urls = result.urls || [];
                 if (urls.length === 0) {
                     panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.</div>`;
                     return;
+                }
+
+                // محافظ سمت کلاینت در برابر مرتب‌سازی اشتباه سمت سرور (مثلاً مرتب‌سازی الفبایی
+                // که باعث میشه page10 قبل از page2 بیاد). عدد داخل نام فایل رو استخراج و
+                // به‌صورت عددی (نه الفبایی) مرتب می‌کنیم. اگه هیچ عددی پیدا نشد، ترتیب اصلی حفظ میشه.
+                function extractPageNumber(url) {
+                    const cleanUrl = url.split('?')[0]; // حذف query string (امضای S3) قبل از استخراج عدد
+                    const match = cleanUrl.match(/(\d+)(?=\.\w+$)/);
+                    return match ? parseInt(match[1], 10) : null;
+                }
+                const allNumbered = urls.every(u => extractPageNumber(u) !== null);
+                if (allNumbered) {
+                    urls = urls
+                        .map((u, originalIdx) => ({ u, originalIdx, n: extractPageNumber(u) }))
+                        .sort((a, b) => a.n - b.n)
+                        .map(item => item.u);
                 }
 
                 panelsContainer.innerHTML = '';
                 urls.forEach((imgUrl, idx) => {
                     const panel = document.createElement('div');
                     panel.className = 'manhwa-panel w-full max-w-3xl flex justify-center items-center';
-                    panel.innerHTML = `<img src="${imgUrl}" class="w-full h-auto block opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0')" loading="${idx < 4 ? 'eager' : 'lazy'}" alt="صفحه ${idx + 1}">`;
+                    panel.innerHTML = `<img
+                        src="${imgUrl}"
+                        data-original-src="${imgUrl}"
+                        data-retry-count="0"
+                        class="w-full h-auto block opacity-0 transition-opacity duration-300"
+                        onload="this.classList.remove('opacity-0'); this.removeAttribute('data-broken');"
+                        onerror="handleImageError(this)"
+                        loading="${idx < 4 ? 'eager' : 'lazy'}"
+                        alt="صفحه ${idx + 1}">`;
                     panelsContainer.appendChild(panel);
                 });
 
@@ -329,13 +519,44 @@
         });
 
         function restoreScrollPosition() {
-            const savedScroll = localStorage.getItem(`scroll_pos_${slug}_${chNum}`);
-            if (savedScroll) {
-                setTimeout(() => {
-                    window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
-                }, 100);
+            const savedScroll = parseInt(localStorage.getItem(`scroll_pos_${slug}_${chNum}`) || '0', 10);
+            if (savedScroll && savedScroll > 400) {
+                showToast(
+                    `آخرین بار تا صفحه ${estimatePageFromScroll(savedScroll)} خونده بودید`,
+                    [
+                        { label: 'ادامه', primary: true, onClick: () => window.scrollTo({ top: savedScroll, behavior: 'instant' }) },
+                        { label: 'شروع از اول', onClick: () => window.scrollTo({ top: 0, behavior: 'instant' }) }
+                    ],
+                    6000
+                );
+                // به‌صورت پیش‌فرض بعد از چند ثانیه (اگر کاربر انتخابی نکرد) خودش ادامه می‌ده
+                setTimeout(() => window.scrollTo({ top: savedScroll, behavior: 'instant' }), 120);
             }
         }
+
+        function estimatePageFromScroll(scrollTop) {
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (totalPanels === 0 || docHeight <= 0) return 1;
+            return Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
+        }
+
+        // ===== توست عمومی برای اعلان‌های کوتاه (ادامه‌ی خواندن و ...) =====
+        let toastTimeout = null;
+        function showToast(message, actions = [], duration = 4000) {
+            const toast = document.getElementById('reader-toast');
+            toast.innerHTML = `
+                <span class="text-sm text-gray-200">${message}</span>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    ${actions.map((a, i) => `<button data-toast-action="${i}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${a.primary ? 'bg-red-600 hover:bg-red-700' : 'bg-zinc-800 hover:bg-zinc-700'} transition-colors">${a.label}</button>`).join('')}
+                </div>`;
+            actions.forEach((a, i) => {
+                toast.querySelector(`[data-toast-action="${i}"]`).onclick = () => { a.onClick && a.onClick(); hideToast(); };
+            });
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(hideToast, duration);
+        }
+        function hideToast() { document.getElementById('reader-toast').classList.remove('show'); }
 
         function renderModalEpisodes() {
             const container = document.getElementById('modalEpisodeList');
@@ -346,6 +567,7 @@
                 const epNum = Number(ep.num);
                 const isCurrent = epNum === chNum;
                 const div = document.createElement('div');
+                div.dataset.epNum = String(epNum);
                 div.className = `flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98] ${isCurrent ? 'bg-red-950/40 border border-red-800/50' : 'bg-zinc-900 hover:bg-zinc-800 cursor-pointer'}`;
                 let statusHTML = ep.free 
                     ? `<span class="text-green-400 text-sm font-bold">${isCurrent ? 'در حال خواندن' : 'رایگان'}</span>`
@@ -375,30 +597,94 @@
         function toggleEpisodeModal() {
             const modal = document.getElementById('episodeModal');
             modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) renderModalEpisodes();
+            if (!modal.classList.contains('hidden')) {
+                renderModalEpisodes();
+                const searchInput = document.getElementById('episode-search');
+                searchInput.value = '';
+                const current = document.querySelector('#modalEpisodeList [data-ep-num="' + chNum + '"]');
+                if (current) setTimeout(() => current.scrollIntoView({ block: 'center' }), 50);
+            }
         }
 
-        let isUIHidden = true;
+        document.getElementById('episode-search').addEventListener('input', (e) => {
+            const q = e.target.value.trim();
+            document.querySelectorAll('#modalEpisodeList > div').forEach(row => {
+                row.style.display = (!q || row.dataset.epNum.includes(q)) ? '' : 'none';
+            });
+        });
+
+        let isUIHidden = false;
         function toggleUI() {
             isUIHidden = !isUIHidden;
             if (isUIHidden) document.body.classList.add('ui-hidden');
             else document.body.classList.remove('ui-hidden');
         }
 
+        const AVG_SECONDS_PER_PAGE = 12;
         function updateProgress() {
-            const scrollTop = window.scrollY;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercent = Math.min((scrollTop / docHeight) * 100, 100);
-            document.getElementById('progress-bar').style.width = `${scrollPercent}%`;
+            const readerEl = document.getElementById('reader');
+            const isPaged = readerEl.classList.contains('mode-paged');
+            let currentPage = 1;
 
-            if (totalPanels > 0 && docHeight > 0) {
-                const currentPage = Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
+            if (isPaged) {
+                const scrollLeft = readerEl.scrollLeft;
+                const pageWidth = readerEl.clientWidth || 1;
+                const scrollPercent = totalPanels > 1 ? Math.min((scrollLeft / (pageWidth * (totalPanels - 1))) * 100, 100) : 100;
+                document.getElementById('progress-bar').style.width = `${scrollPercent}%`;
+                currentPage = Math.max(1, Math.min(totalPanels, Math.round(scrollLeft / pageWidth) + 1));
+            } else {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+                document.getElementById('progress-bar').style.width = `${scrollPercent}%`;
+                if (totalPanels > 0 && docHeight > 0) {
+                    currentPage = Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
+                }
+            }
+
+            if (totalPanels > 0) {
                 document.getElementById('current-page').textContent = currentPage;
+                const remaining = Math.max(0, totalPanels - currentPage);
+                const pagesLeftEl = document.getElementById('pages-left');
+                if (remaining === 0) {
+                    pagesLeftEl.textContent = 'صفحه آخر';
+                } else {
+                    const minutesLeft = Math.max(1, Math.round((remaining * AVG_SECONDS_PER_PAGE) / 60));
+                    pagesLeftEl.textContent = `${remaining} صفحه مانده (~${minutesLeft} دقیقه)`;
+                }
             }
         }
 
+        let lastTapTime = 0;
+        let lastTapTarget = null;
         document.getElementById('reader').addEventListener('click', (e) => {
-            if (e.target.tagName === 'IMG' || e.target.closest('.manhwa-panel')) toggleUI();
+            if (!(e.target.tagName === 'IMG' || e.target.closest('.manhwa-panel'))) return;
+
+            const now = Date.now();
+            const isDoubleTap = (now - lastTapTime < 320) && lastTapTarget === e.target;
+            lastTapTime = now;
+            lastTapTarget = e.target;
+
+            if (isDoubleTap && e.target.tagName === 'IMG') {
+                e.target.classList.toggle('zoomed');
+                if (e.target.classList.contains('zoomed')) {
+                    const rect = e.target.getBoundingClientRect();
+                    const originX = ((e.clientX - rect.left) / rect.width) * 100;
+                    const originY = ((e.clientY - rect.top) / rect.height) * 100;
+                    e.target.style.transformOrigin = `${originX}% ${originY}%`;
+                }
+                vibrate(15);
+                return;
+            }
+
+            // در حالت صفحه‌ای، لمس لبه‌ی راست/چپ صفحه به‌جای نمایش/مخفی‌کردن رابط کاربری، ورق می‌زنه
+            const readingMode = document.getElementById('reader').classList.contains('mode-paged') ? 'paged' : 'vertical';
+            if (readingMode === 'paged') {
+                const zoneWidth = window.innerWidth * 0.28;
+                if (e.clientX < zoneWidth) { prevPage(); return; }
+                if (e.clientX > window.innerWidth - zoneWidth) { nextPage(); return; }
+            }
+            toggleUI();
         });
 
         function toggleAutoScroll() {
@@ -428,28 +714,214 @@
             autoScrollAnimation = requestAnimationFrame(animate);
         }
 
-        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        // نکته درباره‌ی چرخش ناخواسته به حالت افقی هنگام تمام‌صفحه:
+        // بعضی مرورگرهای موبایل (مخصوصاً روی اندروید) وقتی وارد Fullscreen API میشن،
+        // سنسور چرخش صفحه رو آزاد می‌کنن و اگه گوشی کمی کج باشه، به افقی می‌چرخه.
+        // اینجا صریحاً جهت رو روی portrait قفل می‌کنیم تا این اتفاق نیفته.
+        async function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                try {
+                    await document.documentElement.requestFullscreen();
+                } catch (e) { console.error('Fullscreen request failed:', e); }
+                try {
+                    if (screen.orientation && screen.orientation.lock) {
+                        await screen.orientation.lock('portrait');
+                    }
+                } catch (e) { /* روی iOS Safari و بعضی مرورگرها پشتیبانی نمیشه، مشکلی نیست */ }
+            } else {
+                try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+                document.exitFullscreen();
+            }
+        }
         function toggleSettings() { document.getElementById('settings-panel').classList.toggle('hidden'); }
-        function nextPage() { window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' }); }
-        function prevPage() { window.scrollBy({ top: -window.innerHeight * 0.85, behavior: 'smooth' }); }
+
+        function nextPage() {
+            vibrate(10);
+            const readerEl = document.getElementById('reader');
+            if (readerEl.classList.contains('mode-paged')) {
+                readerEl.scrollBy({ left: readerEl.clientWidth, behavior: 'smooth' });
+            } else {
+                window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
+            }
+        }
+        function prevPage() {
+            vibrate(10);
+            const readerEl = document.getElementById('reader');
+            if (readerEl.classList.contains('mode-paged')) {
+                readerEl.scrollBy({ left: -readerEl.clientWidth, behavior: 'smooth' });
+            } else {
+                window.scrollBy({ top: -window.innerHeight * 0.85, behavior: 'smooth' });
+            }
+        }
 
         document.addEventListener('keydown', e => {
             if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
             if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
         });
 
+        // ژست کشیدن انگشت (سوایپ) برای ورق زدن در حالت خواندن صفحه‌ای
+        (function setupSwipeGestures() {
+            const readerEl = document.getElementById('reader');
+            let touchStartX = 0, touchStartY = 0;
+            readerEl.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].clientX;
+                touchStartY = e.changedTouches[0].clientY;
+            }, { passive: true });
+            readerEl.addEventListener('touchend', (e) => {
+                if (!readerEl.classList.contains('mode-paged')) return;
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                    if (dx < 0) nextPage(); else prevPage();
+                }
+            }, { passive: true });
+        })();
+
         window.addEventListener('scroll', updateProgress);
+        document.getElementById('reader').addEventListener('scroll', updateProgress);
+
+        // ================= تنظیمات پایدار کاربر (بین همه‌ی چپترها ذخیره میشه) =================
+        const SETTINGS_KEY = 'manhwachi_reader_settings';
+        const defaultSettings = { readingMode: 'vertical', imageWidth: 100, theme: 'black', wakeLock: false, haptic: true, brightness: 100, scrollSpeed: 5 };
+        let readerSettings = { ...defaultSettings };
+
+        function loadSettings() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+                if (saved && typeof saved === 'object') readerSettings = { ...defaultSettings, ...saved };
+            } catch (e) { readerSettings = { ...defaultSettings }; }
+        }
+        function saveSettings() {
+            try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(readerSettings)); } catch (e) {}
+        }
+
+        function vibrate(ms) {
+            if (readerSettings.haptic && navigator.vibrate) {
+                try { navigator.vibrate(ms); } catch (e) {}
+            }
+        }
+
+        function setReadingMode(mode) {
+            readerSettings.readingMode = mode;
+            const readerEl = document.getElementById('reader');
+            readerEl.classList.remove('mode-vertical', 'mode-paged');
+            readerEl.classList.add(mode === 'paged' ? 'mode-paged' : 'mode-vertical');
+            document.getElementById('mode-vertical-btn').classList.toggle('active', mode === 'vertical');
+            document.getElementById('mode-paged-btn').classList.toggle('active', mode === 'paged');
+            document.getElementById('image-width-row').style.display = mode === 'paged' ? 'none' : '';
+            saveSettings();
+        }
+
+        function setImageWidth(value) {
+            readerSettings.imageWidth = value;
+            document.getElementById('reader').style.setProperty('--panel-width', `${value}%`);
+            saveSettings();
+        }
+
+        function setTheme(theme) {
+            readerSettings.theme = theme;
+            document.body.classList.remove('theme-black', 'theme-gray', 'theme-sepia');
+            document.body.classList.add(`theme-${theme}`);
+            document.querySelectorAll('.theme-swatch').forEach(sw => sw.classList.toggle('active', sw.dataset.theme === theme));
+            saveSettings();
+        }
+
+        // ================= قفل بیدارماندن صفحه (Wake Lock) برای مطالعه‌ی طولانی =================
+        let wakeLockRef = null;
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) return;
+            try {
+                wakeLockRef = await navigator.wakeLock.request('screen');
+            } catch (e) { console.error('Wake Lock error:', e); }
+        }
+        function releaseWakeLock() {
+            if (wakeLockRef) { wakeLockRef.release().catch(() => {}); wakeLockRef = null; }
+        }
+        function toggleWakeLockSetting() {
+            readerSettings.wakeLock = !readerSettings.wakeLock;
+            document.getElementById('wakelock-toggle').classList.toggle('on', readerSettings.wakeLock);
+            if (readerSettings.wakeLock) requestWakeLock(); else releaseWakeLock();
+            saveSettings();
+        }
+        function toggleHapticSetting() {
+            readerSettings.haptic = !readerSettings.haptic;
+            document.getElementById('haptic-toggle').classList.toggle('on', readerSettings.haptic);
+            vibrate(15);
+            saveSettings();
+        }
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && readerSettings.wakeLock) requestWakeLock();
+        });
+
+        // ================= پرش سریع به صفحه‌ی مشخص =================
+        function jumpToPage() {
+            const input = document.getElementById('page-jump-input');
+            const pageNum = parseInt(input.value, 10);
+            if (!pageNum || pageNum < 1 || pageNum > totalPanels) {
+                showToast('شماره صفحه معتبر نیست', [], 2500);
+                return;
+            }
+            const readerEl = document.getElementById('reader');
+            const panels = readerEl.querySelectorAll('.manhwa-panel');
+            const target = panels[pageNum - 1];
+            if (!target) return;
+            if (readerEl.classList.contains('mode-paged')) {
+                readerEl.scrollTo({ left: (pageNum - 1) * readerEl.clientWidth, behavior: 'smooth' });
+            } else {
+                window.scrollTo({ top: target.offsetTop - 60, behavior: 'smooth' });
+            }
+            toggleSettings();
+            vibrate(10);
+        }
+
+        // ================= گزارش مشکل در چپتر (بدون نیاز به بک‌اند جدید) =================
+        function reportIssue() {
+            const subject = encodeURIComponent(`گزارش مشکل - ${slug} چپتر ${chNum}`);
+            const body = encodeURIComponent(`سلام،\nدر مانهوای «${manhwaData?.title_fa || slug}»، چپتر ${chNum}، مشکل زیر رو مشاهده کردم:\n\n(توضیح مشکل رو اینجا بنویسید)\n\nصفحه فعلی: ${document.getElementById('current-page')?.textContent || '-'}`);
+            window.location.href = `mailto:support@manhwachi.com?subject=${subject}&body=${body}`;
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.querySelector('#fullscreen-btn .material-symbols-outlined');
+            if (icon) icon.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
+            if (!document.fullscreenElement) {
+                try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+            }
+        });
 
         async function incrementChapterView() {
             try { await db.rpc('increment_manhwa_views', { p_slug: slug }); } catch (err) { console.error(err); }
         }
 
         window.onload = () => {
+            loadSettings();
+
+            // اعمال تنظیمات ذخیره‌شده روی رابط کاربری قبل از بارگذاری تصاویر
+            setReadingMode(readerSettings.readingMode);
+            setImageWidth(readerSettings.imageWidth);
+            setTheme(readerSettings.theme);
+            document.getElementById('image-width').value = readerSettings.imageWidth;
+            document.getElementById('brightness').value = readerSettings.brightness;
+            document.getElementById('scroll-speed').value = readerSettings.scrollSpeed;
+            document.getElementById('wakelock-toggle').classList.toggle('on', readerSettings.wakeLock);
+            document.getElementById('haptic-toggle').classList.toggle('on', readerSettings.haptic);
+            document.getElementById('reader').style.filter = `brightness(${readerSettings.brightness}%)`;
+            if (readerSettings.wakeLock) requestWakeLock();
+
             initReader();
-            
+
             document.getElementById('brightness').addEventListener('input', e => {
+                readerSettings.brightness = Number(e.target.value);
                 document.getElementById('reader').style.filter = `brightness(${e.target.value}%)`;
+                saveSettings();
             });
+            document.getElementById('scroll-speed').addEventListener('change', e => {
+                readerSettings.scrollSpeed = Number(e.target.value);
+                saveSettings();
+            });
+            document.getElementById('image-width').addEventListener('input', e => setImageWidth(Number(e.target.value)));
+            document.getElementById('page-jump-input').addEventListener('keydown', e => { if (e.key === 'Enter') jumpToPage(); });
         };
     </script>
 </body>
