@@ -395,10 +395,10 @@ function findEpisode(slug, chapterNum) {
 
 app.post("/api/get-chapter-images", async (req, res) => {
   try {
-    const { slug, chapterNum } = req.body || {};
-    if (typeof chapterNum === "string") {
-      chapterNum = parseInt(chapterNum, 10);
-    }
+    let { slug, chapterNum } = req.body || {};
+if (chapterNum !== undefined && chapterNum !== null) {
+  chapterNum = parseInt(chapterNum, 10);
+}
     // نکته: چون چپتر شماره 0 هم معتبره، نباید با !chapterNum چک بشه
     if (!slug || chapterNum === undefined || chapterNum === null || chapterNum === "") {
       return res.status(400).json({ error: "پارامترهای ناقص" });
