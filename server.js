@@ -10,6 +10,20 @@ const compression = require("compression");
 const path = require("path");
 const app = express();
 
+// ⚠️ نکته‌ی حیاتی، حتماً قبل از production چک کنید:
+// اگه سرور Node پشت یک reverse proxy (مثلاً Nginx) باشه - که رایج‌ترین
+// حالت روی هاست/VPS ایرانیه - بدون این خط، req.ip همیشه IP خودِ پراکسی
+// رو برمی‌گردونه، نه IP واقعی کاربر. یعنی همه‌ی کاربرها زیر یک IP یکسان
+// حساب می‌شن و به محض این‌که سقف rate limit پر بشه، سایت برای همه قفل
+// می‌شه، نه فقط برای یک نفر.
+// "1" یعنی فقط به اولین پراکسی (Nginx) اعتماد کن. اگه یه لایه‌ی دیگه هم
+// جلوترش هست (مثلاً Cloudflare + Nginx)، باید عدد رو ۲ کنی.
+// برعکسش هم خطرناکه: اگه اصلاً پراکسی‌ای جلوی Node نیست (اتصال مستقیم)،
+// این خط رو نباید فعال بذارید - چون هر کسی می‌تونه با ست کردن دستیِ هدر
+// X-Forwarded-For یک IP جعلی/تصادفی بفرسته و کل rate limit رو دور بزنه.
+// => قبل از deploy مطمئن شید توپولوژی واقعی سرورتون چیه و همین مطابقش تنظیم کنید.
+app.set("trust proxy", 1);
+
 // فشرده‌سازی gzip/brotli برای همه‌ی جواب‌ها (JSON، HTML، فایل‌های استاتیک).
 // قبلاً وجود نداشت - یعنی همه‌چیز بدون فشرده‌سازی رد و بدل می‌شد.
 app.use(compression());
@@ -361,6 +375,12 @@ app.post("/zibal/verify", checkSecret, async (req, res) => {
 // (برای دکمه‌ی "بررسی همگام‌سازی") از یک نمونه‌ی مشترک استفاده کنن.
 const { buildSignedUrls } = require("./lib/chapterCache");
 
+// جلوگیری از دانلود انبوه/اسکرپ چپترها - چه با یک اکانت VIP (کلید = userId)
+// چه بدون لاگین روی چپترهای رایگان (کلید = IP). این جدا از کش پارس‌پک/Bunny
+// عمل می‌کنه، چون اون کش فقط از فشار روی باکت جلوگیری می‌کنه، نه از این‌که
+// یک نفر کل سایت رو با یک اشتراک بخونه/دانلود کنه.
+const { checkAndRecordChapterRequest } = require("./lib/chapterRateLimit");
+
 // خواندن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر - از همون کش
 // مشترک dataStore استفاده می‌کنه (دیگه فایل رو دوباره از دیسک نمی‌خونه).
 function findEpisode(slug, chapterNum) {
@@ -390,8 +410,21 @@ app.post("/api/get-chapter-images", async (req, res) => {
       return res.status(404).json({ error: "چپتر پیدا نشد" });
     }
 
-    // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده
+    // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده - ولی همچنان از نظر IP
+    // محدود می‌کنیم، وگرنه چپترهای رایگان بی‌هیچ محدودیتی قابل اسکرپ می‌مونن.
     if (episode.free) {
+      const rl = checkAndRecordChapterRequest(`ip:${req.ip}`);
+      if (!rl.allowed) {
+        res.setHeader("Retry-After", String(rl.retryAfterSeconds));
+        return res.status(429).json({
+          error:
+            rl.reason === "burst"
+              ? "تعداد درخواست‌های شما در این دقیقه زیاده. کمی صبر کنید."
+              : "شما به سقف مجاز خواندن چپتر در این ساعت رسیدید.",
+          retryAfterSeconds: rl.retryAfterSeconds,
+        });
+      }
+
       const urls = await buildSignedUrls(slug, chapterNum);
       if (urls.length === 0) {
         return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
@@ -419,6 +452,23 @@ app.post("/api/get-chapter-images", async (req, res) => {
       return res
         .status(403)
         .json({ error: "این قسمت مخصوص کاربران VIP است", code: "VIP_REQUIRED" });
+    }
+
+    // ۳.۵ اینجاست که همون سناریوی نگران‌کننده رو می‌گیریم: یک اکانت VIP که
+    // اسکریپتی/بات مستقیم به همین endpoint می‌زنه. کلید rate limit روی
+    // userId ثابته - چون این اکانته که رفتار غیرعادی داره، نه IPش (که ممکنه
+    // پشت VPN عوض بشه).
+    const rl = checkAndRecordChapterRequest(`user:${authContext.user.id}`);
+    if (!rl.allowed) {
+      res.setHeader("Retry-After", String(rl.retryAfterSeconds));
+      return res.status(429).json({
+        error:
+          rl.reason === "burst"
+            ? "تعداد درخواست‌های شما در این دقیقه زیاده. کمی صبر کنید."
+            : "شما به سقف مجاز خواندن چپتر در این ساعت رسیدید.",
+        retryAfterSeconds: rl.retryAfterSeconds,
+        code: "RATE_LIMITED",
+      });
     }
 
     // ۴. کاربر مجازه -> URLهای امضاشده رو بده
