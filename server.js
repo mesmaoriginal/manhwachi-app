@@ -29,48 +29,7 @@ app.set("trust proxy", 1);
 app.use(compression());
 
 app.use(express.json());
-// ---------- میدل‌ور حالت بروزرسانی (مخصوص IPهای خاص) ----------
-// 💡 آی‌پی خودتان را در متغیر زیر جایگزین کنید
-const ALLOWED_IPS = [
-  "5.239.172.3",  // آی‌پی شما (آی‌پی خودتان را اینجا بنویسید)
-  "::1",           // دسترسی از طریق localhost
-  "127.0.0.1"      // دسترسی محلی سرور
-];
 
-app.use((req, res, next) => {
-  // گرفتن IP واقعی کاربر (با توجه به app.set("trust proxy", 1))
-  const clientIp = req.ip || req.connection.remoteAddress;
-
-  // ۱) اگر IP کاربر در لیست مجاز بود، اجازه ورود بده
-  if (ALLOWED_IPS.includes(clientIp)) {
-    return next();
-  }
-
-  // ۲) اجازه دسترسی به پنل ادمین (در صورت نیاز)
-  if (req.path.startsWith('/admin')) {
-    return next();
-  }
-
-  // ۳) اجازه بارگذاری فایل‌های استاتیک برای نمایش درست صفحه بروزرسانی (لوگو، فونت و...)
-  if (
-    req.path.startsWith('/ManhwaChi/') ||
-    req.path.endsWith('.css') ||
-    req.path.endsWith('.js') ||
-    req.path.endsWith('.png') ||
-    req.path.endsWith('.webp') ||
-    req.path.endsWith('.ico')
-  ) {
-    return next();
-  }
-
-  // ۴) اگر کاربر در خود صفحه بروزرسانی است، بگذارید بماند (جلوگیری از حلقه هدایت)
-  if (req.path === '/maintenance.html') {
-    return next();
-  }
-
-  // ۵) هدایت تمام بقیه کاربران به صفحه بروزرسانی
-  return res.redirect('/maintenance.html');
-});
 // ---------- پنل ادمین (مدیریت مانهواها و چپترها بدون ویرایش دستی data.json) ----------
 const { router: adminRouter } = require("./admin/adminRouter");
 app.use("/admin", adminRouter);
