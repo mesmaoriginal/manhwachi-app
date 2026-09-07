@@ -267,6 +267,13 @@ function goTo(nextIndex) {
 }
 
 function onPointerDown(event) {
+  // اگر شروع کلیک روی دکمه‌های فلش (قبلی/بعدی) بوده، اجازه بده
+  // به‌صورت عادی کلیک شود و درگ اسلایدر شروع نشود (این باعث می‌شد
+  // در دسکتاپ/ویندوز کلیک روی فلش‌ها کار نکند)
+  if (event.target.closest && event.target.closest(".slider-nav")) {
+    return;
+  }
+
   isDragging = true;
   slider.classList.add("is-dragging");
   startX = event.clientX;

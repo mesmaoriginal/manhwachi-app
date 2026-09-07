@@ -177,6 +177,14 @@
         .bottom-nav.nav-hidden {
             transform: translate(-50%, 150%) !important;
         }
+
+        /* در صفحات دسکتاپ/ویندوز نوار پایین کاملاً حذف می‌شود؛
+           دسترسی به ژانرها و پروفایل از منوی بالا انجام می‌شود */
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none !important;
+            }
+        }
         .nav-item {
             flex: 1;
             display: flex;
@@ -410,9 +418,9 @@
             <a href="/library-page.html" class="hover:text-white transition nav-link flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-lg">grid_view</span> آرشیو مانهوا
             </a>
-            <a href="/bookmarks.html" class="hover:text-white transition nav-link flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-lg">bookmark</span> نشان‌شده‌ها
-            </a>
+            <button type="button" data-page="ganre" onclick="loadPage(this)" class="bg-transparent border-0 p-0 cursor-pointer font-semibold hover:text-white transition nav-link flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-lg">category</span> ژانرها
+            </button>
             <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="hover:text-white transition nav-link flex items-center gap-1.5 text-sky-400">
                 <span class="material-symbols-outlined text-lg">send</span> تلگرام
             </a>
@@ -425,6 +433,10 @@
             <div id="userNavContainer" class="flex items-center gap-2">
                 
             </div>
+
+            <button type="button" data-page="profile" onclick="loadPage(this)" aria-label="پروفایل" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-xl">person</span>
+            </button>
 
             <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span class="material-symbols-outlined text-xl">search</span>
@@ -1239,6 +1251,12 @@ document.addEventListener('keydown', (e) => {
       }
 
       showAuthMessage("با موفقیت وارد شدید!", false);
+      // اگر کاربر از مسیری اومده که action=login داشته (مثلا از صفحه VIP)،
+      // بعد از لاگین موفق به جای رفرش خام، به پروفایل هدایتش می‌کنیم
+      const cameFromLoginRedirect = new URLSearchParams(window.location.search).get('action') === 'login';
+      if (cameFromLoginRedirect) {
+        sessionStorage.setItem('redirectAfterLogin', 'profile');
+      }
       setTimeout(() => { location.reload(); }, 1000);
 
     } catch (err) {
@@ -1479,6 +1497,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof openAuthModal === 'function') {
             openAuthModal('login');
         }
+        // پاک کردن پارامتر از URL تا با رفرش/لاگین موفق دوباره مودال باز نشه
+        urlParams.delete('action');
+        const cleanQuery = urlParams.toString();
+        const newUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
+        history.replaceState({}, '', newUrl);
+    }
+
+    // اومدن از صفحات دیگه (مثلا manga.ejs) با ?page=profile برای رفتن مستقیم به یک تب SPA
+    const targetPage = urlParams.get('page');
+    if (targetPage) {
+        urlParams.delete('page');
+        const cleanQuery2 = urlParams.toString();
+        const newUrl2 = window.location.pathname + (cleanQuery2 ? '?' + cleanQuery2 : '') + window.location.hash;
+        history.replaceState({}, '', newUrl2);
+        setTimeout(() => {
+            if (typeof loadPageByName === 'function') loadPageByName(targetPage);
+        }, 300);
+    }
+
+    // اگر بعد از لاگین قرار بود به صفحه‌ی خاصی هدایت بشیم (مثلا پروفایل)
+    const redirectPage = sessionStorage.getItem('redirectAfterLogin');
+    if (redirectPage) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        setTimeout(() => {
+            if (typeof loadPageByName === 'function') loadPageByName(redirectPage);
+        }, 300);
     }
 });
 
