@@ -107,6 +107,7 @@ router.get("/api/manga", (req, res) => {
       title_en: m.title_en || "",
       cover_image: m.cover_image || "",
       is_vip: !!m.is_vip,
+      release_date: m.release_date || "",
       episodeCount: nums.length,
       lastEpisode: nums.length ? Math.max(...nums) : null,
     };
@@ -127,7 +128,7 @@ router.post("/api/manga", async (req, res) => {
   try {
     const {
       slug, title_en, title_fa, origin, type,
-      genres, score, is_vip, scans_by, description, cover_image,
+      genres, score, is_vip, scans_by, description, cover_image, release_date,
     } = req.body || {};
 
     if (!slug || !/^[a-zA-Z0-9-]+$/.test(slug)) {
@@ -150,6 +151,7 @@ router.post("/api/manga", async (req, res) => {
         scans_by: scans_by || "",
         description: description || "",
         cover_image: cover_image || "",
+        release_date: release_date || "",
         episodes: [],
       };
     });
@@ -166,7 +168,7 @@ router.put("/api/manga/:slug", async (req, res) => {
     const fields = req.body || {};
     const allowed = [
       "title_en", "title_fa", "origin", "type", "genres",
-      "score", "is_vip", "scans_by", "description", "cover_image",
+      "score", "is_vip", "scans_by", "description", "cover_image", "release_date",
     ];
     await updateData((data) => {
       if (!data[slug]) throw new Error("مانهوا یافت نشد");
