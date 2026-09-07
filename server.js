@@ -69,6 +69,7 @@ function renderMangaPage(req, res, slugRaw) {
     const scans_by = manhwa.scans_by || "تیم ترجمه";
     const episodes = manhwa.episodes || [];
     const genres = manhwa.genres || [];
+    const release_date = manhwa.release_date || "";
 
     const has_locked = episodes.some((ep) => !ep.free);
 
@@ -76,7 +77,7 @@ function renderMangaPage(req, res, slugRaw) {
       manhwa, slug, title_en, title_fa, origin, type,
       seo_title, seo_desc, raw_desc,
       cover_url, full_cover_url, canonical_url,
-      score, scans_by, episodes, genres, has_locked,
+      score, scans_by, episodes, genres, has_locked, release_date,
     };
   } else {
     vars = {
@@ -96,6 +97,7 @@ function renderMangaPage(req, res, slugRaw) {
       episodes: [],
       genres: [],
       has_locked: false,
+      release_date: "",
     };
   }
 
