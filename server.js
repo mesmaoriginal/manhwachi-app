@@ -6,9 +6,13 @@
 // ۴) تصاویر چپتر با signed URL موقت از باکت پارس‌پک، با کش برای جلوگیری از 429
 
 const express = require("express");
-const fs = require("fs");
+const compression = require("compression");
 const path = require("path");
 const app = express();
+
+// فشرده‌سازی gzip/brotli برای همه‌ی جواب‌ها (JSON، HTML، فایل‌های استاتیک).
+// قبلاً وجود نداشت - یعنی همه‌چیز بدون فشرده‌سازی رد و بدل می‌شد.
+app.use(compression());
 
 app.use(express.json());
 
@@ -21,22 +25,21 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // ---------- بخش ۱: نمایش سایت ----------
-app.use(express.static("public"));
+// maxAge اضافه شد تا مرورگر فایل‌های استاتیک (CSS/JS/فونت/عکس) رو کش کنه
+// و مجبور نباشه هر بار دوباره از سرور دانلودشون کنه.
+app.use(express.static("public", { maxAge: "7d", etag: true }));
 
 // ---------- بخش ۲: صفحه‌ی مانهوا (جایگزین manga.php + آدرس زیبای comic/) ----------
+// نکته‌ی مهم: قبلاً این تابع هر بار data.json رو با fs.readFileSync (synchronous)
+// از دیسک می‌خوند - یعنی هر ریکوئست صفحه‌ی مانهوا، کل event loop رو تا پایان
+// خوندن فایل قفل می‌کرد و همه‌ی کاربرهای دیگه (از جمله کسایی که فقط دارن عکس
+// چپتر می‌گیرن) رو معطل می‌ذاشت. حالا از lib/dataStore.js استفاده می‌کنیم که
+// فقط یک بار از دیسک می‌خونه و در حافظه کش می‌مونه.
+const { getData, getRawJson } = require("./lib/dataStore");
+
 function renderMangaPage(req, res, slugRaw) {
   const slug = (slugRaw || "").toString().trim();
-
-  const jsonPath = path.join(__dirname, "data", "data.json");
-  let data = {};
-  try {
-    if (fs.existsSync(jsonPath)) {
-      data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-    }
-  } catch (err) {
-    console.error("خطا در خواندن data.json:", err);
-  }
-
+  const data = getData();
   const manhwa = data[slug] || null;
 
   function stripTags(str) {
@@ -139,6 +142,40 @@ async function getUserFromAccessToken(accessToken) {
   });
   if (!res.ok) return null;
   return res.json();
+}
+
+// ---------- کش کوتاه‌مدت برای احراز هویت + وضعیت VIP ----------
+// قبلاً هر درخواست چپتر VIP، ۲ ریکوئست جدا به Supabase می‌زد (تایید توکن +
+// خواندن پروفایل) - یعنی برای کاربری که پشت‌سرهم چپتر عوض می‌کنه، هر بار
+// این round-trip شبکه تکرار می‌شد. حالا نتیجه رو برای مدت کوتاهی کش می‌کنیم.
+// نکته: یعنی اگه کاربر همین الان VIP بشه، ممکنه تا AUTH_CACHE_TTL_MS طول
+// بکشه که تغییرش روی چپترهای قفل اعمال بشه - این یه trade-off عمدیه.
+const AUTH_CACHE_TTL_MS = 90 * 1000; // ۹۰ ثانیه
+const AUTH_CACHE_MAX_ENTRIES = 5000;
+const authCache = new Map(); // accessToken -> { user, isVip, expiresAt }
+
+async function getAuthContext(accessToken) {
+  const cached = authCache.get(accessToken);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached;
+  }
+
+  const user = await getUserFromAccessToken(accessToken);
+  if (!user || !user.id) return null;
+
+  const profRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=is_vip`,
+    { headers: supabaseAdminHeaders() }
+  );
+  const profRows = await profRes.json();
+  const isVip = !!profRows[0]?.is_vip;
+
+  const result = { user, isVip, expiresAt: Date.now() + AUTH_CACHE_TTL_MS };
+  authCache.set(accessToken, result);
+  while (authCache.size > AUTH_CACHE_MAX_ENTRIES) {
+    authCache.delete(authCache.keys().next().value);
+  }
+  return result;
 }
 
 app.post("/purchase/request", async (req, res) => {
@@ -322,27 +359,16 @@ app.post("/zibal/verify", checkSecret, async (req, res) => {
 // (برای دکمه‌ی "بررسی همگام‌سازی") از یک نمونه‌ی مشترک استفاده کنن.
 const { buildSignedUrls } = require("./lib/chapterCache");
 
-// خواندن data.json و پیدا کردن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر
-function findEpisodeFromJson(slug, chapterNum) {
-  const jsonPath = path.join(__dirname, "data", "data.json");
-  let data = {};
-  try {
-    if (fs.existsSync(jsonPath)) {
-      data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-    }
-  } catch (err) {
-    console.error("خطا در خواندن data.json:", err);
-    return { readError: true };
-  }
-
+// خواندن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر - از همون کش
+// مشترک dataStore استفاده می‌کنه (دیگه فایل رو دوباره از دیسک نمی‌خونه).
+function findEpisode(slug, chapterNum) {
+  const data = getData();
   const manhwa = data[slug];
   if (!manhwa || !Array.isArray(manhwa.episodes)) {
-    return { episode: null };
+    return null;
   }
-
   const numTarget = Number(chapterNum);
-  const episode = manhwa.episodes.find((ep) => Number(ep.num) === numTarget);
-  return { episode: episode || null };
+  return manhwa.episodes.find((ep) => Number(ep.num) === numTarget) || null;
 }
 
 app.post("/api/get-chapter-images", async (req, res) => {
@@ -354,12 +380,8 @@ app.post("/api/get-chapter-images", async (req, res) => {
       return res.status(400).json({ error: "پارامترهای ناقص" });
     }
 
-    // ۱. چک وضعیت چپتر (رایگان یا قفل) مستقیم از data.json
-    const { episode, readError } = findEpisodeFromJson(slug, chapterNum);
-
-    if (readError) {
-      return res.status(500).json({ error: "خطا در خواندن اطلاعات مانهوا" });
-    }
+    // ۱. چک وضعیت چپتر (رایگان یا قفل) از کش data.json
+    const episode = findEpisode(slug, chapterNum);
 
     if (!episode) {
       console.warn(`چپتر پیدا نشد برای slug=${slug} num=${chapterNum}`);
@@ -384,21 +406,14 @@ app.post("/api/get-chapter-images", async (req, res) => {
         .json({ error: "برای این قسمت باید وارد حساب شوید", code: "AUTH_REQUIRED" });
     }
 
-    const user = await getUserFromAccessToken(accessToken);
-    if (!user || !user.id) {
+    const authContext = await getAuthContext(accessToken);
+    if (!authContext) {
       return res
         .status(401)
         .json({ error: "نشست شما نامعتبر است، دوباره وارد شوید", code: "AUTH_REQUIRED" });
     }
 
-    const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=is_vip`,
-      { headers: supabaseAdminHeaders() }
-    );
-    const profRows = await profRes.json();
-    const profile = profRows[0];
-
-    if (!profile?.is_vip) {
+    if (!authContext.isVip) {
       return res
         .status(403)
         .json({ error: "این قسمت مخصوص کاربران VIP است", code: "VIP_REQUIRED" });
@@ -415,38 +430,13 @@ app.post("/api/get-chapter-images", async (req, res) => {
     return res.status(500).json({ error: "خطای داخلی سرور" });
   }
 });
+
 // ---------- دادن data.json به کلاینت (سمت مرورگر) به صورت امن ----------
 // چون data.json بیرون از پوشه‌ی public قرار داره، مرورگر مستقیم بهش دسترسی نداره
-// پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه
-let cachedDataJson = null;
-
-// هر وقت پنل ادمین یه تغییری تو data.json بده (اضافه/ویرایش/حذف چپتر یا
-// مانهوا)، dataStore.js این رویداد رو ساطع می‌کنه. با شنیدنش، کش رو پاک
-// می‌کنیم تا دفعه‌ی بعد که کسی /data/data.json رو صدا بزنه، دوباره از
-// روی دیسک خونده بشه و نسخه‌ی تازه برگرده.
-const { dataEvents, DATA_UPDATED } = require("./lib/dataEvents");
-dataEvents.on(DATA_UPDATED, () => {
-  cachedDataJson = null;
-});
-
+// پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه.
+// حالا این روت هم از همون کش مشترک dataStore استفاده می‌کنه، نه یک کش جدا.
 app.get("/data/data.json", (req, res) => {
-  // اگه قبلاً کش شده، از کش برگردون (سرعت بالاتر، خوندن کمتر از دیسک)
-  if (cachedDataJson) {
-    return res.type("application/json").send(cachedDataJson);
-  }
-
-  // مسیر فایل رو خودِ کد مشخص می‌کنه، نه ورودی کاربر
-  // پس امکان path traversal (مثل ../../etc/passwd) وجود نداره
-  const jsonPath = path.join(__dirname, "data", "data.json");
-
-  fs.readFile(jsonPath, "utf-8", (err, content) => {
-    if (err) {
-      console.error("خطا در خواندن data.json برای کلاینت:", err);
-      return res.status(500).json({ error: "خطا در خواندن اطلاعات" });
-    }
-    cachedDataJson = content; // کش کردن برای درخواست‌های بعدی، تا از دیسک دوباره نخونه
-    res.type("application/json").send(content);
-  });
+  res.type("application/json").send(getRawJson());
 });
 
 app.get("/health", (req, res) => {
