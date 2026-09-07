@@ -108,6 +108,21 @@
         .theme-swatch.active { border-color: #ef4444; }
 
         #reading-toc-track { position: fixed; top: 0; bottom: 0; left: 4px; width: 3px; z-index: 40; }
+
+        /* ===== رفع مشکل ارتفاع مودال‌ها روی موبایل =====
+           روی خیلی از مرورگرهای موبایل (به‌خصوص سافاری آیفون)، واحد vh بر اساس
+           ارتفاع کامل صفحه (بدون احتساب نوار آدرس/دکمه‌های پایین) محاسبه می‌شه،
+           در نتیجه مودال از ارتفاع واقعی و قابل‌دیدِ صفحه بلندتر درمیاد و دکمه‌ی
+           «بستن» پایین صفحه رد میشه. با dvh (ارتفاع پویای واقعی صفحه) این مشکل حل میشه؛
+           مرورگرهای قدیمی‌تر که dvh رو نمی‌شناسن همون vh رو به‌عنوان fallback استفاده می‌کنن. */
+        #settings-panel {
+            height: 100vh !important;
+            height: 100dvh !important;
+        }
+        .episode-modal {
+            max-height: 85vh !important;
+            max-height: 85dvh !important;
+        }
     </style>
 </head>
 <body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden theme-black">
@@ -581,7 +596,7 @@
 
                 div.innerHTML = `
                     <div class="w-16 h-12 bg-zinc-800 rounded-xl overflow-hidden relative flex-shrink-0">
-                        <img src="/manhwas/${slug}/chapterPictures/chapterpicture${epNum}.png" class="w-full h-full object-cover" alt="Ep ${epNum}">
+                        <img src="/manhwas/${slug}/chapterPictures/chapterpicture${epNum}.png" onerror="this.style.display='none'" class="w-full h-full object-cover" alt="Ep ${epNum}">
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="font-medium truncate ${isCurrent ? 'text-red-400' : ''}">قسمت ${epNum}</p>
