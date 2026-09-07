@@ -7,8 +7,6 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <!-- این تگ‌ها به بعضی مرورگرهای موبایل (به‌خصوص اندروید و مرورگرهای چینی مثل UC/QQ) کمک می‌کنن
-         که هنگام ورود به حالت تمام‌صفحه، صفحه به‌صورت خودکار افقی نچرخه -->
     <meta name="screen-orientation" content="portrait" />
     <meta name="x5-orientation" content="portrait" />
     <meta name="full-screen" content="yes" />
@@ -18,8 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
-    <!-- preconnect به دامنه‌ی S3/پارس‌پک برای سریع‌تر شدن شروع دانلود تصاویر -->
-    <!-- نکته: دامنه‌ی واقعی باکت پارس‌پک رو اینجا جایگزین کن (مثلاً https://xxxxx.s3.ir-thr-at1.arvanstorage.ir یا آدرس واقعی پارس‌پک) -->
     <link rel="preconnect" href="https://s3.parspack.net" crossorigin />
     <link rel="dns-prefetch" href="https://s3.parspack.net" />
     <script>
@@ -48,13 +44,7 @@
         .ui-hidden #bottom-nav { transform: translateY(100%); }
         .episode-modal { animation: modalPop 0.3s ease; }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.95) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        /* استایل اختصاصی پلتفرم‌های مانهوا برای تصاویر بدون فاصله */
         .manhwa-panel img { pointer-events: none; -webkit-user-drag: none; filter: contrast(1.02); touch-action: pan-y; }
-
-        /* ===== تم‌های پس‌زمینه (کاهش خستگی چشم) ===== */
-        body.theme-black { background-color: #050505; }
-        body.theme-gray { background-color: #1c1c1e; }
-        body.theme-sepia { background-color: #2b2620; }
 
         /* ===== حالت خواندن پیوسته (وبتون) - پیش‌فرض ===== */
         #reader.mode-vertical { flex-direction: column; }
@@ -80,11 +70,13 @@
         }
         #reader.mode-paged .manhwa-panel img { max-height: 100%; width: auto; max-width: 100%; margin: 0 auto; touch-action: none; }
 
+        /* مخفی کردن انتهای چپتر در حالت صفحه‌ای */
+        #reader.mode-paged ~ #footer-container { display: none !important; }
+
         /* ===== زوم با دابل‌تپ روی تصویر ===== */
         .manhwa-panel img { transition: transform 0.25s ease; transform-origin: center center; }
         .manhwa-panel img.zoomed { transform: scale(2); cursor: zoom-out; }
 
-        /* ===== توست‌های اعلان کوچک (ادامه‌ی خواندن، لینک کپی و ...) ===== */
         .reader-toast {
             position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(20px);
             background: rgba(15,15,15,0.97); border: 1px solid rgba(139,0,0,0.4); border-radius: 16px;
@@ -94,27 +86,14 @@
         }
         .reader-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
-        /* ===== دکمه‌های چیپ برای انتخاب گزینه‌ها در تنظیمات ===== */
         .chip-btn { padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; background: #18181b; border: 1px solid transparent; transition: all 0.2s; }
         .chip-btn.active { background: rgba(139,0,0,0.25); border-color: #b91c1c; color: #ffb4a8; }
 
-        /* ===== سوییچ روشن/خاموش تنظیمات ===== */
         .toggle-switch { width: 46px; height: 26px; border-radius: 999px; background: #27272a; position: relative; transition: background 0.2s; flex-shrink: 0; }
         .toggle-switch.on { background: #b91c1c; }
         .toggle-switch .knob { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: transform 0.2s; }
         .toggle-switch.on .knob { transform: translateX(-20px); }
 
-        .theme-swatch { width: 40px; height: 40px; border-radius: 999px; border: 2px solid transparent; }
-        .theme-swatch.active { border-color: #ef4444; }
-
-        #reading-toc-track { position: fixed; top: 0; bottom: 0; left: 4px; width: 3px; z-index: 40; }
-
-        /* ===== رفع مشکل ارتفاع مودال‌ها روی موبایل =====
-           روی خیلی از مرورگرهای موبایل (به‌خصوص سافاری آیفون)، واحد vh بر اساس
-           ارتفاع کامل صفحه (بدون احتساب نوار آدرس/دکمه‌های پایین) محاسبه می‌شه،
-           در نتیجه مودال از ارتفاع واقعی و قابل‌دیدِ صفحه بلندتر درمیاد و دکمه‌ی
-           «بستن» پایین صفحه رد میشه. با dvh (ارتفاع پویای واقعی صفحه) این مشکل حل میشه؛
-           مرورگرهای قدیمی‌تر که dvh رو نمی‌شناسن همون vh رو به‌عنوان fallback استفاده می‌کنن. */
         #settings-panel {
             height: 100vh !important;
             height: 100dvh !important;
@@ -125,13 +104,12 @@
         }
     </style>
 </head>
-<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden theme-black">
+<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
 
     <!-- هدر بالایی هوشمند -->
     <header id="top-nav" class="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-red-900/30 z-50 transition-all duration-300">
         <div class="flex justify-between items-center gap-2 px-2.5 py-2 md:px-4 md:py-3">
             <div class="flex items-center gap-1.5 md:gap-3 min-w-0">
-                <!-- دکمه هوشمند بازگشت به صفحه خود مانهوا -->
                 <button id="back-to-manhwa-btn" class="p-1.5 md:p-2 shrink-0 hover:text-red-400 transition-colors">
                     <span class="material-symbols-outlined text-xl md:text-2xl">arrow_back</span>
                 </button>
@@ -156,10 +134,9 @@
 
     <!-- کانتینر اصلی مانهوا -->
     <main class="pt-14 pb-20 w-full min-h-screen flex items-center justify-start mode-vertical" id="reader"></main>
-    <!-- توست‌های اعلان (ادامه‌ی خواندن و پیام‌های کوتاه) -->
     <div id="reader-toast" class="reader-toast"></div>
 
-    <!-- بخش انتهای چپتر با پرفورمنس بالا -->
+    <!-- بخش انتهای چپتر -->
     <div class="max-w-3xl mx-auto px-6 py-24 text-center border-t border-red-900/20" id="footer-container">
         <div id="footer-status-icon" class="inline-flex items-center justify-center w-20 h-20 rounded-full border-2 border-red-600 mb-6 animate-pulse">
             <span class="material-symbols-outlined text-5xl text-red-500">check_circle</span>
@@ -197,86 +174,118 @@
         </div>
     </div>
 
-    <!-- تنظیمات پرمیوم خواندن -->
-    <div id="settings-panel" class="fixed inset-0 bg-black/95 hidden flex-col z-[100]">
-        <div class="flex-1 p-6 overflow-auto max-w-xl mx-auto w-full">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-red-400"><span class="material-symbols-outlined">settings</span>تنظیمات خواندن</h2>
-            <div class="space-y-8">
-                <div>
-                    <label class="block text-sm mb-2 font-medium">حالت خواندن</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="mode-vertical-btn" onclick="setReadingMode('vertical')" class="chip-btn flex items-center justify-center gap-2"><span class="material-symbols-outlined text-lg">swap_vert</span>پیوسته (وبتون)</button>
-                        <button id="mode-paged-btn" onclick="setReadingMode('paged')" class="chip-btn flex items-center justify-center gap-2"><span class="material-symbols-outlined text-lg">view_carousel</span>صفحه‌ای (مانگا)</button>
-                    </div>
-                </div>
-                <div id="image-width-row">
-                    <label class="block text-sm mb-2 font-medium">عرض تصاویر</label>
-                    <input type="range" min="60" max="100" value="100" id="image-width" class="w-full accent-red-600">
-                    <div class="flex justify-between text-xs text-gray-500 mt-1"><span>باریک‌تر</span><span>عرض کامل</span></div>
-                </div>
-                <div>
-                    <label class="block text-sm mb-2 font-medium">روشنایی صفحه</label>
-                    <input type="range" min="20" max="100" value="100" id="brightness" class="w-full accent-red-600">
-                </div>
-                <div>
-                    <label class="block text-sm mb-2 font-medium">سرعت اسکرول خودکار</label>
-                    <input type="range" min="1" max="15" value="5" id="scroll-speed" class="w-full accent-red-600">
-                    <div class="flex justify-between text-xs text-gray-500 mt-1"><span>بسیار آرام</span><span>سریع</span></div>
-                </div>
-                <div>
-                    <label class="block text-sm mb-3 font-medium">تم پس‌زمینه</label>
-                    <div class="flex items-center gap-4">
-                        <button onclick="setTheme('black')" data-theme="black" class="theme-swatch" style="background:#050505"></button>
-                        <button onclick="setTheme('gray')" data-theme="gray" class="theme-swatch" style="background:#1c1c1e"></button>
-                        <button onclick="setTheme('sepia')" data-theme="sepia" class="theme-swatch" style="background:#2b2620"></button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm mb-2 font-medium">پرش سریع به صفحه</label>
-                    <div class="flex gap-2">
-                        <input type="number" id="page-jump-input" min="1" placeholder="شماره صفحه" class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-700">
-                        <button onclick="jumpToPage()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold">برو</button>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium">جلوگیری از خاموشی صفحه</p>
-                        <p class="text-xs text-gray-500 mt-0.5">مناسب مطالعه طولانی</p>
-                    </div>
-                    <button id="wakelock-toggle" onclick="toggleWakeLockSetting()" class="toggle-switch"><div class="knob"></div></button>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium">لرزش لمسی (هپتیک)</p>
-                        <p class="text-xs text-gray-500 mt-0.5">بازخورد لرزشی هنگام لمس دکمه‌ها</p>
-                    </div>
-                    <button id="haptic-toggle" onclick="toggleHapticSetting()" class="toggle-switch"><div class="knob"></div></button>
-                </div>
-                <div class="pt-4 border-t border-zinc-800 space-y-3">
-                    <button id="report-issue-btn" onclick="toggleReportForm()" class="w-full flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm font-medium transition-colors">
-                        <span class="material-symbols-outlined text-lg text-amber-500">flag</span>
-                        <span id="report-issue-label">گزارش مشکل در این قسمت</span>
-                    </button>
-                    <div id="report-form" class="hidden space-y-2">
-                        <textarea id="report-message" rows="3" maxlength="500" placeholder="مشکل رو توضیح بدید (مثلاً: تصویر صفحه ۵ باز نمیشه)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none focus:border-red-700 resize-none"></textarea>
-                        <button id="report-submit-btn" onclick="submitReport()" class="w-full py-2.5 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold transition-colors">ارسال گزارش</button>
-                    </div>
-                    <p class="text-xs text-gray-500 text-center">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
-                </div>
-            </div>
-        </div>
-        <div class="p-4 border-t border-red-900/30 max-w-xl mx-auto w-full"><button onclick="toggleSettings()" class="w-full py-4 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">بستن تنظیمات</button></div>
+   <!-- تنظیمات خواندن -->
+<div id="settings-panel" class="fixed inset-0 bg-black/95 hidden flex-col z-[100] h-full w-full overflow-hidden">
+    
+    <!-- هدر ثبت شده در بالا -->
+    <div class="p-4 border-b border-zinc-800/80 max-w-xl mx-auto w-full flex items-center justify-between shrink-0">
+        <h2 class="text-xl font-bold flex items-center gap-2 text-red-400">
+            <span class="material-symbols-outlined">settings</span>
+            تنظیمات خواندن
+        </h2>
+        <button onclick="toggleSettings()" class="text-gray-400 hover:text-white p-1">
+            <span class="material-symbols-outlined">close</span>
+        </button>
     </div>
 
+    <!-- بدنه اسکرول‌پذیر تنظیمات -->
+    <div class="flex-1 p-4 sm:p-6 overflow-y-auto max-w-xl mx-auto w-full space-y-6 text-slate-200">
+        
+        <!-- حالت خواندن -->
+        <div>
+            <label class="block text-sm mb-2 font-medium">حالت خواندن</label>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="mode-vertical-btn" onclick="setReadingMode('vertical')" class="chip-btn flex items-center justify-center gap-2 py-2.5 px-3 text-xs sm:text-sm">
+                    <span class="material-symbols-outlined text-lg">swap_vert</span>
+                    پیوسته (وبتون)
+                </button>
+                <button id="mode-paged-btn" onclick="setReadingMode('paged')" class="chip-btn flex items-center justify-center gap-2 py-2.5 px-3 text-xs sm:text-sm">
+                    <span class="material-symbols-outlined text-lg">view_carousel</span>
+                    صفحه‌ای (مانگا)
+                </button>
+            </div>
+        </div>
+
+        <!-- عرض تصاویر -->
+        <div id="image-width-row">
+            <label class="block text-sm mb-2 font-medium">عرض تصاویر</label>
+            <input type="range" min="60" max="100" value="100" id="image-width" class="w-full accent-red-600">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>باریک‌تر</span>
+                <span>عرض کامل</span>
+            </div>
+        </div>
+
+        <!-- روشنایی صفحه -->
+        <div>
+            <label class="block text-sm mb-2 font-medium">روشنایی صفحه</label>
+            <input type="range" min="20" max="100" value="100" id="brightness" class="w-full accent-red-600">
+        </div>
+
+        <!-- سرعت اسکرول خودکار -->
+        <div>
+            <label class="block text-sm mb-2 font-medium">سرعت اسکرول خودکار</label>
+            <input type="range" min="1" max="15" value="5" id="scroll-speed" class="w-full accent-red-600">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>بسیار آرام</span>
+                <span>سریع</span>
+            </div>
+        </div>
+
+        <!-- پرش به صفحه -->
+        <div>
+            <label class="block text-sm mb-2 font-medium">پرش سریع به صفحه</label>
+            <div class="flex gap-2">
+                <input type="number" id="page-jump-input" min="1" placeholder="شماره صفحه" class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-700">
+                <button onclick="jumpToPage()" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold transition-colors">برو</button>
+            </div>
+        </div>
+
+        <!-- جلوگیری از خاموشی صفحه -->
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <p class="text-sm font-medium">جلوگیری از خاموشی صفحه</p>
+                <p class="text-xs text-gray-500 mt-0.5">مناسب مطالعه طولانی</p>
+            </div>
+            <button id="wakelock-toggle" onclick="toggleWakeLockSetting()" class="toggle-switch shrink-0"><div class="knob"></div></button>
+        </div>
+
+        <!-- لرزش لمسی -->
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <p class="text-sm font-medium">لرزش لمسی (هپتیک)</p>
+                <p class="text-xs text-gray-500 mt-0.5">بازخورد لرزشی هنگام لمس دکمه‌ها</p>
+            </div>
+            <button id="haptic-toggle" onclick="toggleHapticSetting()" class="toggle-switch shrink-0"><div class="knob"></div></button>
+        </div>
+
+        <!-- گزارش مشکل -->
+        <div class="pt-4 border-t border-zinc-800 space-y-3">
+            <button id="report-issue-btn" onclick="toggleReportForm()" class="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm font-medium transition-colors">
+                <span class="material-symbols-outlined text-lg text-amber-500">flag</span>
+                <span id="report-issue-label">گزارش مشکل در این قسمت</span>
+            </button>
+            <div id="report-form" class="hidden space-y-2">
+                <textarea id="report-message" rows="3" maxlength="500" placeholder="مشکل رو توضیح بدید (مثلاً: تصویر صفحه ۵ باز نمیشه)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none focus:border-red-700 resize-none"></textarea>
+                <button id="report-submit-btn" onclick="submitReport()" class="w-full py-2 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold transition-colors">ارسال گزارش</button>
+            </div>
+            <p class="text-xs text-gray-500 text-center">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
+        </div>
+    </div>
+
+    <!-- فوتر ثابت پایین -->
+    <div class="p-3 sm:p-4 border-t border-zinc-800/80 max-w-xl mx-auto w-full shrink-0 bg-black/95">
+        <button onclick="toggleSettings()" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold transition-colors text-sm sm:text-base">بستن تنظیمات</button>
+    </div>
+</div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         let slug = "the-forgotten-field";
-        let chNum = null; // مقدار اولیه null قرار داده شد تا حضور چپتر 0 بررسی شود
+        let chNum = null;
 
         const urlParams = new URLSearchParams(window.location.search);
         const pathSegments = window.location.pathname.split('/').filter(seg => seg !== "");
 
-        // استخراج پارامتر چَپتر به شکلی که عدد 0 پذیرا باشد
         if (urlParams.get('slug')) {
             slug = urlParams.get('slug');
             const chParam = urlParams.get('ch');
@@ -290,7 +299,6 @@
             }
         }
 
-        // دکمه هوشمند بازگشت به صفحه معرفی مانهواچی
         document.getElementById('back-to-manhwa-btn').onclick = () => {
             window.location.href = `/comic/${slug}`;
         };
@@ -305,26 +313,20 @@
 
         const API_BASE_URL = "/api/get-chapter-images";
 
-        // مدیریت تصاویری که دانلودشون شکست می‌خوره (لینک امضاشده منقضی شده،
-        // خطای 429 پارس‌پک، یا قطعی موقت شبکه). به‌جای اینکه صفحه برای همیشه
-        // سفید بمونه، چند بار با تأخیر بیشتر دوباره امتحان می‌کنیم و اگه بازم
-        // شکست خورد، دکمه‌ی «تلاش مجدد» دستی نشون می‌دیم.
         const MAX_IMAGE_RETRIES = 3;
         function handleImageError(imgEl) {
             const retryCount = parseInt(imgEl.dataset.retryCount || '0', 10);
 
             if (retryCount < MAX_IMAGE_RETRIES) {
                 imgEl.dataset.retryCount = retryCount + 1;
-                const delayMs = 800 * Math.pow(2, retryCount); // 800ms, 1600ms, 3200ms
+                const delayMs = 800 * Math.pow(2, retryCount);
                 setTimeout(() => {
-                    // cache-buster ساده تا مرورگر واقعاً دوباره درخواست بزنه
                     const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
                     imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
                 }, delayMs);
                 return;
             }
 
-            // بعد از چند تلاش ناموفق، به‌جای عکس شکسته یک باکس با دکمه‌ی تلاش مجدد نشون بده
             imgEl.dataset.broken = 'true';
             imgEl.classList.add('hidden');
             if (imgEl.nextElementSibling?.classList.contains('image-retry-box')) return;
@@ -357,7 +359,7 @@
                 if (session?.access_token) {
                     authHeader = { 'Authorization': `Bearer ${session.access_token}` };
                 }
-            } catch (e) { /* کاربر لاگین نیست، مشکلی نیست */ }
+            } catch (e) {}
 
             try {
                 const res = await fetch(API_BASE_URL, {
@@ -395,11 +397,8 @@
                     return;
                 }
 
-                // محافظ سمت کلاینت در برابر مرتب‌سازی اشتباه سمت سرور (مثلاً مرتب‌سازی الفبایی
-                // که باعث میشه page10 قبل از page2 بیاد). عدد داخل نام فایل رو استخراج و
-                // به‌صورت عددی (نه الفبایی) مرتب می‌کنیم. اگه هیچ عددی پیدا نشد، ترتیب اصلی حفظ میشه.
                 function extractPageNumber(url) {
-                    const cleanUrl = url.split('?')[0]; // حذف query string (امضای S3) قبل از استخراج عدد
+                    const cleanUrl = url.split('?')[0];
                     const match = cleanUrl.match(/(\d+)(?=\.\w+$)/);
                     return match ? parseInt(match[1], 10) : null;
                 }
@@ -445,7 +444,6 @@
 
                 if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) return;
 
-                // بررسی وجود چپتر 0 در صورت تعیین نشدن شماره چپتر از ورودی
                 if (chNum === null) {
                     const hasZero = manhwaData.episodes.some(e => Number(e.num) === 0);
                     chNum = hasZero ? 0 : 1;
@@ -465,7 +463,6 @@
 
                 await loadChapterPanels();
 
-                // یافتن هوشمند چپتر بعدی (اعم از اینکه چپتر بعدی 1 باشد یا اعداد بالاتر)
                 const sortedEpisodes = [...manhwaData.episodes].sort((a, b) => Number(a.num) - Number(b.num));
                 const currentIndex = sortedEpisodes.findIndex(e => Number(e.num) === chNum);
                 const nextEpisode = (currentIndex !== -1 && currentIndex < sortedEpisodes.length - 1) ? sortedEpisodes[currentIndex + 1] : null;
@@ -495,8 +492,6 @@
             localStorage.setItem(`bookmark_${slug}`, chNum);
         }
 
-        // ثبت آخرین چپتر خونده‌شده در تاریخچه‌ی مطالعه (روی همین گوشی/مرورگر - localStorage)
-        // این کلید و ساختار دقیقاً همونیه که صفحه‌ی پروفایل (profile.js) می‌خونه
         function saveReadingHistoryEntry() {
             const READING_HISTORY_KEY = 'manhwachi_reading_history';
             const READING_HISTORY_LIMIT = 40;
@@ -511,7 +506,7 @@
                 history = [];
             }
 
-            history = history.filter(h => h.slug !== slug); // یک ردیف برای هر مانهوا، همیشه آخرین چپتر
+            history = history.filter(h => h.slug !== slug);
             history.unshift({
                 slug,
                 title: manhwaData?.title_fa || slug,
@@ -550,7 +545,6 @@
                     ],
                     6000
                 );
-                // به‌صورت پیش‌فرض بعد از چند ثانیه (اگر کاربر انتخابی نکرد) خودش ادامه می‌ده
                 setTimeout(() => window.scrollTo({ top: savedScroll, behavior: 'instant' }), 120);
             }
         }
@@ -561,7 +555,6 @@
             return Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
         }
 
-        // ===== توست عمومی برای اعلان‌های کوتاه (ادامه‌ی خواندن و ...) =====
         let toastTimeout = null;
         function showToast(message, actions = [], duration = 4000) {
             const toast = document.getElementById('reader-toast');
@@ -698,7 +691,6 @@
                 return;
             }
 
-            // در حالت صفحه‌ای، لمس لبه‌ی راست/چپ صفحه به‌جای نمایش/مخفی‌کردن رابط کاربری، ورق می‌زنه
             const readingMode = document.getElementById('reader').classList.contains('mode-paged') ? 'paged' : 'vertical';
             if (readingMode === 'paged') {
                 const zoneWidth = window.innerWidth * 0.28;
@@ -735,10 +727,6 @@
             autoScrollAnimation = requestAnimationFrame(animate);
         }
 
-        // نکته درباره‌ی چرخش ناخواسته به حالت افقی هنگام تمام‌صفحه:
-        // بعضی مرورگرهای موبایل (مخصوصاً روی اندروید) وقتی وارد Fullscreen API میشن،
-        // سنسور چرخش صفحه رو آزاد می‌کنن و اگه گوشی کمی کج باشه، به افقی می‌چرخه.
-        // اینجا صریحاً جهت رو روی portrait قفل می‌کنیم تا این اتفاق نیفته.
         async function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 try {
@@ -748,7 +736,7 @@
                     if (screen.orientation && screen.orientation.lock) {
                         await screen.orientation.lock('portrait');
                     }
-                } catch (e) { /* روی iOS Safari و بعضی مرورگرها پشتیبانی نمیشه، مشکلی نیست */ }
+                } catch (e) {}
             } else {
                 try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
                 document.exitFullscreen();
@@ -781,7 +769,6 @@
             if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
         });
 
-        // ژست کشیدن انگشت (سوایپ) برای ورق زدن در حالت خواندن صفحه‌ای
         (function setupSwipeGestures() {
             const readerEl = document.getElementById('reader');
             let touchStartX = 0, touchStartY = 0;
@@ -802,9 +789,10 @@
         window.addEventListener('scroll', updateProgress);
         document.getElementById('reader').addEventListener('scroll', updateProgress);
 
-        // ================= تنظیمات پایدار کاربر (بین همه‌ی چپترها ذخیره میشه) =================
+        // ================= تنظیمات پایدار کاربر =================
         const SETTINGS_KEY = 'manhwachi_reader_settings';
-        const defaultSettings = { readingMode: 'vertical', imageWidth: 100, theme: 'black', wakeLock: false, haptic: true, brightness: 100, scrollSpeed: 5 };
+        // حالت پیش‌فرض صریحاً روی 'vertical' (پیوسته) تنظیم شده است
+        const defaultSettings = { readingMode: 'vertical', imageWidth: 100, wakeLock: false, haptic: true, brightness: 100, scrollSpeed: 5 };
         let readerSettings = { ...defaultSettings };
 
         function loadSettings() {
@@ -840,15 +828,6 @@
             saveSettings();
         }
 
-        function setTheme(theme) {
-            readerSettings.theme = theme;
-            document.body.classList.remove('theme-black', 'theme-gray', 'theme-sepia');
-            document.body.classList.add(`theme-${theme}`);
-            document.querySelectorAll('.theme-swatch').forEach(sw => sw.classList.toggle('active', sw.dataset.theme === theme));
-            saveSettings();
-        }
-
-        // ================= قفل بیدارماندن صفحه (Wake Lock) برای مطالعه‌ی طولانی =================
         let wakeLockRef = null;
         async function requestWakeLock() {
             if (!('wakeLock' in navigator)) return;
@@ -875,7 +854,6 @@
             if (document.visibilityState === 'visible' && readerSettings.wakeLock) requestWakeLock();
         });
 
-        // ================= پرش سریع به صفحه‌ی مشخص =================
         function jumpToPage() {
             const input = document.getElementById('page-jump-input');
             const pageNum = parseInt(input.value, 10);
@@ -896,7 +874,6 @@
             vibrate(10);
         }
 
-        // ================= گزارش مشکل در چپتر (ثبت داخل دیتابیس سایت، هر کاربر برای هر چپتر فقط یک‌بار) =================
         const REPORT_KEY_PREFIX = 'reported_chapter_';
         function reportKey() { return `${REPORT_KEY_PREFIX}${slug}_${chNum}`; }
         function reportAlreadySent() { return localStorage.getItem(reportKey()) === '1'; }
@@ -936,7 +913,6 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'در حال ارسال...';
 
-            // قفل فوری سمت کاربر قبل از پاسخ سرور، تا حتی با چند بار کلیک سریع هم درخواست تکراری نره
             localStorage.setItem(reportKey(), '1');
 
             try {
@@ -953,7 +929,7 @@
                 showToast('گزارش شما ثبت شد، ممنون از همکاری شما 🙏', [], 4000);
             } catch (err) {
                 console.error('Report submit error:', err);
-                localStorage.removeItem(reportKey()); // چون ارسال ناموفق بود، اجازه‌ی تلاش مجدد رو بده
+                localStorage.removeItem(reportKey());
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'ارسال گزارش';
                 showToast('ارسال گزارش با خطا مواجه شد. لطفاً دوباره تلاش کنید.', [], 3500);
@@ -978,10 +954,8 @@
         window.onload = () => {
             loadSettings();
 
-            // اعمال تنظیمات ذخیره‌شده روی رابط کاربری قبل از بارگذاری تصاویر
             setReadingMode(readerSettings.readingMode);
             setImageWidth(readerSettings.imageWidth);
-            setTheme(readerSettings.theme);
             document.getElementById('image-width').value = readerSettings.imageWidth;
             document.getElementById('brightness').value = readerSettings.brightness;
             document.getElementById('scroll-speed').value = readerSettings.scrollSpeed;
