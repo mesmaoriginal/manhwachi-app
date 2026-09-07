@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html class="dark" lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>سایت در حال بروزرسانی است | مانهواچی</title>
+
+    <!-- Favicons -->
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/ManhwaChi/favicon-192x192.png" />
+    <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
+
+    <!-- CDN ها و فونت‌های قالب اصلی -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#DC2626",
+                        "on-primary": "#ffffff",
+                        surface: "#000000",
+                        "surface-elevated": "#161616",
+                        "surface-shadow":"#241717",
+                        "surface-container": "#1f1f1f",
+                        "on-surface": "#e2e2e2",
+                        "on-surface-variant": "#cbb8b8",
+                        "text-muted": "#8C8C8C",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .maintenance-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .maintenance-card::before {
+            content: "";
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            background: #dc2626;
+            opacity: 0.15;
+            filter: blur(100px);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+        @keyframes gearSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-gear {
+            animation: gearSpin 8s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen flex flex-col justify-between selection:bg-primary selection:text-white">
+
+    <!-- Header اصلی سایت -->
+    <header class="w-full bg-surface/85 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
+                <span class="font-bold text-xl tracking-tight text-white font-['Montserrat']">
+                    Manhwa<span class="text-primary">Chi</span>
+                </span>
+            </a>
+            <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="flex items-center gap-2 px-4 h-10 bg-sky-500/10 border border-sky-500/30 text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl text-xs font-bold transition-all duration-300">
+                <span class="material-symbols-outlined text-base">send</span> کانال تلگرام
+            </a>
+        </div>
+    </header>
+
+    <!-- بخش اصلی پیام بروزرسانی -->
+    <main class="flex-1 flex items-center justify-center p-5 my-10">
+        <div class="max-w-lg w-full bg-surface-elevated border border-white/10 rounded-3xl p-8 text-center shadow-2xl maintenance-card relative z-10">
+            
+            <!-- آیکون انیمیشنی -->
+            <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                <div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+                <div class="w-20 h-20 bg-surface-container border border-primary/30 rounded-2xl flex items-center justify-center text-primary shadow-lg">
+                    <span class="material-symbols-outlined text-5xl animate-gear">build</span>
+                </div>
+            </div>
+
+            <!-- تیتر اصلی -->
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white mb-3">سایت در حال بروزرسانی است</h1>
+            <p class="text-on-surface-variant text-sm sm:text-base leading-relaxed mb-6">
+                ما در حال ارتقا و بهبود امکانات سایت مانهواچی هستیم تا تجربه بهتری برای شما فراهم کنیم.
+            </p>
+
+            <!-- باکس پیغام تکرارشونده -->
+            <div class="bg-surface-container border border-white/5 rounded-2xl p-4 mb-6">
+                <p id="messageText" class="text-primary font-bold text-sm sm:text-base transition-all duration-300">
+                    سایت در حال بروزرسانی است، نیم ساعت دیگه بیایید.
+                </p>
+            </div>
+
+            <!-- دکمه برسی مجدد -->
+            <button onclick="repeatMessage()" class="w-full h-13 py-3.5 bg-primary hover:bg-red-700 active:scale-95 text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-xl">refresh</span>
+                تلاش مجدد / بررسی وضعیت
+            </button>
+
+            <!-- لینک کانال تلگرام برای اطلاع‌رسانی -->
+            <div class="mt-8 pt-6 border-t border-white/10">
+                <p class="text-xs text-text-muted mb-3">برای اطلاع سریع از پایان بروزرسانی در تلگرام همراه ما باشید:</p>
+                <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="inline-flex items-center gap-2 text-xs text-sky-400 font-semibold hover:underline">
+                    <i class="fa-brands fa-telegram text-base"></i>
+                    کانال رسمی مانهواچی (@Manhwachiofficial)
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer اصلی سایت -->
+    <footer class="w-full bg-black border-t border-white/10 py-6 text-center text-xs text-text-muted">
+        <p>© ۲۰۲۶ تمامی حقوق این وب‌سایت برای مجموعه <span class="text-white font-bold font-['Montserrat']">ManhwaChi</span> محفوظ است.</p>
+    </footer>
+
+    <!-- اسکریپت تکرار پیام -->
+    <script>
+        function repeatMessage() {
+            const msgElement = document.getElementById('messageText');
+            
+            // انیمیشن ساده برای نشان دادن افکت تغییر/تکرار
+            msgElement.style.opacity = '0';
+            msgElement.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                // تکرار مجدد جمله
+                msgElement.textContent = "سایت در حال بروزرسانی است، نیم ساعت دیگه بیایید.";
+                msgElement.style.opacity = '1';
+                msgElement.style.transform = 'scale(1)';
+            }, 150);
+        }
+    </script>
+</body>
+</html>
