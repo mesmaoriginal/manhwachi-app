@@ -275,56 +275,99 @@ app.post("/purchase/verify", async (req, res) => {
       throw new Error(`پرداخت تایید نشد (کد خطا: ${zibalData.result})`);
     }
 
-    const payRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&select=*`,
-      { headers: supabaseAdminHeaders() }
-    );
-    const payRows = await payRes.json();
-    const paymentRecord = payRows[0];
-    if (!paymentRecord) throw new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
-
-    if (paymentRecord.status === "success") {
-      return res.json({ status: 100, message: "تراکنش قبلاً ثبت شده است." });
-    }
-
-    const planKey = paymentRecord.plan_key;
-    const duration = PLAN_DEFS[planKey];
-    if (!duration) throw new Error("پلن ثبت‌شده برای این تراکنش نامعتبر است.");
-
-    const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}&select=vip_until`,
-      { headers: supabaseAdminHeaders() }
-    );
-    const profRows = await profRes.json();
-    const profile = profRows[0];
-
-    let currentVipDate = new Date();
-    if (profile?.vip_until && new Date(profile.vip_until) > new Date()) {
-      currentVipDate = new Date(profile.vip_until);
-    }
-    if (duration.days) currentVipDate.setDate(currentVipDate.getDate() + duration.days);
-    if (duration.months) currentVipDate.setMonth(currentVipDate.getMonth() + duration.months);
-
-    const updateProfRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}`,
+    // 💡 رفع race condition: قبلاً اینجا اول با یک GET وضعیت رکورد چک
+    // می‌شد و بعد جدا با PATCH آپدیت می‌شد. اگه دو تا ریکوئست verify با
+    // همون trackId تقریباً هم‌زمان می‌رسیدن (مثلاً کاربر دوبار دکمه رو
+    // می‌زد یا صفحه رو رفرش می‌کرد)، هر دو می‌تونستن رکورد رو با
+    // status="pending" ببینن و هر دو VIP رو جدا تمدید کنن (دو برابر
+    // اعتبار). حالا "claim" کردن رکورد با یک PATCH شرطی
+    // (WHERE status=eq.pending) در پایگاه‌داده به‌صورت اتمیک انجام
+    // می‌شه - این کوئری در سطح دیتابیس روی همون ردیف lock می‌گیره، پس
+    // فقط یکی از دو ریکوئست هم‌زمان می‌تونه واقعاً match/آپدیت کنه.
+    const claimRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=eq.pending&select=*`,
       {
         method: "PATCH",
-        headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          is_vip: true,
-          vip_until: currentVipDate.toISOString(),
+        headers: supabaseAdminHeaders({
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
         }),
+        body: JSON.stringify({ status: "processing", ref_number: zibalData.refNumber }),
       }
     );
-    if (!updateProfRes.ok) throw new Error("بروزرسانی پروفایل کاربر ناموفق بود.");
+    if (!claimRes.ok) {
+      throw new Error("خطا در قفل کردن تراکنش برای پردازش: " + (await claimRes.text()));
+    }
+    const claimedRows = await claimRes.json();
+    let paymentRecord = claimedRows[0];
 
-    await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
-      method: "PATCH",
-      headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ status: "success", ref_number: zibalData.refNumber }),
-    });
+    if (!paymentRecord) {
+      // یا رکورد اصلاً وجود نداره، یا یکی دیگه (یا همین ریکوئست تو یه
+      // تلاش قبلی) قبلاً claim/تکمیلش کرده - وضعیت فعلی رو چک می‌کنیم
+      // تا پیام درست بدیم، نه این‌که کور کورانه خطا بدیم.
+      const existingRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&select=status`,
+        { headers: supabaseAdminHeaders() }
+      );
+      const existingRows = await existingRes.json();
+      const existing = existingRows[0];
 
-    res.json({ status: 100, message: "اشتراک VIP با موفقیت فعال شد." });
+      if (existing && (existing.status === "success" || existing.status === "processing")) {
+        return res.json({ status: 100, message: "تراکنش قبلاً ثبت شده است." });
+      }
+      throw new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
+    }
+
+    try {
+      const planKey = paymentRecord.plan_key;
+      const duration = PLAN_DEFS[planKey];
+      if (!duration) throw new Error("پلن ثبت‌شده برای این تراکنش نامعتبر است.");
+
+      const profRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}&select=vip_until`,
+        { headers: supabaseAdminHeaders() }
+      );
+      const profRows = await profRes.json();
+      const profile = profRows[0];
+
+      let currentVipDate = new Date();
+      if (profile?.vip_until && new Date(profile.vip_until) > new Date()) {
+        currentVipDate = new Date(profile.vip_until);
+      }
+      if (duration.days) currentVipDate.setDate(currentVipDate.getDate() + duration.days);
+      if (duration.months) currentVipDate.setMonth(currentVipDate.getMonth() + duration.months);
+
+      const updateProfRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}`,
+        {
+          method: "PATCH",
+          headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({
+            is_vip: true,
+            vip_until: currentVipDate.toISOString(),
+          }),
+        }
+      );
+      if (!updateProfRes.ok) throw new Error("بروزرسانی پروفایل کاربر ناموفق بود.");
+
+      await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
+        method: "PATCH",
+        headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ status: "success", ref_number: zibalData.refNumber }),
+      });
+
+      res.json({ status: 100, message: "اشتراک VIP با موفقیت فعال شد." });
+    } catch (creditErr) {
+      // اگه بعد از claim کردن، جایی وسط کار (مثلاً آپدیت پروفایل) خطا
+      // بخوره، رکورد رو به pending برمی‌گردونیم تا تو "processing" برای
+      // همیشه گیر نکنه و بشه verify رو دوباره امتحان کرد.
+      await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
+        method: "PATCH",
+        headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ status: "pending" }),
+      }).catch(() => {});
+      throw creditErr;
+    }
   } catch (err) {
     res.status(400).json({ message: err.message || "خطا در تایید اشتراک VIP" });
   }
