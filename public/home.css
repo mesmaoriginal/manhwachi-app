@@ -2338,8 +2338,7 @@ text-align: right;   /* راست‌چین */
    ========================================== */
 
 .mw-banner-wrapper {
-    margin-top: 25px;
-    padding-bottom: 25px;
+    
     width: 100%;
     direction: rtl;
     box-sizing: border-box;
@@ -2406,12 +2405,12 @@ text-align: right;   /* راست‌چین */
 
 
 .mw-banner-title span {
-    background: linear-gradient(180deg, #ffe259 0%, #ffa751 100%);
+    background: linear-gradient(180deg, #dc2626 0%, #490000 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
-    -webkit-text-stroke: 0.3px #503317;
-    text-shadow: 0 0 5px #00000000, 0 0 10px #00000000, 0 2px 15px rgb(0 0 0 / 0%), 0 6px 20px rgb(0 0 0);
+    -webkit-text-stroke: 0.3px #000000;
+    text-shadow: 0 0 5px #00000000, 0 0 10px #00000000, 0 2px 15px rgb(255 0 0 / 56%), 0 6px 20px rgb(255 81 81 / 17%);
     filter: drop-shadow(0 3px 9px rgba(0, 0, 0, 6.4));
 }
 
@@ -2446,7 +2445,7 @@ text-align: right;   /* راست‌چین */
     align-items: center;
     gap: 0.5vw;
     padding: clamp(4px, 0.8vw, 12px) clamp(10px, 1.8vw, 26px);
-    background: rgba(15, 23, 42, 0.75);
+    background: rgb(134 0 0 / 75%);
     border: 1px solid rgba(255, 255, 255, 0.25);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);

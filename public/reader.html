@@ -58,8 +58,11 @@
             overflow-y: hidden;
             scroll-snap-type: x mandatory;
             width: 100vw;
-            height: calc(100vh - 3.5rem);
+            height: 100vh;
+            height: 100dvh;
             scrollbar-width: none;
+            padding-top: calc(3.5rem + env(safe-area-inset-top));
+            padding-bottom: 0;
         }
         #reader.mode-paged::-webkit-scrollbar { display: none; }
         #reader.mode-paged .manhwa-panel {
@@ -101,6 +104,27 @@
         .episode-modal {
             max-height: 85vh !important;
             max-height: 85dvh !important;
+        }
+
+        /* ===== سازگاری با ناچ/نوار پایین گوشی (safe-area) ===== */
+        #top-nav { padding-top: env(safe-area-inset-top); }
+        #bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+        #bottom-nav .flex { min-height: 4rem; }
+        #reader.mode-vertical { padding-top: calc(3.5rem + env(safe-area-inset-top)); padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+        #settings-panel > div:last-child { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+        .episode-modal { padding-bottom: env(safe-area-inset-bottom); }
+
+        /* ===== حداقل اندازه لمسی مناسب برای دکمه‌های آیکونی در موبایل ===== */
+        #top-nav button, #bottom-nav button {
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #bottom-nav button { flex-direction: column; gap: 2px; }
+        @media (max-width: 400px) {
+            #nav-manhwa-title { max-width: 34vw; }
         }
     </style>
 </head>
@@ -175,7 +199,7 @@
     </div>
 
    <!-- تنظیمات خواندن -->
-<div id="settings-panel" class="fixed inset-0 bg-black/95 hidden flex-col z-[100] h-full w-full overflow-hidden">
+<div id="settings-panel" class="fixed inset-0 bg-black/95 hidden flex flex-col z-[100] h-full w-full overflow-hidden">
     
     <!-- هدر ثبت شده در بالا -->
     <div class="p-4 border-b border-zinc-800/80 max-w-xl mx-auto w-full flex items-center justify-between shrink-0">
