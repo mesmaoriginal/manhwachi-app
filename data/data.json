@@ -824,5 +824,43 @@
         "free": true
       }
     ]
-  }
+  },
+  "why-the-villainess-wields-the-sword": {
+    "title_en": "Why the Villainess Wields the Sword",
+    "title_fa": "چرا شرور شمشیر می‌کشد",
+    "origin": "کره ای",
+    "type": "مانهوا",
+    "genres": ["فانتزی", "عاشقانه", "اکشن", "تناسخ"],
+    "score": "8.2",
+    "is_vip": true,
+    "scans_by": "مانهواچی",
+    "description": "او به عنوان شخصیت شرور داستان تناسخ یافته است؛ کسی که در اثر شمشیربازی و توطئه‌ها سرنوشت شومی در انتظارش بود. حال او تصمیم می‌گیرد خود شمشیر به دست بگیرد تا سرنوشت خود را تغییر دهد و...",
+    "cover_image": "why-the-villainess-wields-the-sword.webp",
+    "episodes": [
+      {
+        "num": 1,
+        "date": "1405/06/19",
+        "free": true
+      }
+    ]
+},
+"my-slain-dragon-bride": {
+    "title_en": "My Slain Dragon Bride",
+    "title_fa": "عروس اژدهای کشته‌شده من",
+    "origin": "کره ای",
+    "type": "مانهوا",
+    "genres": ["فانتزی", "عاشقانه", "درام", "ماوراءالطبیعه"],
+    "score": "8.0",
+    "is_vip": true,
+    "scans_by": "مانهواچی",
+    "description": "داستان پیوند پیچیده و غیرمنتظره میان یک مبارز و اژدهایی که کشته شده است؛ جایی که اسرار باستان و عشق در میان خاکسترها و انتقام شکل می‌گیرند...",
+    "cover_image": "my-slain-dragon-bride.webp",
+    "episodes": [
+      {
+        "num": 1,
+        "date": "1405/06/19",
+        "free": true
+      }
+    ]
+}
 }
