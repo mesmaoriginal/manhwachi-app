@@ -470,7 +470,7 @@ if (chapterNum !== undefined && chapterNum !== null) {
         });
       }
 
-      const urls = await buildSignedUrls(slug, chapterNum);
+      const urls = await buildSignedUrls(slug, chapterNum, episode.images);
       if (urls.length === 0) {
         return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
       }
@@ -517,7 +517,7 @@ if (chapterNum !== undefined && chapterNum !== null) {
     }
 
     // ۴. کاربر مجازه -> URLهای امضاشده رو بده
-    const urls = await buildSignedUrls(slug, chapterNum);
+    const urls = await buildSignedUrls(slug, chapterNum, episode.images);
     if (urls.length === 0) {
       return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
     }
