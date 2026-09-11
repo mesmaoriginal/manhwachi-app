@@ -8,7 +8,7 @@ const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
 const { readData, updateData } = require("./dataStore");
-const { invalidateChapterCache, listChapterFoldersFromS3 } = require("../lib/chapterCache");
+const { invalidateChapterCache, listChapterFoldersFromS3, listChapterImageKeys } = require("../lib/chapterCache");
 
 const router = express.Router();
 
@@ -204,22 +204,53 @@ router.delete("/api/manga/:slug", async (req, res) => {
 // ---------- API: افزودن چپتر جدید ----------
 // اگه num فرستاده نشه، خودش شماره‌ی بعدی رو حساب می‌کنه (max موجود + ۱)
 // اگه date فرستاده نشه، تاریخ شمسی امروز رو می‌ذاره
+//
+// 💡 نکته‌ی مهم (اصلاح ساختاری): همین‌جا، یک‌بار برای همیشه، لیست واقعی
+// فایل‌های این چپتر رو از S3 می‌گیریم و داخل خودِ data.json (فیلد images)
+// ذخیره می‌کنیم. از این به بعد، هر بار کاربری این چپتر رو باز کنه، سرور
+// دیگه لازم نیست ListObjectsV2 بزنه - مستقیم از همین لیست ذخیره‌شده امضا
+// می‌کنه. این چیزیه که فشار روی پارس‌پک رو عملاً از بین می‌بره.
+// اگه هنوز عکس‌ها آپلود نشده باشن یا S3 موقتاً در دسترس نباشه، چپتر رو
+// بدون images ثبت می‌کنیم (سایت خراب نمی‌شه، فقط برای همون چپتر به‌صورت
+// موقت به روش قدیمی - لیست زنده - fallback می‌شه)؛ بعداً می‌شه با
+// endpoint زیر (resync-images) دوباره امتحان کرد.
 router.post("/api/manga/:slug/episodes", async (req, res) => {
   try {
     const { slug } = req.params;
     let { num, date, free } = req.body || {};
+
+    const snapshot = readData();
+    const mSnapshot = snapshot[slug];
+    if (!mSnapshot) throw new Error("مانهوا یافت نشد");
+
+    if (num === undefined || num === null || num === "") {
+      const episodesSnap = Array.isArray(mSnapshot.episodes) ? mSnapshot.episodes : [];
+      const max = episodesSnap.length ? Math.max(...episodesSnap.map((e) => Number(e.num))) : 0;
+      num = max + 1;
+    }
+    num = Number(num);
+    if (Number.isNaN(num)) throw new Error("شماره چپتر نامعتبر است");
+
+    let images = [];
+    try {
+      images = await listChapterImageKeys(slug, num);
+      if (images.length === 0) {
+        console.warn(
+          `[admin] چپتر ${num} از ${slug} روی S3 هیچ فایلی نداشت - مطمئن شو عکس‌ها قبل از ثبت آپلود شدن.`
+        );
+      }
+    } catch (listErr) {
+      console.warn(
+        `[admin] لیست‌کردن تصاویر چپتر ${num} از ${slug} ناموفق بود، چپتر بدون images ثبت می‌شه:`,
+        listErr.message
+      );
+    }
 
     await updateData((data) => {
       const m = data[slug];
       if (!m) throw new Error("مانهوا یافت نشد");
       if (!Array.isArray(m.episodes)) m.episodes = [];
 
-      if (num === undefined || num === null || num === "") {
-        const max = m.episodes.length ? Math.max(...m.episodes.map((e) => Number(e.num))) : 0;
-        num = max + 1;
-      }
-      num = Number(num);
-      if (Number.isNaN(num)) throw new Error("شماره چپتر نامعتبر است");
       if (m.episodes.some((e) => Number(e.num) === num)) {
         throw new Error(`چپتر ${num} از قبل در JSON موجود است`);
       }
@@ -228,13 +259,51 @@ router.post("/api/manga/:slug/episodes", async (req, res) => {
         num,
         date: date || todayJalaliString(),
         free: free === undefined ? true : !!free,
+        images,
       });
       m.episodes.sort((a, b) => Number(b.num) - Number(a.num));
     });
 
-    res.json({ ok: true, num });
+    res.json({ ok: true, num, imageCount: images.length });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ---------- API: هم‌گام‌سازی دستی لیست تصاویر یک چپتر ----------
+// برای دو حالت لازمه: ۱) چپترهای قدیمی که از قبل ثبت شدن و هنوز images
+// ندارن (تا وقتی اسکریپت migration اجرا بشه)، ۲) وقتی صفحات یک چپتر رو
+// بعداً جایگزین/اضافه کردی و لیست ذخیره‌شده دیگه با S3 هم‌خون نیست.
+router.post("/api/manga/:slug/episodes/:num/resync-images", async (req, res) => {
+  try {
+    const { slug, num } = req.params;
+    const chapterNum = Number(num);
+    if (Number.isNaN(chapterNum)) {
+      return res.status(400).json({ error: "شماره چپتر نامعتبر است" });
+    }
+
+    const images = await listChapterImageKeys(slug, chapterNum);
+    if (images.length === 0) {
+      return res.status(404).json({
+        error: "هیچ فایلی برای این چپتر روی S3 پیدا نشد؛ آپلود رو چک کن.",
+      });
+    }
+
+    await updateData((data) => {
+      const m = data[slug];
+      if (!m) throw new Error("مانهوا یافت نشد");
+      const ep = (m.episodes || []).find((e) => Number(e.num) === chapterNum);
+      if (!ep) throw new Error("چپتر یافت نشد");
+      ep.images = images;
+    });
+
+    // چون لیست تصاویر عوض شده، هر لینک امضاشده‌ی قدیمی که تو کش مونده رو
+    // هم پاک می‌کنیم تا کاربر بعدی حتماً لینک‌های تازه بگیره.
+    invalidateChapterCache(slug, chapterNum);
+
+    res.json({ ok: true, imageCount: images.length });
+  } catch (err) {
+    res.status(400).json({ error: "خطا در sync تصاویر: " + err.message });
   }
 });
 
