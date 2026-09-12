@@ -259,11 +259,28 @@ app.post("/purchase/request", async (req, res) => {
   }
 });
 
-app.post("/purchase/verify", async (req, res) => {
-  try {
-    const trackId = (req.body && (req.body.trackId || req.body.track_id) || "").toString();
-    if (!trackId) throw new Error("کد پیگیری ارائه نشده است.");
+// ---------- منطق مشترک تایید+شارژ VIP ----------
+// ⚠️ نکته‌ی کلیدی درباره‌ی باگ "بعضیا خریدن ولی فعال نشده":
+// تا قبل از این تغییر، تنها راهی که این تابع اجرا می‌شد این بود که
+// مرورگرِ کاربر با موفقیت به vip-verify.html برسه و fetch به این
+// endpoint رو کامل انجام بده. یعنی اگه بین لحظه‌ی تایید پرداخت توسط
+// زیبال/بانک و اجرای کامل اون fetch هر اتفاقی بیفته - قطعی اینترنت،
+// بستن زودهنگام تب، بستن وب‌ویو داخل اینستاگرام/تلگرام، بلاک شدن
+// اسکریپت توسط afilter/ad-block، کرش مرورگر موبایل، یا حتی رفرش
+// کردن صفحه قبل از اتمام درخواست - پول از کاربر کم می‌شد ولی هیچ‌وقت
+// سمت سرور verify صدا زده نمی‌شد و رکورد pending برای همیشه pending
+// می‌موند. این تابع رو مستقل از request/response اکسپرس کردیم تا هم
+// از روت زیر (تایید لحظه‌ای سمت کلاینت) و هم از یک job پس‌زمینه
+// (reconcilePendingPayments پایین‌تر) صداش بزنیم؛ اون job هر چند
+// دقیقه یک‌بار پرداخت‌های pending رو مستقل از مرورگر کاربر با
+// استعلام زیبال چک و در صورت موفقیت VIP رو فعال می‌کنه.
+async function verifyAndCreditPayment(trackId) {
+  trackId = (trackId || "").toString();
+  if (!trackId) {
+    return { httpStatus: 400, body: { message: "کد پیگیری ارائه نشده است." } };
+  }
 
+  try {
     const zibalRes = await fetch("https://gateway.zibal.ir/v1/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -272,8 +289,15 @@ app.post("/purchase/verify", async (req, res) => {
     const zibalData = await zibalRes.json();
 
     if (![100, 101, 201].includes(zibalData.result)) {
-      throw new Error(`پرداخت تایید نشد (کد خطا: ${zibalData.result})`);
+      const declineErr = new Error(`پرداخت تایید نشد (کد خطا: ${zibalData.result})`);
+      declineErr.final = true; // زیبال قطعاً رد کرده - دیگه لازم نیست reconciler دوباره امتحان کنه
+      throw declineErr;
     }
+    // زیبال نتیجه‌ی 102 (trackId نامعتبر)، 201 (قبلاً تایید شده - بی‌ضرره،
+    // پایین‌تر با claim اتمیک هندل می‌شه) و بقیه‌ی خطاها رو برمی‌گردونه.
+    // کدهای واقعاً ناموفق (مثل انصراف کاربر یا خطای بانک) این‌جا throw
+    // می‌کنن و توسط reconcilePendingPayments به‌عنوان "failed" علامت
+    // زده می‌شن تا برای همیشه در حلقه‌ی retry نمونن.
 
     // 💡 رفع race condition: قبلاً اینجا اول با یک GET وضعیت رکورد چک
     // می‌شد و بعد جدا با PATCH آپدیت می‌شد. اگه دو تا ریکوئست verify با
@@ -313,9 +337,11 @@ app.post("/purchase/verify", async (req, res) => {
       const existing = existingRows[0];
 
       if (existing && (existing.status === "success" || existing.status === "processing")) {
-        return res.json({ status: 100, message: "تراکنش قبلاً ثبت شده است." });
+        return { httpStatus: 200, body: { status: 100, message: "تراکنش قبلاً ثبت شده است." } };
       }
-      throw new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
+      const notFoundErr = new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
+      notFoundErr.final = true; // رکورد وجود نداره، retry هیچ‌وقت درستش نمی‌کنه
+      throw notFoundErr;
     }
 
     try {
@@ -356,7 +382,7 @@ app.post("/purchase/verify", async (req, res) => {
         body: JSON.stringify({ status: "success", ref_number: zibalData.refNumber }),
       });
 
-      res.json({ status: 100, message: "اشتراک VIP با موفقیت فعال شد." });
+      return { httpStatus: 200, body: { status: 100, message: "اشتراک VIP با موفقیت فعال شد." } };
     } catch (creditErr) {
       // اگه بعد از claim کردن، جایی وسط کار (مثلاً آپدیت پروفایل) خطا
       // بخوره، رکورد رو به pending برمی‌گردونیم تا تو "processing" برای
@@ -369,9 +395,86 @@ app.post("/purchase/verify", async (req, res) => {
       throw creditErr;
     }
   } catch (err) {
-    res.status(400).json({ message: err.message || "خطا در تایید اشتراک VIP" });
+    if (err.final) {
+      // پرداخت قطعاً ناموفق بوده (رد شده توسط زیبال، یا اصلاً رکوردی
+      // نیست) - وضعیت رو "failed" می‌کنیم تا reconciler برای همیشه
+      // بی‌خودی سراغش نره. این PATCH فقط زمانی چیزی رو تغییر می‌ده که
+      // رکورد هنوز pending باشه، پس رکوردهای success/processing رو دست
+      // نمی‌زنه.
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=eq.pending`,
+        {
+          method: "PATCH",
+          headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ status: "failed" }),
+        }
+      ).catch(() => {});
+    }
+    return { httpStatus: 400, body: { message: err.message || "خطا در تایید اشتراک VIP" } };
   }
+}
+
+app.post("/purchase/verify", async (req, res) => {
+  const trackId = (req.body && (req.body.trackId || req.body.track_id)) || "";
+  const result = await verifyAndCreditPayment(trackId);
+  res.status(result.httpStatus).json(result.body);
 });
+
+// ---------- Job پس‌زمینه: تسویه‌ی پرداخت‌های pending رهاشده ----------
+// این همون رفعِ اصلیِ باگ "بعضیا خریدن ولی فعال نشد"ه: مستقل از این‌که
+// مرورگر کاربر بعد از پرداخت به vip-verify.html برسه یا نه، هر چند
+// دقیقه یک‌بار سراغ پرداخت‌های "pending" می‌ریم و با استعلام از زیبال
+// (که بعد از پرداخت موفق، جدا از رفتار مرورگر کاربر، وضعیت واقعی
+// تراکنش رو نگه می‌داره) خودمون verify/credit رو انجام می‌دیم.
+// پنجره‌ی RECONCILE_MIN_AGE_MS باعث می‌شه به پرداخت‌هایی که همین الان
+// ساخته شدن (کاربر داره تازه وارد درگاه می‌شه) دست نزنیم، چون هنوز
+// پرداختی انجام نشده و زیبال به‌درستی نتیجه‌ی "ناموفق" برمی‌گردونه.
+// RECONCILE_MAX_AGE_MS هم جلوی این رو می‌گیره که هر بار کل تاریخچه‌ی
+// پرداخت‌های رهاشده‌ی قدیمی (که واقعاً هیچ‌وقت پرداخت نشدن) رو دوباره
+// و دوباره از زیبال استعلام بگیریم.
+const RECONCILE_INTERVAL_MS = 5 * 60 * 1000; // هر ۵ دقیقه
+const RECONCILE_MIN_AGE_MS = 3 * 60 * 1000; // حداقل ۳ دقیقه از ساخته‌شدنش گذشته باشه
+const RECONCILE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000; // حداکثر تا ۳ روز قبل
+
+async function reconcilePendingPayments() {
+  try {
+    const now = Date.now();
+    const oldestIso = new Date(now - RECONCILE_MAX_AGE_MS).toISOString();
+    const newestIso = new Date(now - RECONCILE_MIN_AGE_MS).toISOString();
+
+    const pendingRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/payments?status=eq.pending&created_at=gte.${encodeURIComponent(
+        oldestIso
+      )}&created_at=lte.${encodeURIComponent(newestIso)}&select=track_id`,
+      { headers: supabaseAdminHeaders() }
+    );
+    if (!pendingRes.ok) {
+      console.error("reconcilePendingPayments: خطا در خواندن پرداخت‌های pending", await pendingRes.text());
+      return;
+    }
+    const pendingRows = await pendingRes.json();
+    if (!pendingRows.length) return;
+
+    console.log(`reconcilePendingPayments: بررسی ${pendingRows.length} پرداخت pending رهاشده...`);
+    for (const row of pendingRows) {
+      try {
+        const result = await verifyAndCreditPayment(row.track_id);
+        console.log(
+          `reconcilePendingPayments: trackId=${row.track_id} -> ${result.httpStatus} ${result.body?.message || ""}`
+        );
+      } catch (rowErr) {
+        console.error(`reconcilePendingPayments: خطای غیرمنتظره روی trackId=${row.track_id}`, rowErr);
+      }
+    }
+  } catch (err) {
+    console.error("reconcilePendingPayments: خطای کلی", err);
+  }
+}
+
+setInterval(reconcilePendingPayments, RECONCILE_INTERVAL_MS);
+// یک بار هم کمی بعد از بالا اومدن سرور اجرا می‌شه (نه بلافاصله، تا
+// startup رو کند نکنه).
+setTimeout(reconcilePendingPayments, 30 * 1000);
 
 // ---------- بخش ۴: رله‌ی قدیمی زیبال (نگه داشته شده برای سازگاری) ----------
 
