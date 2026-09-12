@@ -194,6 +194,30 @@ async function getAuthContext(accessToken) {
   return result;
 }
 
+// 💡 رفع گپِ ۹۰ ثانیه‌ای «خریدم ولی فعال نشد»: authCache با accessToken
+// کلید می‌شه، نه userId - پس اگه همین الان یک کاربر VIP بشه، نمی‌تونیم
+// مستقیم authCache.delete(accessToken) بزنیم چون توی verifyAndCreditPayment
+// (که هم از روت /purchase/verify صدا زده می‌شه، هم از reconcilePendingPayments
+// پس‌زمینه) اصلاً accessToken در دسترس نیست - فقط userId (از رکورد
+// payments) رو داریم. به همین خاطر روی همه‌ی ورودی‌های authCache می‌گردیم
+// و هر کدوم که متعلق به همین userId باشه رو پاک می‌کنیم. authCache حداکثر
+// AUTH_CACHE_MAX_ENTRIES (۵۰۰۰) ورودی داره، پس این پیمایش خطی فقط همون
+// لحظه‌ی نادرِ «یک نفر تازه VIP شد» اتفاق می‌افته، نه روی مسیر پرترافیک
+// خوندن چپتر - هزینه‌ش ناچیزه.
+//
+// نتیجه: بلافاصله بعد از تایید موفق پرداخت (چه کلاینت verify رو صدا زده
+// باشه، چه job پس‌زمینه)، دفعه‌ی بعدی که همون کاربر با همون accessToken
+// یک چپتر VIP رو باز کنه، getAuthContext مجبور می‌شه دوباره از Supabase
+// بپرسه و is_vip تازه رو می‌بینه - به‌جای این‌که تا ۹۰ ثانیه صبر کنه.
+function invalidateAuthCacheForUser(userId) {
+  if (!userId) return;
+  for (const [token, entry] of authCache.entries()) {
+    if (entry?.user?.id === userId) {
+      authCache.delete(token);
+    }
+  }
+}
+
 app.post("/purchase/request", async (req, res) => {
   try {
     const authHeader = req.headers.authorization || "";
@@ -330,13 +354,17 @@ async function verifyAndCreditPayment(trackId) {
       // تلاش قبلی) قبلاً claim/تکمیلش کرده - وضعیت فعلی رو چک می‌کنیم
       // تا پیام درست بدیم، نه این‌که کور کورانه خطا بدیم.
       const existingRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&select=status`,
+        `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&select=status,user_id`,
         { headers: supabaseAdminHeaders() }
       );
       const existingRows = await existingRes.json();
       const existing = existingRows[0];
 
       if (existing && (existing.status === "success" || existing.status === "processing")) {
+        // اگه یک ریکوئست verify دیگه (یا reconciler) دقیقاً هم‌زمان داره
+        // همین trackId رو claim/تکمیل می‌کنه، بازم بی‌ضرره authCache رو
+        // برای این کاربر پاک کنیم - چه الان چه چند لحظه‌ی دیگه تکمیل بشه.
+        invalidateAuthCacheForUser(existing.user_id);
         return { httpStatus: 200, body: { status: 100, message: "تراکنش قبلاً ثبت شده است." } };
       }
       const notFoundErr = new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
@@ -381,6 +409,11 @@ async function verifyAndCreditPayment(trackId) {
         headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ status: "success", ref_number: zibalData.refNumber }),
       });
+
+      // VIP همین الان فعال شد - کش احراز هویتِ این کاربر رو پاک کن تا
+      // درخواست بعدیِ چپتر قفل، بدون صبر برای انقضای AUTH_CACHE_TTL_MS،
+      // وضعیت تازه رو ببینه.
+      invalidateAuthCacheForUser(paymentRecord.user_id);
 
       return { httpStatus: 200, body: { status: 100, message: "اشتراک VIP با موفقیت فعال شد." } };
     } catch (creditErr) {
@@ -525,7 +558,69 @@ const { buildSignedUrls } = require("./lib/chapterCache");
 // چه بدون لاگین روی چپترهای رایگان (کلید = IP). این جدا از کش پارس‌پک/Bunny
 // عمل می‌کنه، چون اون کش فقط از فشار روی باکت جلوگیری می‌کنه، نه از این‌که
 // یک نفر کل سایت رو با یک اشتراک بخونه/دانلود کنه.
-const { checkAndRecordChapterRequest } = require("./lib/chapterRateLimit");
+const { checkAndRecordChapterRequest, checkAndRecordGuestChapterRequest } = require("./lib/chapterRateLimit");
+
+// ---------- شناسه‌ی مهمان (guestId) برای rate limit چپترهای رایگان ----------
+//
+// چرا لازم شد: قبلاً کاربر مهمون فقط با IP شناسایی می‌شد. کاربرهای موبایل
+// ایران معمولاً پشت CGNAT هستن، یعنی ده‌ها کاربر واقعی می‌تونن IP یکسان
+// داشته باشن - چند نفر که هم‌زمان دارن چپتر رایگان می‌خونن به‌راحتی به سقف
+// ۲۰ درخواست/دقیقه‌یِ همون IP می‌رسیدن و برای همه‌شون 429 می‌اومد، حتی برای
+// کاربری که فقط عادی داره مانگا می‌خونه.
+//
+// راه‌حل: به هر مرورگرِ مهمون یک شناسه‌ی تصادفی (guestId) توی یک کوکی
+// HttpOnly بلندمدت می‌دیم و همون رو - نه IP رو - به‌عنوان کلید اصلیِ
+// rate limit به chapterRateLimit.js می‌دیم (جزئیات کامل همون‌جا کنار
+// checkAndRecordGuestChapterRequest توضیح داده شده).
+//
+// از cookie-parser استفاده نکردیم تا یه وابستگی جدید اضافه نشه - پارس
+// کردن هدر Cookie برای فقط یک کلید، چند خط ساده‌ست.
+const crypto = require("crypto");
+
+const GUEST_COOKIE_NAME = "mc_gid";
+const GUEST_COOKIE_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000; // ۱۸۰ روز
+const GUEST_ID_RE = /^[a-f0-9-]{36}$/i;
+
+function parseCookies(req) {
+  const header = req.headers.cookie;
+  const out = {};
+  if (!header) return out;
+  header.split(";").forEach((pair) => {
+    const idx = pair.indexOf("=");
+    if (idx === -1) return;
+    const key = pair.slice(0, idx).trim();
+    const val = pair.slice(idx + 1).trim();
+    if (key) {
+      try {
+        out[key] = decodeURIComponent(val);
+      } catch {
+        out[key] = val;
+      }
+    }
+  });
+  return out;
+}
+
+// اگه کاربر از قبل کوکی معتبر داشته باشه همونو برمی‌گردونه، وگرنه یکی
+// جدید می‌سازه و ست می‌کنه. توجه: اگه مرورگر کاربر کوکی رو ذخیره نکنه
+// (بلاک شده یا حالت خصوصی)، هر ریکوئست یک guestId جدید می‌گیره - یعنی
+// عملاً از سقفِ per-guest فرار می‌کنه؛ دقیقاً به همین دلیل توی
+// chapterRateLimit.js یک سقفِ نرم‌ترِ ثانویه هم روی IP نگه داشته می‌شه.
+function getOrSetGuestId(req, res) {
+  const cookies = parseCookies(req);
+  let guestId = cookies[GUEST_COOKIE_NAME];
+  if (!guestId || !GUEST_ID_RE.test(guestId)) {
+    guestId = crypto.randomUUID();
+    res.cookie(GUEST_COOKIE_NAME, guestId, {
+      maxAge: GUEST_COOKIE_MAX_AGE_MS,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: req.secure,
+      path: "/",
+    });
+  }
+  return guestId;
+}
 
 // خواندن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر - از همون کش
 // مشترک dataStore استفاده می‌کنه (دیگه فایل رو دوباره از دیسک نمی‌خونه).
@@ -561,7 +656,8 @@ if (chapterNum !== undefined && chapterNum !== null) {
     // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده - ولی همچنان از نظر IP
     // محدود می‌کنیم، وگرنه چپترهای رایگان بی‌هیچ محدودیتی قابل اسکرپ می‌مونن.
     if (episode.free) {
-      const rl = checkAndRecordChapterRequest(`ip:${req.ip}`);
+      const guestId = getOrSetGuestId(req, res);
+      const rl = checkAndRecordGuestChapterRequest(guestId, req.ip);
       if (!rl.allowed) {
         res.setHeader("Retry-After", String(rl.retryAfterSeconds));
         return res.status(429).json({
