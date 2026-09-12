@@ -395,7 +395,22 @@ async function verifyAndCreditPayment(trackId) {
         `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}`,
         {
           method: "PATCH",
-          headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+          headers: supabaseAdminHeaders({
+            "Content-Type": "application/json",
+            // 🐛 باگ اصلی که احتمالاً پشتِ «عده‌ی زیادی خریدن ولی فعال
+            // نشده» بود: بدون Prefer: return=representation، PostgREST
+            // حتی وقتی هیچ ردیفی با این id پیدا نشه (مثلاً پروفایل کاربر
+            // به هر دلیلی - تاخیر/شکست تریگرِ ساخت پروفایل موقع signup -
+            // اصلاً وجود نداشته)، بازم HTTP 200/204 (یعنی res.ok === true)
+            // برمی‌گردوند. کد قبلی فقط res.ok رو چک می‌کرد، پس این حالت
+            // رو "موفق" حساب می‌کرد، پرداخت status="success" می‌شد، ولی
+            // is_vip هیچ‌وقت واقعاً ست نمی‌شد چون ردیفی برای آپدیت نبود -
+            // کاربر پول داده بود ولی برای همیشه (نه فقط چند دقیقه) قفل
+            // می‌موند، و چون status دیگه "pending" نبود، حتی
+            // reconcilePendingPayments هم دیگه هیچ‌وقت دوباره سراغش
+            // نمی‌رفت.
+            Prefer: "return=representation",
+          }),
           body: JSON.stringify({
             is_vip: true,
             vip_until: currentVipDate.toISOString(),
@@ -403,6 +418,38 @@ async function verifyAndCreditPayment(trackId) {
         }
       );
       if (!updateProfRes.ok) throw new Error("بروزرسانی پروفایل کاربر ناموفق بود.");
+
+      const updatedProfileRows = await updateProfRes.json();
+      if (!Array.isArray(updatedProfileRows) || updatedProfileRows.length === 0) {
+        // هیچ ردیفی match نشد یعنی پروفایل کاربر اصلاً وجود نداره - به‌جای
+        // این‌که خطا بدیم و کاربر رو معطل reconcile بذاریم، همین‌جا با
+        // upsert ردیف رو می‌سازیم تا اشتراک واقعاً و فوراً فعال بشه.
+        // نکته: این فرض می‌کنه ستون id در جدول profiles کلید اصلی/یکتاست
+        // (همون چیزی که برای resolution=merge-duplicates لازمه).
+        const upsertRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+          method: "POST",
+          headers: supabaseAdminHeaders({
+            "Content-Type": "application/json",
+            Prefer: "resolution=merge-duplicates,return=representation",
+          }),
+          body: JSON.stringify([
+            {
+              id: paymentRecord.user_id,
+              is_vip: true,
+              vip_until: currentVipDate.toISOString(),
+            },
+          ]),
+        });
+        if (!upsertRes.ok) {
+          throw new Error(
+            "پروفایل کاربر برای اعمال VIP پیدا نشد و ساخت (upsert) آن هم ناموفق بود: " +
+              (await upsertRes.text())
+          );
+        }
+        console.warn(
+          `[VIP] پروفایل از پیش موجود برای userId=${paymentRecord.user_id} پیدا نشد؛ با upsert ساخته شد. این احتمالاً یعنی جایی در فرآیند signup پروفایل ساخته نمی‌شه - ارزش بررسی داره.`
+        );
+      }
 
       await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
         method: "PATCH",
