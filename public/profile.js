@@ -2,6 +2,37 @@
         let currentUser = null;
         let profileLoadFailed = false; // اگر خواندن پروفایل خطا بده، دیگه اجازه نمی‌دیم فرم ذخیره، آواتار رو با مقدار خالی پاک کنه
 
+// =====================================================================
+// نوتیفیکیشن‌های شناور (toast) — برای فیدبک‌های سریع و کم‌مزاحم
+// =====================================================================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast--${type}`;
+    toast.innerText = message;
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('is-visible'));
+
+    setTimeout(() => {
+        toast.classList.remove('is-visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 2800);
+}
+
+// کپی شماره‌ی عضویت با یک کلیک
+function copyMemberId() {
+    const idEl = document.getElementById('dispMemberId');
+    const id = idEl ? idEl.innerText.trim() : '';
+    if (!id) return;
+
+    navigator.clipboard.writeText(id)
+        .then(() => showToast('شماره عضویت کپی شد', 'success'))
+        .catch(() => showToast('کپی انجام نشد، لطفاً دستی کپی کن', 'error'));
+}
+
 async function loadUserProfile() {
     const client = window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
     if (!client) return;
@@ -37,10 +68,17 @@ async function loadUserProfile() {
         memberIdEl.innerText = user.id.replace(/-/g, '').slice(0, 8).toUpperCase();
     }
 
-    // نمایش تاریخ عضویت
+    // نمایش تاریخ عضویت + تعداد روزهایی که از عضویت گذشته
+    const now = new Date();
     if (user.created_at) {
-        const createdDate = new Date(user.created_at).toLocaleDateString('fa-IR');
-        document.getElementById('dispCreatedAt').innerText = createdDate;
+        const createdDateObj = new Date(user.created_at);
+        document.getElementById('dispCreatedAt').innerText = createdDateObj.toLocaleDateString('fa-IR');
+
+        const joinDaysEl = document.getElementById('dispJoinDays');
+        if (joinDaysEl) {
+            const daysSinceJoin = Math.max(0, Math.floor((now - createdDateObj) / (1000 * 60 * 60 * 24)));
+            joinDaysEl.innerText = `(${daysSinceJoin} روز)`;
+        }
     }
 
     // دریافت اطلاعات پروفایل
@@ -75,23 +113,64 @@ async function loadUserProfile() {
     const vipIcon = document.getElementById('vipIcon');
     const vipActionBtn = document.getElementById('vipActionBtn');
     const vipBadge = document.getElementById('vipBadge');
+    const vipDaysWrap = document.getElementById('vipDaysWrap');
+    const vipDaysNumber = document.getElementById('vipDaysNumber');
+    const vipProgressBar = document.getElementById('vipProgressBar');
 
-    const now = new Date();
-    const isVip = profile?.is_vip && (!profile.vip_until || new Date(profile.vip_until) > now);
+    const vipUntilDate = profile?.vip_until ? new Date(profile.vip_until) : null;
+    const isVip = profile?.is_vip && (!vipUntilDate || vipUntilDate > now);
+    const isExpired = !isVip && vipUntilDate && vipUntilDate <= now;
+
+    // مقدار پیش‌فرض: شمارشگر روزها مخفی است مگر این‌که بعداً پر شود
+    if (vipDaysWrap) {
+        vipDaysWrap.classList.add('hidden');
+        vipDaysWrap.classList.remove('is-safe', 'is-warning', 'is-critical');
+    }
 
     if (isVip) {
-        const endDate = profile?.vip_until
-            ? new Date(profile.vip_until).toLocaleDateString('fa-IR')
-            : 'نامحدود';
-
         if (vipBadge) vipBadge.classList.remove('hidden');
-        if (vipStatusText) {
-            vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">اشتراک ویژه شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
-        }
         if (vipIcon) vipIcon.className = "material-symbols-outlined text-emerald-400 text-3xl";
+
+        if (vipUntilDate) {
+            const endDate = vipUntilDate.toLocaleDateString('fa-IR');
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const daysLeft = Math.max(0, Math.ceil((vipUntilDate - now) / msPerDay));
+
+            let urgency = 'is-safe';
+            if (daysLeft <= 3) urgency = 'is-critical';
+            else if (daysLeft <= 7) urgency = 'is-warning';
+
+            if (vipStatusText) {
+                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">اشتراک ویژه شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
+            }
+            if (vipDaysWrap) {
+                vipDaysWrap.classList.remove('hidden');
+                vipDaysWrap.classList.add(urgency);
+            }
+            if (vipDaysNumber) vipDaysNumber.innerText = daysLeft;
+            if (vipProgressBar) {
+                // نوار پیشرفت روی یک بازه‌ی مرجع ۳۰ روزه محاسبه می‌شود تا همیشه قابل خواندن باشد
+                const pct = Math.min(100, Math.max(4, (daysLeft / 30) * 100));
+                vipProgressBar.style.width = pct + '%';
+            }
+        } else {
+            if (vipStatusText) {
+                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">اشتراک ویژه شما فعال است</span> اعتبار: <span class="mono">نامحدود</span>`;
+            }
+        }
+
         if (vipActionBtn) {
             vipActionBtn.innerText = "تمدید اشتراک VIP";
             vipActionBtn.className = "w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black font-bold text-xs transition-all text-center shadow-lg shadow-emerald-950/30 block";
+        }
+    } else if (isExpired) {
+        if (vipIcon) vipIcon.className = "material-symbols-outlined text-red-500 text-3xl";
+        if (vipStatusText) {
+            vipStatusText.innerHTML = `<span class="text-red-400 font-bold block mb-1">اشتراک ویژه‌ی شما به پایان رسیده</span> تاریخ انقضا: <span class="mono">${vipUntilDate.toLocaleDateString('fa-IR')}</span>`;
+        }
+        if (vipActionBtn) {
+            vipActionBtn.innerText = "تمدید اشتراک VIP";
+            vipActionBtn.className = "w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center block";
         }
     } else {
         if (vipStatusText) {
@@ -130,7 +209,7 @@ async function loadUserBookmarks(client) {
         return;
     }
 
-    if (hintEl) hintEl.innerText = `${bookmarks.length} مانهوای ذخیره شده`;
+    if (hintEl) hintEl.innerHTML = `<span class="text-white font-bold">${bookmarks.length}</span> مانهوای ذخیره شده`;
 
     if (!bookmarks || bookmarks.length === 0) {
         listEl.innerHTML = `
@@ -145,7 +224,7 @@ async function loadUserBookmarks(client) {
         const title = b.title_fa || b.title_en || b.manhwa_slug;
         const cover = b.cover_url || '';
         return `
-            <div class="shelf-item group">
+            <div class="shelf-item group" data-title="${escapeHtml(title.toLowerCase())}">
                 <a href="/manga.php?slug=${encodeURIComponent(b.manhwa_slug)}" class="block aspect-[3/4] bg-zinc-800">
                     ${cover ? `<img src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" />` : ''}
                 </a>
@@ -171,9 +250,10 @@ async function removeBookmark(slug) {
         .eq('manhwa_slug', slug);
 
     if (error) {
-        alert('خطا در حذف نشان: ' + error.message);
+        showToast('خطا در حذف نشان: ' + error.message, 'error');
         return;
     }
+    showToast('از علامت‌گذاری‌ها حذف شد', 'success');
     loadUserBookmarks(client);
 }
 
@@ -196,7 +276,7 @@ async function loadUserComments(client) {
         return;
     }
 
-    if (hintEl) hintEl.innerText = `${comments.length} دیدگاه ثبت‌شده`;
+    if (hintEl) hintEl.innerHTML = `<span class="text-white font-bold">${comments.length}</span> دیدگاه ثبت‌شده`;
 
     if (!comments || comments.length === 0) {
         listEl.innerHTML = `
@@ -245,9 +325,10 @@ async function deleteOwnComment(commentId) {
         .eq('user_id', currentUser.id);
 
     if (error) {
-        alert('خطا در حذف دیدگاه: ' + error.message);
+        showToast('خطا در حذف دیدگاه: ' + error.message, 'error');
         return;
     }
+    showToast('دیدگاه حذف شد', 'success');
     loadUserComments(client);
 }
 
@@ -299,7 +380,7 @@ function loadReadingHistory() {
 
     const history = getReadingHistory().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-    if (hintEl) hintEl.innerText = `${history.length} مانهوا در تاریخچه`;
+    if (hintEl) hintEl.innerHTML = `<span class="text-white font-bold">${history.length}</span> مانهوا در تاریخچه`;
 
     if (!history.length) {
         listEl.innerHTML = `
@@ -318,7 +399,7 @@ function loadReadingHistory() {
             : escapeHtml(h.chapter_title || '');
 
         return `
-            <div class="shelf-item group">
+            <div class="shelf-item group" data-title="${title.toLowerCase()}">
                 <a href="${h.url}" class="block aspect-[3/4] bg-zinc-800">
                     ${cover ? `<img src="${escapeHtml(cover)}" alt="${title}" class="w-full h-full object-cover" />` : ''}
                 </a>
@@ -334,16 +415,46 @@ function loadReadingHistory() {
     }).join('');
 }
 
+// جستجوی زنده روی بوکمارک‌ها/تاریخچه (سمت کلاینت، بدون درخواست جدید به سرور)
+function filterShelf(listId, query) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    const q = query.trim().toLowerCase();
+    let visibleCount = 0;
+
+    list.querySelectorAll('.shelf-item').forEach(item => {
+        const matches = !q || (item.dataset.title || '').includes(q);
+        item.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+    });
+
+    let emptyState = list.querySelector('.shelf-search-empty');
+    const hasItems = list.querySelectorAll('.shelf-item').length > 0;
+
+    if (q && visibleCount === 0 && hasItems) {
+        if (!emptyState) {
+            emptyState = document.createElement('div');
+            emptyState.className = 'col-span-full empty-panel shelf-search-empty';
+            emptyState.innerText = 'چیزی با این عبارت پیدا نشد.';
+            list.appendChild(emptyState);
+        }
+    } else if (emptyState) {
+        emptyState.remove();
+    }
+}
+
 function removeReadingHistoryItem(slug) {
     const history = getReadingHistory().filter(h => h.slug !== slug);
     localStorage.setItem(READING_HISTORY_KEY, JSON.stringify(history));
     loadReadingHistory();
+    showToast('از تاریخچه حذف شد', 'success');
 }
 
 function clearReadingHistory() {
     if (!confirm('کل تاریخچه‌ی خواندن روی این گوشی پاک بشه؟')) return;
     localStorage.removeItem(READING_HISTORY_KEY);
     loadReadingHistory();
+    showToast('تاریخچه خواندن پاک شد', 'success');
 }
 
         // نمایش عکس پروفایل
@@ -423,6 +534,38 @@ function clearReadingHistory() {
                 };
 
                 reader.readAsDataURL(file);
+            });
+        }
+
+        // امکان رها کردن (drag & drop) مستقیم فایل عکس روی قاب آواتار
+        function setupAvatarDropZone() {
+            const dropZone = document.getElementById('avatarDropZone');
+            if (!dropZone) return;
+
+            const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
+
+            ['dragenter', 'dragover'].forEach(evt => {
+                dropZone.addEventListener(evt, (e) => {
+                    preventDefaults(e);
+                    dropZone.classList.add('is-dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(evt => {
+                dropZone.addEventListener(evt, (e) => {
+                    preventDefaults(e);
+                    dropZone.classList.remove('is-dragover');
+                });
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const file = e.dataTransfer?.files?.[0];
+                if (!file) return;
+                if (!currentUser) {
+                    showToast('برای تغییر عکس ابتدا وارد حساب شو', 'error');
+                    return;
+                }
+                uploadAvatar({ target: { files: [file], value: '' } });
             });
         }
 
@@ -587,6 +730,44 @@ function clearReadingHistory() {
             }
         }
 
+        // تغییر رمز عبور
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('newPasswordInput').value;
+            const confirmPass = document.getElementById('confirmPasswordInput').value;
+            const btn = document.getElementById('changePasswordBtn');
+
+            if (newPass.length < 6) {
+                showToast('رمز عبور باید حداقل ۶ کاراکتر باشد', 'error');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                showToast('رمزهای عبور با هم یکسان نیستند', 'error');
+                return;
+            }
+
+            const client = window.supabaseClient || window.supabase;
+            if (!client) return;
+
+            btn.disabled = true;
+            const originalLabel = btn.innerText;
+            btn.innerText = 'در حال تغییر...';
+
+            try {
+                const { error } = await client.auth.updateUser({ password: newPass });
+                if (error) throw error;
+
+                showToast('رمز عبور با موفقیت تغییر کرد', 'success');
+                document.getElementById('newPasswordInput').value = '';
+                document.getElementById('confirmPasswordInput').value = '';
+            } catch (err) {
+                showToast('خطا در تغییر رمز عبور: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalLabel;
+            }
+        }
+
         // خروج از حساب
         async function handleLogout() {
             const client = window.supabaseClient || window.supabase;
@@ -599,3 +780,4 @@ function clearReadingHistory() {
         document.addEventListener('DOMContentLoaded', loadUserProfile);
         // تاریخچه‌ی خواندن مستقل از لاگین بودن کاربره (روی خودِ گوشی ذخیره‌ست)، پس جدا صداش می‌زنیم
         document.addEventListener('DOMContentLoaded', loadReadingHistory);
+        document.addEventListener('DOMContentLoaded', setupAvatarDropZone);

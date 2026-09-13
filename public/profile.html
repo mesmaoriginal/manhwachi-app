@@ -1,8 +1,11 @@
 
 
        <div class="profile">
+    <!-- محفظه‌ی نوتیفیکیشن‌های شناور (toast) -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
     <!-- کانتینر اصلی محتوای پروفایل (حتما باید این id وجود داشته باشه) -->
-    <div id="mainProfileContent">
+    <div id="mainProfileContent" class="profile-enter">
 
         <!-- ===================== کارت عضویت خواننده ===================== -->
         <div class="panel id-card mb-8 shadow-2xl">
@@ -11,7 +14,7 @@
             <div class="id-card__body">
                 <div class="id-card__identity">
                     <!-- عکس پروفایل با امکان آپلود -->
-                    <div class="relative group">
+                    <div class="relative group" id="avatarDropZone">
                         <div id="avatarContainer" class="avatar-frame flex items-center justify-center text-red-500 font-bold">
                             <span id="avatarFallback" class="material-symbols-outlined text-6xl">account_circle</span>
                             <img id="avatarImg" src="" alt="Avatar" class="w-full h-full object-cover hidden" />
@@ -40,13 +43,17 @@
                         <div class="text-[11px] text-zinc-500 mt-2 flex items-center gap-1.5">
                             <span class="material-symbols-outlined text-sm text-red-500">calendar_month</span>
                             عضویت از <span id="dispCreatedAt" class="mono text-zinc-300">...</span>
+                            <span id="dispJoinDays" class="mono text-zinc-600"></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- تیکه‌ی کنده‌شده‌ی کارت با شماره عضویت -->
                 <div class="id-card__stub">
-                    <span class="id-card__stub-number mono">#<span id="dispMemberId">------</span></span>
+                    <button type="button" onclick="copyMemberId()" title="کپی شماره عضویت" class="id-card__stub-number mono flex items-center gap-1.5 hover:text-red-400 transition-colors">
+                        #<span id="dispMemberId">------</span>
+                        <span class="material-symbols-outlined text-sm opacity-60">content_copy</span>
+                    </button>
                     <div class="id-card__barcode"></div>
                     <span class="id-card__stub-label">عضو مانهواچی</span>
                 </div>
@@ -97,6 +104,18 @@
                         <span id="vipIcon" class="material-symbols-outlined text-zinc-500 text-3xl">workspace_premium</span>
                         <h2 class="font-bold text-sm text-white">اشتراک ویژه</h2>
                     </div>
+
+                    <!-- شمارشگر روزهای باقی‌مانده -->
+                    <div id="vipDaysWrap" class="vip-countdown hidden mb-4">
+                        <div class="vip-countdown__row">
+                            <span id="vipDaysNumber" class="vip-countdown__number mono">--</span>
+                            <span class="vip-countdown__label">روز تا پایان اشتراک</span>
+                        </div>
+                        <div class="vip-countdown__track">
+                            <div id="vipProgressBar" class="vip-countdown__fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
                     <div id="vipStatusText" class="text-xs text-zinc-400 leading-relaxed mb-6">
                         در حال بررسی وضعیت اشتراک...
                     </div>
@@ -141,12 +160,39 @@
 
         </div>
 
+        <!-- ===================== امنیت حساب / تغییر رمز عبور ===================== -->
+        <div class="panel p-6 md:p-7 mb-6">
+            <h2 class="font-bold text-sm text-white mb-4 flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                <span class="eyebrow-tag">امنیت حساب</span>
+            </h2>
+
+            <form onsubmit="handleChangePassword(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور جدید</label>
+                    <input type="password" id="newPasswordInput" minlength="6" required autocomplete="new-password" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all dir-ltr text-left placeholder-zinc-600" placeholder="حداقل ۶ کاراکتر" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">تکرار رمز عبور</label>
+                    <input type="password" id="confirmPasswordInput" minlength="6" required autocomplete="new-password" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all dir-ltr text-left placeholder-zinc-600" placeholder="تکرار رمز عبور" />
+                </div>
+                <button type="submit" id="changePasswordBtn" class="py-2.5 rounded-xl bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 font-bold text-xs text-zinc-300 hover:text-white transition-all">
+                    تغییر رمز عبور
+                </button>
+            </form>
+        </div>
+
         <!-- ===================== علامت‌گذاری‌های من ===================== -->
         <div id="bookmarksSection" class="panel p-6 md:p-7 mb-6 scroll-mt-24">
-            <span class="eyebrow-tag mb-4 flex items-center gap-2">
-                <span class="material-symbols-outlined text-red-500 text-lg align-middle">bookmark</span>
-                علامت‌گذاری‌های من
-            </span>
+            <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+                <span class="eyebrow-tag flex items-center gap-2">
+                    <span class="material-symbols-outlined text-red-500 text-lg align-middle">bookmark</span>
+                    علامت‌گذاری‌های من
+                </span>
+                <div class="shelf-search">
+                    <span class="material-symbols-outlined text-sm">search</span>
+                    <input type="text" id="bookmarksSearch" oninput="filterShelf('bookmarksList', this.value)" placeholder="جستجو در نشان‌ها..." class="dir-rtl" />
+                </div>
+            </div>
             <div id="bookmarksList" class="shelf-grid mt-4">
                 <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
@@ -165,6 +211,10 @@
                 </button>
             </div>
             <p class="text-[11px] text-zinc-500 mb-4">این تاریخچه فقط روی همین گوشی یا مرورگر ذخیره می‌شه و بین دستگاه‌ها سینک نمی‌شه.</p>
+            <div class="shelf-search mb-4">
+                <span class="material-symbols-outlined text-sm">search</span>
+                <input type="text" id="historySearch" oninput="filterShelf('historyList', this.value)" placeholder="جستجو در تاریخچه..." class="dir-rtl" />
+            </div>
             <div id="historyList" class="shelf-grid mt-4">
                 <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>

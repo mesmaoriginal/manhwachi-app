@@ -23,13 +23,13 @@
 
     function createHeart(x, y) {
         const heart = document.createElement('span');
-        heart.className = 'material-symbols-outlined absolute pointer-events-none z-50 text-red-500 text-6xl animate-ping';
-        heart.style.left = (x - 30) + 'px';
-        heart.style.top = (y - 30) + 'px';
+        heart.className = 'material-symbols-outlined heart-pop';
+        heart.style.left = (x - 37) + 'px';
+        heart.style.top = (y - 37) + 'px';
         heart.style.fontVariationSettings = "'FILL' 1";
         heart.innerText = 'favorite';
         document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 600);
+        setTimeout(() => heart.remove(), 800);
     }
 
     async function fetchReels(offset = 0) {
@@ -78,6 +78,11 @@
             console.error(err);
             return 0;
         }
+    }
+
+    function defaultAvatar(name) {
+        const initial = (name || 'م').trim().charAt(0).toUpperCase();
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=ff5b5b&color=fff&bold=true&size=96`;
     }
 
     function toPersianDigits(num) {
@@ -307,19 +312,19 @@
                 ` : ''}
                 <div class="flex items-center gap-3 mb-4">
                     <div class="creator-avatar-container">
-                        <img src="${reel.avatar_url || 'https://via.placeholder.com/60'}" class="creator-avatar-img">
+                        <img src="${reel.avatar_url || defaultAvatar(reel.creator)}" class="creator-avatar-img" onerror="this.onerror=null;this.src='${defaultAvatar(reel.creator)}'">
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="font-bold truncate text-white">${reel.creator}@</p>
                         <p class="text-sm text-white/70">${reel.level || ''}</p>
                     </div>
-                    <button class="bg-white text-black px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap" onclick="window.location.href='https://www.instagram.com/ManhwaChiOfficial'">دنبال کردن</button>
+                    <button class="follow-btn" onclick="window.location.href='https://www.instagram.com/ManhwaChiOfficial'">دنبال کردن</button>
                 </div>
                 <div class="reel-description-wrapper mb-2">
-                    <p class="reel-description collapsed text-white" onclick="toggleDescription(this)">
+                    <p class="reel-description collapsed text-white" id="desc-${reel.id}" onclick="toggleDescription('${reel.id}')">
                         ${reel.description}
                     </p>
-                    ${reel.description.length > 90 ? `<span class="more-text text-gray-300 font-bold">... بیشتر</span>` : ""}
+                    ${reel.description.length > 90 ? `<span class="more-text" id="more-text-${reel.id}" onclick="toggleDescription('${reel.id}')">... بیشتر</span>` : ""}
                 </div>
                 <div class="flex gap-2 flex-wrap">
                     ${(reel.tags || []).map(tag => `<span class="text-blue-400 text-sm">#${tag}</span>`).join('')}
@@ -387,7 +392,7 @@
 
         const container = document.getElementById('reels-feed');
         if (!append) {
-            container.innerHTML = '<div class="h-screen flex items-center justify-center text-white/60">در حال بارگذاری...</div>';
+            container.innerHTML = '<div class="reel-skeleton" style="position:relative;height:100dvh;"><div class="spinner"></div></div>';
         }
 
         try {
@@ -411,11 +416,24 @@
                 container.appendChild(fragment);
             }
 
+            if (!hasMore && !document.getElementById('reels-end') && container.children.length > 0) {
+                const endEl = document.createElement('div');
+                endEl.id = 'reels-end';
+                endEl.className = 'reel-end-state';
+                endEl.style.position = 'relative';
+                endEl.style.height = '40vh';
+                endEl.innerHTML = `
+                    <span class="material-symbols-outlined">auto_stories</span>
+                    <p class="font-bold text-white/70">همه‌ی ریل‌ها رو دیدی!</p>
+                    <p class="text-xs">برای دیدن ریل‌های جدید بعداً سر بزن</p>`;
+                container.appendChild(endEl);
+            }
+
             currentOffset += PAGE_SIZE;
             setupVideoObservers();
         } catch (err) {
             console.error(err);
-            container.innerHTML = `<div class="h-screen flex items-center justify-center text-red-400">خطا در بارگذاری ریل‌ها</div>`;
+            container.innerHTML = `<div class="reel-skeleton" style="position:relative;height:100dvh;"><p class="text-red-400 font-bold">خطا در بارگذاری ریل‌ها 😕</p></div>`;
         } finally {
             isLoading = false;
         }
@@ -496,6 +514,10 @@
         const countEl = document.getElementById(`like-count-${reelId}`);
         const wasLiked = icon.classList.contains('text-red-500');
         const oldCount = Number(countEl.dataset.count || 0);
+
+        icon.classList.remove('like-bounce');
+        void icon.offsetWidth; // ری‌استارت انیمیشن
+        icon.classList.add('like-bounce');
 
         if (wasLiked) {
             const newCount = Math.max(0, oldCount - 1);
@@ -613,13 +635,19 @@
         });
     }
 
-    function toggleDescription(el){
-        if(el.classList.contains("collapsed")){
-            el.classList.remove("collapsed");
-            el.classList.add("expanded");
+    function toggleDescription(reelId){
+        const desc = document.getElementById(`desc-${reelId}`);
+        if (!desc) return;
+        const moreBtn = document.getElementById(`more-text-${reelId}`);
+
+        if (desc.classList.contains("collapsed")) {
+            desc.classList.remove("collapsed");
+            desc.classList.add("expanded");
+            if (moreBtn) moreBtn.textContent = 'بستن';
         } else {
-            el.classList.remove("expanded");
-            el.classList.add("collapsed");
+            desc.classList.remove("expanded");
+            desc.classList.add("collapsed");
+            if (moreBtn) moreBtn.textContent = '... بیشتر';
         }
     }
 
@@ -630,7 +658,7 @@
 
         const container = document.getElementById('reels-feed');
         if (container) {
-            container.innerHTML = '<div class="h-screen flex items-center justify-center text-white/60">در حال بارگذاری...</div>';
+            container.innerHTML = '<div class="reel-skeleton" style="position:relative;height:100dvh;"><div class="spinner"></div></div>';
         }
 
         loadReels(false);
@@ -666,6 +694,7 @@
     window.postComment = postComment;
     window.createHeart = createHeart;
     window.goToManhwa = goToManhwa;
+    window.toggleDescription = toggleDescription;
 
     initReels();
 })();

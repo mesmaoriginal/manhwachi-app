@@ -1,10 +1,5 @@
-
-
-
-
     <div id="reels-feed" class="flex-1 overflow-y-auto reel-container h-full" style="bottom: 100px;"></div>
 
-    
     <!-- Comments Bottom Sheet -->
     <!-- پس‌زمینه تیره هنگام باز شدن کامنت‌ها -->
 <div id="comments-overlay" class="hidden fixed inset-0 bg-black/60 z-50 backdrop-blur-sm transition-opacity" onclick="closeComments()"></div>
@@ -34,15 +29,15 @@
         <div class="comment-form-inputs">
             <!-- نام کاربری -->
             <input type="text" id="username-input" class="comment-username-input" placeholder="نام شما..." maxlength="50">
-            
+
             <!-- متن کامنت و دکمه ارسال -->
             <div class="comment-text-wrapper">
                 <input type="text" id="comment-input" class="comment-text-input" placeholder="نظر خود را بنویسید..." maxlength="500">
-                <button id="submit-comment-btn" onclick="postComment()" class="comment-submit-btn">
+                <button id="submit-comment-btn" onclick="postComment()" class="comment-submit-btn" aria-label="ارسال نظر">
                     <span class="material-symbols-outlined text-lg">send</span>
                 </button>
             </div>
-            
+
             <!-- شمارنده کاراکتر -->
             <div class="flex justify-start px-2">
                 <span id="char-count" class="text-[10px] text-gray-500">۰/۵۰۰</span>
@@ -51,5 +46,3 @@
     </div>
 </div>
     <!-- Overlay -->
-
-

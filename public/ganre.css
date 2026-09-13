@@ -11,33 +11,25 @@
             height: 60px;
             position: relative;
             display: flex;
-            border-bottom: 1px;
-            border-style: solid;
-            border-color: #e5e7eb;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             justify-content: space-between;
             align-items: center;
         }
-        .header_inner:after{
-            clear:both;
-            content:"";
-            display:block
-        }
         .logo{
-            float:left;
             height:42px;
             width: 44px;
             margin-left: 8px;
         }
-                
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+
         .glass-card {
             background: rgba(26, 26, 26, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
+
         .neon-glow {
             box-shadow: 0 0 15px rgba(0, 220, 100, 0.2);
         }
@@ -52,4 +44,159 @@
             height: 4px;
             background-color: #43f97d;
             border-radius: 9999px;
+        }
+
+        /* --- عنوان ردیف‌ها: یک خط قرمز کوچیک کنار عنوان به‌جای دکوراسیون اضافه --- */
+        .row-accent {
+            width: 4px;
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #DC2626, #7f0d0d);
+            display: inline-block;
+        }
+
+        /* --- کارت‌های کاروسل (بهترین در اکشن/رمانتیک) --- */
+        .poster-card {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .poster-card:active {
+            transform: scale(0.96);
+        }
+        .poster-frame {
+            position: relative;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .poster-rank {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            color: #ff8a8a;
+            font-weight: 800;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .poster-score {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- کارت‌های شبکه‌ی «همه ژانرها» --- */
+        .genre-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px 12px;
+            border-radius: 14px;
+            background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .genre-card:hover {
+            border-color: rgba(220, 38, 38, 0.4);
+            background: linear-gradient(155deg, rgba(220, 38, 38, 0.14), rgba(255, 255, 255, 0.02));
+        }
+        .genre-card:active {
+            transform: scale(0.96);
+        }
+        .genre-card .genre-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(220, 38, 38, 0.12);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .genre-card:hover .genre-icon-badge {
+            background: rgba(220, 38, 38, 0.22);
+            transform: scale(1.08);
+        }
+        .genre-card .genre-icon-badge .material-symbols-outlined {
+            font-size: 22px;
+            color: #ff6767;
+        }
+        .genre-card .genre-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e2e2;
+            text-align: center;
+        }
+
+        /* --- اسکلتون بارگذاری برای کاروسل‌ها و شبکه‌ی ژانرها --- */
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+            background: #1b1b1b;
+        }
+        .shimmer::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+            animation: shimmerMove 1.4s infinite;
+        }
+        @keyframes shimmerMove {
+            100% { transform: translateX(100%); }
+        }
+        .skeleton-poster {
+            flex: none;
+            width: 160px;
+        }
+        .skeleton-poster .shimmer {
+            aspect-ratio: 3 / 4;
+            border-radius: 0.5rem;
+            margin-bottom: 8px;
+        }
+        .skeleton-line {
+            height: 10px;
+            border-radius: 4px;
+        }
+        .skeleton-genre-card {
+            height: 104px;
+            border-radius: 14px;
+        }
+
+        .empty-row-state {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #7a7a7a;
+            font-size: 13px;
+            padding: 18px 4px;
+        }
+        .empty-row-state .material-symbols-outlined {
+            font-size: 20px;
+            opacity: 0.6;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .shimmer::after, .poster-card, .genre-card {
+                animation: none !important;
+                transition: none !important;
+            }
         }

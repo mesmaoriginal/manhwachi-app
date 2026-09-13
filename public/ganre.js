@@ -118,17 +118,19 @@
         "Fantasy": "auto_awesome",
         "Action": "swords",
         "Adventure": "explore",
-        "Comedy": "comedy_mask",
+        "Comedy": "theater_comedy",
         "Drama": "heart_broken",
-        "Mystery": "mystery",
+        "Mystery": "help",
         "Horror": "skull",
-        "Sci-Fi": "auto_awesome",
+        "Sci-Fi": "rocket_launch",
         "Psychological": "psychology",
         "Sports": "sports_kabaddi",
         "Historical": "history",
         "School Life": "school",
         "Romance": "favorite",
-        "Martial Arts": "swords"
+        "Martial Arts": "sports_martial_arts",
+        "Dark Fantasy": "dark_mode",
+        "Thriller": "bolt"
     };
 
     let itemsList = []; 
@@ -155,10 +157,22 @@
 
     // لود کردن مانهواهای یک ژانر خاص با فیلتر زبان فارسی
     async function loadGenreRow(genreInEnglish, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
         const allItems = await loadLocalData();
-        
+
         // پیدا کردن معادل فارسی ژانر برای سرچ در جیسون
         const genreInPersian = genreTranslation[genreInEnglish] || genreInEnglish;
+
+        if (allItems.length === 0) {
+            container.innerHTML = `
+                <div class="empty-row-state">
+                    <span class="material-symbols-outlined">wifi_off</span>
+                    <span>مشکلی در دریافت اطلاعات پیش اومد.</span>
+                </div>`;
+            return;
+        }
 
         // فیلتر کردن و مرتب‌سازی بر اساس امتیاز (score)
         const filteredData = allItems
@@ -166,27 +180,30 @@
             .sort((a, b) => parseFloat(b.score || 0) - parseFloat(a.score || 0))
             .slice(0, 5);
 
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
         if (filteredData.length === 0) {
-            container.innerHTML = `<p class="text-on-surface-variant text-sm">محتوایی یافت نشد.</p>`;
+            container.innerHTML = `
+                <div class="empty-row-state">
+                    <span class="material-symbols-outlined">search_off</span>
+                    <span>فعلاً محتوایی در این ژانر ثبت نشده.</span>
+                </div>`;
             return;
         }
 
-        container.innerHTML = filteredData.map(m => {
-            
+        container.innerHTML = filteredData.map((m, index) => {
+            const fallbackCover = `https://ui-avatars.com/api/?name=${encodeURIComponent((m.title_fa || m.title_en || 'م').charAt(0))}&background=1b1b1b&color=DC2626&bold=true&size=256`;
+
             return `
-            <a href="https://manhwachi.ir/comic/${m.slug}" class="flex-none w-40 snap-start">
-                <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-2">
-                    <img src="manhwas/${m.slug}/${m.cover_image}" class="w-full h-full object-cover" loading="lazy" alt="${m.title_fa}">
+            <a href="https://manhwachi.ir/comic/${m.slug}" class="poster-card flex-none w-40 snap-start">
+                <div class="poster-frame relative aspect-[3/4] rounded-lg overflow-hidden mb-2">
+                    <img src="manhwas/${m.slug}/${m.cover_image}" class="w-full h-full object-cover"
+                         loading="lazy" alt="${m.title_fa || m.title_en}"
+                         onerror="this.onerror=null;this.src='${fallbackCover}';this.classList.add('object-contain','p-6')">
+                    <span class="poster-rank">${index + 1}</span>
+                    <span class="poster-score">⭐ ${m.score || 'N/A'}</span>
                 </div>
                 <h4 class="font-title-md text-sm line-clamp-1 text-white">
                     ${m.title_fa || m.title_en}
                 </h4>
-                <p class="text-on-surface-variant text-xs">
-                    ⭐ ${m.score || 'N/A'}
-                </p>
             </a>
             `;
         }).join("");
@@ -195,8 +212,10 @@
     // لود کردن تمامی ژانرهای موجود به صورت خودکار
     async function loadGenres() {
         const allItems = await loadLocalData();
-        const genresSet = new Set();
+        const container = document.getElementById("genres-grid");
+        if (!container) return;
 
+        const genresSet = new Set();
         allItems.forEach(m => {
             if (m.genres && Array.isArray(m.genres)) {
                 m.genres.forEach(g => genresSet.add(g));
@@ -204,8 +223,15 @@
         });
 
         const genres = [...genresSet].sort();
-        const container = document.getElementById("genres-grid");
-        if (!container) return;
+
+        if (genres.length === 0) {
+            container.innerHTML = `
+                <div class="empty-row-state col-span-full">
+                    <span class="material-symbols-outlined">wifi_off</span>
+                    <span>لیست ژانرها در دسترس نیست.</span>
+                </div>`;
+            return;
+        }
 
         container.innerHTML = genres.map(g => {
             // پیدا کردن معادل انگلیسی برای آیکون‌ها و لینک‌ها
@@ -213,19 +239,11 @@
             const icon = genreIcons[englishGenre] || "category";
 
             return `
-            <a href="genre-page.html?genre=${encodeURIComponent(g)}" 
-               class="flex flex-col items-center justify-center p-stack-md 
-                      bg-surface-container-high rounded-lg 
-                      hover:bg-surface-bright transition-colors group">
-
-                <span class="material-symbols-outlined text-primary mb-2 
-                             group-hover:scale-110 transition-transform">
-                    ${icon}
+            <a href="genre-page.html?genre=${encodeURIComponent(g)}" class="genre-card">
+                <span class="genre-icon-badge">
+                    <span class="material-symbols-outlined">${icon}</span>
                 </span>
-
-                <span class="font-label-caps text-on-surface text-center text-xs">
-                    ${g}
-                </span>
+                <span class="genre-name">${g}</span>
             </a>
             `;
         }).join("");
@@ -233,12 +251,13 @@
 
     async function init() {
         await loadLocalData();
-        
-        // فراخوانی با کلیدهای انگلیسی (که در کدهای بالا به فارسی ترجمه می‌شوند)
-        await loadGenreRow("Romance", "Romance-container");
-        await loadGenreRow("Action", "action-container");
-        
-        await loadGenres();
+
+        // اجرای هم‌زمان لود ردیف‌ها به‌جای پشت‌سرهم، برای نمایش سریع‌تر صفحه
+        await Promise.all([
+            loadGenreRow("Romance", "Romance-container"),
+            loadGenreRow("Action", "action-container"),
+            loadGenres()
+        ]);
     }
 
     init();

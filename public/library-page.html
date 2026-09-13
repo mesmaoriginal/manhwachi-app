@@ -54,6 +54,23 @@
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .library-count {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .library-count strong {
+            color: var(--primary-gold);
+            font-weight: 700;
+        }
+
         /* دکمه بازگشت هدر */
         .back-button {
             display: flex;
@@ -66,6 +83,9 @@
             padding: 10px 20px;
             border-radius: 12px;
             color: var(--text-light);
+            font: inherit;
+            appearance: none;
+            -webkit-appearance: none;
             text-decoration: none;
             font-size: 0.9rem;
             font-weight: 600;
@@ -143,6 +163,37 @@
             object-fit: cover;
             display: block;
             transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* کارت اسکلتون هنگام بارگذاری اولیه */
+        .skeleton-card {
+            position: relative;
+            aspect-ratio: 2 / 3;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--card-bg);
+        }
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+            animation: shimmerMove 1.5s infinite;
+        }
+        @keyframes shimmerMove {
+            100% { transform: translateX(100%); }
+        }
+
+        .pagination-ellipsis {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            user-select: none;
         }
 
         .manhwa-card:hover:not(.preview-mode) .card-cover {
@@ -378,6 +429,15 @@
         }
 
         /* مدیا کوئری‌ها */
+        @media (min-width: 1300px) {
+            .manhwa-grid, .header-section, .pagination-container {
+                max-width: 1320px;
+            }
+            .manhwa-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
         @media (max-width: 960px) {
             .header-section { padding: 0 10px; }
             .manhwa-grid {
@@ -421,18 +481,27 @@
             .pagination-container { gap: 5px; padding: 8px 12px; margin-bottom: 40px;}
             .pagination-btn { min-width: 32px; height: 32px; font-size: 0.8rem; border-radius: 8px;}
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            .manhwa-card, .skeleton-card::after, .click-again-hint, .progress-bar {
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="header-section">
-        <h2>📖 کتابخانه مانهواچی</h2>
-        <a class="back-button" onclick="goBack()">
+        <div class="header-titles">
+            <h2>📖 کتابخانه مانهواچی</h2>
+            <span class="library-count" id="libraryCount"></span>
+        </div>
+        <button class="back-button" onclick="goBack()">
             <span>بازگشت</span>
             <svg viewBox="0 0 24 24">
                 <path d="M5 12h14M5 12l6 6M5 12l6-6"/>
             </svg>
-        </a>
+        </button>
     </div>
 
     <!-- گرید مانهواها -->
@@ -444,6 +513,7 @@
     <script>
         const grid = document.getElementById('manhwaGrid');
         const pagination = document.getElementById('pagination');
+        const libraryCount = document.getElementById('libraryCount');
 
         let manhwaList = [];      // لیست کامل مانهواها
         let currentPage = 1;      // صفحه پیش‌فرض
@@ -457,9 +527,20 @@
             }
         }
 
+        function renderSkeleton(count) {
+            grid.innerHTML = Array.from({ length: count }, () => `<div class="skeleton-card"></div>`).join('');
+        }
+
+        function defaultCover(title) {
+            const initial = (title || 'م').trim().charAt(0).toUpperCase();
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=141414&color=FFD54F&bold=true&size=300`;
+        }
+
         async function loadManhwas() {
+            renderSkeleton(LIMIT);
             try {
                 const response = await fetch('data/data.json');
+                if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
                 // تبدیل آبجکت به آرایه
@@ -467,6 +548,10 @@
                     slug: slug,
                     ...data[slug]
                 }));
+
+                if (libraryCount) {
+                    libraryCount.innerHTML = `<strong>${manhwaList.length.toLocaleString('fa-IR')}</strong> مانهوا در کتابخانه`;
+                }
 
                 // رندر کردن صفحه اول
                 renderPage(1);
@@ -504,18 +589,20 @@
 
         // تابع تولید کدهای HTML کارت مانهوا
         function createCardHTML(slug, manhwa) {
+            const title = manhwa.title_fa || manhwa.title_en || 'بدون عنوان';
             const firstGenre = manhwa.genres && manhwa.genres.length > 0 ? manhwa.genres[0] : 'نامشخص';
+            const origin = manhwa.origin || 'نامشخص';
             const description = manhwa.description ? manhwa.description.trim() : 'توضیحاتی برای این مانهوا ثبت نشده است.';
 
             return `
                 <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${slug}">
-                    <img src="manhwas/${slug}/${manhwa.cover_image}" alt="${manhwa.title_fa}" class="card-cover" onerror="this.src='https://picsum.photos/400/600?random=${slug}'">
+                    <img src="manhwas/${slug}/${manhwa.cover_image}" alt="${title}" class="card-cover" onerror="this.onerror=null;this.src='${defaultCover(title)}';this.style.objectFit='contain';this.style.padding='30px'">
                     
-                    <div class="card-ui manhwa-title">${manhwa.title_fa}</div>
+                    <div class="card-ui manhwa-title">${title}</div>
                     
                     <div class="card-ui bottom-info">
                         <span class="genre">${firstGenre}</span>
-                        <span class="origin">${manhwa.origin}</span>
+                        <span class="origin">${origin}</span>
                     </div>
                     <div class="card-ui rating">⭐ ${manhwa.score || '0.0'}</div>
 
@@ -551,13 +638,17 @@
                 </button>
             `);
 
-            // دکمه صفحات عددی
-            for (let i = 1; i <= totalPages; i++) {
-                const activeClass = currentPage === i ? 'active' : '';
-                pagination.insertAdjacentHTML('beforeend', `
-                    <button class="pagination-btn ${activeClass}" onclick="renderPage(${i})">${i}</button>
-                `);
-            }
+            // دکمه‌های عددی، با بریدن صفحات میانی وقتی تعدادشان زیاد است
+            getPageList(currentPage, totalPages).forEach(item => {
+                if (item === '...') {
+                    pagination.insertAdjacentHTML('beforeend', `<span class="pagination-ellipsis">…</span>`);
+                } else {
+                    const activeClass = currentPage === item ? 'active' : '';
+                    pagination.insertAdjacentHTML('beforeend', `
+                        <button class="pagination-btn ${activeClass}" onclick="renderPage(${item})">${item}</button>
+                    `);
+                }
+            });
 
             // دکمه صفحه بعدی (بعدی)
             const nextDisabled = currentPage === totalPages ? 'disabled' : '';
@@ -566,6 +657,25 @@
                     <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
             `);
+        }
+
+        // فهرست شماره صفحاتی که باید نشان داده شوند (با ... برای صفحات زیاد)
+        function getPageList(current, total) {
+            const delta = 1;
+            const range = [];
+            for (let i = 1; i <= total; i++) {
+                if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+                    range.push(i);
+                }
+            }
+            const withDots = [];
+            let prev = 0;
+            range.forEach(i => {
+                if (prev && i - prev > 1) withDots.push('...');
+                withDots.push(i);
+                prev = i;
+            });
+            return withDots;
         }
 
         function setupCardEvents() {
