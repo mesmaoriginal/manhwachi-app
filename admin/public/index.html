@@ -337,6 +337,38 @@ async function api(url, opts) {
   return data;
 }
 
+// برای آپلود فایل (FormData) - نباید Content-Type دستی ست بشه، چون
+// خودِ مرورگر باید boundary مخصوص multipart رو بسازه.
+async function apiUpload(url, formData) {
+  const res = await fetch(url, { method: 'POST', body: formData });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'خطای ناشناخته');
+  return data;
+}
+
+// مرتب‌سازی طبیعی اسم فایل‌ها (page2.jpg قبل از page10.jpg بیاد) - دقیقاً
+// همون منطقی که سرور برای مرتب‌سازی عکس‌های چپتر استفاده می‌کنه، اینجا هم
+// استفاده می‌شه تا ترتیب صفحات قبل از آپلود درست باشه، مستقل از اینکه
+// مرورگر فایل‌های انتخاب‌شده رو با چه ترتیبی برگردونده.
+function naturalCompareNames(a, b) {
+  const splitParts = (str) => str.match(/(\d+|\D+)/g) || [];
+  const partsA = splitParts(a);
+  const partsB = splitParts(b);
+  const len = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < len; i++) {
+    const pa = partsA[i] ?? '';
+    const pb = partsB[i] ?? '';
+    const numA = /^\d+$/.test(pa) ? parseInt(pa, 10) : null;
+    const numB = /^\d+$/.test(pb) ? parseInt(pb, 10) : null;
+    if (numA !== null && numB !== null) {
+      if (numA !== numB) return numA - numB;
+    } else if (pa !== pb) {
+      return pa < pb ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -445,7 +477,15 @@ async function openDetail(slug) {
           <option value="false" ${!ep.free ? 'selected' : ''}>VIP</option>
         </select>
       </td>
-      <td class="actions-cell" data-label=""><button class="danger" onclick="deleteEpisode('${slug}', ${ep.num})">🗑️ حذف</button></td>
+      <td class="actions-cell" data-label="">
+        <div class="btn-group">
+          <label class="btn" style="cursor:pointer;" title="آپلود/جایگزینی تصویر بندانگشتی این چپتر">
+            🖼️ کاور
+            <input type="file" accept="image/*" style="display:none" onchange="uploadEpisodeCover('${slug}', ${ep.num}, this)" />
+          </label>
+          <button class="danger" onclick="deleteEpisode('${slug}', ${ep.num})">🗑️ حذف</button>
+        </div>
+      </td>
     </tr>
   `).join('');
 
@@ -468,8 +508,32 @@ async function openDetail(slug) {
         <tbody>${episodesRows || '<tr><td class="empty-row" colspan="4">هنوز چپتری ثبت نشده.</td></tr>'}</tbody>
       </table>
 
+      <details open>
+        <summary>📤 آپلود مستقیم عکس‌های چپتر (به‌جای آپلود دستی روی S3)</summary>
+        <div class="inner">
+          <div class="grid cols-2">
+            <div class="field"><label>شماره چپتر (خالی = بعدی)</label><input id="u_num_${slug}" type="number" /></div>
+            <div class="field"><label>تاریخ (شمسی، خالی = امروز)</label><input id="u_date_${slug}" placeholder="1405/06/15" /></div>
+          </div>
+          <div class="field checkbox-field">
+            <input type="checkbox" id="u_free_${slug}" checked />
+            <label for="u_free_${slug}">رایگان</label>
+          </div>
+          <div class="field">
+            <label>عکس‌های صفحات چپتر (چندتایی - قبل از آپلود بر اساس اسم فایل مرتب می‌شن)</label>
+            <input id="u_pages_${slug}" type="file" accept="image/*" multiple />
+          </div>
+          <div class="field">
+            <label>تصویر بندانگشتی چپتر (اختیاری - همون کاور کوچیک لیست اپیزودها)</label>
+            <input id="u_cover_${slug}" type="file" accept="image/*" />
+          </div>
+          <button class="primary" onclick="uploadNewEpisode('${slug}')">آپلود و ثبت چپتر</button>
+          <div id="u_status_${slug}" style="margin-top:8px;"></div>
+        </div>
+      </details>
+
       <details>
-        <summary>افزودن چپتر با شماره و تاریخ دلخواه</summary>
+        <summary>افزودن چپتر با شماره و تاریخ دلخواه (بدون آپلود عکس - فقط وقتی عکس‌ها از قبل رو S3 هستن)</summary>
         <div class="inner">
           <div class="grid cols-2">
             <div class="field"><label>شماره چپتر</label><input id="e_num_${slug}" type="number" /></div>
@@ -529,6 +593,61 @@ async function manualAddEpisode(slug) {
     openDetail(slug);
     loadList();
   } catch (err) { showMsg($('detailMsg'), err.message, false); }
+}
+
+async function uploadNewEpisode(slug) {
+  const statusBox = $(`u_status_${slug}`);
+  const pagesInput = $(`u_pages_${slug}`);
+  const files = Array.from(pagesInput.files || []).sort((a, b) => naturalCompareNames(a.name, b.name));
+
+  if (!files.length) {
+    showMsg(statusBox, 'حداقل یک عکس برای صفحات چپتر انتخاب کن.', false);
+    return;
+  }
+
+  const num = $(`u_num_${slug}`).value;
+  const date = $(`u_date_${slug}`).value;
+  const free = $(`u_free_${slug}`).checked;
+
+  const fd = new FormData();
+  if (num) fd.append('num', num);
+  if (date) fd.append('date', date);
+  fd.append('free', free ? 'true' : 'false');
+  files.forEach((f) => fd.append('pages', f, f.name));
+
+  statusBox.innerHTML = `<div class="msg ok">در حال پردازش و آپلود ${files.length} تصویر... ممکنه چند ده ثانیه طول بکشه، صفحه رو نبند.</div>`;
+
+  try {
+    const r = await apiUpload(`/admin/api/manga/${encodeURIComponent(slug)}/episodes/upload`, fd);
+
+    const coverInput = $(`u_cover_${slug}`);
+    if (coverInput.files && coverInput.files[0]) {
+      const fd2 = new FormData();
+      fd2.append('cover', coverInput.files[0]);
+      await apiUpload(`/admin/api/manga/${encodeURIComponent(slug)}/episodes/${r.num}/cover-image`, fd2);
+    }
+
+    showMsg($('detailMsg'), `چپتر ${r.num} با ${r.imageCount} صفحه ثبت شد.`, true);
+    openDetail(slug);
+    loadList();
+  } catch (err) {
+    showMsg(statusBox, err.message, false);
+  }
+}
+
+async function uploadEpisodeCover(slug, num, inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('cover', file);
+  try {
+    await apiUpload(`/admin/api/manga/${encodeURIComponent(slug)}/episodes/${num}/cover-image`, fd);
+    showMsg($('detailMsg'), `کاور چپتر ${num} به‌روزرسانی شد.`, true);
+  } catch (err) {
+    showMsg($('detailMsg'), err.message, false);
+  } finally {
+    inputEl.value = '';
+  }
 }
 
 async function editEpisode(slug, num, patch) {
