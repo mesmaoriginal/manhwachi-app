@@ -141,6 +141,10 @@ const PLAN_DEFS = {
   quarterly: { amount: 1500000, months: 3 },
 };
 
+// پنجره‌ی جلوگیری از ساخت پرداخت تکراری برای همون کاربر/پلن (بخش
+// /purchase/request پایین‌تر توضیح داده شده).
+const PURCHASE_DEDUPE_WINDOW_MS = 2 * 60 * 1000; // ۲ دقیقه
+
 function supabaseAdminHeaders(extra = {}) {
   return {
     apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -237,6 +241,28 @@ app.post("/purchase/request", async (req, res) => {
     const user = await getUserFromAccessToken(accessToken);
     if (!user || !user.id) {
       return res.status(401).json({ message: "نشست کاربری نامعتبر است. دوباره وارد شوید." });
+    }
+
+    // 💡 جلوگیری از خرید تکراری تصادفی: اگه کاربر همین چند لحظه پیش برای
+    // همین پلن یک پرداخت pending ساخته (مثلاً چند بار دکمه‌ی خرید رو زده،
+    // یا صفحه رو رفرش کرده و دوباره فرم رو فرستاده)، به‌جای ساختن یک
+    // درخواست جدید به زیبال (که یعنی اگه هر دو رو پرداخت کنه دو بار پول
+    // می‌ده)، همون trackId قبلی رو برمی‌گردونیم تا کاربر به همون درگاهِ
+    // در حال انتظار برگرده. این فقط پنجره‌ی PURCHASE_DEDUPE_WINDOW_MS رو
+    // پوشش می‌ده - پرداخت‌های pending قدیمی‌تر (که واقعاً منصرف شده یا
+    // گیر کرده) دوباره امکان خرید جدید رو می‌دن.
+    const dedupeSinceIso = new Date(Date.now() - PURCHASE_DEDUPE_WINDOW_MS).toISOString();
+    const recentPendingRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/payments?user_id=eq.${user.id}&plan_key=eq.${encodeURIComponent(
+        planKey
+      )}&status=eq.pending&created_at=gte.${encodeURIComponent(dedupeSinceIso)}&select=track_id&order=created_at.desc&limit=1`,
+      { headers: supabaseAdminHeaders() }
+    );
+    if (recentPendingRes.ok) {
+      const recentPendingRows = await recentPendingRes.json();
+      if (recentPendingRows[0]?.track_id) {
+        return res.json({ trackId: recentPendingRows[0].track_id, reused: true });
+      }
     }
 
     const orderId = require("crypto").randomUUID();
@@ -512,9 +538,37 @@ app.post("/purchase/verify", async (req, res) => {
 // RECONCILE_MAX_AGE_MS هم جلوی این رو می‌گیره که هر بار کل تاریخچه‌ی
 // پرداخت‌های رهاشده‌ی قدیمی (که واقعاً هیچ‌وقت پرداخت نشدن) رو دوباره
 // و دوباره از زیبال استعلام بگیریم.
-const RECONCILE_INTERVAL_MS = 5 * 60 * 1000; // هر ۵ دقیقه
-const RECONCILE_MIN_AGE_MS = 3 * 60 * 1000; // حداقل ۳ دقیقه از ساخته‌شدنش گذشته باشه
+// ⏱️ کاهش دادیم (از ۵ دقیقه/۳ دقیقه) تا حداکثر فاصله‌ی «پرداخت موفق ولی
+// هنوز VIP فعال نشده» برای کاربری که مرورگرش به verify نرسیده، از حدود
+// ۸ دقیقه به حدود ۳.۵ دقیقه برسه.
+const RECONCILE_INTERVAL_MS = 2 * 60 * 1000; // هر ۲ دقیقه
+const RECONCILE_MIN_AGE_MS = 90 * 1000; // حداقل ۹۰ ثانیه از ساخته‌شدنش گذشته باشه
 const RECONCILE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000; // حداکثر تا ۳ روز قبل
+
+// ---------- هشدار برای شکست‌های پیاپی reconciler ----------
+// اگه reconcilePendingPayments چند دور پشت‌سرهم کامل fail بشه (مثلاً
+// Supabase یا زیبال قطعه)، یعنی پرداخت‌های pending دارن انباشته می‌شن و
+// کاربرها دارن پول می‌دن بدون این‌که VIP بگیرن - این باید فوراً دیده بشه،
+// نه اینکه فقط توی لاگ گم بشه. اگه ALERT_WEBHOOK_URL ست شده باشه (مثلاً
+// یک Telegram bot webhook یا هر endpoint دیگه)، بهش POST می‌زنیم؛ وگرنه
+// حداقل یک لاگ خیلی برجسته می‌ذاریم.
+const ALERT_WEBHOOK_URL = process.env.ALERT_WEBHOOK_URL || "";
+const RECONCILE_FAILURE_ALERT_THRESHOLD = 3; // بعد از ۳ شکست پیاپی هشدار بده
+let reconcileConsecutiveFailures = 0;
+
+async function sendOpsAlert(message) {
+  console.error(`🚨🚨🚨 [ALERT] ${message}`);
+  if (!ALERT_WEBHOOK_URL) return;
+  try {
+    await fetch(ALERT_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: `[مانهواچی] ${message}` }),
+    });
+  } catch (alertErr) {
+    console.error("sendOpsAlert: ارسال هشدار هم ناموفق بود", alertErr);
+  }
+}
 
 async function reconcilePendingPayments() {
   try {
@@ -529,9 +583,18 @@ async function reconcilePendingPayments() {
       { headers: supabaseAdminHeaders() }
     );
     if (!pendingRes.ok) {
+      reconcileConsecutiveFailures++;
       console.error("reconcilePendingPayments: خطا در خواندن پرداخت‌های pending", await pendingRes.text());
+      if (reconcileConsecutiveFailures >= RECONCILE_FAILURE_ALERT_THRESHOLD) {
+        await sendOpsAlert(
+          `reconcilePendingPayments نتونست ${reconcileConsecutiveFailures} بار پشت‌سرهم پرداخت‌های pending رو از Supabase بخونه. پرداخت‌های کاربرها ممکنه اعمال نشن.`
+        );
+      }
       return;
     }
+    // خوندن موفق بود - شمارنده‌ی شکست رو صفر کن.
+    reconcileConsecutiveFailures = 0;
+
     const pendingRows = await pendingRes.json();
     if (!pendingRows.length) return;
 
@@ -547,7 +610,13 @@ async function reconcilePendingPayments() {
       }
     }
   } catch (err) {
+    reconcileConsecutiveFailures++;
     console.error("reconcilePendingPayments: خطای کلی", err);
+    if (reconcileConsecutiveFailures >= RECONCILE_FAILURE_ALERT_THRESHOLD) {
+      await sendOpsAlert(
+        `reconcilePendingPayments پشت‌سرهم ${reconcileConsecutiveFailures} بار کامل fail شده (خطای کلی: ${err.message}). پرداخت‌های کاربرها ممکنه اعمال نشن.`
+      );
+    }
   }
 }
 
