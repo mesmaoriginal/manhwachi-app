@@ -9,6 +9,16 @@ const path = require("path");
 const crypto = require("crypto");
 const { readData, updateData } = require("./dataStore");
 const { invalidateChapterCache, listChapterFoldersFromS3, listChapterImageKeys } = require("../lib/chapterCache");
+const {
+  uploadPages,
+  uploadCover,
+  processPageImage,
+  processCoverThumbnail,
+  putObject,
+  pageKey,
+  coverKey,
+  removeTempFile,
+} = require("./imageUpload");
 
 const router = express.Router();
 
@@ -267,6 +277,107 @@ router.post("/api/manga/:slug/episodes", async (req, res) => {
     res.json({ ok: true, num, imageCount: images.length });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ---------- API: آپلود مستقیم عکس‌های صفحات یک چپتر از پنل ادمین ----------
+// جایگزینِ کاملِ آپلود دستی رو S3: ادمین فقط عکس‌ها رو از گوشی/کامپیوترش
+// انتخاب می‌کنه، این endpoint اونا رو (به ترتیبی که فرستاده شدن) پردازش
+// می‌کنه (کوچیک/فشرده اگه لازم بود)، با اسم‌های استاندارد (001.jpg,
+// 002.jpg, ...) رو S3 آپلود می‌کنه، و خودش چپتر رو تو data.json ثبت یا
+// (اگه از قبل بود) لیست images‌ش رو به‌روزرسانی می‌کنه - دقیقاً مثل اینکه
+// از همون endpoint قدیمیِ افزودن چپتر استفاده شده باشه.
+router.post("/api/manga/:slug/episodes/upload", uploadPages, async (req, res) => {
+  const files = req.files || [];
+  try {
+    const { slug } = req.params;
+    let { num, date, free } = req.body || {};
+
+    if (!files.length) {
+      return res.status(400).json({ error: "هیچ تصویری ارسال نشده" });
+    }
+
+    const snapshot = readData();
+    const mSnapshot = snapshot[slug];
+    if (!mSnapshot) throw new Error("مانهوا یافت نشد");
+
+    if (num === undefined || num === null || num === "") {
+      const episodesSnap = Array.isArray(mSnapshot.episodes) ? mSnapshot.episodes : [];
+      const max = episodesSnap.length ? Math.max(...episodesSnap.map((e) => Number(e.num))) : 0;
+      num = max + 1;
+    }
+    num = Number(num);
+    if (Number.isNaN(num)) throw new Error("شماره چپتر نامعتبر است");
+
+    // پردازش و آپلود یکی‌یکی (نه موازی) تا فشار حافظه/CPU سرور روی
+    // چپترهای پرصفحه یک‌جا بالا نره.
+    const keys = [];
+    for (let i = 0; i < files.length; i++) {
+      const processed = await processPageImage(files[i].path);
+      const key = pageKey(slug, num, i);
+      await putObject(key, processed, "image/jpeg");
+      keys.push(key);
+    }
+
+    const freeBool = free === undefined ? true : free === "true" || free === true;
+
+    await updateData((data) => {
+      const m = data[slug];
+      if (!m) throw new Error("مانهوا یافت نشد");
+      if (!Array.isArray(m.episodes)) m.episodes = [];
+
+      const existing = m.episodes.find((e) => Number(e.num) === num);
+      if (existing) {
+        existing.images = keys;
+        if (date) existing.date = date;
+        existing.free = freeBool;
+      } else {
+        m.episodes.push({
+          num,
+          date: date || todayJalaliString(),
+          free: freeBool,
+          images: keys,
+        });
+      }
+      m.episodes.sort((a, b) => Number(b.num) - Number(a.num));
+    });
+
+    invalidateChapterCache(slug, num);
+
+    res.json({ ok: true, num, imageCount: keys.length });
+  } catch (err) {
+    res.status(400).json({ error: "خطا در آپلود چپتر: " + err.message });
+  } finally {
+    await Promise.all(files.map((f) => removeTempFile(f.path)));
+  }
+});
+
+// ---------- API: آپلود تصویر بندانگشتی (کاور) یک چپتر ----------
+// همون تصویری که تو صفحه‌ی مانهوا کنار شماره‌ی هر اپیزود نشون داده می‌شه.
+// نیازی به تغییر data.json نداره - manga.ejs مستقیم از روی الگوی اسم
+// فایل (chapterpicture<شماره>.png) صداش می‌زنه.
+router.post("/api/manga/:slug/episodes/:num/cover-image", uploadCover, async (req, res) => {
+  try {
+    const { slug, num } = req.params;
+    const chapterNum = Number(num);
+    if (Number.isNaN(chapterNum)) {
+      return res.status(400).json({ error: "شماره چپتر نامعتبر است" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "فایلی ارسال نشده" });
+    }
+
+    const data = readData();
+    if (!data[slug]) return res.status(404).json({ error: "مانهوا یافت نشد" });
+
+    const processed = await processCoverThumbnail(req.file.path);
+    await putObject(coverKey(slug, chapterNum), processed, "image/png");
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: "خطا در آپلود تصویر: " + err.message });
+  } finally {
+    if (req.file) await removeTempFile(req.file.path);
   }
 });
 
