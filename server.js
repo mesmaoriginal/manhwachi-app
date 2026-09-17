@@ -79,6 +79,51 @@ app.get("/manhwas/*", async (req, res) => {
   }
 });
 
+// ---------- بخش ۱٫۶: پراکسی کش‌شده‌ی تصاویر چپتر (راه‌حل سریع جای BunnyCDN) ----------
+// این مسیر با route قبلی (/manhwas/*) فرق داره: اون یکی برای عکس‌های
+// عمومی (کاور/تامبنیل) بود که نیازی به چک دسترسی/rate-limit ندارن. این
+// یکی برای تصاویر خودِ چپتره - دسترسی (رایگان/VIP) و rate-limit همچنان
+// توی /api/get-chapter-images چک می‌شن؛ لینکی که از اونجا برمی‌گرده به
+// همین مسیر اشاره می‌کنه، با یک توکنِ زمان‌دار (lib/localImageToken.js)
+// که هم‌سطح امنیتی presigned URL قبلی رو حفظ می‌کنه.
+//
+// چرا این route لازم شد: قبلاً لینک نهایی مستقیم presigned URL پارس‌پک
+// بود - یعنی هر بازدیدکننده برای هر عکس یک GetObject جدا مستقیم به
+// پارس‌پک می‌زد و به‌راحتی سقف نرخ پارس‌پک (۳۰۰/دقیقه) رو رد می‌کرد، حتی
+// وقتی خودِ این کاربر چیزی نخونده بود - چون سقف روی کل باکت شمرده می‌شه،
+// نه به‌ازای هر کاربر. حالا اولین درخواست هر عکس از پارس‌پک خونده و روی
+// دیسک سرور کش می‌شه (lib/imageProxyCache.js)، بقیه‌ی درخواست‌ها برای
+// همون عکس مستقیم از دیسک سرو می‌شن.
+//
+// این راه‌حل موقته - وقتی BunnyCDN کامل راه‌اندازی بشه، chapterCache.js
+// خودکار برمی‌گرده به اون (اولویت اول همیشه Bunyه، این فقط fallback دومه).
+const { getCachedImage } = require("./lib/imageProxyCache");
+const { isValidToken } = require("./lib/localImageToken");
+
+app.get("/chapter-image/:key(*)", async (req, res) => {
+  const { key } = req.params;
+  const { token, expires } = req.query;
+
+  if (!isValidToken(key, expires, token)) {
+    return res.status(403).send("لینک نامعتبر یا منقضی شده است");
+  }
+
+  try {
+    const { buffer, contentType } = await getCachedImage(key);
+    res.set("Content-Type", contentType);
+    // فایل عوض نمی‌شه بدون این‌که کلید (مسیر) عوض بشه، پس کش طولانی‌مدت
+    // سمت مرورگر هم بی‌خطره - شبیه همون /manhwas/* بالا.
+    res.set("Cache-Control", "public, max-age=3600");
+    res.send(buffer);
+  } catch (err) {
+    if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
+      return res.status(404).send("تصویر یافت نشد");
+    }
+    console.error("خطا در گرفتن تصویر از کش/پارس‌پک:", err.message);
+    return res.status(500).send("خطای داخلی سرور");
+  }
+});
+
 // ---------- بخش ۲: صفحه‌ی مانهوا (جایگزین manga.php + آدرس زیبای comic/) ----------
 // نکته‌ی مهم: قبلاً این تابع هر بار data.json رو با fs.readFileSync (synchronous)
 // از دیسک می‌خوند - یعنی هر ریکوئست صفحه‌ی مانهوا، کل event loop رو تا پایان
