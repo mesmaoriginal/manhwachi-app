@@ -59,10 +59,26 @@ const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const { s3 } = require("./lib/chapterCache");
 const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 
+// 🔒 امنیت: این route فقط و فقط برای دو الگوی عمومی مجازه:
+//   ۱) کاور اصلی:      manhwas/<slug>/<file>
+//   ۲) تامبنیل چپتر:   manhwas/<slug>/chapterPictures/<file>
+// هر مسیر دیگه‌ای - مخصوصاً صفحات خودِ چپتر (manhwas/<slug>/CH<n>/srcCH<n>/...)
+// - اینجا سرو نمی‌شه و 404 می‌گیره. قبلاً هر کلیدی زیر manhwas/ بدون هیچ
+// چکی استریم می‌شد؛ یعنی هر کسی با حدس زدن مسیر (که از data.json و الگوی
+// ثابت اسم‌گذاری معلومه) می‌تونست صفحات VIP رو مستقیم و بدون توکن،
+// بدون لاگین و بدون rate-limit بگیره. صفحات چپتر فقط از /chapter-image با
+// توکن زمان‌دار (که خروجی /api/get-chapter-images هست) در دسترسن.
+const PUBLIC_MANHWA_PATH_RE =
+  /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif|svg)$/i;
+
 app.get("/manhwas/*", async (req, res) => {
   // req.params[0] یعنی همه‌چیز بعد از "/manhwas/" (مثلاً "<slug>/cover.jpg"
   // یا "<slug>/chapterPictures/chapterpicture12.png")
-  const key = `manhwas/${req.params[0]}`;
+  const rest = req.params[0] || "";
+  if (rest.includes("..") || rest.includes("\\") || !PUBLIC_MANHWA_PATH_RE.test(rest)) {
+    return res.status(404).send("تصویر یافت نشد");
+  }
+  const key = `manhwas/${rest}`;
   try {
     const obj = await s3.send(new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key }));
     res.set("Content-Type", obj.ContentType || "application/octet-stream");
@@ -729,25 +745,62 @@ function parseCookies(req) {
   return out;
 }
 
-// اگه کاربر از قبل کوکی معتبر داشته باشه همونو برمی‌گردونه، وگرنه یکی
-// جدید می‌سازه و ست می‌کنه. توجه: اگه مرورگر کاربر کوکی رو ذخیره نکنه
-// (بلاک شده یا حالت خصوصی)، هر ریکوئست یک guestId جدید می‌گیره - یعنی
-// عملاً از سقفِ per-guest فرار می‌کنه؛ دقیقاً به همین دلیل توی
-// chapterRateLimit.js یک سقفِ نرم‌ترِ ثانویه هم روی IP نگه داشته می‌شه.
+// کوکی guestId حالا امضا (HMAC) داره: مقدارش "<uuid>.<signature>" ه و فقط
+// وقتی معتبر حساب می‌شه که امضاش با GUEST_COOKIE_SECRET بخونه. قبلاً فقط
+// فرمت UUID چک می‌شد، پس یک بات می‌تونست هر بار یک UUID تصادفی بفرسته و
+// سقف per-guest رو کاملاً دور بزنه.
+//
+// خروجی: { guestId, isNew }
+//   isNew=false -> کاربر کوکی معتبر داره؛ فقط با guestId خودش سنجیده می‌شه
+//                  (و به سقف IP مشترکِ CGNAT دست نمی‌خوره).
+//   isNew=true  -> کوکی نداشته/نامعتبر/جعلی بوده؛ یکی جدید ست می‌شه و این
+//                  درخواست به سقف «بدون کوکی» روی IP شمرده می‌شه - همون
+//                  چیزی که یک بات کوکی‌دور رو محدود می‌کنه.
+//
+// GUEST_COOKIE_SECRET رو تو .env ثابت کنید (openssl rand -hex 32)، وگرنه با
+// هر ری‌استارت همه‌ی کوکی‌های قبلی نامعتبر می‌شن (فقط یک‌بار کوکی جدید می‌گیرن).
+const GUEST_SECRET =
+  process.env.GUEST_COOKIE_SECRET || crypto.randomBytes(32).toString("hex");
+if (!process.env.GUEST_COOKIE_SECRET) {
+  console.warn(
+    "[guestId] GUEST_COOKIE_SECRET در .env تنظیم نشده - یک مقدار موقت ساخته شد؛ با هر ری‌استارت، کوکی‌های مهمان‌ها نامعتبر می‌شن."
+  );
+}
+
+function signGuestId(id) {
+  return crypto
+    .createHmac("sha256", GUEST_SECRET)
+    .update(id)
+    .digest("base64url")
+    .slice(0, 22);
+}
+
+function readGuestId(req) {
+  const raw = parseCookies(req)[GUEST_COOKIE_NAME];
+  if (!raw) return null;
+  const dot = raw.lastIndexOf(".");
+  if (dot === -1) return null;
+  const id = raw.slice(0, dot);
+  if (!GUEST_ID_RE.test(id)) return null;
+  const a = Buffer.from(raw.slice(dot + 1));
+  const b = Buffer.from(signGuestId(id));
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  return id;
+}
+
 function getOrSetGuestId(req, res) {
-  const cookies = parseCookies(req);
-  let guestId = cookies[GUEST_COOKIE_NAME];
-  if (!guestId || !GUEST_ID_RE.test(guestId)) {
-    guestId = crypto.randomUUID();
-    res.cookie(GUEST_COOKIE_NAME, guestId, {
-      maxAge: GUEST_COOKIE_MAX_AGE_MS,
-      httpOnly: true,
-      sameSite: "lax",
-      secure: req.secure,
-      path: "/",
-    });
-  }
-  return guestId;
+  const existing = readGuestId(req);
+  if (existing) return { guestId: existing, isNew: false };
+
+  const guestId = crypto.randomUUID();
+  res.cookie(GUEST_COOKIE_NAME, `${guestId}.${signGuestId(guestId)}`, {
+    maxAge: GUEST_COOKIE_MAX_AGE_MS,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: req.secure,
+    path: "/",
+  });
+  return { guestId, isNew: true };
 }
 
 // خواندن اطلاعات یک چپتر مشخص از روی slug و شماره چپتر - از همون کش
@@ -784,9 +837,22 @@ if (chapterNum !== undefined && chapterNum !== null) {
     // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده - ولی همچنان از نظر IP
     // محدود می‌کنیم، وگرنه چپترهای رایگان بی‌هیچ محدودیتی قابل اسکرپ می‌مونن.
     if (episode.free) {
-      const guestId = getOrSetGuestId(req, res);
-      const rl = checkAndRecordGuestChapterRequest(guestId, req.ip);
+      const { guestId, isNew } = getOrSetGuestId(req, res);
+      const rl = checkAndRecordGuestChapterRequest(guestId, req.ip, isNew);
       if (!rl.allowed) {
+        // لاگ تشخیصی: نشون می‌ده 429 از سقف کدوم سطل (guest یا ip) اومده و
+        // آیا req.ip واقعاً IP کاربره (ips / xff رو با هم مقایسه کن). اگه
+        // ip همیشه 127.0.0.1 یا IP یک CDN بود، trust proxy/Nginx غلطه.
+        console.warn("[RL-429]", {
+          bucket: rl.bucket,
+          reason: rl.reason,
+          ip: req.ip,
+          ips: req.ips,
+          xff: req.headers["x-forwarded-for"],
+          ua: (req.headers["user-agent"] || "").slice(0, 60),
+          slug,
+          chapterNum,
+        });
         res.setHeader("Retry-After", String(rl.retryAfterSeconds));
         return res.status(429).json({
           error:
