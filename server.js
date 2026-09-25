@@ -6,6 +6,7 @@
 // ۴) تصاویر چپتر با signed URL موقت از باکت پارس‌پک، با کش برای جلوگیری از 429
 
 const express = require("express");
+const helmet = require('helmet');
 const compression = require("compression");
 const path = require("path");
 const app = express();
@@ -24,11 +25,46 @@ const app = express();
 // => قبل از deploy مطمئن شید توپولوژی واقعی سرورتون چیه و همین مطابقش تنظیم کنید.
 app.set("trust proxy", 1);
 
+
+// فعال‌سازی Helmet و تنظیم هدرهای امنیتی از جمله CSP
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'", // برای اجرای اسکریپت‌های داخلی EJS/HTML
+          "https://cdn.jsdelivr.net", // اگر از CDN خاصی استفاده می‌کنید اینجا اضافه کنید
+          "https://code.jquery.com",
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://cdn.jsdelivr.net",
+        ],
+        imgSrc: ["'self'", "data:", "https:"], // اجازه بارگذاری تصاویر از لینک‌ها یا CDN
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'", "https://*.supabase.co"], // اتصال به دیتابیس Supabase
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    // مخفی کردن هدر افشاکننده Node/Express
+    hidePoweredBy: true,
+  })
+);
 // فشرده‌سازی gzip/brotli برای همه‌ی جواب‌ها (JSON، HTML، فایل‌های استاتیک).
 // قبلاً وجود نداشت - یعنی همه‌چیز بدون فشرده‌سازی رد و بدل می‌شد.
 app.use(compression());
 
-app.use(express.json());
+// ۵۰ کیلوبایت برای بدنه‌ی JSON کافیه (بیشترین بدنه‌ی واقعی همین الان چند
+// فیلد کوتاهه: slug/chapterNum/planKey/trackId). قبلاً express.json() بدون
+// آرگومان صدا زده می‌شد که به‌صورت ضمنی همون ۱۰۰kb پیش‌فرض خودِ Express رو
+// اعمال می‌کرد - این خط همون رفتار رو صریح و کمی سخت‌گیرانه‌تر می‌کنه، تا
+// معلوم باشه عمدیه، نه یک پیش‌فرض فراموش‌شده.
+app.use(express.json({ limit: "50kb" }));
 
 // ---------- پنل ادمین (مدیریت مانهواها و چپترها بدون ویرایش دستی data.json) ----------
 const { router: adminRouter } = require("./admin/adminRouter");
@@ -225,6 +261,11 @@ app.get("/manga.php", (req, res) => {
 
 // ---------- بخش ۳: خرید VIP (مستقیم، بدون pg_net) ----------
 
+// همون ماژول rate-limitِ چپترها، برای مسیرهای خرید هم استفاده می‌شه (پایین‌تر
+// در بخش ۵ هم import می‌شه - require دوم هزینه‌ای نداره چون Node ماژول رو
+// کش می‌کنه، فقط این‌جا هم لازمش داریم چون این بخش زودتر از بخش ۵ تعریف می‌شه).
+const { checkAndRecordChapterRequest: checkAndRecordPurchaseRequest } = require("./lib/chapterRateLimit");
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -315,8 +356,37 @@ function invalidateAuthCacheForUser(userId) {
   }
 }
 
+// جلوگیری از اسپم درگاه پرداخت/دیتابیس: قبلاً این مسیر هیچ سقفی نداشت،
+// یعنی یک اسکریپت می‌تونست هزاران بار صداش بزنه، هر بار یک درخواست به
+// Zibal بزنه و یک ردیف pending تو payments بسازه. دو لایه‌ی جدا:
+//  ۱) سقف روی IP، همون اول route - قبل از هر تماس شبکه‌ای - تا حتی
+//     تلاش‌های ناموفق (accessToken نامعتبر و امثالش) هم رو دیسک/شبکه
+//     بی‌رویه فشار نیارن.
+//  ۲) سقف روی userId، بعد از احراز هویت - چون هدف اصلی، جلوگیری از یک
+//     اکانت واقعی/لاگین‌شده‌ست که داره اسکریپتی می‌زنه، نه فقط IP (که
+//     ممکنه پشت VPN/CGNAT مشترک باشه).
+const PURCHASE_IP_LIMITS = { maxBurst: 6, maxSustained: 20 };
+const PURCHASE_USER_LIMITS = { maxBurst: 3, maxSustained: 10 };
+
+function purchaseRateLimited(res, result) {
+  res.setHeader("Retry-After", String(result.retryAfterSeconds));
+  res.status(429).json({
+    message:
+      result.reason === "burst"
+        ? "تعداد درخواست‌های شما زیاده. کمی صبر کنید و دوباره امتحان کنید."
+        : "شما به سقف مجاز درخواست خرید در این بازه‌ی زمانی رسیدید.",
+    retryAfterSeconds: result.retryAfterSeconds,
+  });
+}
+
 app.post("/purchase/request", async (req, res) => {
   try {
+    const ipLimit = await checkAndRecordPurchaseRequest(
+      `purchase-req-ip:${req.ip}`,
+      PURCHASE_IP_LIMITS
+    );
+    if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
     const authHeader = req.headers.authorization || "";
     const accessToken = authHeader.startsWith("Bearer ")
       ? authHeader.slice(7)
@@ -335,6 +405,12 @@ app.post("/purchase/request", async (req, res) => {
     if (!user || !user.id) {
       return res.status(401).json({ message: "نشست کاربری نامعتبر است. دوباره وارد شوید." });
     }
+
+    const userLimit = await checkAndRecordPurchaseRequest(
+      `purchase-req-user:${user.id}`,
+      PURCHASE_USER_LIMITS
+    );
+    if (!userLimit.allowed) return purchaseRateLimited(res, userLimit);
 
     const orderId = require("crypto").randomUUID();
     const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
@@ -591,7 +667,20 @@ async function verifyAndCreditPayment(trackId) {
   }
 }
 
+// ⚠️ این مسیر برخلاف /purchase/request هیچ accessToken نمی‌گیره (طراحی
+// شده که از vip-verify.html بعد از برگشت از درگاه صدا زده بشه)، پس تنها
+// سیگنالی که برای rate-limit در دسترسه IP هست - ولی همچنان لازمه، چون هر
+// صدا زدن این route یک درخواست verify به Zibal + چند کوئری Supabase
+// (claim/profile/update) رو trigger می‌کنه، حتی برای یک trackId جعلی/تصادفی.
+const PURCHASE_VERIFY_IP_LIMITS = { maxBurst: 10, maxSustained: 40 };
+
 app.post("/purchase/verify", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(
+    `purchase-verify-ip:${req.ip}`,
+    PURCHASE_VERIFY_IP_LIMITS
+  );
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
   const trackId = (req.body && (req.body.trackId || req.body.track_id)) || "";
   const result = await verifyAndCreditPayment(trackId);
   res.status(result.httpStatus).json(result.body);
@@ -702,6 +791,10 @@ const { buildSignedUrls } = require("./lib/chapterCache");
 // چه بدون لاگین روی چپترهای رایگان (کلید = IP). این جدا از کش پارس‌پک/Bunny
 // عمل می‌کنه، چون اون کش فقط از فشار روی باکت جلوگیری می‌کنه، نه از این‌که
 // یک نفر کل سایت رو با یک اشتراک بخونه/دانلود کنه.
+// نکته: این توابع الان async هستن (همیشه Promise برمی‌گردونن) - اگه
+// REDIS_URL در .env ست شده باشه، شمارش سقف‌ها روی Redis مشترک انجام می‌شه
+// (چند instance/process رو هم پوشش می‌ده)؛ وگرنه به همون in-memory
+// تک-سرورِ قبلی فال‌بک می‌کنه. جزئیات کامل بالای lib/chapterRateLimit.js.
 const { checkAndRecordChapterRequest, checkAndRecordGuestChapterRequest } = require("./lib/chapterRateLimit");
 
 // ---------- شناسه‌ی مهمان (guestId) برای rate limit چپترهای رایگان ----------
@@ -757,15 +850,17 @@ function parseCookies(req) {
 //                  درخواست به سقف «بدون کوکی» روی IP شمرده می‌شه - همون
 //                  چیزی که یک بات کوکی‌دور رو محدود می‌کنه.
 //
-// GUEST_COOKIE_SECRET رو تو .env ثابت کنید (openssl rand -hex 32)، وگرنه با
-// هر ری‌استارت همه‌ی کوکی‌های قبلی نامعتبر می‌شن (فقط یک‌بار کوکی جدید می‌گیرن).
-const GUEST_SECRET =
-  process.env.GUEST_COOKIE_SECRET || crypto.randomBytes(32).toString("hex");
-if (!process.env.GUEST_COOKIE_SECRET) {
-  console.warn(
-    "[guestId] GUEST_COOKIE_SECRET در .env تنظیم نشده - یک مقدار موقت ساخته شد؛ با هر ری‌استارت، کوکی‌های مهمان‌ها نامعتبر می‌شن."
-  );
-}
+// GUEST_COOKIE_SECRET رو تو .env ثابت کنید (openssl rand -hex 32). رو
+// production اگه ست نشده باشه، سرور اصلاً بالا نمیاد (fail-fast، جزئیات
+// تو lib/requireSecret.js)؛ رو dev فقط warn می‌ده و یک مقدار موقت می‌سازه -
+// وگرنه با هر ری‌استارت همه‌ی کوکی‌های قبلی نامعتبر می‌شن (فقط یک‌بار کوکی
+// جدید می‌گیرن).
+const { requireSecret } = require("./lib/requireSecret");
+const GUEST_SECRET = requireSecret(
+  "GUEST_COOKIE_SECRET",
+  "[guestId]",
+  "با هر ری‌استارت، کوکی‌های مهمان‌ها نامعتبر می‌شن و سقف rate-limit مهمان‌ها دوباره صفر می‌شه."
+);
 
 function signGuestId(id) {
   return crypto
@@ -838,7 +933,7 @@ if (chapterNum !== undefined && chapterNum !== null) {
     // محدود می‌کنیم، وگرنه چپترهای رایگان بی‌هیچ محدودیتی قابل اسکرپ می‌مونن.
     if (episode.free) {
       const { guestId, isNew } = getOrSetGuestId(req, res);
-      const rl = checkAndRecordGuestChapterRequest(guestId, req.ip, isNew);
+      const rl = await checkAndRecordGuestChapterRequest(guestId, req.ip, isNew);
       if (!rl.allowed) {
         // لاگ تشخیصی: نشون می‌ده 429 از سقف کدوم سطل (guest یا ip) اومده و
         // آیا req.ip واقعاً IP کاربره (ips / xff رو با هم مقایسه کن). اگه
@@ -896,7 +991,7 @@ if (chapterNum !== undefined && chapterNum !== null) {
     // اسکریپتی/بات مستقیم به همین endpoint می‌زنه. کلید rate limit روی
     // userId ثابته - چون این اکانته که رفتار غیرعادی داره، نه IPش (که ممکنه
     // پشت VPN عوض بشه).
-    const rl = checkAndRecordChapterRequest(`user:${authContext.user.id}`);
+    const rl = await checkAndRecordChapterRequest(`user:${authContext.user.id}`);
     if (!rl.allowed) {
       res.setHeader("Retry-After", String(rl.retryAfterSeconds));
       return res.status(429).json({
