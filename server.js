@@ -37,16 +37,34 @@ app.use(
           "'unsafe-inline'", // برای اجرای اسکریپت‌های داخلی EJS/HTML
           "https://cdn.jsdelivr.net", // اگر از CDN خاصی استفاده می‌کنید اینجا اضافه کنید
           "https://code.jquery.com",
+          "https://cdn.tailwindcss.com", // اسکریپت Tailwind (CDN) - بدونش کل layout سایت می‌شکنه
+          "https://www.googletagmanager.com", // Google Tag Manager / gtag.js
         ],
+        // 🔧 پیش‌فرض Helmet برای این دایرکتیو "'none'"ـه و اگه صریح ست نشه،
+        // همون پیش‌فرض فعال می‌مونه حتی وقتی scriptSrc بالا رو کاستوم می‌کنید.
+        // چون تو HTML/JS سایت از onclick و مشابهش (inline event handler)
+        // استفاده شده، بدون این خط همه‌شون بلاک می‌شن.
+        scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
           "https://fonts.googleapis.com",
           "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com", // استایل Font Awesome
         ],
         imgSrc: ["'self'", "data:", "https:"], // اجازه بارگذاری تصاویر از لینک‌ها یا CDN
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "https://*.supabase.co"], // اتصال به دیتابیس Supabase
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "https://cdnjs.cloudflare.com", // فونت‌های آیکون Font Awesome
+          "https://cdn.jsdelivr.net", // فونت Vazir
+        ],
+        connectSrc: [
+          "'self'",
+          "https://*.supabase.co", // اتصال به دیتابیس Supabase
+          "https://www.google-analytics.com", // ارسال دیتای Google Analytics/gtag
+          "https://region1.google-analytics.com",
+        ],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
       },
