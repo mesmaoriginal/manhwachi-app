@@ -103,6 +103,37 @@
             transform: translateX(-10px);
             background-color: #2a2a2a;
         }
+        .new-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2.5px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            color: #fff;
+            background: linear-gradient(135deg, #ff4d4d, #dc2626);
+            border-radius: 999px;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.65), 0 2px 6px rgba(0,0,0,0.4);
+            animation: newBadgePulse 1.8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .new-badge::before {
+            content: "";
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 6px #fff;
+        }
+        @keyframes newBadgePulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(220, 38, 38, 0.55), 0 2px 6px rgba(0,0,0,0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 16px rgba(220, 38, 38, 0.95), 0 2px 6px rgba(0,0,0,0.4); transform: scale(1.06); }
+        }
         @media (min-width: 1024px) {
             .text-shadow-glow { text-shadow: none; }
             .episode-card:hover { transform: translateY(-4px); background-color: #2a2a2a; }
@@ -719,12 +750,51 @@
             
             <div class="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4" id="episodeList">
                 <%
+                // تبدیل تاریخ شمسی (مثلا 1405/06/24) به میلادی برای محاسبه «جدید بودن» چپتر
+                function ejsJalaliToGregorian(jy, jm, jd) {
+                    var gy;
+                    if (jy > 979) { gy = 1600; jy -= 979; } else { gy = 621; }
+                    var days = (365 * jy) + (Math.floor(jy / 33) * 8) + (Math.floor(((jy % 33) + 3) / 4)) + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+                    gy += 400 * Math.floor(days / 146097);
+                    days %= 146097;
+                    if (days > 36524) {
+                        days--;
+                        gy += 100 * Math.floor(days / 36524);
+                        days %= 36524;
+                        if (days >= 365) days++;
+                    }
+                    gy += 4 * Math.floor(days / 1461);
+                    days %= 1461;
+                    if (days > 365) {
+                        gy += Math.floor((days - 1) / 365);
+                        days = (days - 1) % 365;
+                    }
+                    var gd = days + 1;
+                    var isLeap = (gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0);
+                    var sal_a = [0, 31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    var gm;
+                    for (gm = 0; gm < 13; gm++) {
+                        var v = sal_a[gm];
+                        if (gd <= v) break;
+                        gd -= v;
+                    }
+                    return new Date(gy, gm - 1, gd);
+                }
+                function ejsIsEpisodeNew(ep) {
+                    if (!ep || !ep.date) return false;
+                    var parts = String(ep.date).split('/').map(Number);
+                    if (parts.length !== 3 || parts.some(isNaN)) return false;
+                    var gDate = ejsJalaliToGregorian(parts[0], parts[1], parts[2]);
+                    var diffDays = (Date.now() - gDate.getTime()) / 86400000;
+                    return diffDays >= 0 && diffDays < 2;
+                }
                 // رندر ۴ چپتر اول مستقیم در HTML برای خزش ربات گوگل
                 var initial_episodes = episodes.slice(0, 4);
                 initial_episodes.forEach(function(ep) {
                     var ep_num = ep.num;
                     var is_free = !!ep.free;
                     var ep_link = "/reader.html?slug=" + encodeURIComponent(slug) + "&ch=" + ep_num;
+                    var ep_is_new = ejsIsEpisodeNew(ep);
                 %>
                 <a href="<%= ep_link %>" data-free="<%= is_free ? '1' : '0' %>" data-num="<%= ep_num %>" class="flex items-center gap-4 p-4 rounded-2xl episode-card bg-surface-elevated">
                     <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
@@ -732,6 +802,9 @@
                         <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#<%= ep_num %></span></div>
                         <% if (!is_free) { %>
                         <div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>
+                        <% } %>
+                        <% if (ep_is_new) { %>
+                        <span class="new-badge">جدید</span>
                         <% } %>
                     </div>
                     <div class="flex-1">
@@ -1401,6 +1474,85 @@ document.addEventListener('DOMContentLoaded', () => {
         let visibleCount = 4;
         let isNewestFirst = true;
 
+        // ===== سرویس ذخیره‌سازی وضعیت «خوانده‌شده» چپترها (برای برداشتن نشان «جدید») =====
+        const ChapterReadService = {
+            storageKey: 'manhwachi_read_chapters',
+            getAll() {
+                try {
+                    return JSON.parse(localStorage.getItem(this.storageKey)) || {};
+                } catch (e) {
+                    return {};
+                }
+            },
+            isRead(slug, num) {
+                const all = this.getAll();
+                return !!(all[slug] && all[slug].includes(Number(num)));
+            },
+            markRead(slug, num) {
+                num = Number(num);
+                const all = this.getAll();
+                if (!all[slug]) all[slug] = [];
+                if (!all[slug].includes(num)) {
+                    all[slug].push(num);
+                    try {
+                        localStorage.setItem(this.storageKey, JSON.stringify(all));
+                    } catch (e) { /* localStorage غیرفعال یا پر است */ }
+                }
+            }
+        };
+
+        // تبدیل تاریخ شمسی (مثلا 1405/06/24) به تاریخ میلادی
+        function jalaliToGregorian(jy, jm, jd) {
+            let gy;
+            if (jy > 979) { gy = 1600; jy -= 979; } else { gy = 621; }
+            let days = (365 * jy) + (Math.floor(jy / 33) * 8) + (Math.floor(((jy % 33) + 3) / 4)) + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+            gy += 400 * Math.floor(days / 146097);
+            days %= 146097;
+            if (days > 36524) {
+                days--;
+                gy += 100 * Math.floor(days / 36524);
+                days %= 36524;
+                if (days >= 365) days++;
+            }
+            gy += 4 * Math.floor(days / 1461);
+            days %= 1461;
+            if (days > 365) {
+                gy += Math.floor((days - 1) / 365);
+                days = (days - 1) % 365;
+            }
+            let gd = days + 1;
+            const isLeap = (gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0);
+            const sal_a = [0, 31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            let gm;
+            for (gm = 0; gm < 13; gm++) {
+                const v = sal_a[gm];
+                if (gd <= v) break;
+                gd -= v;
+            }
+            return new Date(gy, gm - 1, gd);
+        }
+
+        // یک چپتر «جدید» است اگر کمتر از ۲ روز از بارگذاریش گذشته باشد و کاربر هنوز بازش نکرده باشد
+        function isChapterNew(ep) {
+            if (!ep || !ep.date) return false;
+            if (ChapterReadService.isRead(MANHWA_SLUG, ep.num)) return false;
+            const parts = String(ep.date).split('/').map(Number);
+            if (parts.length !== 3 || parts.some(isNaN)) return false;
+            const gDate = jalaliToGregorian(parts[0], parts[1], parts[2]);
+            const diffDays = (Date.now() - gDate.getTime()) / 86400000;
+            return diffDays >= 0 && diffDays < 2;
+        }
+
+        // بج‌های «جدید» رندرشده در سرور (۴ چپتر اول) را بر اساس وضعیت خوانده‌شدن به‌روزرسانی می‌کند
+        function refreshInitialNewBadges() {
+            document.querySelectorAll('#episodeList a[data-num]').forEach(a => {
+                const badge = a.querySelector('.new-badge');
+                if (badge && ChapterReadService.isRead(MANHWA_SLUG, a.dataset.num)) {
+                    badge.remove();
+                }
+            });
+        }
+
         let currentCommentPage = 1;
         const commentsPerPage = 5;
         let globalMainMessages = [];
@@ -1459,11 +1611,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? `<span class="text-sm font-bold text-green-500">رایگان</span>`
                     : `<span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>`;
 
+                const isNew = isChapterNew(ep);
                 a.innerHTML = `
                     <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
                         <img src="/manhwas/${MANHWA_SLUG}/chapterPictures/chapterpicture${ep.num}.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
                         <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#${ep.num}</span></div>
                         ${(!isFree && !currentUserSubscribed) ? `<div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>` : ''}
+                        ${isNew ? `<span class="new-badge">جدید</span>` : ''}
                     </div>
                     <div class="flex-1">
                         <p class="font-semibold text-white">چپتر ${ep.num}</p>
@@ -1503,6 +1657,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // (بررسی نهایی و دقیق‌تر خود صفحه ریدر انجام می‌شه)
         async function goToChapter(epNum, isFree) {
             const readerUrl = `/reader.html?slug=${MANHWA_SLUG}&ch=${epNum}`;
+
+            // به محض تلاش برای باز کردن چپتر، به عنوان خوانده‌شده ثبتش می‌کنیم تا نشان «جدید» برداشته شود
+            ChapterReadService.markRead(MANHWA_SLUG, epNum);
 
             if (isFree) {
                 window.location.href = readerUrl;
@@ -2080,6 +2237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         window.onload = () => {
+            refreshInitialNewBadges();
             loadDynamicContent().then(() => {
                 setupBookmarkLogic();
             });
