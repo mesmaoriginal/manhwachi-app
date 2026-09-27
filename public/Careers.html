@@ -412,7 +412,24 @@
     </div>
 
     <div class="cards-grid">
-        <!-- کارت اول: مترجم -->
+        <!-- کارت اول: تایپیست -->
+        <div class="card" data-role="تایپیست">
+            <div>
+                <div class="card-icon-wrapper">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <span class="badge">آموزش رایگان</span>
+                <h3>تایپیست (ادیتور)</h3>
+                <p>فرقی نمی‌کنه حرفه‌ای هستی یا کاملاً مبتدی؛ خیلی راحت می‌تونی بیای تو تیم ما. صفر تا صد ادیت و ادیتور شدن رو خودمون بهت یاد می‌دیم!</p>
+                <p style="color:#ff7575; font-weight:700; margin-top:-15px;">حقوق: ۲۰ تا ۲۵ هزار تومن به ازای هر چپتر</p>
+            </div>
+            <button class="btn" onclick="openModal('تایپیست')">
+                ثبت درخواست
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+        </div>
+
+        <!-- کارت دوم: مترجم -->
         <div class="card" data-role="مترجم">
             <div>
                 <div class="card-icon-wrapper">
@@ -421,6 +438,7 @@
                 <span class="badge">نیازمند تسلط به زبان</span>
                 <h3>مترجم</h3>
                 <p>اگه به انگلیسی مسلطی و عاشق مانهوایی، بیا مترجم تیم ما شو و متن‌ها رو روون و بی‌نقص به فارسی ترحمه کن.</p>
+                <p style="color:#ff7575; font-weight:700; margin-top:-15px;">حقوق: ۱۵ هزار تومن به ازای هر چپتر</p>
             </div>
             <button class="btn" onclick="openModal('مترجم')">
                 ثبت درخواست
@@ -428,7 +446,7 @@
             </button>
         </div>
 
-        <!-- کارت دوم: کلینر -->
+        <!-- کارت سوم: کلینر -->
         <div class="card" data-role="کلینر">
             <div>
                 <div class="card-icon-wrapper">
@@ -439,22 +457,6 @@
                 <p>کار شما پاک‌سازی و آماده‌سازی صفحات خام مانهواست؛ حذف متن اصلی و تمیزکاری تصاویر قبل از تایپ. اگر بهش علاقه داری، جای تو همینجاست.</p>
             </div>
             <button class="btn" onclick="openModal('کلینر')">
-                ثبت درخواست
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-        </div>
-
-        <!-- کارت سوم: تایپیست -->
-        <div class="card" data-role="تایپیست">
-            <div>
-                <div class="card-icon-wrapper">
-                    <i class="fa-solid fa-laptop-code"></i>
-                </div>
-                <span class="badge">آموزش رایگان</span>
-                <h3>تایپیست (ادیتور)</h3>
-                <p>فرقی نمی‌کنه حرفه‌ای هستی یا کاملاً مبتدی؛ خیلی راحت می‌تونی بیای تو تیم ما. صفر تا صد ادیت و ادیتور شدن رو خودمون بهت یاد می‌دیم!</p>
-            </div>
-            <button class="btn" onclick="openModal('تایپیست')">
                 ثبت درخواست
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
@@ -505,22 +507,8 @@
             </div>
 
             <div class="form-group">
-                <label>پلتفرم ارتباطی اصلی را انتخاب کنید:</label>
-                <div class="radio-group">
-                    <div class="radio-btn">
-                        <input type="radio" id="p-telegram" name="platform" value="تلگرام" checked onclick="updateSocialLabel()">
-                        <label for="p-telegram"> تلگرام</label>
-                    </div>
-                    <div class="radio-btn">
-                        <input type="radio" id="p-rubika" name="platform" value="روبیکا" onclick="updateSocialLabel()">
-                        <label for="p-rubika"> روبیکا</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
                 <label id="socialLabel">آیدی تلگرام:</label>
-                <input type="text" id="socialId" required placeholder="@username">
+                <input type="text" id="socialId" dir="ltr" style="text-align: left;" required placeholder="@username">
                 <span class="field-error" id="socialIdError">آیدی باید با @ شروع بشه و بین ۴ تا ۳۲ کاراکتر انگلیسی، عدد یا آندرلاین (_) باشه.</span>
             </div>
 
@@ -541,8 +529,8 @@
     // برای باز کردن دوباره، بذارش true.
     // ============================================
     const roleCapacity = {
-        'مترجم': false,
-        'کلینر': true,
+        'مترجم': true,
+        'کلینر': false,
         'تایپیست': true,
         'تیم ترجمه تلگرامی': true
     };
@@ -599,14 +587,6 @@
     function closeModal() {
         document.getElementById('modalOverlay').classList.remove('active');
         document.getElementById('applyForm').reset();
-    }
-
-    // تغییر لیبل آیدی (تلگرام / روبیکا)
-    function updateSocialLabel() {
-        const platform = document.querySelector('input[name="platform"]:checked').value;
-        document.getElementById('socialLabel').innerText = `آیدی ${platform}:`;
-        // با تغییر پلتفرم، خطای قبلی پاک بشه
-        clearSocialIdError();
     }
 
     // بررسی معتبر بودن آیدی: باید با @ شروع بشه، فقط حروف انگلیسی/عدد/آندرلاین باشه،
@@ -672,7 +652,7 @@
 
         const role = document.getElementById('roleInput').value;
         const age = document.getElementById('age').value;
-        const platform = document.querySelector('input[name="platform"]:checked').value;
+        const platform = 'تلگرام';
         const bio = document.getElementById('bio').value;
 
         // ارسال به جدول applications
