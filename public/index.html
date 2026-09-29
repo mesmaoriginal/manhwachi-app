@@ -1076,6 +1076,31 @@ document.addEventListener('keydown', (e) => {
 <script>
   // مقداردهی اولیه متغیر ایمیل موقت
   let tempRegistrationEmail = "";
+  let tempRegistrationPhone = "";
+  let currentRegisterMethod = "email";
+  let phoneResendInterval = null;
+  let regCaptchaId = "";
+
+  // نرمال‌سازی شماره موبایل ایران سمت کلاینت - معادل lib/phone.js سمت
+  // سرور. عمداً تکرار شده چون این کد سمت مرورگر اجرا می‌شه و به فایل‌های
+  // سرور دسترسی نداره؛ اگه فرمت رو اونجا عوض کردی، اینجا رو هم عوض کن.
+  // ارقام فارسی/عربی → انگلیسی (سرور هم همین کار رو می‌کنه؛ بدون این، شماره‌ی
+  // تایپ‌شده با کیبورد فارسی همین‌جا «نامعتبر» رد می‌شد و اصلاً به سرور نمی‌رسید)
+  function toEnDigitsClient(input) {
+    return String(input ?? "")
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
+  }
+
+  function normalizeIranPhoneClient(raw) {
+    if (!raw) return null;
+    let digits = toEnDigitsClient(raw).trim().replace(/[\s-]/g, "");
+    digits = digits.replace(/^\+/, "");
+    digits = digits.replace(/^0098/, "98");
+    digits = digits.replace(/^0/, "98");
+    if (/^9\d{9}$/.test(digits)) digits = "98" + digits;
+    return /^989\d{9}$/.test(digits) ? digits : null;
+  }
 
   // تابع دسترسی امن به Supabase
   function getSupabase() {
@@ -1102,6 +1127,20 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('otpForm')?.classList.add('hidden');
     document.getElementById('forgotPasswordForm')?.classList.add('hidden');
     document.getElementById('resetPasswordForm')?.classList.add('hidden');
+
+    // ریست کردن فرم ثبت‌نام با موبایل تا دفعه‌ی بعد که مودال باز می‌شه
+    // حالت قبلی (کد ارسال‌شده، شماره غیرفعال و ...) نمونه.
+    clearInterval(phoneResendInterval);
+    tempRegistrationPhone = "";
+    document.getElementById('phoneOtpSection')?.classList.add('hidden');
+    const phoneInput = document.getElementById('regPhoneNumber');
+    if (phoneInput) { phoneInput.disabled = false; phoneInput.value = ''; }
+    document.getElementById('regPhoneOtpCode')?.setAttribute('value', '');
+    regCaptchaId = "";
+    const capAns = document.getElementById('regCaptchaAnswer');
+    if (capAns) capAns.value = '';
+    const capImg = document.getElementById('regCaptchaImg');
+    if (capImg) capImg.removeAttribute('src');
   }
 
   function switchAuthTab(type) {
@@ -1110,6 +1149,7 @@ document.addEventListener('keydown', (e) => {
     const otpForm = document.getElementById('otpForm');
     const tabLoginBtn = document.getElementById('tabLoginBtn');
     const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+    const registerMethodSwitch = document.getElementById('registerMethodSwitch');
 
     hideAuthMessage();
     otpForm?.classList.add('hidden');
@@ -1123,15 +1163,42 @@ document.addEventListener('keydown', (e) => {
     if (type === 'login') {
       loginForm?.classList.remove('hidden');
       registerForm?.classList.add('hidden');
+      document.getElementById('registerPhoneForm')?.classList.add('hidden');
+      registerMethodSwitch?.classList.add('hidden');
       if (tabLoginBtn) tabLoginBtn.className = activeCls;
       if (tabRegisterBtn) tabRegisterBtn.className = inactiveCls;
       if (subtitle) subtitle.textContent = "خوش برگشتی! برای ادامه وارد حساب خود شو";
     } else {
       loginForm?.classList.add('hidden');
-      registerForm?.classList.remove('hidden');
+      registerMethodSwitch?.classList.remove('hidden');
+      switchRegisterMethod(currentRegisterMethod);
       if (tabRegisterBtn) tabRegisterBtn.className = activeCls;
       if (tabLoginBtn) tabLoginBtn.className = inactiveCls;
       if (subtitle) subtitle.textContent = "چند قدم تا ساخت حساب جدیدت باقی مونده";
+    }
+  }
+
+  // ==================== سوییچ روش ثبت‌نام (ایمیل / شماره موبایل) ====================
+  function switchRegisterMethod(method) {
+    currentRegisterMethod = method;
+    hideAuthMessage();
+    const emailForm = document.getElementById('registerForm');
+    const phoneForm = document.getElementById('registerPhoneForm');
+    const emailBtn = document.getElementById('regMethodEmailBtn');
+    const phoneBtn = document.getElementById('regMethodPhoneBtn');
+    const activeCls = "flex-1 py-2 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 bg-zinc-700 text-white";
+    const inactiveCls = "flex-1 py-2 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200";
+
+    if (method === 'phone') {
+      emailForm?.classList.add('hidden');
+      phoneForm?.classList.remove('hidden');
+      if (phoneBtn) phoneBtn.className = activeCls;
+      if (emailBtn) emailBtn.className = inactiveCls;
+    } else {
+      phoneForm?.classList.add('hidden');
+      emailForm?.classList.remove('hidden');
+      if (emailBtn) emailBtn.className = activeCls;
+      if (phoneBtn) phoneBtn.className = inactiveCls;
     }
   }
 
@@ -1224,7 +1291,7 @@ document.addEventListener('keydown', (e) => {
   // ==================== تابع ورود ====================
   async function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const idRaw = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     const btn = document.getElementById('loginSubmitBtn');
 
@@ -1235,14 +1302,22 @@ document.addEventListener('keydown', (e) => {
       const client = getSupabase();
       if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
 
-      const { data, error } = await client.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+      // اگه ورودی شامل @ باشه یعنی ایمیله، وگرنه شماره موبایل در نظر
+      // گرفته می‌شه - چون کاربر ممکنه با هرکدوم از این دو ثبت‌نام کرده باشه.
+      let credentials;
+      if (idRaw.includes('@')) {
+        credentials = { email: idRaw.toLowerCase(), password };
+      } else {
+        const phone = normalizeIranPhoneClient(idRaw);
+        if (!phone) throw new Error("ایمیل یا شماره موبایل وارد شده معتبر نیست.");
+        credentials = { phone, password };
+      }
+
+      const { data, error } = await client.auth.signInWithPassword(credentials);
 
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          throw new Error("ایمیل یا رمز عبور اشتباه است.");
+          throw new Error("اطلاعات ورود اشتباه است.");
         } else if (error.message.includes('Email not confirmed')) {
           throw new Error("ایمیل شما هنوز تایید نشده است. ابتدا کد ارسال شده را تایید کنید.");
         } else {
@@ -1348,6 +1423,193 @@ document.addEventListener('keydown', (e) => {
     } finally {
       btn.disabled = false;
       btn.innerText = "ارسال کد تایید به جیمیل";
+    }
+  }
+
+  // ==================== ثبت‌نام با شماره موبایل (OTP پیامکی) ====================
+
+  function startPhoneResendCountdown(seconds) {
+    const btn = document.getElementById('regPhoneResendBtn');
+    const timerText = document.getElementById('regPhoneResendTimer');
+    if (!btn) return;
+
+    let remaining = Math.max(0, Math.floor(seconds));
+    btn.disabled = true;
+    clearInterval(phoneResendInterval);
+
+    const tick = () => {
+      if (remaining <= 0) {
+        clearInterval(phoneResendInterval);
+        btn.disabled = false;
+        if (timerText) timerText.textContent = '';
+        return;
+      }
+      if (timerText) timerText.textContent = `ارسال مجدد تا ${remaining} ثانیه دیگر`;
+      remaining -= 1;
+    };
+    tick();
+    phoneResendInterval = setInterval(tick, 1000);
+  }
+
+  // کپچای تصویری: هر کپچا یک‌بار مصرفه (چه جواب درست چه غلط)، پس بعد از هر
+  // تلاش ارسال کد، یکی جدید می‌گیریم. تصویر با data: URL داخل <img> نشون داده
+  // می‌شه (نه innerHTML) تا SVG هیچ‌وقت اسکریپتی اجرا نکنه.
+  async function loadRegCaptcha() {
+    const img = document.getElementById('regCaptchaImg');
+    const ans = document.getElementById('regCaptchaAnswer');
+    if (!img) return;
+    if (ans) ans.value = '';
+    try {
+      const res = await fetch('/api/captcha', { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.captchaId || !data.image) throw new Error();
+      regCaptchaId = data.captchaId;
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data.image);
+    } catch {
+      regCaptchaId = "";
+      img.removeAttribute('src');
+      showAuthMessage("بارگذاری کد امنیتی ناموفق بود. روی «کد جدید» بزن.", true);
+    }
+  }
+
+  async function handleSendPhoneOtp() {
+    const phoneInput = document.getElementById('regPhoneNumber');
+    const phone = normalizeIranPhoneClient(phoneInput.value);
+    const sendBtn = document.getElementById('regPhoneSendBtn');
+    const resendBtn = document.getElementById('regPhoneResendBtn');
+    const activeBtn = document.activeElement === resendBtn ? resendBtn : sendBtn;
+
+    if (!phone) {
+      showAuthMessage("شماره موبایل معتبر نیست. مثال: 09121234567", true);
+      return;
+    }
+
+    const captchaAnswer = (document.getElementById('regCaptchaAnswer')?.value || '').trim();
+    if (!regCaptchaId) {
+      await loadRegCaptcha();
+      showAuthMessage("کد امنیتی را از روی تصویر وارد کن.", true);
+      return;
+    }
+    if (!captchaAnswer) {
+      showAuthMessage("کد امنیتی را از روی تصویر وارد کن.", true);
+      return;
+    }
+
+    const originalText = activeBtn.innerText;
+    activeBtn.disabled = true;
+    activeBtn.innerText = "در حال ارسال...";
+
+    try {
+      const usedCaptchaId = regCaptchaId;
+      regCaptchaId = ""; // یک‌بار مصرفه؛ چه موفق چه ناموفق دیگه معتبر نیست
+      const res = await fetch('/api/otp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, captchaId: usedCaptchaId, captchaAnswer })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "ارسال کد ناموفق بود.");
+
+      tempRegistrationPhone = phone;
+      document.getElementById('phoneOtpSection')?.classList.remove('hidden');
+      phoneInput.disabled = true;
+      showAuthMessage("کد ۶ رقمی تایید برای شماره‌ات پیامک شد.", false);
+      startPhoneResendCountdown(data.resendAfterSeconds || 90);
+    } catch (err) {
+      showAuthMessage(err.message || "ارسال کد ناموفق بود.", true);
+      activeBtn.disabled = false;
+    } finally {
+      if (activeBtn === sendBtn) activeBtn.innerText = originalText;
+      loadRegCaptcha(); // برای تلاش بعدی (ارسال مجدد) کپچای تازه
+    }
+  }
+
+  async function handleRegisterPhone(e) {
+    e.preventDefault();
+
+    const fullName = document.getElementById('regPhoneFullName').value.trim();
+    const code = toEnDigitsClient(document.getElementById('regPhoneOtpCode').value).trim();
+    const password = document.getElementById('regPhonePassword').value;
+    const confirmPassword = document.getElementById('regPhoneConfirmPassword').value;
+    const btn = document.getElementById('regPhoneSubmitBtn');
+
+    if (!tempRegistrationPhone) {
+      showAuthMessage("ابتدا با دکمه‌ی «ارسال کد» یک کد تایید برای شماره‌ات بگیر.", true);
+      return;
+    }
+    if (!/^\d{6}$/.test(code)) {
+      showAuthMessage("کد تایید باید ۶ رقم باشد.", true);
+      return;
+    }
+    if (password.length < 6) {
+      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
+      return;
+    }
+    if (password !== confirmPassword) {
+      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "در حال بررسی کد...";
+
+    try {
+      const verifyRes = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: tempRegistrationPhone, code })
+      });
+      const verifyData = await verifyRes.json().catch(() => ({}));
+      if (!verifyRes.ok) {
+        throw new Error(
+          verifyData.error ||
+          "کد وارد شده اشتباه یا منقضی شده است." +
+          (verifyData.attemptsLeft != null ? ` (${verifyData.attemptsLeft} تلاش باقی مانده)` : "")
+        );
+      }
+
+      btn.innerText = "در حال ساخت حساب...";
+      const registerRes = await fetch('/api/register/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: tempRegistrationPhone,
+          password,
+          fullName,
+          ticket: verifyData.ticket
+        })
+      });
+      const registerData = await registerRes.json().catch(() => ({}));
+
+      if (!registerRes.ok) {
+        if (registerData.code === 'PHONE_ALREADY_REGISTERED') {
+          switchAuthTab('login');
+          const loginEmailInput = document.getElementById('loginEmail');
+          if (loginEmailInput) {
+            loginEmailInput.value = tempRegistrationPhone;
+            document.getElementById('loginPassword')?.focus();
+          }
+        }
+        throw new Error(registerData.error || "ثبت‌نام ناموفق بود.");
+      }
+
+      // حساب ساخته و از قبل تاییدشده - بلافاصله با همون رمز وارد می‌کنیم
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+      const { error: signInError } = await client.auth.signInWithPassword({
+        phone: tempRegistrationPhone,
+        password,
+      });
+      if (signInError) throw signInError;
+
+      showAuthMessage("حساب شما با موفقیت ساخته شد و وارد شدید!", false);
+      setTimeout(() => { location.reload(); }, 1000);
+
+    } catch (err) {
+      showAuthMessage(err.message || "خطا در فرآیند ثبت‌نام", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "تایید و ساخت حساب";
     }
   }
 
@@ -1599,10 +1861,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- ==================== فرم ورود ==================== -->
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
+          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل یا شماره موبایل</label>
           <div class="relative">
-            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="email" id="loginEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="text" id="loginEmail" required placeholder="example@gmail.com یا 09121234567" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
           </div>
         </div>
         <div>
@@ -1676,6 +1938,16 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
       </form>
 
+      <!-- سوییچ روش ثبت‌نام: ایمیل یا شماره موبایل -->
+      <div id="registerMethodSwitch" class="flex items-center gap-1 bg-zinc-800/40 rounded-full p-1 mb-4 border border-zinc-700/30 hidden">
+        <button id="regMethodEmailBtn" type="button" onclick="switchRegisterMethod('email')" class="flex-1 py-2 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 bg-zinc-700 text-white">
+          <i class="fa-solid fa-envelope ml-1"></i> ایمیل
+        </button>
+        <button id="regMethodPhoneBtn" type="button" onclick="switchRegisterMethod('phone')" class="flex-1 py-2 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200">
+          <i class="fa-solid fa-mobile-screen ml-1"></i> شماره موبایل
+        </button>
+      </div>
+
       <!-- ==================== فرم ثبت‌نام ==================== -->
       <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
         <div>
@@ -1728,6 +2000,80 @@ document.addEventListener('DOMContentLoaded', () => {
           <i class="fa-solid fa-paper-plane text-xs"></i>
           ارسال کد تایید به جیمیل
         </button>
+        <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
+      </form>
+
+      <!-- ==================== فرم ثبت‌نام با شماره موبایل (OTP پیامکی) ==================== -->
+      <form id="registerPhoneForm" onsubmit="handleRegisterPhone(event)" class="space-y-3.5 hidden">
+        <div>
+          <label for="regPhoneFullName" class="block text-xs font-medium text-zinc-400 mb-1">نام و نام خانوادگی</label>
+          <div class="relative">
+            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="text" id="regPhoneFullName" required placeholder="مثال: علی محمدی" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="regCaptchaAnswer" class="block text-xs font-medium text-zinc-400 mb-1">کد امنیتی</label>
+          <div class="flex items-center gap-2">
+            <img id="regCaptchaImg" alt="کد امنیتی" width="160" height="56" class="rounded-lg bg-slate-50 shrink-0" />
+            <button type="button" onclick="loadRegCaptcha()" class="text-[11px] text-red-500 hover:text-red-400 transition-all shrink-0">کد جدید</button>
+            <input type="text" id="regCaptchaAnswer" autocomplete="off" autocapitalize="characters" maxlength="8" dir="ltr" placeholder="ABCDE" class="w-full min-w-0 text-center uppercase tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="regPhoneNumber" class="block text-xs font-medium text-zinc-400 mb-1">شماره موبایل</label>
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-mobile-screen auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="tel" id="regPhoneNumber" required onfocus="if(!regCaptchaId) loadRegCaptcha()" placeholder="09121234567" dir="ltr" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 text-left focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            </div>
+            <button type="button" id="regPhoneSendBtn" onclick="handleSendPhoneOtp()" class="shrink-0 px-3.5 py-2.5 rounded-xl bg-zinc-700 hover:bg-zinc-600 text-xs font-bold text-white transition-all">
+              ارسال کد
+            </button>
+          </div>
+        </div>
+
+        <div id="phoneOtpSection" class="hidden space-y-3.5">
+          <div>
+            <label for="regPhoneOtpCode" class="block text-xs font-medium text-zinc-400 mb-1">کد ۶ رقمی پیامک‌شده</label>
+            <input type="text" id="regPhoneOtpCode" maxlength="6" placeholder="123456" class="w-full text-center tracking-[0.5em] text-lg font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-2.5 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <div class="flex items-center justify-between mt-1.5">
+              <span id="regPhoneResendTimer" class="text-[11px] text-zinc-500"></span>
+              <button type="button" id="regPhoneResendBtn" onclick="handleSendPhoneOtp()" class="text-[11px] text-red-500 hover:text-red-400 transition-all disabled:opacity-40 disabled:pointer-events-none">
+                ارسال مجدد کد
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label for="regPhonePassword" class="block text-xs font-medium text-zinc-400 mb-1">رمز عبور (حداقل ۶ کاراکتر)</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="password" id="regPhonePassword" minlength="6" placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+              <button type="button" onclick="toggleAuthPassword('regPhonePassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+                <i class="fa-solid fa-eye text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label for="regPhoneConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1">تکرار رمز عبور</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="password" id="regPhoneConfirmPassword" minlength="6" placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+              <button type="button" onclick="toggleAuthPassword('regPhoneConfirmPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+                <i class="fa-solid fa-eye text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="regPhoneSubmitBtn" class="w-full py-3 mt-1 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-check text-xs"></i>
+            تایید و ساخت حساب
+          </button>
+        </div>
         <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
       </form>
 

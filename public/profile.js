@@ -1,6 +1,6 @@
 
-        let currentUser = null;
-        let profileLoadFailed = false; // اگر خواندن پروفایل خطا بده، دیگه اجازه نمی‌دیم فرم ذخیره، آواتار رو با مقدار خالی پاک کنه
+        var currentUser = null;
+        var profileLoadFailed = false; // اگر خواندن پروفایل خطا بده، دیگه اجازه نمی‌دیم فرم ذخیره، آواتار رو با مقدار خالی پاک کنه
 
 // =====================================================================
 // نوتیفیکیشن‌های شناور (toast) — برای فیدبک‌های سریع و کم‌مزاحم
@@ -33,12 +33,181 @@ function copyMemberId() {
         .catch(() => showToast('کپی انجام نشد، لطفاً دستی کپی کن', 'error'));
 }
 
+// شماره‌ی ذخیره‌شده در Supabase معمولاً به شکل 989123456789 است؛ برای نمایش به 09123456789 تبدیل می‌شه
+function formatPhoneForDisplay(phone) {
+    if (!phone) return '';
+    let p = String(phone).replace(/\D/g, '');
+    if (p.startsWith('0098')) p = p.slice(4);
+    else if (p.startsWith('98') && p.length === 12) p = p.slice(2);
+    if (p.length === 10 && p.startsWith('9')) p = '0' + p;
+    return p;
+}
+
+// نمایش ایمیل و موبایل روی کارت؛ فقط اونی که مقدار داره نشون داده می‌شه
+function renderContactInfo(email, phone) {
+    const e = (email || '').trim();
+    const p = formatPhoneForDisplay(phone);
+
+    const emailEl = document.getElementById('dispEmail');
+    const phoneEl = document.getElementById('dispPhone');
+    if (emailEl) emailEl.innerText = e;
+    if (phoneEl) phoneEl.innerText = p;
+
+    // هر کدوم که مقدار نداشت، کل ردیفش مخفی می‌شه
+    const emailRow = document.getElementById('contactEmailRow');
+    const phoneRow = document.getElementById('contactPhoneRow');
+    const wrap = document.getElementById('contactInfoWrap');
+    if (emailRow) emailRow.classList.toggle('hidden', !e);
+    if (phoneRow) phoneRow.classList.toggle('hidden', !p);
+    if (wrap) wrap.classList.toggle('hidden', !e && !p);
+}
+
+// =====================================================================
+// بارگذاری پایدار پروفایل
+// دلیل‌های رایجِ «باید رفرش کنم تا اطلاعات بیاد»:
+//  ۱) اسکریپت قبل از ساخته شدن کلاینت Supabase اجرا می‌شد و بی‌صدا return می‌کرد
+//  ۲) window.supabase گاهی خودِ کتابخونه‌ست (نه کلاینت) و .auth نداره
+//  ۳) getUser() یک درخواست شبکه‌ست؛ با یک خطای گذرا کاربر لاگین‌نشده فرض می‌شد
+//  ۴) هیچ تلاش مجددی وجود نداشت و DOMContentLoaded در صفحه‌های SPA ممکنه از قبل رد شده باشه
+// =====================================================================
+var profileLoading = false;
+
+var sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+function onReady(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+}
+
+async function waitForElement(id, timeoutMs = 5000) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+        const el = document.getElementById(id);
+        if (el) return el;
+        await sleep(50);
+    }
+    return null;
+}
+
+function getSupabaseClient() {
+    const candidates = [
+        window.supabaseClient,
+        window.supabase,
+        (typeof supabase !== 'undefined' ? supabase : null)
+    ];
+    return candidates.find(c => c && c.auth && typeof c.from === 'function') || null;
+}
+
+async function waitForSupabaseClient(timeoutMs = 8000) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+        const c = getSupabaseClient();
+        if (c) return c;
+        await sleep(100);
+    }
+    return null;
+}
+
+// چند بار تلاش مجدد برای درخواست‌هایی که { data, error } برمی‌گردونن
+async function withRetry(fn, { attempts = 3, delayMs = 600 } = {}) {
+    let last = { data: null, error: new Error('unknown') };
+    for (let i = 0; i < attempts; i++) {
+        try {
+            const res = await fn();
+            if (!res || !res.error) return res;
+            last = res;
+        } catch (e) {
+            last = { data: null, error: e };
+        }
+        if (i < attempts - 1) await sleep(delayMs * (i + 1));
+    }
+    return last;
+}
+
+// صبر کوتاه برای بازیابی نشست (بعد از رفرش، نشست ممکنه چند لحظه دیرتر آماده بشه)
+function waitForAuthEvent(client, timeoutMs = 2500) {
+    return new Promise(resolve => {
+        let done = false;
+        let sub = null;
+        const finish = (user) => {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            try { sub && sub.subscription.unsubscribe(); } catch (e) {}
+            resolve(user);
+        };
+        const timer = setTimeout(() => finish(null), timeoutMs);
+        const res = client.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) finish(session.user);
+        });
+        sub = res && res.data;
+        if (done && sub) { try { sub.subscription.unsubscribe(); } catch (e) {} }
+    });
+}
+
+// getSession از حافظه‌ی مرورگر می‌خونه (بدون شبکه)؛ بعدش تلاش می‌کنیم اطلاعات تازه
+// رو از سرور بگیریم، ولی اگه شبکه مشکل داشت از همون نشست محلی استفاده می‌کنیم.
+// فقط وقتی سرور صریحاً توکن رو رد کرد (401/403) کاربر «لاگین‌نشده» حساب می‌شه.
+async function resolveCurrentUser(client) {
+    const { data: { session } = {} } = await client.auth.getSession();
+    const sessionUser = (session && session.user) || await waitForAuthEvent(client);
+    if (!sessionUser) return null;
+
+    try {
+        const { data, error } = await client.auth.getUser();
+        if (data && data.user) return data.user;
+        if (error && (error.status === 401 || error.status === 403)) return null;
+    } catch (e) { /* خطای شبکه: از نشست محلی استفاده می‌کنیم */ }
+    return sessionUser;
+}
+
+function showProfileLoadError(message) {
+    const msgBox = document.getElementById('msgBox');
+    if (!msgBox) return;
+    msgBox.innerHTML = `${escapeHtml(message)} <button type="button" onclick="retryLoadProfile()" class="underline font-bold mr-1">تلاش دوباره</button>`;
+    msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
+}
+
+function retryLoadProfile() {
+    const msgBox = document.getElementById('msgBox');
+    if (msgBox) { msgBox.className = 'hidden p-3 rounded-xl text-xs'; msgBox.innerText = ''; }
+    loadUserProfile();
+}
+
+// وقتی اینترنت برگشت و لود قبلی شکست خورده بود، خودکار دوباره امتحان کن
+// index.html هر بار که پروفایل باز می‌شه این اسکریپت رو دوباره اجرا می‌کنه؛ listener فقط یک بار بسته می‌شه
+if (!window.__profileOnlineBound) {
+    window.__profileOnlineBound = true;
+    window.addEventListener('online', () => { if (profileLoadFailed) retryLoadProfile(); });
+}
+
 async function loadUserProfile() {
-    const client = window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) return;
+    if (profileLoading) return;
+    profileLoading = true;
+    try {
+        await loadUserProfileInner();
+    } catch (err) {
+        console.error('خطا در بارگذاری پروفایل:', err);
+        profileLoadFailed = true;
+        showProfileLoadError('بارگذاری پروفایل ناموفق بود.');
+    } finally {
+        profileLoading = false;
+    }
+}
+
+async function loadUserProfileInner() {
+    profileLoadFailed = false;
+    await waitForElement('mainProfileContent');
+
+    const client = await waitForSupabaseClient();
+    if (!client) {
+        profileLoadFailed = true;
+        showProfileLoadError('اتصال به سرور برقرار نشد.');
+        return;
+    }
 
     // ۱. چک کردن Session
-    const { data: { user } } = await client.auth.getUser();
+    const user = await resolveCurrentUser(client);
 
     // ۲. اگر کاربر لاگین نبود
     if (!user) {
@@ -60,7 +229,8 @@ async function loadUserProfile() {
 
     // ۳. اگر کاربر لاگین بود
     currentUser = user;
-    document.getElementById('dispEmail').innerText = user.email || '';
+    // نمایش فوری با مقدار خودِ auth؛ بعد از خواندن profile_contacts (پایین‌تر) دوباره رندر می‌شه
+    renderContactInfo(user.email, user.phone);
 
     // شماره‌ی عضویت (برگرفته از بخشی از شناسه‌ی کاربر) — صرفاً جنبه‌ی نمایشی دارد
     const memberIdEl = document.getElementById('dispMemberId');
@@ -82,20 +252,30 @@ async function loadUserProfile() {
     }
 
     // دریافت اطلاعات پروفایل
-    const { data: profile, error } = await client
+    const { data: profile, error } = await withRetry(() => client
         .from('profiles')
         .select('full_name, avatar_url, is_vip, vip_until')
         .eq('id', user.id)
-        .maybeSingle();
+        .maybeSingle());
 
     if (error) {
         console.error("خطا در دریافت پروفایل:", error.message);
         profileLoadFailed = true;
-        const msgBox = document.getElementById('msgBox');
-        if (msgBox) {
-            msgBox.innerText = "اطلاعات پروفایل کامل لود نشد (مشکل شبکه یا دسترسی). قبل از ذخیره تغییرات، صفحه رو رفرش کن تا آواتار قبلی پاک نشه.";
-            msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
-        }
+        showProfileLoadError("اطلاعات پروفایل کامل لود نشد (مشکل شبکه یا دسترسی). قبل از ذخیره تغییرات دوباره تلاش کن تا آواتار قبلی پاک نشه.");
+    }
+
+    // ایمیل و موبایل ذخیره‌شده در دیتابیس (جدول profile_contacts)
+    // اگه خطا بده، همون مقدار خودِ auth که بالا نمایش داده شد باقی می‌مونه
+    const { data: contact, error: contactError } = await withRetry(() => client
+        .from('profile_contacts')
+        .select('email, phone')
+        .eq('user_id', user.id)
+        .maybeSingle());
+
+    if (contactError) {
+        console.error("خطا در دریافت اطلاعات تماس:", contactError.message);
+    } else if (contact) {
+        renderContactInfo(contact.email || user.email, contact.phone || user.phone);
     }
 
     const username = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'کاربر مانهواچی';
@@ -198,11 +378,11 @@ async function loadUserBookmarks(client) {
     const hintEl = document.getElementById('bookmarksCountHint');
     if (!listEl || !currentUser) return;
 
-    const { data: bookmarks, error } = await client
+    const { data: bookmarks, error } = await withRetry(() => client
         .from('bookmarks')
         .select('id, manhwa_slug, title_en, title_fa, cover_url, created_at')
         .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }));
 
     if (error) {
         listEl.innerHTML = `<p class="col-span-full text-xs text-red-400">خطا در بارگذاری علامت‌گذاری‌ها.</p>`;
@@ -240,7 +420,7 @@ async function loadUserBookmarks(client) {
 }
 
 async function removeBookmark(slug) {
-    const client = window.supabaseClient || window.supabase;
+    const client = getSupabaseClient();
     if (!client || !currentUser) return;
 
     const { error } = await client
@@ -265,11 +445,11 @@ async function loadUserComments(client) {
     const hintEl = document.getElementById('commentsCountHint');
     if (!listEl || !currentUser) return;
 
-    const { data: comments, error } = await client
+    const { data: comments, error } = await withRetry(() => client
         .from('messages')
         .select('id, text, manhwa_slug, approved, created_at, parent_message_id')
         .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }));
 
     if (error) {
         listEl.innerHTML = `<p class="text-xs text-red-400">خطا در بارگذاری دیدگاه‌ها.</p>`;
@@ -314,7 +494,7 @@ async function loadUserComments(client) {
 }
 
 async function deleteOwnComment(commentId) {
-    const client = window.supabaseClient || window.supabase;
+    const client = getSupabaseClient();
     if (!client || !currentUser) return;
     if (!confirm('این دیدگاه حذف بشه؟')) return;
 
@@ -337,8 +517,8 @@ async function deleteOwnComment(commentId) {
 // نکته: این تاریخچه به اکانت کاربر متصل نیست و بین دستگاه‌ها سینک نمی‌شه.
 // خودِ صفحه‌ی چپتر باید تابع saveReadingHistory را در هر بار باز شدن صدا بزند.
 // =====================================================================
-const READING_HISTORY_KEY = 'manhwachi_reading_history';
-const READING_HISTORY_LIMIT = 40;
+var READING_HISTORY_KEY = 'manhwachi_reading_history';
+var READING_HISTORY_LIMIT = 40;
 
 function getReadingHistory() {
     try {
@@ -574,7 +754,7 @@ function clearReadingHistory() {
             const file = event.target.files[0];
             if (!file) return;
 
-            const client = window.supabaseClient || window.supabase;
+            const client = getSupabaseClient();
             const msgBox = document.getElementById('msgBox');
 
             // اعتبارسنجی نوع فایل سمت کلاینت (برای پیام خطای سریع‌تر؛
@@ -652,7 +832,7 @@ function clearReadingHistory() {
             if (!currentUser) return;
             if (!confirm('عکس پروفایل حذف بشه؟')) return;
 
-            const client = window.supabaseClient || window.supabase;
+            const client = getSupabaseClient();
             const msgBox = document.getElementById('msgBox');
             const removeBtn = document.getElementById('removeAvatarBtn');
 
@@ -705,7 +885,7 @@ function clearReadingHistory() {
             saveBtn.innerText = "در حال ذخیره...";
 
             try {
-                const client = window.supabaseClient || window.supabase;
+                const client = getSupabaseClient();
 
                 const rpcPayload = { p_full_name: newName };
                 if (!profileLoadFailed) {
@@ -746,7 +926,7 @@ function clearReadingHistory() {
                 return;
             }
 
-            const client = window.supabaseClient || window.supabase;
+            const client = getSupabaseClient();
             if (!client) return;
 
             btn.disabled = true;
@@ -770,14 +950,19 @@ function clearReadingHistory() {
 
         // خروج از حساب
         async function handleLogout() {
-            const client = window.supabaseClient || window.supabase;
+            const client = getSupabaseClient();
             if (client) {
                 await client.auth.signOut();
             }
             window.location.href = '/';
         }
 
-        document.addEventListener('DOMContentLoaded', loadUserProfile);
-        // تاریخچه‌ی خواندن مستقل از لاگین بودن کاربره (روی خودِ گوشی ذخیره‌ست)، پس جدا صداش می‌زنیم
-        document.addEventListener('DOMContentLoaded', loadReadingHistory);
-        document.addEventListener('DOMContentLoaded', setupAvatarDropZone);
+        // اگه DOMContentLoaded از قبل رد شده باشه (صفحه‌ی SPA)، فوراً اجرا می‌شه؛ و صبر می‌کنه تا
+        // HTML پروفایل واقعاً توی صفحه باشه. تاریخچه‌ی خواندن مستقل از لاگینه (روی خودِ گوشی ذخیره‌ست).
+        async function initProfilePage() {
+            await waitForElement('mainProfileContent');
+            loadReadingHistory();
+            setupAvatarDropZone();
+            loadUserProfile();
+        }
+        onReady(initProfilePage);

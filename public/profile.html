@@ -39,7 +39,16 @@
                             <h1 id="dispUsername" class="text-xl font-extrabold text-white">در حال بارگذاری...</h1>
                             <span id="vipBadge" class="hidden px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">اشتراک فعال</span>
                         </div>
-                        <p id="dispEmail" class="text-xs text-zinc-400 mt-1 dir-ltr text-right">---</p>
+                        <div id="contactInfoWrap" class="hidden mt-1.5 space-y-1">
+                            <div id="contactEmailRow" class="hidden text-xs text-zinc-400 flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-red-500">mail</span>
+                                <span id="dispEmail" dir="ltr" class="mono"></span>
+                            </div>
+                            <div id="contactPhoneRow" class="hidden text-xs text-zinc-400 flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-red-500">smartphone</span>
+                                <span id="dispPhone" dir="ltr" class="mono"></span>
+                            </div>
+                        </div>
                         <div class="text-[11px] text-zinc-500 mt-2 flex items-center gap-1.5">
                             <span class="material-symbols-outlined text-sm text-red-500">calendar_month</span>
                             عضویت از <span id="dispCreatedAt" class="mono text-zinc-300">...</span>
