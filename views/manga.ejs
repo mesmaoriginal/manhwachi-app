@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="robots" content="<%= manhwa ? 'index, follow, max-image-preview:large' : 'noindex, follow' %>">
 
     <!-- SEO Meta Tags -->
     <title><%= seo_title %></title>
@@ -42,15 +42,8 @@
       "image": full_cover_url,
       "url": canonical_url,
       "inLanguage": "fa",
-      "datePublished": (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : ''),
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": String(score),
-        "bestRating": "10",
-        "worstRating": "1",
-        "ratingCount": "100"
-      }
-    }) %>
+      "datePublished": (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : '')
+    }).replace(/</g, '\\u003c') %>
     </script>
     <% } %>
 
@@ -67,7 +60,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -90,6 +83,8 @@
     </script>
 
     <style>
+        body { font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif; }
+        .animate-fadeIn { animation: fadeIn 0.3s ease; }
         .glass-scrim {
             background: linear-gradient(to top, #000000 10%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
         }
@@ -356,7 +351,7 @@
         <div class="relative mb-3">
           <div class="auth-orb absolute inset-0 rounded-2xl bg-red-600/40 blur-xl"></div>
           <div class="relative w-14 h-14 rounded-2xl bg-zinc-800/80 border border-red-500/30 flex items-center justify-center overflow-hidden">
-            <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" class="w-8 h-8 object-contain" />
+            <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" class="w-8 h-8 object-contain" />
           </div>
         </div>
         <h2 class="font-bold text-lg text-white font-['Montserrat']">Manhwa<span class="text-red-600">Chi</span></h2>
@@ -379,10 +374,10 @@
       <!-- ==================== فرم ورود ==================== -->
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
+          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل یا شماره موبایل</label>
           <div class="relative">
-            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="email" id="loginEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="text" id="loginEmail" required autocomplete="username" placeholder="example@gmail.com یا 09121234567" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
           </div>
         </div>
         <div>
@@ -509,6 +504,7 @@
           ارسال کد تایید به جیمیل
         </button>
         <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
+        <p class="text-[11px] text-zinc-500 text-center leading-5">می‌خوای با شماره موبایل ثبت‌نام کنی؟ <a href="/?action=login" class="text-red-500 hover:text-red-400">از صفحه‌ی اصلی</a> این کار رو بکن.</p>
       </form>
 
       <!-- ==================== فرم ورود کد OTP ==================== -->
@@ -723,7 +719,7 @@
         <section class="telegram-banner lg:max-w-7xl lg:mx-auto">
             <div class="telegram-banner-link">
                 <div class="telegram-icon">
-                    <img src="../../file/icons8-telegram-app-96.png" alt="Telegram">
+                    <img src="/file/icons8-telegram-app-96.png" alt="Telegram">
                 </div>
                 <div class="telegram-content">
                     <div class="telegram-title">برای دسترسی سریع‌تر به چپترهای جدید</div>
@@ -789,7 +785,7 @@
                     return diffDays >= 0 && diffDays < 2;
                 }
                 // رندر ۴ چپتر اول مستقیم در HTML برای خزش ربات گوگل
-                var initial_episodes = episodes.slice(0, 4);
+                var initial_episodes = episodes.slice().sort(function (a, b) { return Number(b.num) - Number(a.num); }).slice(0, 4);
                 initial_episodes.forEach(function(ep) {
                     var ep_num = ep.num;
                     var is_free = !!ep.free;
@@ -931,32 +927,50 @@
         // وضعیت اشتراک کاربر — بعد از هر تغییر لاگین دوباره خونده می‌شه
         let currentUserSubscribed = false;
         let subscriptionChecked = false;
+        // اگه خواندن وضعیت اشتراک با خطای شبکه/دسترسی شکست بخوره، «نامعلوم» حساب می‌شه؛
+        // در این حالت کاربر رو به صفحه‌ی خرید نمی‌فرستیم (سرور موقع باز کردن چپتر دقیق چک می‌کنه)
+        let subscriptionUnknown = false;
+        let currentProfile = null;      // { full_name, avatar_url } کاربر لاگین‌شده
+        let bookmarkSyncFn = null;      // توسط setupBookmarkLogic ست می‌شه
 
         async function refreshSubscriptionStatus() {
             subscriptionChecked = false;
+            subscriptionUnknown = false;
             if (!currentUser) {
                 currentUserSubscribed = false;
+                currentProfile = null;
                 subscriptionChecked = true;
                 return;
             }
             try {
                 const { data, error } = await db
                     .from('profiles')
-                    .select('is_vip, vip_until')
+                    .select('is_vip, vip_until, full_name, avatar_url')
                     .eq('id', currentUser.id)
-                    .single();
+                    .maybeSingle();
 
-                if (error || !data) {
+                if (error) {
+                    console.error('خطا در خواندن پروفایل:', error.message);
+                    subscriptionUnknown = true;
                     currentUserSubscribed = false;
+                } else if (!data) {
+                    currentUserSubscribed = false;
+                    currentProfile = null;
                 } else {
                     const notExpired = !data.vip_until || new Date(data.vip_until) > new Date();
                     currentUserSubscribed = !!data.is_vip && notExpired;
+                    currentProfile = { full_name: data.full_name, avatar_url: data.avatar_url };
                 }
             } catch (err) {
                 console.error('خطا در بررسی وضعیت اشتراک:', err);
+                subscriptionUnknown = true;
                 currentUserSubscribed = false;
             } finally {
                 subscriptionChecked = true;
+                // نام/آواتار واقعی پروفایل حالا در دسترسه؛ UI رو دوباره بساز
+                updateAccountBtnUI();
+                renderCommentAuthorArea();
+                if (typeof bookmarkSyncFn === 'function') bookmarkSyncFn();
                 // اگه لیست چپترها قبلاً رندر شده بود، دوباره رندرش کن تا آیکون قفل
                 // برای کاربر مشترک درست به‌روز بشه
                 if (typeof allEpisodes !== 'undefined' && allEpisodes.length > 0) {
@@ -970,20 +984,67 @@
             }
         }
 
-        function escapeHtml(text) { if (!text) return ''; const div = document.createElement("div"); div.textContent = text; return div.innerHTML; }
+        function escapeHtml(text) {
+            if (text === null || text === undefined || text === '') return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
 
         // ==========================================
         // Auth (login/signup) — comments now require an account
         // ==========================================
         let currentUser = null;
 
+        // اولویت: نام پروفایل > full_name ثبت‌نام > display_name > بخش اول ایمیل
+        // (ثبت‌نام full_name رو ذخیره می‌کنه، نه display_name؛ قبلاً همیشه بخش اول ایمیل نشون داده می‌شد)
         function getDisplayName(user) {
             if (!user) return '';
-            return user.user_metadata?.display_name || (user.email ? user.email.split('@')[0] : 'کاربر');
+            return (currentProfile?.full_name || '').trim()
+                || user.user_metadata?.full_name
+                || user.user_metadata?.display_name
+                || (user.email ? user.email.split('@')[0] : 'کاربر');
+        }
+
+        // فقط آدرس http(s) قبول می‌شه و کاراکترهای خطرناک attribute کدگذاری می‌شن
+        function safeAvatarUrl(url) {
+            if (typeof url !== 'string' || !url.trim()) return '';
+            try {
+                const u = new URL(url.trim());
+                if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+                return u.href.replace(/"/g, '%22').replace(/'/g, '%27').replace(/</g, '%3C').replace(/>/g, '%3E');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // آواتار: اگه عکس داشت نشونش می‌ده، وگرنه (یا اگه عکس لود نشد) حرف اول اسم
+        function avatarHtml(name, avatarUrl, opts = {}) {
+            const { size = 'w-12 h-12', text = 'text-2xl', radius = 'rounded-2xl', extra = '' } = opts;
+            const url = safeAvatarUrl(avatarUrl);
+            const initial = escapeHtml(Array.from(String(name || '?'))[0] || '?');
+            const base = `${size} ${radius} ${extra} relative overflow-hidden flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-red-500 to-rose-600`;
+            const fallback = `<span class="text-white font-bold ${text}">${initial}</span>`;
+            if (!url) return `<div class="${base}">${fallback}</div>`;
+            return `<div class="${base}">${fallback}<img src="${url}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-cover bg-zinc-900" onload="this.previousElementSibling.style.display='none'" onerror="this.remove()"></div>`;
         }
 
   // مقداردهی اولیه متغیر ایمیل موقت
   let tempRegistrationEmail = "";
+
+  // نرمال‌سازی شماره موبایل ایران (هم‌سان با index.html و lib/phone.js سرور)
+  function toEnDigitsClient(input) {
+    return String(input ?? "")
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
+  }
+  function normalizeIranPhoneClient(raw) {
+    if (!raw) return null;
+    let digits = toEnDigitsClient(raw).trim().replace(/[\s-]/g, "");
+    digits = digits.replace(/^\+/, "");
+    digits = digits.replace(/^0098/, "98");
+    digits = digits.replace(/^0/, "98");
+    if (/^9\d{9}$/.test(digits)) digits = "98" + digits;
+    return /^989\d{9}$/.test(digits) ? digits : null;
+  }
 
   // تابع دسترسی امن به Supabase
   function getSupabase() {
@@ -1132,7 +1193,7 @@
   // ==================== تابع ورود ====================
   async function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const idRaw = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     const btn = document.getElementById('loginSubmitBtn');
 
@@ -1143,14 +1204,21 @@
       const client = getSupabase();
       if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
 
-      const { data, error } = await client.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+      // شامل @ باشه ایمیله، وگرنه شماره موبایل (کاربرها با هر دو روش ثبت‌نام می‌کنن)
+      let credentials;
+      if (idRaw.includes('@')) {
+        credentials = { email: idRaw.toLowerCase(), password };
+      } else {
+        const phone = normalizeIranPhoneClient(idRaw);
+        if (!phone) throw new Error("ایمیل یا شماره موبایل وارد شده معتبر نیست.");
+        credentials = { phone, password };
+      }
+
+      const { data, error } = await client.auth.signInWithPassword(credentials);
 
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          throw new Error("ایمیل یا رمز عبور اشتباه است.");
+          throw new Error("اطلاعات ورود اشتباه است.");
         } else if (error.message.includes('Email not confirmed')) {
           throw new Error("ایمیل شما هنوز تایید نشده است. ابتدا کد ارسال شده را تایید کنید.");
         } else {
@@ -1410,7 +1478,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 area.innerHTML = `
                     <div class="flex items-center justify-between bg-surface-container rounded-2xl px-5 py-3.5 border border-white/10">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white font-bold text-sm">${escapeHtml(name[0] || '?')}</div>
+                            ${avatarHtml(name, currentProfile?.avatar_url, { size: 'w-9 h-9', text: 'text-sm', radius: 'rounded-xl' })}
                             <span class="text-sm text-on-surface">نظر با نام <span class="font-bold text-white">${escapeHtml(name)}</span> ثبت می‌شه</span>
                         </div>
                     </div>`;
@@ -1558,11 +1626,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let globalMainMessages = [];
         let globalUserReplies = [];
         let globalAdminReplies = [];
-        let globalProfilesMap = {};
+        let globalProfilesMap = {}; // user_id -> { name, avatar }
 
         function getCommentAuthorName(msg) {
-            if (msg && msg.user_id && globalProfilesMap[msg.user_id]) return globalProfilesMap[msg.user_id];
+            const p = msg && msg.user_id && globalProfilesMap[msg.user_id];
+            if (p && p.name) return p.name;
             return (msg && msg.name) || 'کاربر';
+        }
+
+        function getCommentAuthorAvatar(msg) {
+            const p = msg && msg.user_id && globalProfilesMap[msg.user_id];
+            return p ? p.avatar : '';
         }
 
         async function loadDynamicContent() {
@@ -1595,14 +1669,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 subBanner.classList.toggle('flex', hasLocked);
             }
 
-            let sortedEpisodes = [...allEpisodes];
+            // همیشه بر اساس شماره‌ی چپتر مرتب می‌شه (نه ترتیب فایل data.json)
+            let sortedEpisodes = [...allEpisodes].sort((a, b) => Number(b.num) - Number(a.num));
             if (!isNewestFirst) sortedEpisodes.reverse();
 
             const visibleEpisodes = sortedEpisodes.slice(0, visibleCount);
             visibleEpisodes.forEach(ep => {
                 const a = document.createElement('a');
                 let isFree = ep.free;
-                a.href = `/reader.html?slug=${MANHWA_SLUG}&ch=${ep.num}`;
+                a.href = `/reader.html?slug=${encodeURIComponent(MANHWA_SLUG)}&ch=${encodeURIComponent(ep.num)}`;
                 a.dataset.free = isFree ? '1' : '0';
                 a.dataset.num = ep.num;
 
@@ -1614,14 +1689,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isNew = isChapterNew(ep);
                 a.innerHTML = `
                     <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
-                        <img src="/manhwas/${MANHWA_SLUG}/chapterPictures/chapterpicture${ep.num}.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <img src="/manhwas/${encodeURIComponent(MANHWA_SLUG)}/chapterPictures/chapterpicture${ep.num}.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
                         <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#${ep.num}</span></div>
                         ${(!isFree && !currentUserSubscribed) ? `<div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>` : ''}
                         ${isNew ? `<span class="new-badge">جدید</span>` : ''}
                     </div>
                     <div class="flex-1">
                         <p class="font-semibold text-white">چپتر ${ep.num}</p>
-                        <p class="text-xs text-text-muted mt-1">${ep.date}</p>
+                        <p class="text-xs text-text-muted mt-1">${escapeHtml(ep.date || '')}</p>
                     </div>
                     ${statusHTML}
                 `;
@@ -1656,7 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // لاگین/اشتراک کاربر یا به صفحه خرید اشتراک بره یا به صفحه ریدر
         // (بررسی نهایی و دقیق‌تر خود صفحه ریدر انجام می‌شه)
         async function goToChapter(epNum, isFree) {
-            const readerUrl = `/reader.html?slug=${MANHWA_SLUG}&ch=${epNum}`;
+            const readerUrl = `/reader.html?slug=${encodeURIComponent(MANHWA_SLUG)}&ch=${encodeURIComponent(epNum)}`;
 
             // به محض تلاش برای باز کردن چپتر، به عنوان خوانده‌شده ثبتش می‌کنیم تا نشان «جدید» برداشته شود
             ChapterReadService.markRead(MANHWA_SLUG, epNum);
@@ -1675,6 +1750,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 await refreshSubscriptionStatus();
             }
 
+            // اگه وضعیت اشتراک نامعلوم بود (خطای شبکه) کاربر مشترک رو به صفحه‌ی خرید نمی‌فرستیم
+            if (subscriptionUnknown) {
+                window.location.href = readerUrl;
+                return;
+            }
             window.location.href = currentUserSubscribed ? readerUrl : SUBSCRIPTION_PAGE_URL;
         }
 
@@ -1803,10 +1883,14 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
 
         document.getElementById("copyTelegramBtn").addEventListener("click", async () => {
-            const telegramLink = "@ManhwaChiOfficial";
-            await navigator.clipboard.writeText(telegramLink);
+            const telegramLink = "https://telegram.me/Manhwachiofficial";
             const btn = document.getElementById("copyTelegramBtn");
-            btn.textContent = "کپی شد ✓";
+            try {
+                await navigator.clipboard.writeText(telegramLink);
+                btn.textContent = "کپی شد ✓";
+            } catch (err) {
+                btn.textContent = "کپی نشد";
+            }
             setTimeout(() => { btn.textContent = "کپی لینک"; }, 2000);
         });
 
@@ -1815,7 +1899,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageTextArea = document.getElementById('messageText');
             const charCount = document.getElementById('charCount');
 
-            messageTextArea.addEventListener('input', () => charCount.textContent = `${messageTextArea.value.length} / 500`);
+            messageTextArea.addEventListener('input', () => charCount.textContent = `${messageTextArea.value.length.toLocaleString('fa-IR')} / ۵۰۰`);
 
             messageForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1846,39 +1930,58 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             async function loadMessages() {
-                const { data: messages } = await db.from('messages')
+                const { data: messages, error: messagesError } = await db.from('messages')
                     .select('*')
                     .eq('manhwa_slug', MANHWA_SLUG)
                     .eq('approved', true)
                     .order('created_at', { ascending: false });
-                
+
+                if (messagesError || !messages) {
+                    console.error('خطا در دریافت نظرات:', messagesError);
+                    if (!globalMainMessages.length) {
+                        document.getElementById('messagesList').innerHTML = '<p class="text-text-muted text-center py-4 text-sm">خطا در بارگذاری نظرات. صفحه را دوباره باز کن.</p>';
+                    }
+                    return;
+                }
+
                 const { data: adminReplies } = await db.from('replies').select('*').order('created_at', { ascending: true });
-                
-                if (!messages) return;
-                
+
+                // نام و آواتار نویسنده‌ها از جدول profiles
+                const commentUserIds = [...new Set(messages.map(m => m.user_id).filter(Boolean))];
+                const profilesMap = {};
+                if (commentUserIds.length > 0) {
+                    let { data: profilesData, error: profilesError } = await db.from('profiles').select('id, full_name, avatar_url').in('id', commentUserIds);
+                    if (profilesError) {
+                        // اگه به هر دلیل ستون آواتار قابل خواندن نبود، حداقل نام‌ها رو بگیر
+                        console.error('خطا در دریافت آواتارها:', profilesError.message);
+                        ({ data: profilesData } = await db.from('profiles').select('id, full_name').in('id', commentUserIds));
+                    }
+                    (profilesData || []).forEach(p => { profilesMap[p.id] = { name: p.full_name, avatar: p.avatar_url || '' }; });
+                }
+
                 globalUserReplies = messages.filter(msg => msg.parent_message_id !== null);
                 globalAdminReplies = adminReplies || [];
                 globalMainMessages = messages.filter(msg => msg.parent_message_id === null);
+                globalProfilesMap = profilesMap;
 
-                // گرفتن full_name کاربران از جدول profiles در Supabase
-                const commentUserIds = [...new Set(messages.map(m => m.user_id).filter(Boolean))];
-                if (commentUserIds.length > 0) {
-                    const { data: profilesData } = await db.from('profiles').select('id, full_name').in('id', commentUserIds);
-                    globalProfilesMap = {};
-                    (profilesData || []).forEach(p => { globalProfilesMap[p.id] = p.full_name; });
-                } else {
-                    globalProfilesMap = {};
-                }
-                
-                document.getElementById('commentCount').textContent = `(${globalMainMessages.length})`;
-                
+                // اگه نظری حذف شده باشه و صفحه‌ی فعلی دیگه وجود نداشته باشه
+                const totalPages = Math.max(1, Math.ceil(globalMainMessages.length / commentsPerPage));
+                if (currentCommentPage > totalPages) currentCommentPage = totalPages;
+
+                document.getElementById('commentCount').textContent = `(${globalMainMessages.length.toLocaleString('fa-IR')})`;
+
                 renderCommentsPage();
                 setupPagination();
             }
-            
+
+            // چند رویداد پشت‌سرهم (مثلاً تایید چند نظر) فقط یک بار رفرش می‌شن
+            let reloadTimer = null;
+            const scheduleReload = () => { clearTimeout(reloadTimer); reloadTimer = setTimeout(loadMessages, 300); };
+
             loadMessages();
-            db.channel('realtime_comments').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, loadMessages).subscribe();
-            db.channel('realtime_replies').on('postgres_changes', { event: '*', schema: 'public', table: 'replies' }, loadMessages).subscribe();
+            // رویداد نظرهای بقیه‌ی مانهواها دیگه باعث رفرش این صفحه نمی‌شه
+            db.channel('realtime_comments').on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `manhwa_slug=eq.${MANHWA_SLUG}` }, scheduleReload).subscribe();
+            db.channel('realtime_replies').on('postgres_changes', { event: '*', schema: 'public', table: 'replies' }, scheduleReload).subscribe();
         }
         
         function renderCommentsPage() {
@@ -1940,8 +2043,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         return `
                             <div class="reply-thread my-3">
                                 <div class="flex justify-between items-center mb-1.5">
-                                    <span class="font-semibold text-sm text-gray-200 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-primary/60"></span>
+                                    <span class="font-semibold text-sm text-gray-200 flex items-center gap-2">
+                                        ${avatarHtml(getCommentAuthorName(reply), getCommentAuthorAvatar(reply), { size: 'w-6 h-6', text: 'text-[11px]', radius: 'rounded-lg' })}
                                         ${escapeHtml(getCommentAuthorName(reply))}
                                     </span>
                                     <span class="text-[11px] text-text-muted font-mono" dir="ltr">${replyDate}</span>
@@ -1957,9 +2060,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const authorName = getCommentAuthorName(msg);
                 div.innerHTML = `
                     <div class="flex gap-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-lg shadow-red-500/20">
-                            ${escapeHtml(authorName?.[0] || '?')}
-                        </div>
+                        ${avatarHtml(authorName, getCommentAuthorAvatar(msg), { size: 'w-12 h-12', text: 'text-2xl', radius: 'rounded-2xl', extra: 'shadow-lg shadow-red-500/20' })}
                         <div class="flex-1">
                             <div class="flex justify-between items-center">
                                 <p class="font-bold text-white text-base">${escapeHtml(authorName)}</p>
@@ -2000,12 +2101,12 @@ document.addEventListener('DOMContentLoaded', () => {
             similarList.innerHTML = '';
             similarItems.forEach(item => {
                 const card = document.createElement('a');
-                card.href = `/manga.php?slug=${item.slug}`;
+                card.href = `/comic/${encodeURIComponent(item.slug)}`;
                 card.className = 'snap-start flex-shrink-0 w-36 sm:w-44 bg-surface-elevated border border-white/5 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 group';
 
                 card.innerHTML = `
                     <div class="relative w-full h-48 sm:h-56 bg-zinc-800 overflow-hidden">
-                        <img src="/manhwas/${item.slug}/${item.cover_image}" 
+                        <img src="/manhwas/${encodeURIComponent(item.slug)}/${item.cover_image}" 
                              alt="${escapeHtml(item.title_fa || item.title_en)}" 
                              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                              loading="lazy"
@@ -2189,17 +2290,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         async function updateViewCountDisplay() {
-            const { data } = await db.from('manhwa_stats').select('views').eq('slug', MANHWA_SLUG).single();
+            const { data } = await db.from('manhwa_stats').select('views').eq('slug', MANHWA_SLUG).maybeSingle();
             if (data) document.getElementById('viewNumber').textContent = Number(data.views || 0);
         }
 
         function setupBookmarkLogic() {
             const bookmarkBtn = document.getElementById('bookmarkBtn');
             if (!bookmarkBtn) return;
-        
-            let bookmarks = JSON.parse(localStorage.getItem('manhwachi_bookmarks')) || [];
-            let isBookmarked = bookmarks.some(b => b.slug === MANHWA_SLUG);
-        
+
+            const LS_KEY = 'manhwachi_bookmarks';
+            const readLocal = () => {
+                try {
+                    const v = JSON.parse(localStorage.getItem(LS_KEY));
+                    return Array.isArray(v) ? v : [];
+                } catch (e) { return []; }
+            };
+            const writeLocal = (list) => {
+                try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch (e) { /* localStorage غیرفعال یا پر است */ }
+            };
+            const coverSrc = () => document.getElementById('dynamic-cover').getAttribute('src');
+            const makeLocalItem = () => ({
+                slug: MANHWA_SLUG,
+                title_en: englishTitle,
+                title_fa: persianTitle,
+                cover: coverSrc(),
+                savedAt: new Date().toISOString()
+            });
+
+            let isBookmarked = readLocal().some(b => b.slug === MANHWA_SLUG);
+
             function updateBookmarkButtonUI() {
                 if (isBookmarked) {
                     bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-black font-bold" style="font-variation-settings: 'FILL' 1;">bookmark</span>`;
@@ -2209,41 +2328,94 @@ document.addEventListener('DOMContentLoaded', () => {
                     bookmarkBtn.className = "w-14 h-14 border-2 border-primary text-primary bg-transparent rounded-2xl flex items-center justify-center active:scale-95 transition-all hover:bg-primary/10";
                 }
             }
-        
             updateBookmarkButtonUI();
-        
-            bookmarkBtn.addEventListener('click', () => {
-                bookmarks = JSON.parse(localStorage.getItem('manhwachi_bookmarks')) || [];
-                
+
+            // ---- همگام‌سازی با جدول bookmarks (همون چیزی که صفحه‌ی پروفایل نشون می‌ده) ----
+            async function remoteHas() {
+                const { data, error } = await db.from('bookmarks').select('id')
+                    .eq('user_id', currentUser.id).eq('manhwa_slug', MANHWA_SLUG).limit(1);
+                if (error) throw error;
+                return !!(data && data.length);
+            }
+            async function remoteAdd() {
+                if (await remoteHas()) return;
+                const { error } = await db.from('bookmarks').insert({
+                    user_id: currentUser.id,
+                    manhwa_slug: MANHWA_SLUG,
+                    title_en: englishTitle,
+                    title_fa: persianTitle,
+                    cover_url: coverSrc()
+                });
+                if (error) throw error;
+            }
+            async function remoteRemove() {
+                const { error } = await db.from('bookmarks').delete()
+                    .eq('user_id', currentUser.id).eq('manhwa_slug', MANHWA_SLUG);
+                if (error) throw error;
+            }
+
+            let lastSyncedUserId = null;
+            async function syncFromServer() {
+                if (!currentUser) { lastSyncedUserId = null; return; }
+                if (lastSyncedUserId === currentUser.id) return;
+                lastSyncedUserId = currentUser.id;
+                try {
+                    const has = await remoteHas();
+                    if (has && !isBookmarked) {
+                        // قبلاً روی حساب (مثلاً دستگاه دیگه) نشان شده
+                        const list = readLocal();
+                        if (!list.some(b => b.slug === MANHWA_SLUG)) { list.push(makeLocalItem()); writeLocal(list); }
+                        isBookmarked = true;
+                        updateBookmarkButtonUI();
+                    } else if (!has && isBookmarked) {
+                        // فقط روی همین مرورگر نشان شده بود (مثلاً قبل از ورود) → به حساب اضافه می‌شه
+                        await remoteAdd();
+                    }
+                } catch (err) {
+                    lastSyncedUserId = null;
+                    console.error('همگام‌سازی نشان‌ها با حساب کاربری ناموفق بود:', err);
+                }
+            }
+            bookmarkSyncFn = syncFromServer;
+            syncFromServer();
+
+            bookmarkBtn.addEventListener('click', async () => {
+                const list = readLocal();
                 if (isBookmarked) {
-                    bookmarks = bookmarks.filter(b => b.slug !== MANHWA_SLUG);
+                    writeLocal(list.filter(b => b.slug !== MANHWA_SLUG));
                     isBookmarked = false;
                 } else {
-                    const coverSrc = document.getElementById('dynamic-cover').getAttribute('src');
-                    const itemToSave = {
-                        slug: MANHWA_SLUG,
-                        title_en: englishTitle,
-                        title_fa: persianTitle,
-                        cover: coverSrc,
-                        savedAt: new Date().toISOString()
-                    };
-                    bookmarks.push(itemToSave);
+                    list.push(makeLocalItem());
+                    writeLocal(list);
                     isBookmarked = true;
                 }
-        
-                localStorage.setItem('manhwachi_bookmarks', JSON.stringify(bookmarks));
                 updateBookmarkButtonUI();
+
+                if (currentUser) {
+                    try {
+                        if (isBookmarked) await remoteAdd(); else await remoteRemove();
+                    } catch (err) {
+                        console.error('ذخیره‌ی نشان روی حساب کاربری ناموفق بود:', err);
+                    }
+                }
             });
         }
 
-        window.onload = () => {
+        // window.onload منتظر همه‌ی تصاویر/فونت‌ها (از جمله نماد اعتماد خارجی) می‌مونه و
+        // اگه اون کند بود، نظرها و لیست چپترها دیر لود می‌شدن؛ پس مستقیم بعد از آماده شدن DOM اجرا می‌شه
+        function startPage() {
             refreshInitialNewBadges();
             loadDynamicContent().then(() => {
                 setupBookmarkLogic();
             });
             initComments();
             updateViewCountDisplay();
-        };
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startPage);
+        } else {
+            startPage();
+        }
     </script>
 </body>
 </html>
