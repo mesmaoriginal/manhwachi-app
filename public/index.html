@@ -116,6 +116,7 @@
 
 }
         
+        html, body { max-width: 100%; overflow-x: hidden; }
         body {
             overflow: hidden;
             height: 100%;
@@ -140,6 +141,8 @@
     right: 0;
     bottom: 0;
     overflow-y: auto;
+    overflow-x: hidden;            /* جلوگیری از اسکرول چپ/راست (وقتی overflow-y:auto باشه، overflow-x خودکار auto می‌شه) */
+    overscroll-behavior-x: none;
 
     /* مخفی کردن اسکرول */
     scrollbar-width: none;      /* Firefox */
@@ -434,7 +437,7 @@
                 
             </div>
 
-            <button type="button" data-page="profile" onclick="loadPage(this)" aria-label="پروفایل" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+            <button type="button" data-page="profile" onclick="loadPage(this)" aria-label="پروفایل" class="hidden md:flex w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span class="material-symbols-outlined text-xl">person</span>
             </button>
 
@@ -1135,7 +1138,12 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('phoneOtpSection')?.classList.add('hidden');
     const phoneInput = document.getElementById('regPhoneNumber');
     if (phoneInput) { phoneInput.disabled = false; phoneInput.value = ''; }
-    document.getElementById('regPhoneOtpCode')?.setAttribute('value', '');
+    ['regPhoneFullName','regPhoneOtpCode','regPhonePassword','regPhoneConfirmPassword'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    setPhoneStep(1);
+    document.getElementById('registerMethodSwitch')?.classList.add('hidden');
     regCaptchaId = "";
     const capAns = document.getElementById('regCaptchaAnswer');
     if (capAns) capAns.value = '';
@@ -1165,6 +1173,7 @@ document.addEventListener('keydown', (e) => {
       registerForm?.classList.add('hidden');
       document.getElementById('registerPhoneForm')?.classList.add('hidden');
       registerMethodSwitch?.classList.add('hidden');
+      setPhoneStep(1);
       if (tabLoginBtn) tabLoginBtn.className = activeCls;
       if (tabRegisterBtn) tabRegisterBtn.className = inactiveCls;
       if (subtitle) subtitle.textContent = "خوش برگشتی! برای ادامه وارد حساب خود شو";
@@ -1428,6 +1437,46 @@ document.addEventListener('keydown', (e) => {
 
   // ==================== ثبت‌نام با شماره موبایل (OTP پیامکی) ====================
 
+  // ثبت‌نام با موبایل دو مرحله‌ایه تا مودال بلند نشه و اسکرول نخوره:
+  //   مرحله ۱: نام + شماره + کد امنیتی + دکمه‌ی «ارسال کد»
+  //   مرحله ۲: (بعد از ارسال کد، مرحله ۱ و تب‌ها و لوگو محو می‌شن) کد پیامک + رمز عبور
+  function setPhoneStep(step) {
+    const second = step === 2;
+    document.getElementById('phoneStep1')?.classList.toggle('hidden', second);
+    document.getElementById('phoneOtpSection')?.classList.toggle('hidden', !second);
+    document.getElementById('authTabs')?.classList.toggle('hidden', second);
+    document.getElementById('authLogoWrap')?.classList.toggle('hidden', second);
+    if (second) {
+      document.getElementById('registerMethodSwitch')?.classList.add('hidden');
+      const subtitle = document.getElementById('authSubtitle');
+      if (subtitle) subtitle.textContent = "تایید شماره موبایل";
+    }
+  }
+
+  function editPhoneNumber() {
+    clearInterval(phoneResendInterval);
+    tempRegistrationPhone = "";
+    hideAuthMessage();
+    setPhoneStep(1);
+    document.getElementById('registerMethodSwitch')?.classList.remove('hidden');
+    const subtitle = document.getElementById('authSubtitle');
+    if (subtitle) subtitle.textContent = "چند قدم تا ساخت حساب جدیدت باقی مونده";
+    const otp = document.getElementById('regPhoneOtpCode');
+    if (otp) otp.value = '';
+    loadRegCaptcha();
+    document.getElementById('regPhoneNumber')?.focus();
+  }
+
+  // ارسال مجدد کد به کپچای تازه نیاز داره؛ پس برمی‌گردیم به مرحله‌ی ۱ (نام و شماره حفظ می‌شن)
+  function resendPhoneOtp() {
+    const keepPhone = document.getElementById('regPhoneNumber')?.value;
+    editPhoneNumber();
+    const phoneInput = document.getElementById('regPhoneNumber');
+    if (phoneInput && keepPhone) phoneInput.value = keepPhone;
+    showAuthMessage("برای ارسال مجدد کد، کد امنیتی را وارد کن.", false);
+    document.getElementById('regCaptchaAnswer')?.focus();
+  }
+
   function startPhoneResendCountdown(seconds) {
     const btn = document.getElementById('regPhoneResendBtn');
     const timerText = document.getElementById('regPhoneResendTimer');
@@ -1476,8 +1525,12 @@ document.addEventListener('keydown', (e) => {
     const phoneInput = document.getElementById('regPhoneNumber');
     const phone = normalizeIranPhoneClient(phoneInput.value);
     const sendBtn = document.getElementById('regPhoneSendBtn');
-    const resendBtn = document.getElementById('regPhoneResendBtn');
-    const activeBtn = document.activeElement === resendBtn ? resendBtn : sendBtn;
+    const activeBtn = sendBtn;
+
+    if (!document.getElementById('regPhoneFullName').value.trim()) {
+      showAuthMessage("نام و نام خانوادگی را وارد کن.", true);
+      return;
+    }
 
     if (!phone) {
       showAuthMessage("شماره موبایل معتبر نیست. مثال: 09121234567", true);
@@ -1495,9 +1548,9 @@ document.addEventListener('keydown', (e) => {
       return;
     }
 
-    const originalText = activeBtn.innerText;
+    const originalHtml = activeBtn.innerHTML;
     activeBtn.disabled = true;
-    activeBtn.innerText = "در حال ارسال...";
+    activeBtn.textContent = "در حال ارسال...";
 
     try {
       const usedCaptchaId = regCaptchaId;
@@ -1511,15 +1564,17 @@ document.addEventListener('keydown', (e) => {
       if (!res.ok) throw new Error(data.error || "ارسال کد ناموفق بود.");
 
       tempRegistrationPhone = phone;
-      document.getElementById('phoneOtpSection')?.classList.remove('hidden');
-      phoneInput.disabled = true;
+      const shown = document.getElementById('regPhoneShown');
+      if (shown) shown.textContent = phoneInput.value.trim();
+      setPhoneStep(2);
       showAuthMessage("کد ۶ رقمی تایید برای شماره‌ات پیامک شد.", false);
       startPhoneResendCountdown(data.resendAfterSeconds || 90);
+      document.getElementById('regPhoneOtpCode')?.focus();
     } catch (err) {
       showAuthMessage(err.message || "ارسال کد ناموفق بود.", true);
-      activeBtn.disabled = false;
     } finally {
-      if (activeBtn === sendBtn) activeBtn.innerText = originalText;
+      activeBtn.disabled = false;
+      activeBtn.innerHTML = originalHtml;
       loadRegCaptcha(); // برای تلاش بعدی (ارسال مجدد) کپچای تازه
     }
   }
@@ -1533,6 +1588,10 @@ document.addEventListener('keydown', (e) => {
     const confirmPassword = document.getElementById('regPhoneConfirmPassword').value;
     const btn = document.getElementById('regPhoneSubmitBtn');
 
+    if (!fullName) {
+      showAuthMessage("نام و نام خانوادگی را وارد کن.", true);
+      return;
+    }
     if (!tempRegistrationPhone) {
       showAuthMessage("ابتدا با دکمه‌ی «ارسال کد» یک کد تایید برای شماره‌ات بگیر.", true);
       return;
@@ -1834,8 +1893,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="p-6 pt-7">
 
       <!-- برند / لوگو -->
-      <div class="flex flex-col items-center text-center mb-6">
-        <div class="relative mb-3">
+      <div id="authBrand" class="flex flex-col items-center text-center mb-6">
+        <div id="authLogoWrap" class="relative mb-3">
           <div class="auth-orb absolute inset-0 rounded-2xl bg-red-600/40 blur-xl"></div>
           <div class="relative w-14 h-14 rounded-2xl bg-zinc-800/80 border border-red-500/30 flex items-center justify-center overflow-hidden">
             <img src="ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" class="w-8 h-8 object-contain" />
@@ -1846,7 +1905,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- تب‌ها (سگمنت شیشه‌ای) -->
-      <div class="flex items-center gap-1 bg-zinc-800/50 rounded-full p-1 mb-5 border border-zinc-700/40">
+      <div id="authTabs" class="flex items-center gap-1 bg-zinc-800/50 rounded-full p-1 mb-5 border border-zinc-700/40">
         <button id="tabLoginBtn" type="button" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40">
           ورود
         </button>
@@ -2004,77 +2063,88 @@ document.addEventListener('DOMContentLoaded', () => {
       </form>
 
       <!-- ==================== فرم ثبت‌نام با شماره موبایل (OTP پیامکی) ==================== -->
-      <form id="registerPhoneForm" onsubmit="handleRegisterPhone(event)" class="space-y-3.5 hidden">
-        <div>
-          <label for="regPhoneFullName" class="block text-xs font-medium text-zinc-400 mb-1">نام و نام خانوادگی</label>
-          <div class="relative">
-            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="text" id="regPhoneFullName" required placeholder="مثال: علی محمدی" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
+      <form id="registerPhoneForm" onsubmit="handleRegisterPhone(event)" novalidate class="space-y-3.5 hidden">
 
-        <div>
-          <label for="regCaptchaAnswer" class="block text-xs font-medium text-zinc-400 mb-1">کد امنیتی</label>
-          <div class="flex items-center gap-2">
-            <img id="regCaptchaImg" alt="کد امنیتی" width="160" height="56" class="rounded-lg bg-slate-50 shrink-0" />
-            <button type="button" onclick="loadRegCaptcha()" class="text-[11px] text-red-500 hover:text-red-400 transition-all shrink-0">کد جدید</button>
-            <input type="text" id="regCaptchaAnswer" autocomplete="off" autocapitalize="characters" maxlength="8" dir="ltr" placeholder="ABCDE" class="w-full min-w-0 text-center uppercase tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label for="regPhoneNumber" class="block text-xs font-medium text-zinc-400 mb-1">شماره موبایل</label>
-          <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <i class="fa-solid fa-mobile-screen auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-              <input type="tel" id="regPhoneNumber" required onfocus="if(!regCaptchaId) loadRegCaptcha()" placeholder="09121234567" dir="ltr" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 text-left focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+        <!-- مرحله ۱: نام، شماره، کد امنیتی -->
+        <div id="phoneStep1" class="space-y-3.5">
+          <div>
+            <label for="regPhoneFullName" class="block text-xs font-medium text-zinc-400 mb-1">نام و نام خانوادگی</label>
+            <div class="relative">
+              <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="text" id="regPhoneFullName" placeholder="مثال: علی محمدی" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
             </div>
-            <button type="button" id="regPhoneSendBtn" onclick="handleSendPhoneOtp()" class="shrink-0 px-3.5 py-2.5 rounded-xl bg-zinc-700 hover:bg-zinc-600 text-xs font-bold text-white transition-all">
-              ارسال کد
-            </button>
           </div>
+
+          <div>
+            <label for="regPhoneNumber" class="block text-xs font-medium text-zinc-400 mb-1">شماره موبایل</label>
+            <div class="relative">
+              <i class="fa-solid fa-mobile-screen auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="tel" id="regPhoneNumber" onfocus="if(!regCaptchaId) loadRegCaptcha()" placeholder="09121234567" dir="ltr" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 text-left focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            </div>
+          </div>
+
+          <div>
+            <label for="regCaptchaAnswer" class="block text-xs font-medium text-zinc-400 mb-1">کد امنیتی</label>
+            <div class="flex items-center gap-2">
+              <img id="regCaptchaImg" alt="کد امنیتی" width="160" height="56" class="rounded-lg bg-slate-50 shrink-0 max-w-[45%] h-auto" />
+              <button type="button" onclick="loadRegCaptcha()" aria-label="کد جدید" class="text-[11px] text-red-500 hover:text-red-400 transition-all shrink-0">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+              <input type="text" id="regCaptchaAnswer" autocomplete="off" autocapitalize="characters" maxlength="8" dir="ltr" placeholder="ABCDE" class="w-full min-w-0 text-center uppercase tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            </div>
+          </div>
+
+          <button type="button" id="regPhoneSendBtn" onclick="handleSendPhoneOtp()" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+            ارسال کد تایید
+          </button>
         </div>
 
+        <!-- مرحله ۲: کد پیامک‌شده و رمز عبور (بعد از ارسال کد، مرحله ۱ محو می‌شه) -->
         <div id="phoneOtpSection" class="hidden space-y-3.5">
+          <div class="flex items-center justify-between gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/40 px-3 py-2.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <i class="fa-solid fa-mobile-screen text-red-500 text-sm"></i>
+              <span class="text-xs text-zinc-400 shrink-0">کد به</span>
+              <span id="regPhoneShown" dir="ltr" class="text-xs text-white font-semibold truncate"></span>
+              <span class="text-xs text-zinc-400 shrink-0">ارسال شد</span>
+            </div>
+            <button type="button" onclick="editPhoneNumber()" class="text-[11px] text-red-500 hover:text-red-400 transition-all shrink-0">ویرایش شماره</button>
+          </div>
+
           <div>
             <label for="regPhoneOtpCode" class="block text-xs font-medium text-zinc-400 mb-1">کد ۶ رقمی پیامک‌شده</label>
-            <input type="text" id="regPhoneOtpCode" maxlength="6" placeholder="123456" class="w-full text-center tracking-[0.5em] text-lg font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-2.5 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <input type="text" id="regPhoneOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" class="w-full text-center tracking-[0.5em] text-lg font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-2.5 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
             <div class="flex items-center justify-between mt-1.5">
               <span id="regPhoneResendTimer" class="text-[11px] text-zinc-500"></span>
-              <button type="button" id="regPhoneResendBtn" onclick="handleSendPhoneOtp()" class="text-[11px] text-red-500 hover:text-red-400 transition-all disabled:opacity-40 disabled:pointer-events-none">
+              <button type="button" id="regPhoneResendBtn" onclick="resendPhoneOtp()" class="text-[11px] text-red-500 hover:text-red-400 transition-all disabled:opacity-40 disabled:pointer-events-none">
                 ارسال مجدد کد
               </button>
             </div>
           </div>
 
-          <div>
-            <label for="regPhonePassword" class="block text-xs font-medium text-zinc-400 mb-1">رمز عبور (حداقل ۶ کاراکتر)</label>
-            <div class="relative">
-              <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-              <input type="password" id="regPhonePassword" minlength="6" placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-              <button type="button" onclick="toggleAuthPassword('regPhonePassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
-                <i class="fa-solid fa-eye text-sm"></i>
-              </button>
-            </div>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="regPhonePassword" minlength="6" aria-label="رمز عبور" placeholder="رمز عبور (حداقل ۶ کاراکتر)" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('regPhonePassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
           </div>
 
-          <div>
-            <label for="regPhoneConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1">تکرار رمز عبور</label>
-            <div class="relative">
-              <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-              <input type="password" id="regPhoneConfirmPassword" minlength="6" placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-              <button type="button" onclick="toggleAuthPassword('regPhoneConfirmPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
-                <i class="fa-solid fa-eye text-sm"></i>
-              </button>
-            </div>
+          <div class="relative">
+            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+            <input type="password" id="regPhoneConfirmPassword" minlength="6" aria-label="تکرار رمز عبور" placeholder="تکرار رمز عبور" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+            <button type="button" onclick="toggleAuthPassword('regPhoneConfirmPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
           </div>
 
-          <button type="submit" id="regPhoneSubmitBtn" class="w-full py-3 mt-1 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <button type="submit" id="regPhoneSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
             <i class="fa-solid fa-circle-check text-xs"></i>
             تایید و ساخت حساب
           </button>
         </div>
-        <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
+        <p id="phoneTermsNote" class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
       </form>
 
       <!-- ==================== فرم ورود کد OTP ==================== -->
