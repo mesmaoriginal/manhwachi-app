@@ -25,6 +25,43 @@ const app = express();
 // => قبل از deploy مطمئن شید توپولوژی واقعی سرورتون چیه و همین مطابقش تنظیم کنید.
 app.set("trust proxy", 1);
 
+// ---------- نرمال‌سازی IP کلاینت برای همه‌ی rate limit ها ----------
+// همه‌ی محدودیت‌های IP (کپچا، verify، ثبت‌نام، پیامک، ریست رمز) روی req.ip
+// کلید می‌خورن. یک کاربر/سرور با IPv6 معمولاً یک بلوک /64 کامل (۲^۶۴ آدرس) داره
+// و می‌تونه برای هر درخواست یک آدرس جدید بفرسته؛ یعنی هیچ سقف IP‌ای عملاً کار
+// نمی‌کنه، و علاوه بر اون با پر کردن Map ردیاب‌ها (سقف ۲۰٬۰۰۰ کلید) سابقه‌ی بقیه
+// (از جمله کاربرهای VIP) رو evict می‌کنه. راه‌حل استاندارد: IPv6 رو به /64
+// تبدیل کن (و ::ffff:a.b.c.d رو به IPv4 ساده). این middleware فقط req.ip رو
+// عوض می‌کنه؛ مصرف‌کننده‌ها (smsGuard، otpStore، chapterRateLimit) بدون تغییر
+// کار می‌کنن.
+const net = require("net");
+function expandIPv6(ip) {
+  ip = ip.split("%")[0];
+  if (ip.includes(".")) {
+    const i = ip.lastIndexOf(":");
+    const v4 = ip.slice(i + 1).split(".").map(Number);
+    ip = ip.slice(0, i + 1) + ((v4[0] << 8) | v4[1]).toString(16) + ":" + ((v4[2] << 8) | v4[3]).toString(16);
+  }
+  const [h, t] = ip.split("::");
+  const head = h ? h.split(":") : [];
+  const tail = t ? t.split(":") : [];
+  const fill = t === undefined ? 0 : 8 - head.length - tail.length;
+  return [...head, ...Array(Math.max(0, fill)).fill("0"), ...tail].map((x) => x.padStart(4, "0"));
+}
+function normalizeClientIp(ip) {
+  if (!ip || typeof ip !== "string") return ip;
+  if (ip.toLowerCase().startsWith("::ffff:") && net.isIPv4(ip.slice(7))) return ip.slice(7);
+  if (!net.isIPv6(ip.split("%")[0])) return ip;
+  return expandIPv6(ip.toLowerCase()).slice(0, 4).join(":") + "::/64";
+}
+app.use((req, res, next) => {
+  const n = normalizeClientIp(req.ip);
+  if (n && n !== req.ip) {
+    Object.defineProperty(req, "ip", { value: n, configurable: true, enumerable: true });
+  }
+  next();
+});
+
 
 // فعال‌سازی Helmet و تنظیم هدرهای امنیتی از جمله CSP
 app.use(
@@ -311,9 +348,24 @@ async function getUserFromAccessToken(accessToken) {
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${accessToken}`,
     },
+    signal: AbortSignal.timeout(10_000), // بدون timeout، کندی Supabase درخواست رو بی‌نهایت باز نگه می‌داشت
   });
-  if (!res.ok) return null;
+  // فقط وقتی Supabase صریحاً توکن رو رد کرده «نشست نامعتبر» حساب می‌شه.
+  // خطای ۵xx/۴۲۹ یعنی مشکل از Supabase‌ه، نه کاربر - پس throw می‌کنیم تا
+  // کاربر بی‌دلیل «دوباره وارد شوید» نبینه.
+  if (res.status === 400 || res.status === 401 || res.status === 403) return null;
+  if (!res.ok) throw new Error(`auth/v1/user ${res.status}`);
   return res.json();
+}
+
+// زمان انقضای JWT (ms) - برای این‌که کش هیچ‌وقت از عمر خودِ توکن بیشتر نشه
+function jwtExpiryMs(token) {
+  try {
+    const payload = JSON.parse(Buffer.from(String(token).split(".")[1], "base64url").toString());
+    return typeof payload.exp === "number" ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
 }
 
 // ---------- کش کوتاه‌مدت برای احراز هویت + وضعیت VIP ----------
@@ -336,13 +388,26 @@ async function getAuthContext(accessToken) {
   if (!user || !user.id) return null;
 
   const profRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=is_vip`,
-    { headers: supabaseAdminHeaders() }
+    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=is_vip,vip_until`,
+    { headers: supabaseAdminHeaders(), signal: AbortSignal.timeout(10_000) }
   );
+  // اگه خواندن پروفایل خطا داد، نباید «غیر VIP» رو ۹۰ ثانیه کش کنیم (کاربر VIP
+  // قفل می‌شد). throw می‌کنیم تا هیچ چیزی کش نشه.
+  if (!profRes.ok) throw new Error(`profiles ${profRes.status}`);
   const profRows = await profRes.json();
-  const isVip = !!profRows[0]?.is_vip;
+  // فقط is_vip کافی نیست: هیچ‌جا (سمت سرور) is_vip بعد از انقضا false نمی‌شه، و
+  // فرانت هم جدا vip_until رو چک می‌کنه. پس اشتراک منقضی‌شده باید اینجا هم رد بشه.
+  const prof = Array.isArray(profRows) ? profRows[0] : null;
+  const vipUntilMs = prof?.vip_until ? new Date(prof.vip_until).getTime() : null;
+  const isVip = !!prof?.is_vip && (vipUntilMs === null || (Number.isFinite(vipUntilMs) && vipUntilMs > Date.now()));
 
-  const result = { user, isVip, expiresAt: Date.now() + AUTH_CACHE_TTL_MS };
+  const tokenExp = jwtExpiryMs(accessToken);
+  const result = {
+    user,
+    isVip,
+    // کش هیچ‌وقت از عمر توکن یا از لحظه‌ی انقضای اشتراک بیشتر نمی‌شه
+    expiresAt: Math.min(Date.now() + AUTH_CACHE_TTL_MS, tokenExp ?? Infinity, isVip && vipUntilMs ? vipUntilMs : Infinity),
+  };
   authCache.set(accessToken, result);
   while (authCache.size > AUTH_CACHE_MAX_ENTRIES) {
     authCache.delete(authCache.keys().next().value);
@@ -374,6 +439,480 @@ function invalidateAuthCacheForUser(userId) {
   }
 }
 
+// ---------- بخش ۳٫۵: ثبت‌نام با OTP پیامکی (شماره موبایل) ----------
+// این بخش یک روش ثبت‌نام دوم، موازی با ثبت‌نام ایمیلی بالا، اضافه می‌کنه.
+// نکته‌ی طراحی مهم: به‌جای فعال کردن Phone Auth خودِ Supabase (که نیازمند
+// تنظیم یک SMS Provider یا Auth Hook در پنل Supabase است و دقیقاً همون
+// مشکل رله‌ی پرداخت زیبال رو تکرار می‌کنه - چون Supabase از ایران رد
+// نمی‌شه و فراخوانی مستقیم ippanel از سمت زیرساخت Supabase قابل‌اتکا
+// نیست)، کل چرخه‌ی OTP (تولید، ارسال با ippanel، تایید) رو خودِ همین
+// سرور Node - که همین الان با موفقیت به زیبال هم وصل می‌شه - انجام
+// می‌ده. فقط بعد از تایید موفق کد، با SERVICE_ROLE_KEY یک کاربر
+// از قبل تایید‌شده (phone_confirm: true) مستقیم توی Supabase می‌سازیم -
+// دقیقاً هم‌سطح امنیتی سیستم OTP خودِ Supabase، بدون وابستگی بهش.
+const { checkIpRateLimit, createOtp, discardOtp, verifyOtp, issueVerifiedTicket, checkVerifiedTicket, consumeVerifiedTicket, OtpRateLimitError } = require("./lib/otpStore");
+const { sendOtpSms, SmsSendError } = require("./lib/smsProvider");
+const { normalizeIranPhone, toEnglishDigits } = require("./lib/phone");
+
+// ---------- کپچا و محافظ شارژ پنل پیامک ----------
+const captcha = require("./lib/captcha");
+const smsGuard = require("./lib/smsGuard");
+
+// تصویر کپچا (یک‌بار مصرف، ۳ دقیقه اعتبار). سقف IP برای جلوگیری از پر کردن حافظه.
+app.get("/api/captcha", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(`captcha-ip:${req.ip}`, { maxBurst: 15, maxSustained: 60 });
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+  res.setHeader("Cache-Control", "no-store");
+  return res.json(captcha.generate());
+});
+
+// keep=true → اگه جواب درست بود کپچا نسوزه (برای مرحله‌ی بررسی اولیه)
+function requireCaptcha(req, res, { keep = false } = {}) {
+  const { captchaId, captchaAnswer } = req.body || {};
+  if (!captcha.verify(captchaId, captchaAnswer, keep)) {
+    res.status(400).json({
+      error: "کد امنیتی اشتباه یا منقضی است. کد جدید را وارد کن.",
+      code: "CAPTCHA_INVALID",
+    });
+    return false;
+  }
+  return true;
+}
+
+// پیدا کردن کاربر Supabase با شماره یا ایمیل (تابع SQL: supabase_find_auth_user.sql)
+async function findAuthUser({ phone = null, email = null }) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/find_auth_user`, {
+    method: "POST",
+    headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ p_phone: phone, p_email: email }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!r.ok) throw new Error(`find_auth_user ${r.status}: ${await r.text()}`);
+  const rows = await r.json();
+  return rows[0] || null;
+}
+
+app.post("/api/otp/request", async (req, res) => {
+  const phone = normalizeIranPhone((req.body || {}).phone);
+  if (!phone) {
+    return res.status(400).json({ error: "شماره موبایل معتبر نیست." });
+  }
+
+  // کپچا قبل از هر کار پرهزینه‌ای (لوکاپ Supabase / پیامک)
+  if (!requireCaptcha(req, res)) return;
+
+  try {
+    checkIpRateLimit(req.ip);
+
+    // کاربری که قبلاً ثبت‌نام کرده اصلاً کد نمی‌گیره (نه پیامک، نه هزینه):
+    // قبل از createOtp/sendOtpSms چک می‌کنیم. اگه چک ناموفق باشه (مثلاً تابع
+    // SQL ساخته نشده) عمداً fail-closed می‌شیم تا پیامک بی‌جهت نره.
+    let existingUser;
+    try {
+      existingUser = await findAuthUser({ phone });
+    } catch (lookupErr) {
+      console.error("[otp/request] بررسی وجود کاربر ناموفق بود:", lookupErr.message);
+      return res.status(503).json({ error: "سرویس موقتاً در دسترس نیست. کمی بعد دوباره تلاش کنید." });
+    }
+    if (existingUser) {
+      return res.status(409).json({
+        error: "شما قبلاً ثبت‌نام کرده‌اید. برای ورود رمز عبورتان را وارد کنید (در صورت فراموشی از «فراموشی رمز عبور» استفاده کنید).",
+        code: "PHONE_ALREADY_REGISTERED",
+      });
+    }
+
+    // سهمیه‌ی پیامک (۲ بار در ساعت برای هر شماره + بلاک + سقف روزانه) - قبل از createOtp
+    const smsSlot = smsGuard.reserve(phone, req.ip);
+    let code, resendAfterSeconds;
+    try {
+      ({ code, resendAfterSeconds } = createOtp(phone));
+    } catch (otpErr) {
+      smsSlot.release();
+      throw otpErr;
+    }
+
+    try {
+      await sendOtpSms(phone, code);
+    } catch (sendErr) {
+      smsSlot.release(); // پیامک نرفت → سهمیه‌ی کاربر نسوزه
+      // اگه پیامک واقعاً نرسید، رکورد رو پاک می‌کنیم که کاربر مجبور نشه
+      // برای کدی که هیچ‌وقت بهش نرسیده، ۹۰ ثانیه صبر کنه.
+      discardOtp(phone);
+      const status = sendErr instanceof SmsSendError ? 502 : 500;
+      console.error("[otp/request] ارسال پیامک شکست خورد:", sendErr.message, sendErr.details || "");
+      return res.status(status).json({
+        error: sendErr instanceof SmsSendError && sendErr.message ? sendErr.message : "ارسال پیامک ناموفق بود.",
+      });
+    }
+
+    return res.json({ ok: true, resendAfterSeconds });
+  } catch (err) {
+    if (err instanceof OtpRateLimitError) {
+      res.setHeader("Retry-After", String(err.retryAfterSeconds));
+      return res.status(429).json({ error: err.message, retryAfterSeconds: err.retryAfterSeconds });
+    }
+    console.error("[otp/request] خطای غیرمنتظره:", err);
+    return res.status(500).json({ error: "خطای داخلی سرور." });
+  }
+});
+
+// سقف IP برای مسیرهای verify و register (همون limiter مسیرهای خرید). سقف
+// «تعداد تلاش برای هر شماره» جدا و داخل verifyOtp اعمال می‌شه؛ این لایه
+// جلوی حدس زدن کد روی شماره‌های مختلف از یک IP رو می‌گیره.
+const OTP_VERIFY_IP_LIMITS = { maxBurst: 10, maxSustained: 40 };
+const REGISTER_PHONE_IP_LIMITS = { maxBurst: 5, maxSustained: 15 };
+
+app.post("/api/otp/verify", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(
+    `otp-verify-ip:${req.ip}`,
+    OTP_VERIFY_IP_LIMITS
+  );
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const phone = normalizeIranPhone((req.body || {}).phone);
+  if (!phone) {
+    return res.status(400).json({ error: "شماره موبایل معتبر نیست." });
+  }
+  // همیشه string + ارقام فارسی/عربی → انگلیسی (قبلاً کد با ارقام فارسی رد
+  // می‌شد، و اگه code عدد یا آبجکت بود verifyOtp با خطا کرش می‌کرد)
+  const code = toEnglishDigits((req.body || {}).code).trim();
+  if (!/^\d{6}$/.test(code)) {
+    return res.status(400).json({ error: "کد تایید باید ۶ رقم باشد." });
+  }
+
+  const result = verifyOtp(phone, code);
+  if (!result.ok) {
+    return res.status(400).json({ error: result.error, attemptsLeft: result.attemptsLeft });
+  }
+
+  const ticket = issueVerifiedTicket(phone);
+  return res.json({ ok: true, ticket });
+});
+
+app.post("/api/register/phone", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(
+    `register-phone-ip:${req.ip}`,
+    REGISTER_PHONE_IP_LIMITS
+  );
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const { fullName, ticket } = req.body || {};
+  const phone = normalizeIranPhone((req.body || {}).phone);
+  // همیشه string (قبلاً آرایه/آبجکت هم رد می‌شد و خام به Supabase می‌رفت)
+  // و سقف ۷۲ کاراکتر مثل مسیر ریست رمز
+  const password = typeof (req.body || {}).password === "string" ? req.body.password : "";
+
+  if (!phone) {
+    return res.status(400).json({ error: "شماره موبایل معتبر نیست." });
+  }
+  if (password.length < 6 || password.length > 72) {
+    return res.status(400).json({ error: "رمز عبور باید بین ۶ تا ۷۲ کاراکتر باشد." });
+  }
+  if (!checkVerifiedTicket(ticket, phone)) {
+    return res.status(401).json({
+      error: "ابتدا باید شماره موبایل با کد تایید شود (یا زمان تاییدت منقضی شده).",
+      code: "PHONE_NOT_VERIFIED",
+    });
+  }
+
+  try {
+    const createRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+      method: "POST",
+      headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        phone,
+        password,
+        phone_confirm: true, // چون خودمون همین الان با ippanel تاییدش کردیم
+        user_metadata: { full_name: (fullName || "").toString().trim().slice(0, 100) },
+      }),
+    });
+    const createData = await createRes.json();
+
+    if (!createRes.ok) {
+      const msg = (createData?.msg || createData?.message || createData?.error_description || "").toLowerCase();
+      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+        return res.status(409).json({
+          error: "این شماره قبلاً ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن.",
+          code: "PHONE_ALREADY_REGISTERED",
+        });
+      }
+      console.error("[register/phone] خطای Supabase:", createRes.status, createData);
+      return res.status(500).json({ error: "خطا در ساخت حساب کاربری." });
+    }
+
+    consumeVerifiedTicket(ticket); // تیکت یک‌بار مصرفه
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("[register/phone] خطای غیرمنتظره:", err);
+    return res.status(500).json({ error: "خطای داخلی سرور." });
+  }
+});
+
+// ---------- بخش ۳٫۶: فراموشی رمز عبور (تایید با ایمیل) ----------
+// قانون: بعد از اولین بازیابی، هیچ پیامکی برای فراموشی رمز ارسال نمی‌شه.
+//  • حساب موبایلیِ بدون ایمیل تاییدشده (اولین بار): ایمیل → کد ایمیل → کد پیامک
+//    (فقط برای اثبات مالکیت شماره و اتصال ایمیل به حساب) → رمز جدید.
+//  • حساب با ایمیل تاییدشده: فقط کد به همون ایمیل → رمز جدید. هیچ پیامکی نمی‌ره.
+const { sendOtpEmail, EmailSendError } = require("./lib/emailProvider");
+const resetSessions = require("./lib/resetSessions");
+
+const PW_RESET_IP_LIMITS = { maxBurst: 5, maxSustained: 20 };
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/;
+
+function normalizeEmail(raw) {
+  const e = String(raw ?? "").trim().toLowerCase();
+  return e.length <= 254 && EMAIL_RE.test(e) ? e : null;
+}
+function maskEmail(e) {
+  const [local, domain] = e.split("@");
+  return `${local.slice(0, 1)}***@${domain}`;
+}
+
+async function sendResetEmailCode(email) {
+  const { code, resendAfterSeconds } = createOtp(`pr-email:${email}`);
+  try {
+    await sendOtpEmail(email, code);
+  } catch (e) {
+    discardOtp(`pr-email:${email}`);
+    throw e;
+  }
+  return resendAfterSeconds;
+}
+async function sendResetSmsCode(phone, ip) {
+  const slot = smsGuard.reserve(phone, ip); // همون سهمیه/بلاک/سقف روزانه‌ی ثبت‌نام
+  let code, resendAfterSeconds;
+  try {
+    ({ code, resendAfterSeconds } = createOtp(`pr-sms:${phone}`));
+  } catch (e) {
+    slot.release();
+    throw e;
+  }
+  try {
+    await sendOtpSms(phone, code);
+  } catch (e) {
+    slot.release();
+    discardOtp(`pr-sms:${phone}`);
+    throw e;
+  }
+  return resendAfterSeconds;
+}
+
+function handleResetError(res, err, tag, extra = {}) {
+  if (err instanceof OtpRateLimitError) {
+    res.setHeader("Retry-After", String(err.retryAfterSeconds));
+    return res.status(429).json({ error: err.message, retryAfterSeconds: err.retryAfterSeconds, ...extra });
+  }
+  if (err instanceof EmailSendError || err instanceof SmsSendError) {
+    return res.status(502).json({ error: err.message, ...extra });
+  }
+  console.error(`[${tag}] خطای غیرمنتظره:`, err);
+  return res.status(500).json({ error: "خطای داخلی سرور." });
+}
+
+function getResetSessionOr401(req, res) {
+  const session = resetSessions.get((req.body || {}).sessionId);
+  if (!session) {
+    res.status(401).json({
+      error: "نشست بازیابی منقضی شده. از اول شروع کن.",
+      code: "RESET_SESSION_EXPIRED",
+    });
+    return null;
+  }
+  return session;
+}
+
+function readSixDigitCode(req, res) {
+  const code = toEnglishDigits((req.body || {}).code).trim();
+  if (!/^\d{6}$/.test(code)) {
+    res.status(400).json({ error: "کد تایید باید ۶ رقم باشد." });
+    return null;
+  }
+  return code;
+}
+
+// مرحله ۱: شماره (و در اولین بار ایمیل) → ارسال کد به ایمیل
+app.post("/api/password/forgot/start", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(`pw-start-ip:${req.ip}`, PW_RESET_IP_LIMITS);
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const phone = normalizeIranPhone((req.body || {}).phone);
+  if (!phone) return res.status(400).json({ error: "شماره موبایل معتبر نیست." });
+  // keep: اگه سرور بگه «ایمیل لازمه»، کاربر مجبور نشه دوباره کپچا حل کنه
+  if (!requireCaptcha(req, res, { keep: true })) return;
+
+  try {
+    const user = await findAuthUser({ phone });
+    if (!user) {
+      return res.status(404).json({
+        error: "با این شماره ثبت‌نام انجام نشده است.",
+        code: "PHONE_NOT_REGISTERED",
+      });
+    }
+
+    const linkedEmail = user.email && user.email_confirmed_at ? String(user.email).toLowerCase() : null;
+    let targetEmail = linkedEmail;
+    let needsPhoneStep = false;
+
+    if (!linkedEmail) {
+      // اولین بازیابی: ایمیل لازمه (هنوز چیزی ارسال نمی‌کنیم)
+      if (!(req.body || {}).email) return res.json({ ok: true, needsEmail: true });
+      const email = normalizeEmail(req.body.email);
+      if (!email) return res.status(400).json({ error: "ایمیل معتبر نیست." });
+      const other = await findAuthUser({ email });
+      if (other && other.id !== user.id) {
+        return res.status(409).json({
+          error: "این ایمیل قبلاً برای حساب دیگری استفاده شده است.",
+          code: "EMAIL_IN_USE",
+        });
+      }
+      targetEmail = email;
+      needsPhoneStep = true;
+    }
+
+    // سقف تعداد شروع بازیابی برای هر شماره (جلوگیری از ایمیل‌بمبارانِ ایمیل‌های دلخواه)
+    captcha.consume((req.body || {}).captchaId); // از اینجا به بعد ارسال واقعی انجام می‌شه
+    checkIpRateLimit(`pw-phone:${phone}`);
+    const resendAfterSeconds = await sendResetEmailCode(targetEmail);
+    const sessionId = resetSessions.create({ userId: user.id, phone, email: targetEmail, needsPhoneStep });
+
+    return res.json({
+      ok: true,
+      sessionId,
+      emailHint: maskEmail(targetEmail),
+      needsPhoneStep,
+      resendAfterSeconds,
+    });
+  } catch (err) {
+    return handleResetError(res, err, "password/start");
+  }
+});
+
+// مرحله ۲: تایید کد ایمیل (و فقط در اولین بار، ارسال کد پیامک)
+app.post("/api/password/forgot/verify-email", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(`pw-verify-ip:${req.ip}`, OTP_VERIFY_IP_LIMITS);
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const session = getResetSessionOr401(req, res);
+  if (!session) return;
+  const code = readSixDigitCode(req, res);
+  if (!code) return;
+
+  // ایمیل قبلاً تایید شده: فقط وضعیت رو برمی‌گردونیم. قبلاً هر تکرار این
+  // endpoint (با هر کد دلخواه) یک پیامک جدید می‌فرستاد؛ ارسال مجدد فقط از /resend.
+  if (session.emailVerified) {
+    const next = session.needsPhoneStep && !session.phoneVerified ? "phone" : "password";
+    return res.json({ ok: true, nextStep: next });
+  }
+
+  const result = verifyOtp(`pr-email:${session.email}`, code);
+  if (!result.ok) return res.status(400).json({ error: result.error, attemptsLeft: result.attemptsLeft });
+  session.emailVerified = true;
+
+  if (!session.needsPhoneStep) return res.json({ ok: true, nextStep: "password" });
+
+  try {
+    const resendAfterSeconds = await sendResetSmsCode(session.phone, req.ip);
+    return res.json({ ok: true, nextStep: "phone", resendAfterSeconds });
+  } catch (err) {
+    // ایمیل تایید شده؛ کاربر می‌تونه با /resend (channel: "sms") دوباره پیامک بگیره
+    return handleResetError(res, err, "password/verify-email", { emailVerified: true, nextStep: "phone" });
+  }
+});
+
+// ارسال مجدد کد
+app.post("/api/password/forgot/resend", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(`pw-start-ip:${req.ip}`, PW_RESET_IP_LIMITS);
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const session = getResetSessionOr401(req, res);
+  if (!session) return;
+  if (!requireCaptcha(req, res)) return;
+  const channel = (req.body || {}).channel;
+
+  try {
+    if (channel === "email" && !session.emailVerified) {
+      const resendAfterSeconds = await sendResetEmailCode(session.email);
+      return res.json({ ok: true, resendAfterSeconds });
+    }
+    // پیامک فقط برای اولین بازیابی و فقط بعد از تایید ایمیل مجازه
+    if (channel === "sms" && session.needsPhoneStep && session.emailVerified && !session.phoneVerified) {
+      const resendAfterSeconds = await sendResetSmsCode(session.phone, req.ip);
+      return res.json({ ok: true, resendAfterSeconds });
+    }
+    return res.status(400).json({ error: "درخواست نامعتبر است." });
+  } catch (err) {
+    return handleResetError(res, err, "password/resend");
+  }
+});
+
+// مرحله ۳ (فقط اولین بار): تایید کد پیامک
+app.post("/api/password/forgot/verify-phone", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(`pw-verify-ip:${req.ip}`, OTP_VERIFY_IP_LIMITS);
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const session = getResetSessionOr401(req, res);
+  if (!session) return;
+  if (!session.needsPhoneStep || !session.emailVerified) {
+    return res.status(400).json({ error: "درخواست نامعتبر است." });
+  }
+  const code = readSixDigitCode(req, res);
+  if (!code) return;
+
+  const result = verifyOtp(`pr-sms:${session.phone}`, code);
+  if (!result.ok) return res.status(400).json({ error: result.error, attemptsLeft: result.attemptsLeft });
+
+  session.phoneVerified = true;
+  return res.json({ ok: true, nextStep: "password" });
+});
+
+// مرحله آخر: تعیین رمز جدید (و در اولین بار، اتصال ایمیل تاییدشده به حساب)
+app.post("/api/password/forgot/reset", async (req, res) => {
+  const ipLimit = await checkAndRecordPurchaseRequest(`pw-reset-ip:${req.ip}`, REGISTER_PHONE_IP_LIMITS);
+  if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
+
+  const session = getResetSessionOr401(req, res);
+  if (!session) return;
+
+  const ready = session.emailVerified && (!session.needsPhoneStep || session.phoneVerified);
+  if (!ready) {
+    return res.status(403).json({ error: "مراحل تایید کامل نشده است.", code: "RESET_NOT_VERIFIED" });
+  }
+
+  const password = String((req.body || {}).password ?? "");
+  if (password.length < 6 || password.length > 72) {
+    return res.status(400).json({ error: "رمز عبور باید بین ۶ تا ۷۲ کاراکتر باشد." });
+  }
+
+  try {
+    const update = { password };
+    if (session.needsPhoneStep) {
+      update.email = session.email;
+      update.email_confirm = true; // خودمون همین الان تاییدش کردیم
+    }
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${session.userId}`, {
+      method: "PUT",
+      headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(update),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const msg = (data?.msg || data?.message || data?.error_description || "").toLowerCase();
+      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+        return res.status(409).json({ error: "این ایمیل قبلاً برای حساب دیگری استفاده شده است.", code: "EMAIL_IN_USE" });
+      }
+      console.error("[password/reset] خطای Supabase:", r.status, data);
+      return res.status(500).json({ error: "خطا در تغییر رمز عبور." });
+    }
+
+    resetSessions.remove((req.body || {}).sessionId); // یک‌بار مصرف
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("[password/reset] خطای غیرمنتظره:", err);
+    return res.status(500).json({ error: "خطای داخلی سرور." });
+  }
+});
+
 // جلوگیری از اسپم درگاه پرداخت/دیتابیس: قبلاً این مسیر هیچ سقفی نداشت،
 // یعنی یک اسکریپت می‌تونست هزاران بار صداش بزنه، هر بار یک درخواست به
 // Zibal بزنه و یک ردیف pending تو payments بسازه. دو لایه‌ی جدا:
@@ -388,13 +927,12 @@ const PURCHASE_USER_LIMITS = { maxBurst: 3, maxSustained: 10 };
 
 function purchaseRateLimited(res, result) {
   res.setHeader("Retry-After", String(result.retryAfterSeconds));
-  res.status(429).json({
-    message:
-      result.reason === "burst"
-        ? "تعداد درخواست‌های شما زیاده. کمی صبر کنید و دوباره امتحان کنید."
-        : "شما به سقف مجاز درخواست خرید در این بازه‌ی زمانی رسیدید.",
-    retryAfterSeconds: result.retryAfterSeconds,
-  });
+  const text =
+    result.reason === "burst"
+      ? "تعداد درخواست‌های شما زیاده. کمی صبر کنید و دوباره امتحان کنید."
+      : "شما به سقف مجاز درخواست در این بازه‌ی زمانی رسیدید.";
+  // هم message (مسیرهای خرید) هم error (مسیرهای ثبت‌نام/OTP که فرانت data.error می‌خونه)
+  res.status(429).json({ message: text, error: text, retryAfterSeconds: result.retryAfterSeconds });
 }
 
 app.post("/purchase/request", async (req, res) => {
