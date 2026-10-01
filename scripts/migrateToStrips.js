@@ -1,0 +1,298 @@
+#!/usr/bin/env node
+// scripts/migrateToStrips.js
+//
+// تبدیل همه‌ی چپترهای قدیمی به «تکه‌های بلند WebP» تا تعداد درخواست به
+// پارس‌پک چندین برابر کمتر بشه (مثلاً ۱۵۰ عکس -> ۱۰ فایل).
+//
+// امنیت کار:
+//  - عکس‌های اصلی (srcCH<n>) هیچ‌وقت پاک یا تغییر داده نمی‌شن. تکه‌ها تو یک
+//    پوشه‌ی جدا (stripCH<n>) ذخیره می‌شن، پس برگشت همیشه ممکنه.
+//  - قبل از هر تغییر تو data.json یک بک‌آپ با تاریخ گرفته می‌شه.
+//  - قابل ادامه‌ست: پیشرفت تو scripts/.migrate-progress.json ذخیره می‌شه و اگه
+//    وسط کار قطع بشه، دوباره اجرا کنی از همون‌جا ادامه می‌ده.
+//  - سرعت درخواست‌ها به پارس‌پک محدوده (پیش‌فرض ~۲۰۰ در دقیقه) تا خودِ
+//    مایگریشن 429 نگیره.
+//
+// نحوه‌ی اجرا (از ریشه‌ی پروژه، همون جایی که .env هست):
+//   node scripts/migrateToStrips.js --dry-run          فقط گزارش، بدون هیچ تغییری
+//   node scripts/migrateToStrips.js --slug=my-manhwa --chapter=1   تست روی یک چپتر
+//   node scripts/migrateToStrips.js                    اجرای کامل
+//
+// گزینه‌ها:
+//   --data=مسیر/data.json     (یا متغیر DATA_JSON) اگه خودکار پیدا نشد
+//   --slug=  --chapter=  --limit=N   محدودکردن دامنه
+//   --width=800  --max-height=15000  --quality=80  --interval=300
+//   --no-warm     کپی تکه‌ها رو تو image-cache نذار
+//   --no-apply    فقط آپلود کن، data.json رو عوض نکن
+//   --apply-only  آپلود نکن، فقط نتیجه‌های ذخیره‌شده رو تو data.json اعمال کن
+
+try { require("dotenv").config(); } catch { /* dotenv نصب نیست، از env موجود استفاده می‌شه */ }
+
+const fs = require("fs");
+const path = require("path");
+const sharp = require("sharp");
+const { PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { s3, listChapterImageKeys } = require("../lib/chapterCache");
+
+// ---------- آرگومان‌ها ----------
+const args = process.argv.slice(2);
+const flag = (n) => args.includes(`--${n}`);
+const opt = (n) => {
+  const a = args.find((x) => x.startsWith(`--${n}=`));
+  return a ? a.split("=").slice(1).join("=") : null;
+};
+
+const WIDTH = Number(opt("width") || 800);
+const MAX_STRIP_HEIGHT = Number(opt("max-height") || 15000); // سقف WebP: 16383
+const QUALITY = Number(opt("quality") || 80);
+const INTERVAL_MS = Number(opt("interval") || 300);
+const DRY = flag("dry-run");
+const WARM = !flag("no-warm");
+const APPLY = !flag("no-apply");
+const APPLY_ONLY = flag("apply-only");
+const ONLY_SLUG = opt("slug");
+const ONLY_CHAPTER = opt("chapter") !== null ? Number(opt("chapter")) : null;
+const LIMIT = opt("limit") ? Number(opt("limit")) : Infinity;
+
+const BUCKET = process.env.PARSPACK_BUCKET;
+const ROOT = path.join(__dirname, "..");
+const IMAGE_CACHE_DIR = path.join(ROOT, "image-cache");
+const PROGRESS_FILE = path.join(__dirname, ".migrate-progress.json");
+
+// ---------- پیدا کردن data.json ----------
+function findDataFile() {
+  const explicit = opt("data") || process.env.DATA_JSON;
+  const candidates = [
+    explicit,
+    path.join(ROOT, "data", "data.json"),
+    path.join(ROOT, "data.json"),
+    path.join(ROOT, "..", "data", "data.json"),
+    path.join(ROOT, "..", "data.json"),
+  ].filter(Boolean);
+  for (const c of candidates) if (fs.existsSync(c)) return path.resolve(c);
+  console.error("data.json پیدا نشد. مسیرش رو با --data=/path/to/data.json بده.");
+  process.exit(1);
+}
+
+// ---------- pacing + retry روی 429 ----------
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let nextSlot = 0;
+async function pace() {
+  const now = Date.now();
+  const start = Math.max(now, nextSlot);
+  nextSlot = start + INTERVAL_MS;
+  if (start > now) await sleep(start - now);
+}
+function isThrottled(err) {
+  return (
+    err?.$metadata?.httpStatusCode === 429 ||
+    err?.name === "SlowDown" ||
+    /too many requests/i.test(err?.message || "")
+  );
+}
+async function paced(fn) {
+  for (let attempt = 0; ; attempt++) {
+    await pace();
+    try {
+      return await fn();
+    } catch (err) {
+      if (!isThrottled(err) || attempt >= 6) throw err;
+      const delay = Math.min(1000 * 2 ** attempt, 15000) + Math.random() * 500;
+      console.warn(`  429 از پارس‌پک - ${Math.round(delay)}ms صبر...`);
+      await sleep(delay);
+    }
+  }
+}
+
+async function getObjectBuffer(key) {
+  return paced(async () => {
+    const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+    return Buffer.from(await obj.Body.transformToByteArray());
+  });
+}
+
+async function putObject(key, buffer) {
+  return paced(() =>
+    s3.send(
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: key,
+        Body: buffer,
+        ContentType: "image/webp",
+        CacheControl: "public, max-age=31536000, immutable",
+      })
+    )
+  );
+}
+
+// همون الگوی اسم‌گذاری lib/imageProxyCache.js (keyToCachePath)
+function writeToImageCache(key, buffer) {
+  fs.mkdirSync(IMAGE_CACHE_DIR, { recursive: true });
+  const p = path.join(IMAGE_CACHE_DIR, key.replace(/[^a-zA-Z0-9._-]/g, "_"));
+  fs.writeFileSync(p, buffer);
+  fs.writeFileSync(p + ".meta.json", JSON.stringify({ contentType: "image/webp" }));
+}
+
+// ---------- ساخت تکه‌ها (استریمی: حافظه محدود می‌مونه) ----------
+async function processChapter(slug, num, originals) {
+  const prefix = `manhwas/${slug}/CH${num}/stripCH${num}/`;
+  const outKeys = [];
+  let group = [];
+  let groupH = 0;
+
+  const flush = async () => {
+    if (!group.length) return;
+    const key = `${prefix}part${String(outKeys.length + 1).padStart(2, "0")}.webp`;
+    let top = 0;
+    const composite = group.map((g) => {
+      const c = {
+        input: g.data,
+        raw: { width: g.width, height: g.height, channels: g.channels },
+        top,
+        left: 0,
+      };
+      top += g.height;
+      return c;
+    });
+    const buffer = await sharp({
+      create: { width: WIDTH, height: top, channels: 3, background: "#ffffff" },
+    })
+      .composite(composite)
+      .webp({ quality: QUALITY })
+      .toBuffer();
+    await putObject(key, buffer);
+    if (WARM) writeToImageCache(key, buffer);
+    outKeys.push(key);
+    group = [];
+    groupH = 0;
+  };
+
+  for (const key of originals) {
+    const body = await getObjectBuffer(key);
+    const { data, info } = await sharp(body)
+      .flatten({ background: "#ffffff" })
+      .resize({ width: WIDTH })
+      .toColourspace("srgb")
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    if (info.height > 16383) {
+      throw new Error(`تصویر ${key} بعد از تغییر اندازه ${info.height}px ارتفاع داره (سقف WebP: 16383)`);
+    }
+    if (group.length && groupH + info.height > MAX_STRIP_HEIGHT) await flush();
+    group.push({ data, width: info.width, height: info.height, channels: info.channels });
+    groupH += info.height;
+  }
+  await flush();
+  return outKeys;
+}
+
+// ---------- کمکی‌ها ----------
+const isStripKey = (k) => typeof k === "string" && /\/stripCH\d+\/part\d+\.webp$/.test(k);
+const sameArray = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
+
+function loadProgress() {
+  try { return JSON.parse(fs.readFileSync(PROGRESS_FILE, "utf8")); } catch { return {}; }
+}
+function saveProgress(p) {
+  fs.writeFileSync(PROGRESS_FILE, JSON.stringify(p, null, 2));
+}
+
+function atomicWriteJson(file, obj) {
+  const tmp = `${file}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, JSON.stringify(obj, null, 2));
+  fs.renameSync(tmp, file);
+}
+
+// ---------- اعمال نتیجه‌ها روی data.json ----------
+function applyToDataFile(dataFile, progress) {
+  const fresh = JSON.parse(fs.readFileSync(dataFile, "utf8")); // دوباره می‌خونیم تا تغییرات همین الان ادمین گم نشه
+  let applied = 0, skipped = 0;
+
+  for (const [id, rec] of Object.entries(progress)) {
+    const [slug, numStr] = id.split("::");
+    const ep = fresh[slug]?.episodes?.find((e) => Number(e.num) === Number(numStr));
+    if (!ep) { skipped++; continue; }
+    if (sameArray(ep.images, rec.strips)) continue; // قبلاً اعمال شده
+    if (!sameArray(ep.images, rec.originals)) {
+      console.warn(`  رد شد (images از زمان مایگریشن عوض شده): ${id}`);
+      skipped++;
+      continue;
+    }
+    ep.images = rec.strips;
+    applied++;
+  }
+
+  if (!applied) { console.log("چیزی برای اعمال روی data.json نبود."); return; }
+
+  const backup = `${dataFile}.bak-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+  fs.copyFileSync(dataFile, backup);
+  atomicWriteJson(dataFile, fresh);
+  console.log(`data.json به‌روز شد: ${applied} چپتر اعمال، ${skipped} رد. بک‌آپ: ${backup}`);
+  console.log("⚠️  سرور رو ری‌استارت کن تا کش‌های حافظه (dataStore و لینک‌های امضاشده) تازه بشن.");
+}
+
+// ---------- main ----------
+(async () => {
+  if (!BUCKET && !DRY && !APPLY_ONLY) { console.error("PARSPACK_BUCKET تنظیم نشده (.env رو چک کن)."); process.exit(1); }
+
+  const dataFile = findDataFile();
+  console.log(`data.json: ${dataFile}`);
+  const progress = loadProgress();
+
+  if (APPLY_ONLY) { applyToDataFile(dataFile, progress); return; }
+
+  const data = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+
+  // فهرست کارها
+  const work = [];
+  let alreadyDone = 0, badData = 0;
+  for (const [slug, manhwa] of Object.entries(data)) {
+    if (ONLY_SLUG && slug !== ONLY_SLUG) continue;
+    for (const ep of manhwa?.episodes || []) {
+      if (ONLY_CHAPTER !== null && Number(ep.num) !== ONLY_CHAPTER) continue;
+      const id = `${slug}::${Number(ep.num)}`;
+      const imgs = Array.isArray(ep.images) ? ep.images : [];
+      if (imgs.length && imgs.every(isStripKey)) { alreadyDone++; continue; }
+      if (progress[id] && (imgs.length === 0 || sameArray(progress[id].originals, imgs))) { alreadyDone++; continue; }
+      if (imgs.some((k) => typeof k !== "string")) {
+        console.warn(`  رد شد (images شامل مقدار غیررشته‌ای است): ${id}`);
+        badData++;
+        continue;
+      }
+      work.push({ slug, num: Number(ep.num), id, originals: imgs });
+    }
+  }
+  const batch = work.slice(0, LIMIT);
+
+  const totalImgs = batch.reduce((s, w) => s + w.originals.length, 0);
+  const etaMin = Math.ceil(((totalImgs + batch.length * 12) * INTERVAL_MS) / 60000);
+  console.log(`چپتر برای تبدیل: ${batch.length} | قبلاً انجام‌شده: ${alreadyDone} | داده‌ی مشکل‌دار: ${badData}`);
+  console.log(`عکس برای دانلود: ${totalImgs} (+ چپترهایی که images خالی دارن) | زمان تقریبی: ~${etaMin} دقیقه`);
+  if (DRY) { console.log("--dry-run: هیچ تغییری داده نشد."); return; }
+
+  let ok = 0, failed = 0;
+  for (let i = 0; i < batch.length; i++) {
+    const w = batch[i];
+    console.log(`[${i + 1}/${batch.length}] ${w.id}`);
+    try {
+      let originals = w.originals;
+      if (originals.length === 0) {
+        originals = await paced(() => listChapterImageKeys(w.slug, w.num));
+        if (originals.length === 0) { console.warn("  هیچ عکسی تو پارس‌پک نبود - رد شد"); failed++; continue; }
+      }
+      const strips = await processChapter(w.slug, w.num, originals);
+      progress[w.id] = { originals: w.originals, strips };
+      saveProgress(progress);
+      console.log(`  ✓ ${originals.length} عکس -> ${strips.length} تکه`);
+      ok++;
+    } catch (err) {
+      console.error(`  ✗ خطا: ${err.message}`);
+      failed++;
+    }
+  }
+  console.log(`\nتمام شد: موفق ${ok} | ناموفق ${failed}`);
+
+  if (APPLY) applyToDataFile(dataFile, progress);
+  else console.log("--no-apply: برای اعمال روی data.json بعداً با --apply-only اجرا کن.");
+})().catch((err) => { console.error(err); process.exit(1); });
