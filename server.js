@@ -165,6 +165,29 @@ const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 const PUBLIC_MANHWA_PATH_RE =
   /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif|svg)$/i;
 
+const { getCachedImage, UpstreamBusyError } = require("./lib/imageProxyCache");
+
+// وقتی پارس‌پک 429 می‌ده، به‌جای 500 و یک خط لاگ برای هر درخواست، 503 با
+// Retry-After برمی‌گردونیم و لاگ رو حداکثر هر ۱۰ ثانیه یک بار چاپ می‌کنیم.
+let lastBusyLogAt = 0;
+function handleImageError(err, res, label) {
+  const throttled =
+    err instanceof UpstreamBusyError ||
+    err?.$metadata?.httpStatusCode === 429 ||
+    /too many requests/i.test(err?.message || "");
+  if (throttled) {
+    const now = Date.now();
+    if (now - lastBusyLogAt > 10_000) {
+      lastBusyLogAt = now;
+      console.warn(`${label}: پارس‌پک محدودیت نرخ داده (لاگ این پیام هر ۱۰ ثانیه یک‌بار چاپ می‌شه)`);
+    }
+    res.set("Retry-After", String(err.retryAfterSeconds || 20));
+    return res.status(503).send("سرور موقتاً شلوغ است، چند ثانیه بعد دوباره تلاش کنید");
+  }
+  console.error(`${label}:`, err.message);
+  return res.status(500).send("خطای داخلی سرور");
+}
+
 app.get("/manhwas/*", async (req, res) => {
   // req.params[0] یعنی همه‌چیز بعد از "/manhwas/" (مثلاً "<slug>/cover.jpg"
   // یا "<slug>/chapterPictures/chapterpicture12.png")
@@ -174,18 +197,19 @@ app.get("/manhwas/*", async (req, res) => {
   }
   const key = `manhwas/${rest}`;
   try {
-    const obj = await s3.send(new GetObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key }));
-    res.set("Content-Type", obj.ContentType || "application/octet-stream");
+    // از کش دیسک (imageProxyCache) استفاده می‌کنیم تا هر بازدیدکننده‌ی جدید
+    // یک GetObject مستقیم به پارس‌پک نزنه (سقف ۳۰۰ در دقیقه برای کل باکت).
+    const { buffer, contentType } = await getCachedImage(key);
+    res.set("Content-Type", contentType);
     // این تصاویر به‌ندرت عوض می‌شن (فقط وقتی از پنل ادمین آپلود جدید
     // می‌گیرن)، پس کش طولانی‌مدت مثل بقیه‌ی فایل‌های استاتیک منطقیه.
     res.set("Cache-Control", "public, max-age=604800");
-    obj.Body.on("error", () => res.destroy()).pipe(res);
+    return res.send(buffer);
   } catch (err) {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
     }
-    console.error("خطا در گرفتن تصویر از S3:", err.message);
-    return res.status(500).send("خطای داخلی سرور");
+    return handleImageError(err, res, "خطا در گرفتن تصویر از S3");
   }
 });
 
@@ -207,7 +231,6 @@ app.get("/manhwas/*", async (req, res) => {
 //
 // این راه‌حل موقته - وقتی BunnyCDN کامل راه‌اندازی بشه، chapterCache.js
 // خودکار برمی‌گرده به اون (اولویت اول همیشه Bunyه، این فقط fallback دومه).
-const { getCachedImage } = require("./lib/imageProxyCache");
 const { isValidToken } = require("./lib/localImageToken");
 
 app.get("/chapter-image/:key(*)", async (req, res) => {
@@ -229,8 +252,7 @@ app.get("/chapter-image/:key(*)", async (req, res) => {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
     }
-    console.error("خطا در گرفتن تصویر از کش/پارس‌پک:", err.message);
-    return res.status(500).send("خطای داخلی سرور");
+    return handleImageError(err, res, "خطا در گرفتن تصویر از کش/پارس‌پک");
   }
 });
 
