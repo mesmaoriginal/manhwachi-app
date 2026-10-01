@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ir.manhwachi",
+      "sha256_cert_fingerprints": [
+        "0A:B2:45:1D:83:DD:00:54:68:39:5A:8D:48:8C:93:46:3D:A2:6E:8E:A9:D5:6E:42:A2:10:96:66:54:64:BB:0F"
+      ]
+    }
+  }
+]
