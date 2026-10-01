@@ -343,7 +343,7 @@
 
             if (retryCount < MAX_IMAGE_RETRIES) {
                 imgEl.dataset.retryCount = retryCount + 1;
-                const delayMs = 800 * Math.pow(2, retryCount);
+                const delayMs = 2000 * Math.pow(2, retryCount) + Math.random() * 2000; // jitter تا همه‌ی عکس‌ها هم‌زمان دوباره درخواست نزنن
                 setTimeout(() => {
                     const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
                     imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
