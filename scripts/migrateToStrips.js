@@ -25,14 +25,29 @@
 //   --no-warm     کپی تکه‌ها رو تو image-cache نذار
 //   --no-apply    فقط آپلود کن، data.json رو عوض نکن
 //   --apply-only  آپلود نکن، فقط نتیجه‌های ذخیره‌شده رو تو data.json اعمال کن
+//   --redo        چپتری که قبلاً با ساختار/اسم قدیمی (stripCH<n> یا part01) تبدیل شده رو دوباره
+//                 با اسم‌گذاری فعلی (CH<n>/001.webp) بساز (عکس‌های اصلی از روی پیشرفت ذخیره‌شده خونده می‌شن)
 
 try { require("dotenv").config(); } catch { /* dotenv نصب نیست، از env موجود استفاده می‌شه */ }
 
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
-const { PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
-const { s3, listChapterImageKeys } = require("../lib/chapterCache");
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { listChapterImageKeys } = require("../lib/chapterCache");
+
+// کلاینت جدا با maxAttempts=1: SDK خودش روی 429 چند بار دوباره درخواست می‌زنه و
+// هر کدوم تو سقف پارس‌پک شمرده می‌شه. اینجا retry رو خودمون کنترل می‌کنیم.
+const s3 = new S3Client({
+  endpoint: process.env.PARSPACK_ENDPOINT,
+  region: "default",
+  credentials: {
+    accessKeyId: process.env.PARSPACK_ACCESS_KEY,
+    secretAccessKey: process.env.PARSPACK_SECRET_KEY,
+  },
+  forcePathStyle: true,
+  maxAttempts: 1,
+});
 
 // ---------- آرگومان‌ها ----------
 const args = process.argv.slice(2);
@@ -50,6 +65,7 @@ const DRY = flag("dry-run");
 const WARM = !flag("no-warm");
 const APPLY = !flag("no-apply");
 const APPLY_ONLY = flag("apply-only");
+const REDO = flag("redo");
 const ONLY_SLUG = opt("slug");
 const ONLY_CHAPTER = opt("chapter") !== null ? Number(opt("chapter")) : null;
 const LIMIT = opt("limit") ? Number(opt("limit")) : Infinity;
@@ -74,13 +90,18 @@ function findDataFile() {
   process.exit(1);
 }
 
-// ---------- pacing + retry روی 429 ----------
+// ---------- pacing تطبیقی + retry روی 429 ----------
+// اگه پارس‌پک 429 داد، فاصله‌ی بین درخواست‌ها خودکار بیشتر می‌شه؛ وقتی چند
+// درخواست پشت‌سرهم موفق بود، آروم‌آروم به سرعت پایه برمی‌گرده.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const MAX_INTERVAL_MS = 5000;
+let curInterval = INTERVAL_MS;
+let okStreak = 0;
 let nextSlot = 0;
 async function pace() {
   const now = Date.now();
   const start = Math.max(now, nextSlot);
-  nextSlot = start + INTERVAL_MS;
+  nextSlot = start + curInterval;
   if (start > now) await sleep(start - now);
 }
 function isThrottled(err) {
@@ -94,11 +115,21 @@ async function paced(fn) {
   for (let attempt = 0; ; attempt++) {
     await pace();
     try {
-      return await fn();
+      const r = await fn();
+      if (++okStreak >= 30 && curInterval > INTERVAL_MS) {
+        curInterval = Math.max(INTERVAL_MS, Math.round(curInterval * 0.8));
+        okStreak = 0;
+        console.log(`  سرعت کمی بالا رفت (فاصله ${curInterval}ms)`);
+      }
+      return r;
     } catch (err) {
-      if (!isThrottled(err) || attempt >= 6) throw err;
-      const delay = Math.min(1000 * 2 ** attempt, 15000) + Math.random() * 500;
-      console.warn(`  429 از پارس‌پک - ${Math.round(delay)}ms صبر...`);
+      if (!isThrottled(err)) throw err;
+      okStreak = 0;
+      curInterval = Math.min(MAX_INTERVAL_MS, Math.round(curInterval * 1.5));
+      if (attempt >= 12) throw err;
+      const delay = Math.min(2000 * 2 ** Math.min(attempt, 5), 60000) + Math.random() * 1000;
+      nextSlot = Math.max(nextSlot, Date.now() + delay);
+      console.warn(`  429 از پارس‌پک (تلاش ${attempt + 1}/12) - ${Math.round(delay / 1000)}s صبر، فاصله‌ی جدید ${curInterval}ms`);
       await sleep(delay);
     }
   }
@@ -135,14 +166,14 @@ function writeToImageCache(key, buffer) {
 
 // ---------- ساخت تکه‌ها (استریمی: حافظه محدود می‌مونه) ----------
 async function processChapter(slug, num, originals) {
-  const prefix = `manhwas/${slug}/CH${num}/stripCH${num}/`;
+  const prefix = `manhwas/${slug}/CH${num}/`; // مستقیم تو پوشه‌ی CH<n> (کنار srcCH<n>)
   const outKeys = [];
   let group = [];
   let groupH = 0;
 
   const flush = async () => {
     if (!group.length) return;
-    const key = `${prefix}part${String(outKeys.length + 1).padStart(2, "0")}.webp`;
+    const key = `${prefix}${String(outKeys.length + 1).padStart(3, "0")}.webp`;
     let top = 0;
     const composite = group.map((g) => {
       const c = {
@@ -188,7 +219,11 @@ async function processChapter(slug, num, originals) {
 }
 
 // ---------- کمکی‌ها ----------
-const isStripKey = (k) => typeof k === "string" && /\/stripCH\d+\/part\d+\.webp$/.test(k);
+// ساختار فعلی: .../CH<n>/001.webp
+// ساختارهای قبلی (که --redo جایگزینشون می‌کنه): .../CH<n>/part01.webp و .../CH<n>/stripCH<n>/part01.webp
+const isFlatStripKey = (k) => typeof k === "string" && /\/CH\d+\/\d{3}\.webp$/.test(k);
+const isStripKey = (k) =>
+  typeof k === "string" && /\/CH\d+\/(?:\d{3}|part\d+|stripCH\d+\/part\d+)\.webp$/.test(k);
 const sameArray = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
 
 function loadProgress() {
@@ -214,7 +249,7 @@ function applyToDataFile(dataFile, progress) {
     const ep = fresh[slug]?.episodes?.find((e) => Number(e.num) === Number(numStr));
     if (!ep) { skipped++; continue; }
     if (sameArray(ep.images, rec.strips)) continue; // قبلاً اعمال شده
-    if (!sameArray(ep.images, rec.originals)) {
+    if (!sameArray(ep.images, rec.originals) && !sameArray(ep.images, rec.replaces || [])) {
       console.warn(`  رد شد (images از زمان مایگریشن عوض شده): ${id}`);
       skipped++;
       continue;
@@ -253,6 +288,16 @@ function applyToDataFile(dataFile, progress) {
       if (ONLY_CHAPTER !== null && Number(ep.num) !== ONLY_CHAPTER) continue;
       const id = `${slug}::${Number(ep.num)}`;
       const imgs = Array.isArray(ep.images) ? ep.images : [];
+      if (REDO) {
+        if (imgs.length && imgs.every(isFlatStripKey)) { alreadyDone++; continue; }
+        if (!progress[id]?.originals?.length) {
+          console.warn(`  رد شد (برای --redo سابقه‌ی عکس‌های اصلی تو progress نیست): ${id}`);
+          badData++;
+          continue;
+        }
+        work.push({ slug, num: Number(ep.num), id, originals: progress[id].originals, replaces: imgs });
+        continue;
+      }
       if (imgs.length && imgs.every(isStripKey)) { alreadyDone++; continue; }
       if (progress[id] && (imgs.length === 0 || sameArray(progress[id].originals, imgs))) { alreadyDone++; continue; }
       if (imgs.some((k) => typeof k !== "string")) {
@@ -282,7 +327,7 @@ function applyToDataFile(dataFile, progress) {
         if (originals.length === 0) { console.warn("  هیچ عکسی تو پارس‌پک نبود - رد شد"); failed++; continue; }
       }
       const strips = await processChapter(w.slug, w.num, originals);
-      progress[w.id] = { originals: w.originals, strips };
+      progress[w.id] = { originals: w.originals, strips, replaces: w.replaces || [] };
       saveProgress(progress);
       console.log(`  ✓ ${originals.length} عکس -> ${strips.length} تکه`);
       ok++;
