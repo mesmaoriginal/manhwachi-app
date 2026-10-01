@@ -129,9 +129,12 @@ app.use("/admin", adminRouter);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+
+
 // ---------- بخش ۱: نمایش سایت ----------
 // maxAge اضافه شد تا مرورگر فایل‌های استاتیک (CSS/JS/فونت/عکس) رو کش کنه
 // و مجبور نباشه هر بار دوباره از سرور دانلودشون کنه.
+app.use("/.well-known", express.static("public/.well-known", { dotfiles: "allow" }));
 app.use(express.static("public", { maxAge: "7d", etag: true }));
 
 // ---------- بخش ۱٫۵: تصاویر عمومی (کاور مانهوا / تامبنیل چپتر) از S3 ----------
