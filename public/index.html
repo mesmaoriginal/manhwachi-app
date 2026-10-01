@@ -1129,6 +1129,8 @@ document.addEventListener('keydown', (e) => {
     hideAuthMessage();
     document.getElementById('otpForm')?.classList.add('hidden');
     document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    document.getElementById('forgotPhoneForm')?.classList.add('hidden');
+    fpReset();
     document.getElementById('resetPasswordForm')?.classList.add('hidden');
 
     // ریست کردن فرم ثبت‌نام با موبایل تا دفعه‌ی بعد که مودال باز می‌شه
@@ -1162,6 +1164,7 @@ document.addEventListener('keydown', (e) => {
     hideAuthMessage();
     otpForm?.classList.add('hidden');
     document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    document.getElementById('forgotPhoneForm')?.classList.add('hidden');
     document.getElementById('resetPasswordForm')?.classList.add('hidden');
 
     const activeCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40";
@@ -1751,8 +1754,266 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('registerForm')?.classList.add('hidden');
     document.getElementById('otpForm')?.classList.add('hidden');
     document.getElementById('resetPasswordForm')?.classList.add('hidden');
+    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+    fpReset();
+    document.getElementById('forgotPhoneForm')?.classList.remove('hidden');
+    fpLoadCaptcha();
+  }
+
+  // بازیابی با لینک ایمیل (Supabase) - برای حساب‌هایی که با ایمیل ساخته شده‌اند
+  function showForgotEmailForm() {
+    hideAuthMessage();
+    document.getElementById('loginForm')?.classList.add('hidden');
+    document.getElementById('registerForm')?.classList.add('hidden');
+    document.getElementById('otpForm')?.classList.add('hidden');
+    document.getElementById('resetPasswordForm')?.classList.add('hidden');
+    document.getElementById('forgotPhoneForm')?.classList.add('hidden');
     document.getElementById('forgotPasswordForm')?.classList.remove('hidden');
   }
+
+  // ==================== فراموشی رمز عبور با شماره موبایل (فلوی سروری) ====================
+  // مراحل: ۱) شماره (+ایمیل در اولین بار) + کپچا ۲) کد ایمیل ۳) کد پیامک (فقط اولین بار) ۴) رمز جدید
+  let fpSessionId = "";
+  let fpCaptchaId = "";
+  const fpTimers = {};
+  const fpEl = (id) => document.getElementById(id);
+
+  function fpSetStep(n) {
+    [1, 2, 3, 4].forEach((i) => fpEl('fpStep' + i)?.classList.toggle('hidden', i !== n));
+    fpEl('fpCaptchaBox')?.classList.toggle('hidden', n !== 1);
+    document.querySelectorAll('.fp-step1-only').forEach((el) => el.classList.toggle('hidden', n !== 1));
+  }
+
+  function fpReset() {
+    Object.keys(fpTimers).forEach((k) => { clearInterval(fpTimers[k]); delete fpTimers[k]; });
+    fpSessionId = "";
+    fpCaptchaId = "";
+    ['fpPhone', 'fpEmail', 'fpCaptchaAnswer', 'fpEmailCode', 'fpSmsCode', 'fpNewPassword', 'fpConfirmPassword']
+      .forEach((id) => { const el = fpEl(id); if (el) el.value = ''; });
+    fpEl('fpEmailBox')?.classList.add('hidden');
+    fpEl('fpCaptchaImg')?.removeAttribute('src');
+    ['fpResendEmailBtn', 'fpResendSmsBtn'].forEach((id) => {
+      const b = fpEl(id);
+      if (b) { b.disabled = false; b.textContent = id === 'fpResendSmsBtn' ? 'ارسال مجدد پیامک' : 'ارسال مجدد کد'; }
+    });
+    fpSetStep(1);
+  }
+
+  async function fpLoadCaptcha() {
+    const img = fpEl('fpCaptchaImg');
+    const ans = fpEl('fpCaptchaAnswer');
+    if (!img) return;
+    if (ans) ans.value = '';
+    try {
+      const res = await fetch('/api/captcha', { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.captchaId || !data.image) throw new Error();
+      fpCaptchaId = data.captchaId;
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data.image);
+    } catch {
+      fpCaptchaId = "";
+      img.removeAttribute('src');
+      showAuthMessage("بارگذاری کد امنیتی ناموفق بود. روی «کد جدید» بزن.", true);
+    }
+  }
+
+  // فراخوانی API؛ در خطا Error با فیلدهای code و data پرتاب می‌کنه
+  async function fpCall(path, body) {
+    const res = await fetch('/api/password/forgot/' + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (data.code === 'RESET_SESSION_EXPIRED') {
+        fpReset();
+        fpLoadCaptcha();
+      }
+      const err = new Error(data.error || "خطایی رخ داد. دوباره تلاش کن.");
+      err.code = data.code;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  function fpCountdown(btnId, seconds, label) {
+    const btn = fpEl(btnId);
+    if (!btn) return;
+    clearInterval(fpTimers[btnId]);
+    let left = Math.max(0, Math.floor(seconds));
+    const tick = () => {
+      if (left <= 0) {
+        clearInterval(fpTimers[btnId]);
+        btn.disabled = false;
+        btn.textContent = label;
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = `${label} (${left})`;
+      left -= 1;
+    };
+    tick();
+    fpTimers[btnId] = setInterval(tick, 1000);
+  }
+
+  function fpBusy(btn, busy, text) {
+    if (!btn) return;
+    if (busy) { btn.dataset.html = btn.innerHTML; btn.disabled = true; btn.textContent = text; }
+    else { btn.disabled = false; if (btn.dataset.html) btn.innerHTML = btn.dataset.html; }
+  }
+
+  // مرحله ۱
+  async function fpStart() {
+    const phone = normalizeIranPhoneClient(fpEl('fpPhone').value);
+    if (!phone) { showAuthMessage("شماره موبایل معتبر نیست. مثال: 09121234567", true); return; }
+
+    const emailVisible = !fpEl('fpEmailBox').classList.contains('hidden');
+    const email = emailVisible ? fpEl('fpEmail').value.trim().toLowerCase() : '';
+    if (emailVisible && !email) { showAuthMessage("ایمیل را وارد کن.", true); return; }
+
+    const captchaAnswer = (fpEl('fpCaptchaAnswer').value || '').trim();
+    if (!fpCaptchaId) { await fpLoadCaptcha(); showAuthMessage("کد امنیتی را از روی تصویر وارد کن.", true); return; }
+    if (!captchaAnswer) { showAuthMessage("کد امنیتی را از روی تصویر وارد کن.", true); return; }
+
+    const btn = fpEl('fpStartBtn');
+    fpBusy(btn, true, "در حال ارسال...");
+    let keepCaptcha = false;
+    let advanced = false;
+    try {
+      const body = { phone, captchaId: fpCaptchaId, captchaAnswer };
+      if (email) body.email = email;
+      const data = await fpCall('start', body);
+
+      if (data.needsEmail) {
+        // اولین بازیابی: حساب ایمیل تاییدشده ندارد. همین کپچا (keep) برای مرحله بعد معتبر می‌مونه.
+        keepCaptcha = true;
+        fpEl('fpEmailBox').classList.remove('hidden');
+        fpEl('fpEmail').focus();
+        showAuthMessage("این حساب هنوز ایمیل تاییدشده ندارد. ایمیلت را وارد کن تا کد تایید به آن ارسال شود.", false, 'warning');
+        return;
+      }
+
+      advanced = true;
+      fpSessionId = data.sessionId;
+      fpCaptchaId = "";
+      fpEl('fpEmailHint').textContent = data.emailHint || '';
+      fpSetStep(2);
+      fpCountdown('fpResendEmailBtn', data.resendAfterSeconds || 90, 'ارسال مجدد کد');
+      showAuthMessage("کد ۶ رقمی تایید به ایمیلت ارسال شد.", false);
+      fpEl('fpEmailCode').focus();
+    } catch (err) {
+      showAuthMessage(err.message, true);
+    } finally {
+      fpBusy(btn, false);
+      if (!keepCaptcha) {
+        fpCaptchaId = "";
+        // اگه هنوز تو مرحله ۱ هستیم کپچای تازه بگیر؛ وگرنه در «ارسال مجدد» گرفته می‌شه
+        if (!advanced) fpLoadCaptcha();
+      }
+    }
+  }
+
+  // مرحله ۲
+  async function fpVerifyEmail() {
+    const code = toEnDigitsClient(fpEl('fpEmailCode').value).trim();
+    if (!/^\d{6}$/.test(code)) { showAuthMessage("کد تایید باید ۶ رقم باشد.", true); return; }
+    const btn = fpEl('fpVerifyEmailBtn');
+    fpBusy(btn, true, "در حال تایید...");
+    try {
+      const data = await fpCall('verify-email', { sessionId: fpSessionId, code });
+      if (data.nextStep === 'phone') {
+        fpSetStep(3);
+        fpCountdown('fpResendSmsBtn', data.resendAfterSeconds || 90, 'ارسال مجدد پیامک');
+        showAuthMessage("ایمیل تایید شد. کد پیامک‌شده به شماره‌ات را وارد کن.", false);
+        fpEl('fpSmsCode').focus();
+      } else {
+        fpSetStep(4);
+        showAuthMessage("تایید شد. رمز جدید را وارد کن.", false);
+        fpEl('fpNewPassword').focus();
+      }
+    } catch (err) {
+      if (err.data && err.data.emailVerified && err.data.nextStep === 'phone') {
+        // ایمیل تایید شده ولی ارسال پیامک شکست خورد؛ با «ارسال مجدد پیامک» دوباره امتحان می‌شه
+        fpSetStep(3);
+        const b = fpEl('fpResendSmsBtn');
+        if (b) { clearInterval(fpTimers['fpResendSmsBtn']); b.disabled = false; b.textContent = 'ارسال مجدد پیامک'; }
+      }
+      showAuthMessage(err.message, true);
+    } finally {
+      fpBusy(btn, false);
+    }
+  }
+
+  // مرحله ۳
+  async function fpVerifySms() {
+    const code = toEnDigitsClient(fpEl('fpSmsCode').value).trim();
+    if (!/^\d{6}$/.test(code)) { showAuthMessage("کد تایید باید ۶ رقم باشد.", true); return; }
+    const btn = fpEl('fpVerifySmsBtn');
+    fpBusy(btn, true, "در حال تایید...");
+    try {
+      await fpCall('verify-phone', { sessionId: fpSessionId, code });
+      fpSetStep(4);
+      showAuthMessage("شماره تایید شد. رمز جدید را وارد کن.", false);
+      fpEl('fpNewPassword').focus();
+    } catch (err) {
+      showAuthMessage(err.message, true);
+    } finally {
+      fpBusy(btn, false);
+    }
+  }
+
+  // ارسال مجدد (کپچا لازمه): بار اول کپچا نشون داده می‌شه، بار دوم ارسال انجام می‌شه
+  async function fpResend(channel) {
+    const box = fpEl('fpCaptchaBox');
+    if (box.classList.contains('hidden')) {
+      box.classList.remove('hidden');
+      await fpLoadCaptcha();
+      showAuthMessage("کد امنیتی را وارد کن و دوباره روی «ارسال مجدد» بزن.", false, 'warning');
+      return;
+    }
+    const captchaAnswer = (fpEl('fpCaptchaAnswer').value || '').trim();
+    if (!fpCaptchaId || !captchaAnswer) { showAuthMessage("کد امنیتی را از روی تصویر وارد کن.", true); return; }
+
+    const btnId = channel === 'sms' ? 'fpResendSmsBtn' : 'fpResendEmailBtn';
+    const label = channel === 'sms' ? 'ارسال مجدد پیامک' : 'ارسال مجدد کد';
+    const btn = fpEl(btnId);
+    btn.disabled = true;
+    const usedId = fpCaptchaId;
+    fpCaptchaId = "";
+    try {
+      const data = await fpCall('resend', { sessionId: fpSessionId, channel, captchaId: usedId, captchaAnswer });
+      box.classList.add('hidden');
+      fpCountdown(btnId, data.resendAfterSeconds || 90, label);
+      showAuthMessage(channel === 'sms' ? "کد جدید پیامک شد." : "کد جدید به ایمیلت ارسال شد.", false);
+    } catch (err) {
+      btn.disabled = false;
+      showAuthMessage(err.message, true);
+      if (fpSessionId) fpLoadCaptcha();
+    }
+  }
+
+  // مرحله ۴
+  async function fpSubmitPassword() {
+    const password = fpEl('fpNewPassword').value;
+    const confirm = fpEl('fpConfirmPassword').value;
+    if (password.length < 6 || password.length > 72) { showAuthMessage("رمز عبور باید بین ۶ تا ۷۲ کاراکتر باشد.", true); return; }
+    if (password !== confirm) { showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true); return; }
+    const btn = fpEl('fpResetBtn');
+    fpBusy(btn, true, "در حال ثبت...");
+    try {
+      await fpCall('reset', { sessionId: fpSessionId, password });
+      fpReset();
+      switchAuthTab('login');
+      showAuthMessage("رمز عبور با موفقیت تغییر کرد. حالا می‌تونی وارد شی.", false);
+    } catch (err) {
+      showAuthMessage(err.message, true);
+    } finally {
+      fpBusy(btn, false);
+    }
+  }
+
 
   // بررسی رویداد بازیابی رمز عبور (وقتی کاربر روی لینک ایمیل کلیک می‌کند)
   document.addEventListener('DOMContentLoaded', () => {
@@ -1765,6 +2026,7 @@ document.addEventListener('keydown', (e) => {
           document.getElementById('registerForm')?.classList.add('hidden');
           document.getElementById('otpForm')?.classList.add('hidden');
           document.getElementById('forgotPasswordForm')?.classList.add('hidden');
+          document.getElementById('forgotPhoneForm')?.classList.add('hidden');
           document.getElementById('resetPasswordForm')?.classList.remove('hidden');
           showAuthMessage("لطفاً رمز عبور جدید خود را وارد کنید.", false);
         }
@@ -1964,11 +2226,77 @@ document.addEventListener('DOMContentLoaded', () => {
           ارسال لینک بازیابی رمز عبور
         </button>
         <div class="text-center">
+          <button type="button" onclick="showForgotPasswordForm()" class="text-xs text-red-500 hover:text-red-400 transition-all block mx-auto mb-2">بازیابی با شماره موبایل</button>
           <button type="button" onclick="switchAuthTab('login')" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">
             بازگشت به ورود
           </button>
         </div>
       </form>
+
+      <!-- ==================== فرم فراموشی رمز عبور با شماره موبایل ==================== -->
+      <div id="forgotPhoneForm" class="space-y-4 hidden">
+        <!-- مرحله ۱: شماره (+ ایمیل در اولین بازیابی) + کپچا -->
+        <div id="fpStep1" class="space-y-3.5">
+          <p class="text-xs text-zinc-300 text-center">شماره موبایل حسابت را وارد کن تا کد تایید برایت ارسال شود.</p>
+          <div>
+            <label for="fpPhone" class="block text-xs font-medium text-zinc-400 mb-1.5">شماره موبایل</label>
+            <div class="relative">
+              <i class="fa-solid fa-mobile-screen auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="tel" id="fpPhone" onfocus="if(!fpCaptchaId) fpLoadCaptcha()" placeholder="09121234567" dir="ltr" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all text-left" />
+            </div>
+          </div>
+          <div id="fpEmailBox" class="hidden">
+            <label for="fpEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل (برای اتصال به حساب)</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
+              <input type="email" id="fpEmail" placeholder="example@gmail.com" dir="ltr" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all text-left" />
+            </div>
+          </div>
+        </div>
+
+        <!-- کپچا (مرحله ۱ و هنگام «ارسال مجدد») -->
+        <div id="fpCaptchaBox">
+          <label for="fpCaptchaAnswer" class="block text-xs font-medium text-zinc-400 mb-1">کد امنیتی</label>
+          <div class="flex items-center gap-2">
+            <img id="fpCaptchaImg" alt="کد امنیتی" width="160" height="56" class="rounded-lg bg-slate-50 shrink-0 max-w-[45%] h-auto" />
+            <button type="button" onclick="fpLoadCaptcha()" aria-label="کد جدید" class="text-[11px] text-red-500 hover:text-red-400 transition-all shrink-0"><i class="fa-solid fa-rotate-right"></i></button>
+            <input type="text" id="fpCaptchaAnswer" autocomplete="off" autocapitalize="characters" maxlength="8" dir="ltr" placeholder="ABCDE" class="w-full min-w-0 text-center uppercase tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        <button type="button" id="fpStartBtn" onclick="fpStart()" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 fp-step1-only">
+          <i class="fa-solid fa-paper-plane text-xs"></i> ادامه
+        </button>
+
+        <!-- مرحله ۲: کد ایمیل -->
+        <div id="fpStep2" class="hidden space-y-3.5">
+          <p class="text-xs text-zinc-300 text-center">کد ۶ رقمی به ایمیل <span id="fpEmailHint" dir="ltr" class="text-white font-semibold"></span> ارسال شد.</p>
+          <input type="text" id="fpEmailCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" dir="ltr" placeholder="------" class="w-full text-center tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          <button type="button" id="fpVerifyEmailBtn" onclick="fpVerifyEmail()" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all disabled:opacity-60">تایید کد ایمیل</button>
+          <div class="text-center"><button type="button" id="fpResendEmailBtn" onclick="fpResend('email')" class="text-xs text-red-500 hover:text-red-400 disabled:text-zinc-500 transition-all">ارسال مجدد کد</button></div>
+        </div>
+
+        <!-- مرحله ۳: کد پیامک (فقط اولین بازیابی) -->
+        <div id="fpStep3" class="hidden space-y-3.5">
+          <p class="text-xs text-zinc-300 text-center">برای اثبات مالکیت شماره، کد ۶ رقمی پیامک‌شده را وارد کن.</p>
+          <input type="text" id="fpSmsCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" dir="ltr" placeholder="------" class="w-full text-center tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          <button type="button" id="fpVerifySmsBtn" onclick="fpVerifySms()" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all disabled:opacity-60">تایید کد پیامک</button>
+          <div class="text-center"><button type="button" id="fpResendSmsBtn" onclick="fpResend('sms')" class="text-xs text-red-500 hover:text-red-400 disabled:text-zinc-500 transition-all">ارسال مجدد پیامک</button></div>
+        </div>
+
+        <!-- مرحله ۴: رمز جدید -->
+        <div id="fpStep4" class="hidden space-y-3.5">
+          <p class="text-xs text-zinc-300 text-center">رمز عبور جدید خود را وارد کنید.</p>
+          <input type="password" id="fpNewPassword" minlength="6" maxlength="72" placeholder="رمز عبور جدید (حداقل ۶ کاراکتر)" dir="ltr" class="w-full text-center tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all text-left" />
+          <input type="password" id="fpConfirmPassword" minlength="6" maxlength="72" placeholder="تکرار رمز عبور جدید" dir="ltr" class="w-full text-center tracking-widest rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all text-left" />
+          <button type="button" id="fpResetBtn" onclick="fpSubmitPassword()" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all disabled:opacity-60">ثبت رمز عبور جدید</button>
+        </div>
+
+        <div class="text-center space-y-2">
+          <div><button type="button" onclick="showForgotEmailForm()" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">بازیابی با لینک ایمیل (حساب‌های ساخته‌شده با ایمیل)</button></div>
+          <div><button type="button" onclick="switchAuthTab('login')" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">بازگشت به ورود</button></div>
+        </div>
+      </div>
 
       <!-- ==================== فرم تنظیم رمز عبور جدید ==================== -->
       <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
