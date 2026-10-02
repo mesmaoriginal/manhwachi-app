@@ -22,6 +22,9 @@
 //   --data=مسیر/data.json     (یا متغیر DATA_JSON) اگه خودکار پیدا نشد
 //   --slug=  --chapter=  --limit=N   محدودکردن دامنه
 //   --width=800  --max-height=15000  --quality=80  --interval=300
+//   --lossless    کیفیت واقعاً ۱۰۰٪ (بدون افت). همراه --width=auto یعنی نه کیفیت کم می‌شه نه عرض
+//   --width=auto  عرض خروجی = عرض خود عکس‌های اصلی
+//   --rebuild     چپترهایی که قبلاً با کیفیت پایین‌تر تکه‌ای شدن رو دوباره بساز (عکس اصلی‌ها باید هنوز روی S3 باشن)
 //   --no-warm     کپی تکه‌ها رو تو image-cache نذار
 //   --no-apply    فقط آپلود کن، data.json رو عوض نکن
 //   --apply-only  آپلود نکن، فقط نتیجه‌های ذخیره‌شده رو تو data.json اعمال کن
@@ -57,15 +60,20 @@ const opt = (n) => {
   return a ? a.split("=").slice(1).join("=") : null;
 };
 
-const WIDTH = Number(opt("width") || 800);
+// --width=auto: عرض خروجی = عرض واقعی اولین عکس چپتر (بدون کوچک/بزرگ کردن)
+const WIDTH_AUTO = opt("width") === "auto";
+const WIDTH = WIDTH_AUTO ? 800 : Number(opt("width") || 800);
 const MAX_STRIP_HEIGHT = Number(opt("max-height") || 15000); // سقف WebP: 16383
 const QUALITY = Number(opt("quality") || 80);
+// --lossless: WebP بدون افت کیفیت (واقعاً ۱۰۰٪؛ quality=100 هم هنوز lossy حساب می‌شه)
+const LOSSLESS = flag("lossless");
 const INTERVAL_MS = Number(opt("interval") || 300);
 const DRY = flag("dry-run");
 const WARM = !flag("no-warm");
 const APPLY = !flag("no-apply");
 const APPLY_ONLY = flag("apply-only");
-const REDO = flag("redo");
+const REBUILD = flag("rebuild"); // مثل --redo، ولی چپترهایی که الان تکه‌ای هستن رو هم دوباره می‌سازه
+const REDO = flag("redo") || REBUILD;
 const ONLY_SLUG = opt("slug");
 const ONLY_CHAPTER = opt("chapter") !== null ? Number(opt("chapter")) : null;
 const LIMIT = opt("limit") ? Number(opt("limit")) : Infinity;
@@ -168,6 +176,12 @@ function writeToImageCache(key, buffer) {
 async function processChapter(slug, num, originals) {
   const prefix = `manhwas/${slug}/CH${num}/`; // مستقیم تو پوشه‌ی CH<n> (کنار srcCH<n>)
   const outKeys = [];
+  let width = WIDTH;
+  let firstBody = null;
+  if (WIDTH_AUTO) {
+    firstBody = await getObjectBuffer(originals[0]);
+    width = (await sharp(firstBody).metadata()).width || WIDTH;
+  }
   let group = [];
   let groupH = 0;
 
@@ -186,10 +200,10 @@ async function processChapter(slug, num, originals) {
       return c;
     });
     const buffer = await sharp({
-      create: { width: WIDTH, height: top, channels: 3, background: "#ffffff" },
+      create: { width, height: top, channels: 3, background: "#ffffff" },
     })
       .composite(composite)
-      .webp({ quality: QUALITY })
+      .webp(LOSSLESS ? { lossless: true } : { quality: QUALITY })
       .toBuffer();
     await putObject(key, buffer);
     if (WARM) writeToImageCache(key, buffer);
@@ -199,10 +213,12 @@ async function processChapter(slug, num, originals) {
   };
 
   for (const key of originals) {
-    const body = await getObjectBuffer(key);
+    let body;
+    if (firstBody) { body = firstBody; firstBody = null; }
+    else body = await getObjectBuffer(key);
     const { data, info } = await sharp(body)
       .flatten({ background: "#ffffff" })
-      .resize({ width: WIDTH })
+      .resize({ width })
       .toColourspace("srgb")
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -271,6 +287,9 @@ function applyToDataFile(dataFile, progress) {
 (async () => {
   if (!BUCKET && !DRY && !APPLY_ONLY) { console.error("PARSPACK_BUCKET تنظیم نشده (.env رو چک کن)."); process.exit(1); }
 
+  console.log(
+    `تنظیمات: عرض=${WIDTH_AUTO ? "auto (اصلی)" : WIDTH} | ${LOSSLESS ? "lossless" : `quality=${QUALITY}`}${REBUILD ? " | rebuild" : ""}`
+  );
   const dataFile = findDataFile();
   console.log(`data.json: ${dataFile}`);
   const progress = loadProgress();
@@ -289,7 +308,7 @@ function applyToDataFile(dataFile, progress) {
       const id = `${slug}::${Number(ep.num)}`;
       const imgs = Array.isArray(ep.images) ? ep.images : [];
       if (REDO) {
-        if (imgs.length && imgs.every(isFlatStripKey)) { alreadyDone++; continue; }
+        if (!REBUILD && imgs.length && imgs.every(isFlatStripKey)) { alreadyDone++; continue; }
         if (!progress[id]?.originals?.length) {
           console.warn(`  رد شد (برای --redo سابقه‌ی عکس‌های اصلی تو progress نیست): ${id}`);
           badData++;
