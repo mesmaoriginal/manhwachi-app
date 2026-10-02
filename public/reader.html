@@ -126,9 +126,70 @@
         @media (max-width: 400px) {
             #nav-manhwa-title { max-width: 34vw; }
         }
+
+        /* ===== لودر آماده‌سازی چپتر ===== */
+        #chapter-loader {
+            position: fixed; inset: 0; z-index: 150;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+            padding: 24px; text-align: center;
+            background: radial-gradient(ellipse at 50% 38%, rgba(139,0,0,0.28) 0%, #050505 62%);
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+        #chapter-loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-ring { position: relative; width: 148px; height: 148px; }
+        .loader-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+        .loader-ring .track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 5; }
+        .loader-ring .bar {
+            fill: none; stroke: #dc2626; stroke-width: 5; stroke-linecap: round;
+            stroke-dasharray: 339.29; stroke-dashoffset: 339.29;
+            filter: drop-shadow(0 0 8px rgba(220,38,38,0.85));
+            transition: stroke-dashoffset 0.25s linear;
+        }
+        .loader-ring .pct {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 30px; color: #fff;
+            direction: ltr;
+        }
+        .loader-ring::after {
+            content: ''; position: absolute; inset: -14px; border-radius: 50%;
+            border: 1px solid rgba(220,38,38,0.25);
+            animation: loaderPulse 2.2s ease-out infinite;
+        }
+        @keyframes loaderPulse { 0% { transform: scale(0.92); opacity: 0.9; } 100% { transform: scale(1.18); opacity: 0; } }
+        #loader-tip { min-height: 1.5em; transition: opacity 0.3s ease; }
+        .loader-skip { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .loader-skip.show { opacity: 1; pointer-events: auto; }
+
+        /* جایگزین صفحه‌ی سیاه تا وقتی تصویر لود می‌شود */
+        #reader.mode-vertical .manhwa-panel.panel-loading {
+            min-height: 70vh; position: relative; overflow: hidden;
+            background: linear-gradient(100deg, #0b0b0b 30%, #161616 50%, #0b0b0b 70%);
+            background-size: 200% 100%; animation: panelShimmer 1.4s linear infinite;
+        }
+        @keyframes panelShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+        @media (prefers-reduced-motion: reduce) {
+            .loader-ring::after, #reader.mode-vertical .manhwa-panel.panel-loading { animation: none; }
+        }
     </style>
 </head>
 <body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
+
+    <!-- لودر آماده‌سازی چپتر -->
+    <div id="chapter-loader" role="status" aria-live="polite">
+        <div class="loader-ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="track" cx="60" cy="60" r="54"></circle>
+                <circle class="bar" id="loader-bar" cx="60" cy="60" r="54"></circle>
+            </svg>
+            <div class="pct"><span id="loader-pct">0</span><span class="text-base text-gray-500 mr-0.5">%</span></div>
+        </div>
+        <div class="space-y-2">
+            <h2 id="loader-title" class="text-xl font-bold">در حال آماده‌سازی چپتر</h2>
+            <p id="loader-count" class="text-sm text-gray-400">در حال اتصال به سرور...</p>
+            <p id="loader-tip" class="text-xs text-gray-500">تصاویر با کیفیت بالا هستند، کمی صبر کنید</p>
+        </div>
+        <button id="loader-skip" onclick="hideChapterLoader()" class="loader-skip px-5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-800 text-sm text-gray-300 transition-colors">نمایش بدون انتظار</button>
+    </div>
 
     <!-- هدر بالایی هوشمند -->
     <header id="top-nav" class="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-red-900/30 z-50 transition-all duration-300">
@@ -343,7 +404,7 @@
 
             if (retryCount < MAX_IMAGE_RETRIES) {
                 imgEl.dataset.retryCount = retryCount + 1;
-                const delayMs = 2000 * Math.pow(2, retryCount) + Math.random() * 2000; // jitter تا همه‌ی عکس‌ها هم‌زمان دوباره درخواست نزنن
+                const delayMs = 800 * Math.pow(2, retryCount);
                 setTimeout(() => {
                     const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
                     imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
@@ -373,9 +434,87 @@
             imgEl.after(retryBox);
         }
 
+
+        // ===== لودر چپتر =====
+        const LOADER_WAIT_COUNT = 3;      // تعداد تصویر اولی که قبل از نمایش صبر می‌کنیم
+        const LOADER_MAX_WAIT_MS = 45000; // سقف انتظار؛ بعد از آن صفحه به هر حال نمایش داده می‌شود
+        const LOADER_TIPS = [
+            'تصاویر با کیفیت بالا هستند، کمی صبر کنید',
+            'بعد از لود اولیه، ادامه‌ی چپتر روان‌تر باز می‌شود',
+            'می‌توانید در تنظیمات، حالت صفحه‌ای را امتحان کنید',
+            'در حال دریافت صفحه‌های اول چپتر...'
+        ];
+        let loaderShown = 0, loaderTarget = 0, loaderTimers = [], loaderDone = false;
+
+        function setLoaderProgress(pct) {
+            pct = Math.max(0, Math.min(100, pct));
+            document.getElementById('loader-bar').style.strokeDashoffset = 339.29 * (1 - pct / 100);
+            document.getElementById('loader-pct').textContent = Math.round(pct);
+        }
+        function startChapterLoader() {
+            loaderDone = false; loaderShown = 0; loaderTarget = 8;
+            const el = document.getElementById('chapter-loader');
+            el.classList.remove('hide');
+            document.body.style.overflow = 'hidden';
+            // پیشرفت نرم و پیوسته به سمت هدف
+            loaderTimers.push(setInterval(() => {
+                if (loaderShown < loaderTarget) loaderShown += Math.max(0.4, (loaderTarget - loaderShown) * 0.08);
+                setLoaderProgress(loaderShown);
+            }, 80));
+            let tipIdx = 0;
+            loaderTimers.push(setInterval(() => {
+                const tip = document.getElementById('loader-tip');
+                tip.style.opacity = 0;
+                setTimeout(() => { tipIdx = (tipIdx + 1) % LOADER_TIPS.length; tip.textContent = LOADER_TIPS[tipIdx]; tip.style.opacity = 1; }, 300);
+            }, 3500));
+            loaderTimers.push(setTimeout(() => document.getElementById('loader-skip').classList.add('show'), 8000));
+            loaderTimers.push(setTimeout(hideChapterLoader, LOADER_MAX_WAIT_MS));
+        }
+        function hideChapterLoader() {
+            if (loaderDone) return;
+            loaderDone = true;
+            loaderTimers.forEach(t => { clearInterval(t); clearTimeout(t); });
+            loaderTimers = [];
+            setLoaderProgress(100);
+            const el = document.getElementById('chapter-loader');
+            setTimeout(() => {
+                el.classList.add('hide');
+                document.body.style.overflow = '';
+            }, 250);
+        }
+        // صبر می‌کند تا چند تصویر اول کامل لود شوند و همزمان درصد را به‌روز می‌کند
+        function waitForFirstImages(onReady) {
+            const imgs = [...document.querySelectorAll('#reader .manhwa-panel img')].slice(0, LOADER_WAIT_COUNT);
+            const need = imgs.length;
+            if (!need) { onReady(); return; }
+            let settled = 0, finished = false;
+            const countEl = document.getElementById('loader-count');
+            const update = () => {
+                countEl.textContent = `دریافت صفحه‌ها: ${Math.min(settled, need)} از ${need}`;
+                // هر تصویر بخشی از ۱۰۰٪ است؛ تا ۹۵٪ فقط با لود واقعی جلو می‌رود
+                loaderTarget = Math.min(95, 8 + (settled / need) * 87);
+            };
+            const done = () => {
+                if (finished) return;
+                settled++;
+                update();
+                if (settled >= need) { finished = true; onReady(); }
+            };
+            update();
+            imgs.forEach(img => {
+                if (img.complete && img.naturalWidth > 0) { done(); return; }
+                const once = () => { img.removeEventListener('load', once); img.removeEventListener('error', onErr); done(); };
+                // روی خطا، منطق retry خودش کار می‌کند؛ ما فقط بعد از شکست نهایی عبور می‌کنیم
+                const onErr = () => { if (parseInt(img.dataset.retryCount || '0', 10) >= MAX_IMAGE_RETRIES) once(); };
+                img.addEventListener('load', once);
+                img.addEventListener('error', onErr);
+            });
+        }
+
         async function loadChapterPanels() {
             const panelsContainer = document.getElementById('reader');
-            panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">در حال بارگذاری تصاویر...</div>`;
+            panelsContainer.innerHTML = '';
+            startChapterLoader();
 
             let authHeader = {};
             try {
@@ -394,6 +533,7 @@
                 const result = await res.json();
 
                 if (!res.ok) {
+                    hideChapterLoader();
                     panelsContainer.innerHTML = '';
                     if (result.code === 'AUTH_REQUIRED') {
                         panelsContainer.innerHTML = `
@@ -417,6 +557,7 @@
 
                 let urls = result.urls || [];
                 if (urls.length === 0) {
+                    hideChapterLoader();
                     panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.</div>`;
                     return;
                 }
@@ -437,13 +578,13 @@
                 panelsContainer.innerHTML = '';
                 urls.forEach((imgUrl, idx) => {
                     const panel = document.createElement('div');
-                    panel.className = 'manhwa-panel w-full max-w-3xl flex justify-center items-center';
+                    panel.className = 'manhwa-panel panel-loading w-full max-w-3xl flex justify-center items-center';
                     panel.innerHTML = `<img
                         src="${imgUrl}"
                         data-original-src="${imgUrl}"
                         data-retry-count="0"
                         class="w-full h-auto block opacity-0 transition-opacity duration-300"
-                        onload="this.classList.remove('opacity-0'); this.removeAttribute('data-broken');"
+                        onload="this.classList.remove('opacity-0'); this.removeAttribute('data-broken'); this.parentElement.classList.remove('panel-loading');"
                         onerror="handleImageError(this)"
                         loading="${idx < 4 ? 'eager' : 'lazy'}"
                         alt="صفحه ${idx + 1}">`;
@@ -453,9 +594,14 @@
                 totalPanels = urls.length;
                 document.getElementById('total-pages').textContent = totalPanels;
 
-                restoreScrollPosition();
+                // اول چند تصویر اول دانلود می‌شود، بعد لودر کنار می‌رود
+                waitForFirstImages(() => {
+                    hideChapterLoader();
+                    setTimeout(restoreScrollPosition, 350);
+                });
             } catch (err) {
                 console.error(err);
+                hideChapterLoader();
                 panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">خطا در بارگذاری تصاویر. لطفاً دوباره تلاش کنید.</div>`;
             }
         }
@@ -466,7 +612,7 @@
                 const data = await res.json();
                 manhwaData = data[slug];
 
-                if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) return;
+                if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) { hideChapterLoader(); return; }
 
                 if (chNum === null) {
                     const hasZero = manhwaData.episodes.some(e => Number(e.num) === 0);
@@ -474,7 +620,7 @@
                 }
 
                 const episode = manhwaData.episodes.find(e => Number(e.num) === chNum);
-                if (!episode) return;
+                if (!episode) { hideChapterLoader(); return; }
 
                 document.title = `خواندن مانهوا ${manhwaData.title_fa} چپتر ${chNum} - مانهواچی`;
                 document.getElementById('nav-manhwa-title').textContent = manhwaData.title_fa;
@@ -509,6 +655,7 @@
                 updateReportButtonUI();
             } catch (err) {
                 console.error(err);
+                hideChapterLoader();
             }
         }
 
