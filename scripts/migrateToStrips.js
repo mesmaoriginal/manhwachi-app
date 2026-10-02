@@ -25,6 +25,7 @@
 //   --lossless    کیفیت واقعاً ۱۰۰٪ (بدون افت). همراه --width=auto یعنی نه کیفیت کم می‌شه نه عرض
 //   --width=auto  عرض خروجی = عرض خود عکس‌های اصلی
 //   --rebuild     چپترهایی که قبلاً با کیفیت پایین‌تر تکه‌ای شدن رو دوباره بساز (عکس اصلی‌ها باید هنوز روی S3 باشن)
+//   --from-src    همراه --rebuild/--redo: اگه سابقه‌ی عکس‌های اصلی تو progress نبود، از srcCH<n> روی S3 لیستشون کن
 //   --no-warm     کپی تکه‌ها رو تو image-cache نذار
 //   --no-apply    فقط آپلود کن، data.json رو عوض نکن
 //   --apply-only  آپلود نکن، فقط نتیجه‌های ذخیره‌شده رو تو data.json اعمال کن
@@ -36,7 +37,7 @@ try { require("dotenv").config(); } catch { /* dotenv نصب نیست، از env
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
-const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const { listChapterImageKeys } = require("../lib/chapterCache");
 
 // کلاینت جدا با maxAttempts=1: SDK خودش روی 429 چند بار دوباره درخواست می‌زنه و
@@ -74,6 +75,8 @@ const APPLY = !flag("no-apply");
 const APPLY_ONLY = flag("apply-only");
 const REBUILD = flag("rebuild"); // مثل --redo، ولی چپترهایی که الان تکه‌ای هستن رو هم دوباره می‌سازه
 const REDO = flag("redo") || REBUILD;
+// --from-src: اگه برای چپتری سابقه‌ی عکس‌های اصلی تو progress نیست، مستقیم از پوشه‌ی srcCH<n> روی S3 لیستشون کن
+const FROM_SRC = flag("from-src");
 const ONLY_SLUG = opt("slug");
 const ONLY_CHAPTER = opt("chapter") !== null ? Number(opt("chapter")) : null;
 const LIMIT = opt("limit") ? Number(opt("limit")) : Infinity;
@@ -82,6 +85,23 @@ const BUCKET = process.env.PARSPACK_BUCKET;
 const ROOT = path.join(__dirname, "..");
 const IMAGE_CACHE_DIR = path.join(ROOT, "image-cache");
 const PROGRESS_FILE = path.join(__dirname, ".migrate-progress.json");
+
+// لیست عکس‌های اصلی از پوشه‌ی srcCH<n> (فقط فایل‌های مستقیم همون پوشه)
+async function listSrcKeys(slug, num) {
+  const prefix = `manhwas/${slug}/CH${num}/srcCH${num}/`;
+  const keys = [];
+  let token;
+  do {
+    const res = await s3.send(
+      new ListObjectsV2Command({ Bucket: BUCKET, Prefix: prefix, Delimiter: "/", ContinuationToken: token })
+    );
+    (res.Contents || []).forEach((o) => {
+      if (o.Key && /\.(jpe?g|png|webp|gif|avif)$/i.test(o.Key)) keys.push(o.Key);
+    });
+    token = res.IsTruncated ? res.NextContinuationToken : undefined;
+  } while (token);
+  return keys.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
 
 // ---------- پیدا کردن data.json ----------
 function findDataFile() {
@@ -310,7 +330,17 @@ function applyToDataFile(dataFile, progress) {
       if (REDO) {
         if (!REBUILD && imgs.length && imgs.every(isFlatStripKey)) { alreadyDone++; continue; }
         if (!progress[id]?.originals?.length) {
-          console.warn(`  رد شد (برای --redo سابقه‌ی عکس‌های اصلی تو progress نیست): ${id}`);
+          if (FROM_SRC) {
+            const src = await paced(() => listSrcKeys(slug, Number(ep.num)));
+            if (!src.length) {
+              console.warn(`  رد شد (تو srcCH<n> هم عکسی پیدا نشد): ${id}`);
+              badData++;
+              continue;
+            }
+            work.push({ slug, num: Number(ep.num), id, originals: src, replaces: imgs });
+            continue;
+          }
+          console.warn(`  رد شد (سابقه‌ی عکس‌های اصلی تو progress نیست؛ با --from-src از srcCH بخون): ${id}`);
           badData++;
           continue;
         }
