@@ -26,7 +26,18 @@ const DELAY_BETWEEN_CHAPTERS_MS = 300;
 
 async function main() {
   const data = readData();
-  const slugs = Object.keys(data);
+  // اگه اسلاگ‌ها رو بعد از اسم اسکریپت بدی، فقط همون‌ها پردازش می‌شن:
+//   node scripts/migrate-episode-images.js slug-one slug-two slug-three
+// بدون آرگومان، مثل قبل همه‌ی مانهواها پردازش می‌شن.
+  const requested = process.argv.slice(2);
+  let slugs = Object.keys(data);
+  if (requested.length > 0) {
+    const unknown = requested.filter((s) => !data[s]);
+    if (unknown.length > 0) {
+      console.log(`[migrate] ⚠️  اسلاگ نامعتبر (توی data.json نیست): ${unknown.join(", ")}`);
+    }
+    slugs = requested.filter((s) => data[s]);
+  }
 
   let totalEpisodes = 0;
   let migrated = 0;
