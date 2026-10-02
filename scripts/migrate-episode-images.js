@@ -29,11 +29,7 @@ async function main() {
   // اگه اسلاگ‌ها رو بعد از اسم اسکریپت بدی، فقط همون‌ها پردازش می‌شن:
 //   node scripts/migrate-episode-images.js slug-one slug-two slug-three
 // بدون آرگومان، مثل قبل همه‌ی مانهواها پردازش می‌شن.
-  const args = process.argv.slice(2);
-  // --force: حتی اپیزودهایی که از قبل images دارن دوباره از S3 لیست می‌شن
-  // (لازمه چون کلیدهای قدیمی‌شون به مسیر srcCH اشاره می‌کنن که دیگه نیست).
-  const force = args.includes("--force");
-  const requested = args.filter((a) => !a.startsWith("--"));
+  const requested = process.argv.slice(2);
   let slugs = Object.keys(data);
   if (requested.length > 0) {
     const unknown = requested.filter((s) => !data[s]);
@@ -57,7 +53,7 @@ async function main() {
     for (const ep of episodes) {
       totalEpisodes++;
 
-      if (!force && Array.isArray(ep.images) && ep.images.length > 0) {
+      if (Array.isArray(ep.images) && ep.images.length > 0) {
         skippedAlready++;
         continue;
       }
