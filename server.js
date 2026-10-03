@@ -165,28 +165,7 @@ const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 const PUBLIC_MANHWA_PATH_RE =
   /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif|svg)$/i;
 
-const { getCachedImage, UpstreamBusyError } = require("./lib/imageProxyCache");
-
-// وقتی پارس‌پک 429 می‌ده، به‌جای 500 و یک خط لاگ برای هر درخواست، 503 با
-// Retry-After برمی‌گردونیم و لاگ رو حداکثر هر ۱۰ ثانیه یک بار چاپ می‌کنیم.
-let lastBusyLogAt = 0;
-function handleImageError(err, res, label) {
-  const throttled =
-    err instanceof UpstreamBusyError ||
-    err?.$metadata?.httpStatusCode === 429 ||
-    /too many requests/i.test(err?.message || "");
-  if (throttled) {
-    const now = Date.now();
-    if (now - lastBusyLogAt > 10_000) {
-      lastBusyLogAt = now;
-      console.warn(`${label}: پارس‌پک محدودیت نرخ داده (لاگ این پیام هر ۱۰ ثانیه یک‌بار چاپ می‌شه)`);
-    }
-    res.set("Retry-After", String(err.retryAfterSeconds || 20));
-    return res.status(503).send("سرور موقتاً شلوغ است، چند ثانیه بعد دوباره تلاش کنید");
-  }
-  console.error(`${label}:`, err.message);
-  return res.status(500).send("خطای داخلی سرور");
-}
+const { getCachedImage } = require("./lib/imageProxyCache");
 
 app.get("/manhwas/*", async (req, res) => {
   // req.params[0] یعنی همه‌چیز بعد از "/manhwas/" (مثلاً "<slug>/cover.jpg"
@@ -209,7 +188,8 @@ app.get("/manhwas/*", async (req, res) => {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
     }
-    return handleImageError(err, res, "خطا در گرفتن تصویر از S3");
+    console.error("خطا در گرفتن تصویر از S3:", err.message);
+    return res.status(500).send("خطای داخلی سرور");
   }
 });
 
@@ -252,7 +232,8 @@ app.get("/chapter-image/:key(*)", async (req, res) => {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
     }
-    return handleImageError(err, res, "خطا در گرفتن تصویر از کش/پارس‌پک");
+    console.error("خطا در گرفتن تصویر از کش/پارس‌پک:", err.message);
+    return res.status(500).send("خطای داخلی سرور");
   }
 });
 
@@ -1244,7 +1225,8 @@ async function verifyAndCreditPayment(trackId) {
         }
       ).catch(() => {});
     }
-    return { httpStatus: 400, body: { message: err.message || "خطا در تایید اشتراک VIP" } };
+    // final=true فقط وقتی قطعی است که پرداخت رد شده؛ فرانت با آن «ناموفق» را از «نامعلوم/موقت» جدا می‌کند
+    return { httpStatus: 400, body: { message: err.message || "خطا در تایید اشتراک VIP", final: !!err.final } };
   }
 }
 
