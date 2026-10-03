@@ -131,6 +131,9 @@
     <!-- بخش اصلی معرفی پلن‌ها -->
     <main class="max-w-5xl mx-auto px-4 py-14 sm:py-16 flex-1">
 
+        
+        <!-- بنر وضعیت اشتراک (با JS پر می‌شود) -->
+        <div id="vipStatusBanner" class="hidden max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3"></div>
         <div class="text-center max-w-xl mx-auto mb-14">
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-vip-gold/10 border border-vip-gold/40 text-vip-gold text-xs font-bold mb-5">
                 <span class="material-symbols-outlined text-base crown-float">workspace_premium</span>
@@ -260,12 +263,28 @@
         // تابع شروع پرداخت
         // نکته امنیتی: دیگر amount/months از کلاینت فرستاده نمی‌شود،
         // فقط "planKey" ارسال می‌شود و قیمت واقعی سمت سرور (edge function) تعیین می‌شود.
+        const PENDING_KEY = 'vip_payment_started_at';
+        const PENDING_WINDOW_MS = 30 * 60 * 1000;
+        const faDate = d => new Date(d).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
+        window.__vipUntil = null;
+        window.__vipActive = false;
+        window.__paymentPending = false;
+
         async function startPayment(planKey, btnElement) {
             const client = getSupabaseInstance();
 
             if (!client) {
                 alert("خطا در برقراری ارتباط با سیستم. لطفا صفحه را مجددا لود کنید.");
                 return;
+            }
+
+            // جلوگیری از خرید تصادفی دوباره
+            if (window.__vipActive) {
+                const msg = `اشتراک شما تا ${faDate(window.__vipUntil)} فعال است.\nخرید جدید به انتهای اشتراک فعلی اضافه می‌شود. ادامه می‌دهید؟`;
+                if (!confirm(msg)) return;
+            } else if (window.__paymentPending) {
+                const msg = "پرداخت قبلی شما در حال بررسی است و تا چند دقیقه‌ی دیگر خودکار فعال می‌شود.\nاگر پول از حسابتان کم شده، دوباره پرداخت نکنید. مطمئنید که می‌خواهید دوباره بخرید؟";
+                if (!confirm(msg)) return;
             }
 
             // ۱. بررسی وضعیت لاگین
@@ -296,6 +315,7 @@
                 const result = await response.json();
 
                 if (response.ok && result.trackId) {
+                    try { localStorage.setItem(PENDING_KEY, String(Date.now())); } catch (e) {}
                     window.location.href = `https://gateway.zibal.ir/start/${result.trackId}`;
                 } else {
                     throw new Error(result.message || "خطا در ایجاد درگاه پرداخت");
@@ -308,6 +328,49 @@
                 }
             }
         }
+
+                // ===== نمایش وضعیت اشتراک بالای صفحه =====
+        async function renderVipStatus() {
+            const box = document.getElementById('vipStatusBanner');
+            const client = getSupabaseInstance();
+            if (!box || !client) return;
+            try {
+                const { data: { session } } = await client.auth.getSession();
+                if (!session) return;
+                const { data: prof } = await client.from('profiles').select('is_vip, vip_until').eq('id', session.user.id).maybeSingle();
+                const until = prof?.vip_until ? new Date(prof.vip_until) : null;
+                const active = !!prof?.is_vip && (!until || until > new Date());
+
+                let startedAt = 0;
+                try { startedAt = parseInt(localStorage.getItem(PENDING_KEY) || '0', 10); } catch (e) {}
+                const recentlyPaid = startedAt && (Date.now() - startedAt) < PENDING_WINDOW_MS;
+
+                if (active) {
+                    window.__vipActive = true; window.__vipUntil = until;
+                    try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
+                    const days = until ? Math.max(1, Math.ceil((until - Date.now()) / 86400000)) : null;
+                    box.className = 'max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/40';
+                    box.innerHTML = `
+                        <span class="material-symbols-outlined text-3xl text-emerald-400 shrink-0">verified</span>
+                        <div class="min-w-0">
+                            <p class="font-bold text-emerald-300 text-sm mb-1">اشتراک VIP شما فعال است ✓</p>
+                            <p class="text-xs text-zinc-300 leading-relaxed">${until ? `تا <b>${faDate(until)}</b> (حدود ${days.toLocaleString('fa-IR')} روز دیگر) به همه‌ی چپترها دسترسی دارید.` : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
+                            <a href="/" class="inline-block mt-2 text-xs font-bold text-emerald-400 hover:text-emerald-300">شروع خواندن ←</a>
+                        </div>`;
+                } else if (recentlyPaid) {
+                    window.__paymentPending = true;
+                    box.className = 'max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3 bg-amber-500/10 border border-amber-500/40';
+                    box.innerHTML = `
+                        <span class="material-symbols-outlined text-3xl text-amber-400 shrink-0 animate-spin">progress_activity</span>
+                        <div class="min-w-0">
+                            <p class="font-bold text-amber-300 text-sm mb-1">پرداخت شما در حال بررسی است</p>
+                            <p class="text-xs text-zinc-300 leading-relaxed">اگر پول از حسابتان کم شده، اشتراک تا چند دقیقه‌ی دیگر خودکار فعال می‌شود. <b>دوباره پرداخت نکنید.</b> می‌توانید این صفحه را رفرش کنید.</p>
+                        </div>`;
+                } else { return; }
+                box.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }
+        document.addEventListener('DOMContentLoaded', renderVipStatus);
 
         function showLoginRequiredModal() {
             const modal = document.getElementById('loginRequiredModal');

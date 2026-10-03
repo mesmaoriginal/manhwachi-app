@@ -833,6 +833,151 @@
     <!-- اسکریپت پایه هوم (اسلایدر و کدهای اصلی هوم شما) فقط یک بار اینجا لود می‌شود -->
     <script src="home.js?v=3"></script>
    <script>
+
+
+    // ===== کارت اشتراک VIP در محیط کاربری (پروفایل) =====
+    function ensureVipCardStyle() {
+        if (document.getElementById('vipcard-style')) return;
+        const st = document.createElement('style');
+        st.id = 'vipcard-style';
+        st.textContent = `
+        .vipcard-wrap { padding: 14px 14px 4px; max-width: 640px; margin: 0 auto; }
+        .vipcard {
+            position: relative; overflow: hidden; direction: rtl; text-align: right;
+            border-radius: 22px; padding: 18px 18px 16px; color: #fff;
+            background:
+                radial-gradient(120% 90% at 100% 0%, rgba(232,182,74,.20) 0%, rgba(232,182,74,0) 55%),
+                radial-gradient(90% 80% at 0% 100%, rgba(139,0,0,.38) 0%, rgba(139,0,0,0) 60%),
+                linear-gradient(180deg, #121212, #070707);
+            border: 1px solid rgba(232,182,74,.38);
+            box-shadow: 0 14px 40px -16px rgba(232,182,74,.35), inset 0 1px 0 rgba(255,255,255,.05);
+        }
+        .vipcard::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+            background-image: radial-gradient(rgba(232,182,74,.28) 1px, transparent 1.3px);
+            background-size: 12px 12px;
+            -webkit-mask-image: linear-gradient(135deg, #000 0%, transparent 55%);
+            mask-image: linear-gradient(135deg, #000 0%, transparent 55%);
+        }
+        .vipcard::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 38%; left: -45%; pointer-events: none;
+            background: linear-gradient(100deg, transparent, rgba(255,255,255,.10), transparent);
+            transform: skewX(-18deg); animation: vipSheen 5.5s ease-in-out 1.2s infinite;
+        }
+        @keyframes vipSheen { 0%, 70% { left: -45%; } 100% { left: 130%; } }
+        .vipcard > * { position: relative; z-index: 1; }
+        .vipcard-top { display: flex; align-items: center; gap: 12px; }
+        .vipcard-crown {
+            width: 52px; height: 52px; flex: none; border-radius: 16px; font-size: 28px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(145deg, rgba(232,182,74,.30), rgba(232,182,74,.08));
+            border: 1px solid rgba(232,182,74,.5);
+        }
+        .vipcard-title { font-size: 17px; font-weight: 800; line-height: 1.3; }
+        .vipcard-state { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 11px; font-weight: 700; color: #6ee7b7; }
+        .vipcard-state i { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 0 rgba(52,211,153,.6); animation: vipPing 2s ease-out infinite; }
+        @keyframes vipPing { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,.55); } 100% { box-shadow: 0 0 0 9px rgba(52,211,153,0); } }
+        .vipcard-days { display: flex; align-items: baseline; gap: 8px; margin: 16px 2px 4px; }
+        .vipcard-days b { font-size: 46px; line-height: 1; font-weight: 800; color: #f3c75f; letter-spacing: -.02em; text-shadow: 0 0 24px rgba(232,182,74,.35); }
+        .vipcard-days span { font-size: 13px; color: #d4d4d8; }
+        .vipcard-date { font-size: 12px; color: #a1a1aa; margin: 0 2px 14px; }
+        .vipcard-date strong { color: #e4e4e7; font-weight: 700; }
+        .vipcard-perks { display: flex; flex-wrap: wrap; gap: 7px; }
+        .vipcard-perks span {
+            font-size: 11px; padding: 5px 10px; border-radius: 999px; color: #e5e5e5;
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.09);
+        }
+        .vipcard-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(232,182,74,.25); }
+        .vipcard-foot small { font-size: 11px; color: #a1a1aa; }
+        .vipcard-btn {
+            flex: none; font-size: 12px; font-weight: 800; padding: 9px 16px; border-radius: 12px; text-decoration: none;
+            color: #1a1204; background: linear-gradient(135deg, #f3c75f, #d99a1f); box-shadow: 0 6px 18px -8px rgba(232,182,74,.8);
+            transition: transform .15s ease;
+        }
+        .vipcard-btn:active { transform: scale(.96); }
+        .vipcard.expiring { border-color: rgba(251,146,60,.55); }
+        .vipcard.expiring .vipcard-days b { color: #fb923c; text-shadow: 0 0 24px rgba(251,146,60,.35); }
+        .vipcard.expiring .vipcard-state { color: #fdba74; }
+        .vipcard.expiring .vipcard-state i { background: #fb923c; animation: none; }
+        @media (prefers-reduced-motion: reduce) { .vipcard::after, .vipcard-state i { animation: none; } }
+        `;
+        document.head.appendChild(st);
+    }
+
+    function buildVipCardHTML(info) {
+        const { until, daysLeft } = info;
+        const expiring = daysLeft !== null && daysLeft <= 3;
+        const dateStr = until ? until.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }) : null;
+        const num = daysLeft !== null ? daysLeft.toLocaleString('fa-IR') : '∞';
+        return `
+        <div class="vipcard-wrap" id="vipCardWrap">
+            <div class="vipcard ${expiring ? 'expiring' : ''}">
+                <div class="vipcard-top">
+                    <div class="vipcard-crown">👑</div>
+                    <div>
+                        <div class="vipcard-title">${expiring ? 'اشتراک VIP شما رو به پایان است' : 'اشتراک VIP شما فعال است'}</div>
+                        <div class="vipcard-state"><i></i>${expiring ? 'به‌زودی منقضی می‌شود' : 'فعال و آماده‌ی خواندن'}</div>
+                    </div>
+                </div>
+                <div class="vipcard-days"><b>${num}</b><span>${daysLeft !== null ? 'روز باقی‌مانده' : 'بدون محدودیت زمانی'}</span></div>
+                ${dateStr ? `<div class="vipcard-date">تا تاریخ <strong>${dateStr}</strong></div>` : '<div class="vipcard-date"></div>'}
+                <div class="vipcard-perks">
+                    <span>📖 همه‌ی چپترهای VIP</span>
+                    <span>⚡ سرور اختصاصی</span>
+                    <span>👑 نشان VIP</span>
+                </div>
+                <div class="vipcard-foot">
+                    <small>${expiring ? 'برای ادامه‌ی خواندن، اشتراک را تمدید کنید' : 'از خواندن چپترها لذت ببرید'}</small>
+                    <a class="vipcard-btn" href="/vip.html">تمدید اشتراک</a>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // کارت را بالای صفحه‌ی پروفایل می‌گذارد؛ چون profile.js ممکن است بعداً محتوا را دوباره بسازد، چند بار چک می‌کند
+    function renderProfileVipCard() {
+        [0, 250, 800, 1800, 3500].forEach(delay => setTimeout(() => {
+            const info = window.__vipInfo;
+            const app = document.getElementById('app');
+            const onProfile = document.querySelector('.nav-item.active[data-page="profile"], .nav-item[data-page="profile"].active');
+            if (!app || !onProfile) return;
+            const existing = document.getElementById('vipCardWrap');
+            if (!info || !info.isVip) { existing?.remove(); return; }
+            if (existing && app.contains(existing)) return;
+            ensureVipCardStyle();
+            app.insertAdjacentHTML('afterbegin', buildVipCardHTML(info));
+        }, delay));
+    }
+
+    // پیام یک‌بارِ «اشتراک شما فعال شد» برای هر دستگاه/هر تاریخ پایان
+    // (برای کاربرانی که بعد از پرداخت به صفحه‌ی تایید برنگشتند یا پیام را ندیدند)
+    function showVipActivatedNotice(userId, vipUntil, daysLeft) {
+        try {
+            const key = 'vip_notice_seen_' + userId;
+            const marker = vipUntil ? String(vipUntil.getTime()) : 'forever';
+            if (localStorage.getItem(key) === marker) return;
+            localStorage.setItem(key, marker);
+            if (document.getElementById('vipActivatedModal')) return;
+
+            const dateStr = vipUntil ? vipUntil.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }) : null;
+            const wrap = document.createElement('div');
+            wrap.id = 'vipActivatedModal';
+            wrap.className = 'fixed inset-0 z-[300] flex items-center justify-center p-5 bg-black/80 backdrop-blur-md';
+            wrap.setAttribute('dir', 'rtl');
+            wrap.innerHTML = `
+                <div class="w-full max-w-sm rounded-3xl bg-zinc-900 border border-emerald-500/40 p-7 text-center shadow-[0_0_50px_rgba(16,185,129,0.25)]">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-5xl">👑</div>
+                    <h2 class="text-xl font-extrabold text-white mb-2">اشتراک VIP شما فعال است</h2>
+                    <p class="text-sm text-zinc-300 leading-relaxed mb-1">همین حالا به همه‌ی چپترهای VIP دسترسی دارید.</p>
+                    ${dateStr ? `<p class="text-xs text-emerald-300 mb-5">تا <b>${dateStr}</b>${daysLeft ? ' (حدود ' + daysLeft.toLocaleString('fa-IR') + ' روز)' : ''}</p>` : '<div class="mb-5"></div>'}
+                    <button id="vipNoticeClose" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors">عالیه، شروع می‌کنم</button>
+                </div>`;
+            document.body.appendChild(wrap);
+            wrap.querySelector('#vipNoticeClose').onclick = () => wrap.remove();
+            wrap.addEventListener('click', e => { if (e.target === wrap) wrap.remove(); });
+        } catch (e) { console.error(e); }
+    }
+
     async function initUserSession() {
         const client = window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
         if (!client) return;
@@ -851,13 +996,18 @@
 
             const now = new Date();
             const isVip = profile?.is_vip && (!profile.vip_until || new Date(profile.vip_until) > now);
+            const vipUntil = profile?.vip_until ? new Date(profile.vip_until) : null;
+            const vipDaysLeft = (isVip && vipUntil) ? Math.max(1, Math.ceil((vipUntil - now) / 86400000)) : null;
+            window.__vipInfo = { isVip: !!isVip, until: vipUntil, daysLeft: vipDaysLeft };
+            renderProfileVipCard();
+            if (isVip) showVipActivatedNotice(user.id, vipUntil, vipDaysLeft);
 
             // ۱. به‌روزرسانی هدر
             if (userNavContainer) {
                 userNavContainer.innerHTML = isVip 
                     ? `<button onclick="loadPageByName('profile')" title="حساب کاربری" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all shadow-[0_0_12px_rgba(16,185,129,0.2)]">
                         <span class="material-symbols-outlined text-base">verified</span>
-                        <span>اشتراک فعال</span>
+                        <span>اشتراک فعال${vipDaysLeft ? ' • ' + vipDaysLeft.toLocaleString('fa-IR') + ' روز' : ''}</span>
                     </button>`
                     : `<a href="/vip.html" title="خرید اشتراک VIP" class="relative group overflow-hidden px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-bold text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_22px_rgba(220,38,38,0.7)] hover:scale-[1.03] active:scale-95 transition-all border border-red-500/40">
                         <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></span>
@@ -877,7 +1027,7 @@
                             <span class="text-sm font-bold">${isVip ? 'حساب کاربری شما' : 'خرید اشتراک ویژه'}</span>
                         </div>
                         ${isVip 
-                            ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/30">فعال</span>' 
+                            ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/30">فعال${vipDaysLeft ? ' • ' + vipDaysLeft.toLocaleString('fa-IR') + ' روز' : ''}</span>` 
                             : '<span class="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold shadow-md shadow-red-900/50">ارتقا</span>'}
                     </div>
                 `;
@@ -995,6 +1145,7 @@
                         setTimeout(() => {
                             if (typeof window.loadUserProfile === 'function') window.loadUserProfile();
                         }, 100);
+                        renderProfileVipCard();
                     }
                 } else {
                     setTimeout(() => {

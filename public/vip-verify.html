@@ -31,13 +31,35 @@
             <h1 class="text-xl font-bold text-white">پرداخت با موفقیت انجام شد!</h1>
             <p class="text-xs text-zinc-400 leading-relaxed">اشتراک VIP شما با موفقیت فعال شد. اکنون به تمامی فصول و قابلیت‌های ویژه دسترسی دارید.</p>
             
+            <div id="vipUntilBox" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 text-xs text-emerald-300 leading-relaxed">
+                اشتراک شما تا <b id="vipUntilDate"></b> فعال است
+                <span id="vipDaysLeft" class="text-emerald-400/80"></span>
+            </div>
             <div class="bg-zinc-800/60 p-3 rounded-2xl text-xs text-zinc-300 font-mono my-4 border border-zinc-700/40">
                 کد پیگیری: <span id="trackIdDisp" class="font-bold text-emerald-400"></span>
             </div>
 
-            <a href="/profile.html" class="block w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50">
-                ورود به پروفایل کاربری
+            <a href="/" class="block w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50">
+                شروع خواندن چپترهای VIP
             </a>
+            <a href="/profile.html" class="block w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-all">
+                مشاهده پروفایل کاربری
+            </a>
+        </div>
+
+        <!-- وضعیت «در حال بررسی» (خطای شبکه / ترافیک زیاد؛ پول ممکنه کم شده باشه) -->
+        <div id="pendingState" class="hidden py-4 space-y-4">
+            <div class="w-16 h-16 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span class="material-symbols-outlined text-4xl animate-pulse">hourglass_top</span>
+            </div>
+            <h1 class="text-xl font-bold text-white">پرداخت شما در حال بررسی است</h1>
+            <p class="text-xs text-zinc-300 leading-relaxed">تایید نهایی کمی طول کشید. اگر پول از حساب شما کم شده، <b class="text-amber-300">اشتراک تا چند دقیقه‌ی دیگر خودکار فعال می‌شود</b> و نیازی به پرداخت دوباره نیست.</p>
+            <div class="bg-zinc-800/60 p-3 rounded-2xl text-[11px] text-zinc-400 leading-relaxed border border-zinc-700/40">
+                کد پیگیری: <span id="trackIdPending" class="font-mono font-bold text-amber-300"></span><br>
+                این کد را نگه دارید تا در صورت نیاز به پشتیبانی بدهید.
+            </div>
+            <button onclick="location.reload()" class="block w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all">بررسی دوباره</button>
+            <a href="/" class="block w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-all">بازگشت به سایت</a>
         </div>
 
         <!-- وضعیت خطا -->
@@ -46,7 +68,7 @@
                 <span class="material-symbols-outlined text-4xl">cancel</span>
             </div>
             <h1 class="text-xl font-bold text-white">پرداخت ناموفق بود</h1>
-            <p id="errorMsg" class="text-xs text-zinc-400 leading-relaxed">تراکنش توسط کاربر لغو شد یا خطایی در ارتباط با درگاه رخ داد.</p>
+            <p id="errorMsg" class="text-xs text-zinc-400 leading-relaxed">تراکنش لغو شد یا بانک آن را تایید نکرد. اگر پولی از حساب شما کم شده باشد، معمولاً تا ۷۲ ساعت به حساب برمی‌گردد.</p>
             
             <a href="/vip.html" class="block w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-all">
                 تلاش مجدد
@@ -56,55 +78,86 @@
     </div>
 
    <script>
-    async function verifyPayment() {
-        // گرفتن پارامترهای آدرس URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const success = urlParams.get('success');
-        const trackId = urlParams.get('trackId') || urlParams.get('track_id');
+    const PENDING_KEY = 'vip_payment_started_at';
+    const faDate = d => new Date(d).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
+    const show = id => {
+        ['loadingState', 'successState', 'pendingState', 'errorState'].forEach(x => document.getElementById(x)?.classList.add('hidden'));
+        document.getElementById(id)?.classList.remove('hidden');
+    };
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-        const loadingState = document.getElementById('loadingState');
-        const successState = document.getElementById('successState');
-        const errorState = document.getElementById('errorState');
+    function getClient() {
+        if (window.supabaseClient) return window.supabaseClient;
+        if (window.supabase && typeof window.supabase.auth === 'object') return window.supabase;
+        return null;
+    }
 
-        // اگر پرداخت از طرف بانک ناموفق بوده یا کد پیگیری نیست
-        if (success !== '1' || !trackId) {
-            loadingState?.classList.add('hidden');
-            errorState?.classList.remove('hidden');
-            return;
-        }
+    async function showVipExpiry() {
+        try {
+            const client = getClient();
+            if (!client) return;
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) return;
+            const { data: prof } = await client.from('profiles').select('vip_until').eq('id', user.id).maybeSingle();
+            if (!prof?.vip_until) return;
+            const until = new Date(prof.vip_until);
+            document.getElementById('vipUntilDate').textContent = faDate(until);
+            const days = Math.max(1, Math.ceil((until - Date.now()) / 86400000));
+            document.getElementById('vipDaysLeft').textContent = `(حدود ${days.toLocaleString('fa-IR')} روز)`;
+            document.getElementById('vipUntilBox').classList.remove('hidden');
+        } catch (e) { /* نمایش تاریخ اختیاری است */ }
+    }
 
+    // نتیجه: 'ok' | 'declined' | 'retry'
+    async function tryVerify(trackId) {
         try {
             const res = await fetch('/purchase/verify', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ trackId: trackId })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ trackId })
             });
-
-            const data = await res.json();
-
-            if (res.ok && data.status === 100) {
-                // پرداخت توسط زی‌پال تایید شد و اکانت کاربر VIP شد
-                if (document.getElementById('trackIdDisp')) {
-                    document.getElementById('trackIdDisp').innerText = trackId;
-                }
-                loadingState?.classList.add('hidden');
-                successState?.classList.remove('hidden');
-            } else {
-                throw new Error(data.message || "تایید تراکنش با خطا مواجه شد.");
-            }
-
-        } catch (err) {
-            loadingState?.classList.add('hidden');
-            if (document.getElementById('errorMsg')) {
-                document.getElementById('errorMsg').innerText = err.message || "خطا در تایید اشتراک VIP";
-            }
-            errorState?.classList.remove('hidden');
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.status === 100) return { state: 'ok' };
+            // فقط وقتی سرور صریح بگوید final، «ناموفق» نشان می‌دهیم؛ ۴۲۹/۵xx/شبکه/خطای موقت یعنی نامعلوم
+            if (res.status === 400 && data.final === true) return { state: 'declined', message: data.message };
+            return { state: 'retry' };
+        } catch (e) {
+            return { state: 'retry' };
         }
     }
 
-    // اجرای خودکار به محض لود شدن صفحه
+    async function verifyPayment() {
+        const params = new URLSearchParams(window.location.search);
+        const success = params.get('success');
+        const trackId = params.get('trackId') || params.get('track_id');
+
+        if (success !== '1' || !trackId) { show('errorState'); return; }
+
+        document.getElementById('trackIdDisp').innerText = trackId;
+        document.getElementById('trackIdPending').innerText = trackId;
+
+        // چند بار تلاش، با فاصله‌ی زیاد شونده؛ تا خطای موقت باعث «ناموفق» نشود
+        const delays = [0, 2500, 5000, 8000, 12000];
+        let last = null;
+        for (const d of delays) {
+            if (d) await sleep(d);
+            last = await tryVerify(trackId);
+            if (last.state !== 'retry') break;
+        }
+
+        if (last.state === 'ok') {
+            try { localStorage.removeItem(PENDING_KEY); localStorage.removeItem('vip_notice_seen'); } catch (e) {}
+            show('successState');
+            showVipExpiry();
+        } else if (last.state === 'declined') {
+            if (last.message) document.getElementById('errorMsg').innerText = last.message;
+            show('errorState');
+        } else {
+            // سرور بعداً خودش پرداخت را تسویه می‌کند؛ کاربر نباید دوباره بخرد
+            show('pendingState');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', verifyPayment);
 </script>
 </body>
