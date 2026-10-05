@@ -1,477 +1,724 @@
 /* =====================================================================
-   ManhwaChi — Profile / "Reader ID Card"
-   هویت بصری: کارت عضویت خواننده + بلیط VIP + قفسه‌ی بوکمارک + حباب کامنت
+   ManhwaChi — Profile
+   تم: همان تم سایت و اپ (مشکی، قرمز #dc2626، وزیرمتن)، موبایل‌محور
+   نکته: همه‌ی کلاس‌هایی که profile.js می‌سازد حفظ شده‌اند
+   (shelf-item, shelf-item__remove, bubble, stamp, empty-panel,
+    vip-countdown*, toast*, is-dragover, hidden)
    ===================================================================== */
 
 .profile {
-    padding: 20px;
-    padding-bottom: 150px;
-    font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
-
-    /* --- Token system --- */
-    --void: #050505;
-    --ink: #101012;
-    --ink-soft: #17171b;
-    --line: rgba(255, 255, 255, 0.08);
-    --line-strong: rgba(255, 255, 255, 0.16);
-    --crimson: #dc2626;
-    --crimson-deep: #7f1d1d;
+    --s0: #08080a;
+    --s1: #111114;
+    --s2: #18181c;
+    --s3: #222228;
+    --line: rgba(255, 255, 255, 0.07);
+    --line2: rgba(255, 255, 255, 0.13);
+    --red: #dc2626;
+    --red-hot: #ef4444;
+    --red-deep: #7f1d1d;
     --gold: #fbbf24;
+    --green: #34d399;
     --text: #f4f4f5;
-    --text-dim: #a1a1aa;
-    --text-mute: #71717a;
+    --dim: #a1a1aa;
+    --mute: #71717a;
 
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 150px; /* فضای نوار پایین شناور */
+    font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
     color: var(--text);
+    line-height: 1.7;
 }
+
+.profile * { box-sizing: border-box; }
+
+/* کلاس hidden توسط JS روی خیلی از المان‌ها toggle می‌شود؛ باید همیشه برنده باشد */
+.profile .hidden { display: none !important; }
 
 .profile .mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
-    letter-spacing: 0.02em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.01em;
 }
 
-/* ===================== پنل پایه (جایگزین glass-card) ===================== */
-.profile .panel {
-    background: var(--ink);
-    border: 1px solid var(--line);
-    border-radius: 22px;
+.profile .material-symbols-outlined { line-height: 1; }
+
+.profile .profile-enter { animation: profileEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes profileEnter {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================== هدر پروفایل ===================== */
+.profile .hero {
     position: relative;
-}
-
-.profile .panel::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 2px;
-    border-radius: 22px 22px 0 0;
-    background: linear-gradient(90deg, transparent, var(--crimson) 15%, var(--crimson) 85%, transparent);
-    opacity: 0.35;
-    pointer-events: none;
-}
-
-/* ===================== برچسب eyebrow (تگ عنوان بخش) ===================== */
-.profile .eyebrow-tag {
-    display: inline-flex;
-    align-items: center;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--crimson);
-    padding-inline-start: 10px;
-    position: relative;
-}
-
-.profile .eyebrow-tag::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 1px;
-    bottom: 1px;
-    width: 3px;
-    background: var(--crimson);
-    border-radius: 2px;
-}
-
-/* ===================== کارت عضویت خواننده (سیگنیچر) ===================== */
-.profile .id-card {
     overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: var(--s1);
+    margin-bottom: 14px;
 }
 
-.profile .id-card__band {
-    height: 100px;
-    position: relative;
+.profile .hero__glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
     background:
-        radial-gradient(circle at 16% 40%, rgba(220, 38, 38, 0.4), transparent 60%),
-        repeating-radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px),
-        linear-gradient(120deg, var(--crimson-deep) 0%, var(--void) 75%);
+        radial-gradient(90% 120% at 100% 0%, rgba(220, 38, 38, 0.34), transparent 55%),
+        radial-gradient(70% 90% at 0% 110%, rgba(127, 29, 29, 0.32), transparent 60%);
 }
 
-.profile .id-card__body {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 0 28px 26px;
-    margin-top: -58px;
+.profile .hero__inner {
     position: relative;
-    flex-wrap: wrap;
-}
-
-.profile .id-card__identity {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: 20px;
-    flex-wrap: wrap;
+    padding: 32px 20px 24px;
 }
 
-.profile .avatar-frame {
+.profile .hero__info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.profile .hero__name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.profile .hero__name {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.4;
+    color: #fff;
+    overflow-wrap: anywhere;
+}
+
+@media (min-width: 600px) {
+    .profile .hero__inner {
+        flex-direction: row;
+        text-align: start;
+        gap: 28px;
+        padding: 34px 34px 30px;
+    }
+    .profile .hero__info { align-items: flex-start; }
+    .profile .hero__name-row { justify-content: flex-start; }
+}
+
+/* --- آواتار --- */
+.profile .avatar {
+    position: relative;
     width: 112px;
     height: 112px;
-    border-radius: 20px;
-    background: var(--ink-soft);
-    border: 3px solid var(--void);
-    box-shadow: 5px 5px 0 rgba(220, 38, 38, 0.4), 0 0 0 1px var(--line);
-    overflow: hidden;
-    position: relative;
     flex-shrink: 0;
 }
 
-.profile .id-card__meta {
-    padding-bottom: 4px;
-}
-
-.profile .id-card__stub {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    padding-inline-start: 22px;
-    border-inline-start: 1px dashed var(--line-strong);
-    min-width: 140px;
-}
-
-.profile .id-card__stub-number {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-}
-
-.profile .id-card__stub-label {
-    font-size: 10px;
-    color: var(--text-mute);
-    letter-spacing: 0.08em;
-}
-
-.profile .id-card__barcode {
-    width: 100%;
-    height: 22px;
-    background: repeating-linear-gradient(90deg, var(--text-dim) 0 2px, transparent 2px 5px);
-    opacity: 0.45;
-    border-radius: 2px;
-}
-
-@media (max-width: 640px) {
-    .profile .id-card__stub {
-        border-inline-start: none;
-        border-top: 1px dashed var(--line-strong);
-        padding-inline-start: 0;
-        padding-top: 14px;
-        margin-top: 10px;
-        width: 100%;
-        align-items: flex-start;
-    }
-    .profile .id-card__barcode {
-        width: 55%;
-    }
-}
-
-/* ===================== منوی دسترسی سریع ===================== */
-.profile .quick-nav a.panel {
-    padding: 16px;
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    transition: transform 0.15s ease, border-color 0.15s ease;
-}
-
-.profile .quick-nav a.panel:hover {
-    transform: translateY(-3px);
-    border-color: rgba(220, 38, 38, 0.45);
-}
-
-/* ===================== کارت VIP به‌شکل بلیط ===================== */
-.profile .ticket-pass {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    position: relative;
-    overflow: hidden;
-}
-
-.profile .ticket-pass::after {
+.profile .avatar::before {
     content: "";
     position: absolute;
-    inset-inline-end: -8px;
-    top: 0;
-    bottom: 0;
-    width: 16px;
-    background-image: radial-gradient(circle, var(--void) 5px, transparent 5.5px);
-    background-size: 16px 26px;
-    background-repeat: repeat-y;
-    background-position: center;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 200deg, #ef4444, #f59e0b, #dc2626, #7f1d1d, #ef4444);
 }
 
-/* ===================== قفسه‌ی بوکمارک ===================== */
-.profile .shelf-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+.profile .avatar__frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--s2);
+    border: 4px solid var(--s1);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.profile .avatar__frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile .avatar__fallback {
+    font-size: 64px;
+    color: var(--red-hot);
+}
+
+.profile .avatar__btn {
+    position: absolute;
+    bottom: -2px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--s1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+.profile .avatar__btn .material-symbols-outlined { font-size: 18px; }
+.profile .avatar__btn:hover { transform: scale(1.1); }
+.profile .avatar__btn--edit   { inset-inline-end: -4px;   background: var(--red); color: #fff; }
+.profile .avatar__btn--edit:hover { background: var(--red-hot); }
+.profile .avatar__btn--remove { inset-inline-start: -4px; background: var(--s3); color: var(--dim); }
+.profile .avatar__btn--remove:hover { background: var(--red); color: #fff; }
+
+/* --- نشان اشتراک فعال --- */
+.profile .vip-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px 4px 12px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+}
+.profile .vip-pill .material-symbols-outlined { font-size: 16px; }
+
+/* --- چیپ‌های تماس --- */
+.profile .chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+@media (min-width: 600px) { .profile .chips { justify-content: flex-start; } }
+
+.profile .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--dim);
+    max-width: 100%;
+}
+.profile .chip .material-symbols-outlined { font-size: 16px; color: var(--red-hot); }
+.profile .chip .mono { overflow: hidden; text-overflow: ellipsis; }
+
+/* --- متای عضویت --- */
+.profile .hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 14px;
+}
+@media (min-width: 600px) { .profile .hero__meta { justify-content: flex-start; } }
+
+.profile .meta {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    font-size: 12.5px;
+    color: var(--mute);
+}
+.profile .meta .material-symbols-outlined { font-size: 17px; color: var(--red-hot); }
+.profile .meta__strong { color: var(--text); font-weight: 600; }
+.profile .meta__dim { color: var(--mute); }
+
+.profile .id-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px dashed var(--line2);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+.profile .id-pill .material-symbols-outlined { font-size: 15px; opacity: 0.6; }
+.profile .id-pill:hover { border-color: var(--red); color: #fca5a5; }
+
+/* ===================== دسترسی سریع ===================== */
+.profile .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.profile .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 12px;
+    border-radius: 20px;
+    background: var(--s1);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.profile .stat:hover { border-color: rgba(220, 38, 38, 0.45); background: var(--s2); }
+.profile .stat:active { background: var(--s2); }
+
+.profile .stat__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.profile .stat__icon--red   { background: rgba(220, 38, 38, 0.14);  color: #f87171; }
+.profile .stat__icon--gold  { background: rgba(251, 191, 36, 0.14); color: var(--gold); }
+.profile .stat__icon--green { background: rgba(52, 211, 153, 0.14); color: var(--green); }
+
+.profile .stat__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.profile .stat__text b { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.profile .stat__text small { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
 
 @media (min-width: 640px) {
-    .profile .shelf-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (min-width: 768px) {
-    .profile .shelf-grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (min-width: 1024px) {
-    .profile .shelf-grid { grid-template-columns: repeat(6, 1fr); }
+    .profile .stat { flex-direction: row; align-items: center; gap: 14px; padding: 16px; }
+    .profile .stat__text b { font-size: 13.5px; }
 }
 
-.profile .shelf-item {
+/* ===================== چیدمان دو ستونه ===================== */
+.profile .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+}
+@media (min-width: 900px) {
+    .profile .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+}
+.profile .stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* ===================== پنل پایه ===================== */
+.profile .panel {
+    background: var(--s1);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+}
+
+.profile .shelf { margin-bottom: 14px; }
+.profile .shelf:last-child { margin-bottom: 0; }
+
+.profile .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.profile .sec-head--wrap { flex-wrap: wrap; }
+.profile .sec-head__end { margin-inline-start: auto; }
+
+.profile .sec-head__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: rgba(220, 38, 38, 0.14);
+    color: #f87171;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.profile .sec-head__icon .material-symbols-outlined { font-size: 20px; }
+.profile .sec-head__title { font-size: 15px; font-weight: 700; color: #fff; }
+
+/* ===================== کارت اشتراک ویژه ===================== */
+.profile .vip-card {
     position: relative;
-    border-radius: 14px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    background:
+        radial-gradient(120% 80% at 100% 0%, rgba(251, 191, 36, 0.13), transparent 55%),
+        linear-gradient(170deg, #260f0f 0%, var(--s1) 65%);
+}
+
+.profile .vip-card__head { display: flex; align-items: center; gap: 12px; }
+
+.profile .vip-card__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--line);
-    background: var(--ink-soft);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.profile .shelf-item:hover {
-    transform: rotate(-1.5deg) translateY(-4px);
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55);
-    border-color: rgba(220, 38, 38, 0.5);
-}
-
-.profile .shelf-item__remove {
-    position: absolute;
-    top: 6px;
-    inset-inline-start: 6px;
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.72);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
 }
 
-.profile .shelf-item:hover .shelf-item__remove {
-    opacity: 1;
-}
+.profile .vip-card__title { font-size: 16px; font-weight: 800; color: #fff; }
+.profile .vip-card__sub { font-size: 12px; color: var(--mute); margin-top: 1px; }
+.profile .vip-card__status { font-size: 12.5px; line-height: 1.9; color: var(--dim); }
 
-.profile .shelf-item__remove:hover {
-    background: var(--crimson);
-}
-
-/* ===================== حباب‌های کامنت ===================== */
-.profile .bubble {
-    background: var(--ink-soft);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 16px;
-    transition: border-color 0.15s ease;
-}
-
-.profile .bubble:hover {
-    border-color: var(--line-strong);
-}
-
-.profile .stamp {
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 6px;
-    transform: rotate(-4deg);
-    display: inline-block;
-}
-
-.profile .stamp--ok {
-    color: #34d399;
-    border: 1px solid rgba(52, 211, 153, 0.4);
-    background: rgba(52, 211, 153, 0.08);
-}
-
-.profile .stamp--wait {
-    color: var(--gold);
-    border: 1px solid rgba(251, 191, 36, 0.4);
-    background: rgba(251, 191, 36, 0.08);
-}
-
-/* ===================== حالت خالی ===================== */
-.profile .empty-panel {
-    border: 1px dashed var(--line-strong);
-    border-radius: 16px;
-    padding: 28px 20px;
-    text-align: center;
-    color: var(--text-mute);
-    font-size: 12px;
-    line-height: 1.8;
-}
-
-/* ===================== انیمیشن ورود صفحه (یک بار) ===================== */
-.profile .profile-enter {
-    animation: profileEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes profileEnter {
-    from {
-        opacity: 0;
-        transform: translateY(14px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===================== منطقه‌ی رها کردن عکس (drag & drop) ===================== */
-.profile #avatarDropZone.is-dragover .avatar-frame {
-    border-color: var(--crimson);
-    box-shadow: 5px 5px 0 rgba(220, 38, 38, 0.6), 0 0 0 2px var(--crimson);
-}
-
-.profile #avatarDropZone.is-dragover::after {
-    content: "رها کن";
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(5, 5, 5, 0.72);
-    color: var(--gold);
-    font-size: 11px;
-    font-weight: 800;
-    border-radius: 20px;
-    pointer-events: none;
-}
-
-/* ===================== شمارشگر روزهای باقی‌مانده‌ی VIP ===================== */
-.vip-countdown__row {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.vip-countdown__number {
-    font-size: 28px;
+/* شمارشگر روزهای باقی‌مانده */
+.profile .vip-countdown__row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.profile .vip-countdown__number {
+    font-size: 40px;
     font-weight: 800;
     line-height: 1;
     color: var(--text);
+    font-variant-numeric: tabular-nums;
 }
+.profile .vip-countdown__label { font-size: 12px; color: var(--dim); }
 
-.vip-countdown__label {
-    font-size: 11px;
-    color: var(--text-mute);
-}
-
-.vip-countdown__track {
+.profile .vip-countdown__track {
     width: 100%;
-    height: 6px;
-    border-radius: 4px;
-    background: var(--line);
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
     overflow: hidden;
 }
-
-.vip-countdown__fill {
+.profile .vip-countdown__fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: 999px;
     background: linear-gradient(90deg, #34d399, #10b981);
     transition: width 0.4s ease;
 }
 
-.vip-countdown.is-warning .vip-countdown__number { color: var(--gold); }
-.vip-countdown.is-warning .vip-countdown__fill {
-    background: linear-gradient(90deg, #fbbf24, #f59e0b);
-}
+.profile .vip-countdown.is-warning .vip-countdown__number { color: var(--gold); }
+.profile .vip-countdown.is-warning .vip-countdown__fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
 
-.vip-countdown.is-critical .vip-countdown__number { color: var(--crimson); }
-.vip-countdown.is-critical .vip-countdown__fill {
-    background: linear-gradient(90deg, var(--crimson), #b91c1c);
+.profile .vip-countdown.is-critical .vip-countdown__number { color: var(--red-hot); }
+.profile .vip-countdown.is-critical .vip-countdown__fill {
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
     animation: vipPulse 1.6s ease-in-out infinite;
 }
+@keyframes vipPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
-@keyframes vipPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
+/* ===================== فرم‌ها ===================== */
+.profile .form { display: flex; flex-direction: column; gap: 16px; }
+.profile .field { display: flex; flex-direction: column; gap: 7px; }
+.profile .field label { font-size: 12.5px; font-weight: 600; color: var(--dim); }
+.profile .field__opt { color: var(--mute); font-weight: 400; }
+.profile .field__hint { font-size: 11.5px; color: var(--mute); }
+
+.profile .input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line2);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.profile .input::placeholder { color: #52525b; }
+.profile .input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
+}
+.profile .input[dir="ltr"] { text-align: left; }
+
+.profile .form__actions { display: flex; gap: 10px; margin-top: 4px; }
+
+.profile .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 48px;
+    padding: 0 22px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.profile .btn .material-symbols-outlined { font-size: 18px; }
+.profile .btn:active { transform: scale(0.98); }
+.profile .btn:disabled { opacity: 0.6; cursor: wait; }
+
+.profile .btn--primary {
+    flex: 1;
+    color: #fff;
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    box-shadow: 0 8px 22px rgba(127, 29, 29, 0.45);
+}
+.profile .btn--primary:hover { filter: brightness(1.12); }
+
+.profile .btn--ghost {
+    color: var(--dim);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--line2);
+}
+.profile .btn--ghost:hover { color: #fff; background: rgba(255, 255, 255, 0.09); }
+
+.profile .btn--outline {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--line2);
+}
+.profile .btn--outline:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* ===================== امنیت حساب (جمع‌شونده) ===================== */
+.profile .fold { padding: 0; }
+
+.profile .fold__summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 22px;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 24px;
+}
+.profile .fold__summary::-webkit-details-marker { display: none; }
+
+.profile .fold__text { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+.profile .fold__text b { font-size: 15px; font-weight: 700; color: #fff; }
+.profile .fold__text small { font-size: 12px; color: var(--mute); }
+
+.profile .fold__chev { color: var(--mute); transition: transform 0.2s ease; }
+.profile .fold[open] .fold__chev { transform: rotate(180deg); }
+
+.profile .fold__body {
+    padding: 18px 22px 22px;
+    border-top: 1px solid var(--line);
 }
 
-/* ===================== جعبه‌ی جستجوی قفسه‌ها ===================== */
+/* ===================== قفسه‌ها (بوکمارک و تاریخچه) ===================== */
+.profile .note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--mute);
+}
+.profile .note .material-symbols-outlined { font-size: 16px; margin-top: 3px; }
+
+.profile .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--mute);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+.profile .link-btn .material-symbols-outlined { font-size: 18px; }
+.profile .link-btn:hover { color: var(--red-hot); }
+
 .profile .shelf-search {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 8px 12px;
-    color: var(--text-mute);
-    max-width: 260px;
     width: 100%;
+    max-width: 240px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line);
+    color: var(--mute);
 }
-
-.profile .shelf-search:focus-within {
-    border-color: rgba(220, 38, 38, 0.5);
-}
-
+.profile .shelf-search--block { max-width: none; margin-bottom: 16px; }
+.profile .shelf-search .material-symbols-outlined { font-size: 18px; }
+.profile .shelf-search:focus-within { border-color: rgba(220, 38, 38, 0.6); }
 .profile .shelf-search input {
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
     color: var(--text);
-    font-size: 12px;
-    width: 100%;
+    font: inherit;
+    font-size: 13px;
+}
+.profile .shelf-search input::placeholder { color: var(--mute); }
+
+.profile .shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 14px;
 }
 
-.profile .shelf-search input::placeholder {
-    color: var(--text-mute);
+.profile .shelf-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    background: var(--s2);
+    border: 1px solid var(--line);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.profile .shelf-item:hover {
+    transform: translateY(-3px);
+    border-color: rgba(220, 38, 38, 0.5);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5);
+}
+.profile .shelf-item img { transition: transform 0.4s ease; }
+.profile .shelf-item:hover img { transform: scale(1.06); }
+
+/* نوار عنوان روی کاور (ساخته‌شده توسط JS) */
+.profile .shelf-item > div { padding: 28px 10px 10px; pointer-events: none; }
+.profile .shelf-item > div p:first-child { font-size: 12px; }
+
+.profile .shelf-item__remove {
+    position: absolute;
+    top: 8px;
+    inset-inline-start: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 9px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+.profile .shelf-item:hover .shelf-item__remove,
+.profile .shelf-item__remove:focus-visible { opacity: 1; }
+.profile .shelf-item__remove:hover { background: var(--red); }
+@media (hover: none) { .profile .shelf-item__remove { opacity: 1; } }
+
+/* ===================== دیدگاه‌ها ===================== */
+.profile .comments { display: flex; flex-direction: column; gap: 12px; }
+
+.profile .bubble {
+    position: relative;
+    background: var(--s2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px 18px;
+    padding-inline-start: 22px;
+    transition: border-color 0.15s ease;
+}
+.profile .bubble::before {
+    content: "";
+    position: absolute;
+    inset-block: 14px;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--red);
+    opacity: 0.8;
+}
+.profile .bubble:hover { border-color: var(--line2); }
+.profile .bubble p { font-size: 13px !important; line-height: 1.9; }
+
+.profile .stamp {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.profile .stamp--ok   { color: var(--green); background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); }
+.profile .stamp--wait { color: var(--gold);  background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); }
+
+/* ===================== حالت خالی ===================== */
+.profile .empty-panel {
+    padding: 32px 20px;
+    text-align: center;
+    border: 1px dashed var(--line2);
+    border-radius: 18px;
+    color: var(--mute);
+    font-size: 13px;
+    line-height: 2;
 }
 
-/* ===================== نوتیفیکیشن‌های شناور (toast) ===================== */
+/* ===================== drag & drop آواتار ===================== */
+.profile #avatarDropZone.is-dragover::before { filter: brightness(1.4); }
+.profile #avatarDropZone.is-dragover::after {
+    content: "رها کن";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(8, 8, 10, 0.78);
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 800;
+    pointer-events: none;
+}
+
+/* ===================== پیام فرم (msgBox) ===================== */
+.profile #msgBox { line-height: 1.8; }
+
+/* ===================== toast ===================== */
 .profile .toast-container {
     position: fixed;
-    bottom: 20px;
-    inset-inline-end: 20px;
+    inset-inline: 16px;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* بالاتر از نوار پایین */
     z-index: 200;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 10px;
     pointer-events: none;
-    max-width: min(320px, calc(100vw - 40px));
 }
 
 .profile .toast {
-    background: var(--ink);
-    border: 1px solid var(--line-strong);
-    border-inline-start: 3px solid var(--text-mute);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 12px;
+    width: max-content;
+    max-width: min(360px, 100%);
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: var(--s2);
+    border: 1px solid var(--line2);
+    border-inline-start: 3px solid var(--mute);
+    font-size: 13px;
     color: var(--text);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
     opacity: 0;
     transform: translateY(8px);
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
-
-.profile .toast.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.profile .toast--success { border-inline-start-color: #34d399; }
-.profile .toast--error { border-inline-start-color: var(--crimson); }
-.profile .toast--info { border-inline-start-color: var(--gold); }
+.profile .toast.is-visible { opacity: 1; transform: translateY(0); }
+.profile .toast--success { border-inline-start-color: var(--green); }
+.profile .toast--error   { border-inline-start-color: var(--red-hot); }
+.profile .toast--info    { border-inline-start-color: var(--gold); }
 
 /* ===================== دسترس‌پذیری ===================== */
 .profile a:focus-visible,
 .profile button:focus-visible,
-.profile input:focus-visible {
-    outline: 2px solid var(--crimson);
+.profile input:focus-visible,
+.profile summary:focus-visible,
+.profile label:focus-visible {
+    outline: 2px solid var(--red-hot);
     outline-offset: 2px;
-    border-radius: 8px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .profile * {
-        transition: none !important;
-        animation: none !important;
-    }
+    .profile * { transition: none !important; animation: none !important; }
 }

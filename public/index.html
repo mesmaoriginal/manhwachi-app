@@ -1230,6 +1230,143 @@ document.addEventListener('keydown', (e) => {
 <script>
   // مقداردهی اولیه متغیر ایمیل موقت
   let tempRegistrationEmail = "";
+
+  // ==================== کمکی‌های ثبت‌نام ایمیلی (ارسال مجدد، بازگشت، پیام فارسی) ====================
+  let emailResendTimer = null;
+  const PENDING_SIGNUP_KEY = 'pendingSignupEmail';
+  const PENDING_SIGNUP_TTL_MS = 30 * 60 * 1000;
+
+  // تبدیل خطاهای انگلیسی Supabase/شبکه به پیام فارسی قابل‌فهم
+  function faAuthError(err) {
+    const raw = String((err && (err.message || err.error_description)) || err || '');
+    if (/[\u0600-\u06FF]/.test(raw)) return raw; // از قبل فارسیه
+    const code = (err && err.code) || '';
+    const m = raw.toLowerCase();
+    if (code === 'otp_expired' || m.includes('expired') || (m.includes('invalid') && m.includes('token')))
+      return "کد وارد شده اشتباه یا منقضی شده است. اگر کد قبلی کار نکرد، «ارسال مجدد کد» را بزن.";
+    if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit' || (err && err.status === 429) || m.includes('rate limit') || m.includes('too many'))
+      return "تعداد درخواست‌ها زیاد بود. یک دقیقه صبر کن و دوباره تلاش کن.";
+    if (code === 'weak_password' || (m.includes('password') && m.includes('least')))
+      return "رمز عبور باید حداقل ۶ کاراکتر باشد.";
+    if (code === 'email_address_invalid' || (m.includes('email') && m.includes('invalid')))
+      return "ایمیل واردشده معتبر نیست.";
+    if (code === 'user_already_exists' || m.includes('already registered'))
+      return "این ایمیل قبلاً ثبت‌نام شده است. وارد شو یا «فراموشی رمز عبور» را بزن.";
+    if (code === 'invalid_credentials' || m.includes('invalid login credentials'))
+      return "اطلاعات ورود اشتباه است.";
+    if (code === 'email_not_confirmed' || m.includes('email not confirmed'))
+      return "ایمیل شما هنوز تایید نشده است.";
+    if (m.includes('failed to fetch') || m.includes('networkerror') || m.includes('network request failed'))
+      return "ارتباط با سرور برقرار نشد. اینترنت (یا فیلترشکن) را بررسی کن و دوباره تلاش کن.";
+    return "خطایی رخ داد. دوباره تلاش کن.";
+  }
+
+  function rememberPendingSignup(email) {
+    try { localStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify({ email, t: Date.now() })); } catch {}
+  }
+  function clearPendingSignup() {
+    try { localStorage.removeItem(PENDING_SIGNUP_KEY); } catch {}
+  }
+  function getPendingSignupEmail() {
+    try {
+      const p = JSON.parse(localStorage.getItem(PENDING_SIGNUP_KEY) || 'null');
+      if (p && p.email && Date.now() - p.t < PENDING_SIGNUP_TTL_MS) return p.email;
+    } catch {}
+    return "";
+  }
+
+  function startEmailResendCountdown(seconds = 60) {
+    const btn = document.getElementById('emailResendBtn');
+    if (!btn) return;
+    clearInterval(emailResendTimer);
+    let left = seconds;
+    const tick = () => {
+      if (left <= 0) {
+        clearInterval(emailResendTimer);
+        btn.disabled = false;
+        btn.textContent = 'ارسال مجدد کد';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = `ارسال مجدد تا ${left} ثانیه دیگر`;
+      left--;
+    };
+    tick();
+    emailResendTimer = setInterval(tick, 1000);
+  }
+
+  // نمایش فرم کد ایمیل (بعد از ثبت‌نام، بعد از ورود با حساب تاییدنشده، یا بعد از رفرش صفحه)
+  function showEmailOtpForm(email, cooldownSeconds = 0) {
+    tempRegistrationEmail = email;
+    rememberPendingSignup(email);
+    const display = document.getElementById('otpEmailDisplay');
+    if (display) display.textContent = email;
+    ['loginForm', 'registerForm', 'registerPhoneForm', 'registerMethodSwitch', 'forgotPasswordForm', 'forgotPhoneForm', 'resetPasswordForm']
+      .forEach((id) => document.getElementById(id)?.classList.add('hidden'));
+    document.getElementById('otpForm')?.classList.remove('hidden');
+    const input = document.getElementById('otpCode');
+    if (input) input.value = '';
+    clearInterval(emailResendTimer);
+    const btn = document.getElementById('emailResendBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'ارسال مجدد کد'; }
+    if (cooldownSeconds > 0) startEmailResendCountdown(cooldownSeconds);
+    input?.focus();
+  }
+
+  async function resendSignupCode() {
+    const email = tempRegistrationEmail || getPendingSignupEmail();
+    if (!email) {
+      showAuthMessage("ایمیل پیدا نشد. دوباره ثبت‌نام کن.", true);
+      backFromOtp();
+      return;
+    }
+    const btn = document.getElementById('emailResendBtn');
+    if (btn) btn.disabled = true;
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+      const { error } = await client.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      showAuthMessage("کد جدید به ایمیلت ارسال شد. پوشه‌ی اسپم را هم نگاه کن.", false);
+      startEmailResendCountdown(60);
+    } catch (err) {
+      showAuthMessage(faAuthError(err), true);
+      startEmailResendCountdown(20);
+    }
+  }
+
+  // «تغییر ایمیل»: برگشت به فرم ثبت‌نام
+  function backFromOtp() {
+    clearPendingSignup();
+    tempRegistrationEmail = "";
+    clearInterval(emailResendTimer);
+    switchAuthTab('register');
+  }
+
+  // کاربر با حساب تاییدنشده وارد شده: به‌جای خطا، کد جدید بفرست و فرم کد رو نشون بده
+  async function continueUnconfirmedSignup(email) {
+    showEmailOtpForm(email);
+    showAuthMessage("حساب شما ساخته شده ولی ایمیلش هنوز تایید نشده. در حال ارسال کد جدید...", false, 'warning');
+    try {
+      const client = getSupabase();
+      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
+      const { error } = await client.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      showAuthMessage("کد جدید به ایمیلت ارسال شد. آن را وارد کن تا حسابت فعال شود.", false);
+      startEmailResendCountdown(60);
+    } catch (err) {
+      showAuthMessage(faAuthError(err), true);
+      startEmailResendCountdown(20);
+    }
+  }
+
+  // کاربر وسط تایید ایمیل از صفحه خارج شده (مثلاً برای دیدن ایمیل) و برگشته
+  function restorePendingSignup() {
+    const email = getPendingSignupEmail();
+    if (!email) return;
+    showEmailOtpForm(email);
+    showAuthMessage("کد تایید قبلاً برای " + email + " ارسال شده. اگر نرسید «ارسال مجدد کد» را بزن.", false, 'warning');
+  }
   let tempRegistrationPhone = "";
   let currentRegisterMethod = "email";
   let phoneResendInterval = null;
@@ -1248,7 +1385,7 @@ document.addEventListener('keydown', (e) => {
 
   function normalizeIranPhoneClient(raw) {
     if (!raw) return null;
-    let digits = toEnDigitsClient(raw).trim().replace(/[\s-]/g, "");
+    let digits = toEnDigitsClient(raw).replace(/[\s\-().\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, "");
     digits = digits.replace(/^\+/, "");
     digits = digits.replace(/^0098/, "98");
     digits = digits.replace(/^0/, "98");
@@ -1264,6 +1401,7 @@ document.addEventListener('keydown', (e) => {
   // ==================== توابع کنترل نمایش مودال ====================
   function openAuthModal(tab = 'login') {
     switchAuthTab(tab);
+    if (tab === 'register') restorePendingSignup();
     const modal = document.getElementById('authModal');
     if (modal) {
       modal.classList.remove('hidden');
@@ -1482,6 +1620,10 @@ document.addEventListener('keydown', (e) => {
         if (error.message.includes('Invalid login credentials')) {
           throw new Error("اطلاعات ورود اشتباه است.");
         } else if (error.message.includes('Email not confirmed')) {
+          if (credentials.email) {
+            await continueUnconfirmedSignup(credentials.email);
+            return;
+          }
           throw new Error("ایمیل شما هنوز تایید نشده است. ابتدا کد ارسال شده را تایید کنید.");
         } else {
           throw error;
@@ -1498,7 +1640,7 @@ document.addEventListener('keydown', (e) => {
       setTimeout(() => { location.reload(); }, 1000);
 
     } catch (err) {
-      showAuthMessage(err.message || "خطا در ورود به حساب", true);
+      showAuthMessage(faAuthError(err), true);
     } finally {
       btn.disabled = false;
       btn.innerText = "ورود به حساب";
@@ -1516,7 +1658,7 @@ document.addEventListener('keydown', (e) => {
     const btn = document.getElementById('regSubmitBtn');
 
     if (!email.endsWith('@gmail.com')) {
-      showAuthMessage("تنها ایمیل‌های معتبر جیمیل (gmail.com@) مورد قبول است.", true);
+      showAuthMessage("فقط ایمیل جیمیل پذیرفته می‌شود (مثلاً name@gmail.com).", true);
       return;
     }
 
@@ -1563,13 +1705,8 @@ document.addEventListener('keydown', (e) => {
         return;
       }
 
-      tempRegistrationEmail = email;
-      const otpEmailDisplay = document.getElementById('otpEmailDisplay');
-      if (otpEmailDisplay) otpEmailDisplay.textContent = email;
-      showAuthMessage("کد ۶ رقمی تایید به جیمیل شما ارسال شد.", false);
-      
-      document.getElementById('registerForm').classList.add('hidden');
-      document.getElementById('otpForm').classList.remove('hidden');
+      showEmailOtpForm(email, 60);
+      showAuthMessage("کد ۶ رقمی تایید به جیمیل شما ارسال شد. اگر نرسید، پوشه‌ی اسپم را هم نگاه کن.", false);
 
     } catch (err) {
       if (err.message && err.message.toLowerCase().includes('already registered')) {
@@ -1581,7 +1718,7 @@ document.addEventListener('keydown', (e) => {
         }
         showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن.", true, 'warning');
       } else {
-        showAuthMessage(err.message || "خطا در فرآیند ثبت‌نام", true);
+        showAuthMessage(faAuthError(err), true);
       }
     } finally {
       btn.disabled = false;
@@ -1813,13 +1950,20 @@ document.addEventListener('keydown', (e) => {
         phone: tempRegistrationPhone,
         password,
       });
-      if (signInError) throw signInError;
+      if (signInError) {
+        console.error('[signin-after-register]', signInError.code, signInError.message);
+        switchAuthTab('login');
+        const li = document.getElementById('loginEmail');
+        if (li) li.value = tempRegistrationPhone;
+        showAuthMessage("حساب شما ساخته شد. لطفاً با همین شماره و رمز وارد شوید.", false, 'warning');
+        return;
+      }
 
       showAuthMessage("حساب شما با موفقیت ساخته شد و وارد شدید!", false);
       setTimeout(() => { location.reload(); }, 1000);
 
     } catch (err) {
-      showAuthMessage(err.message || "خطا در فرآیند ثبت‌نام", true);
+      showAuthMessage(faAuthError(err), true);
     } finally {
       btn.disabled = false;
       btn.innerText = "تایید و ساخت حساب";
@@ -2189,7 +2333,11 @@ document.addEventListener('keydown', (e) => {
   async function handleVerifyOTP(e) {
     e.preventDefault();
     
-    const otpCode = document.getElementById('otpCode').value.trim();
+    const otpCode = toEnDigitsClient(document.getElementById('otpCode').value).replace(/\D/g, '');
+    if (otpCode.length !== 6) {
+      showAuthMessage("کد تایید باید ۶ رقم باشد.", true);
+      return;
+    }
     const btn = document.getElementById('verifyOtpBtn');
 
     btn.disabled = true;
@@ -2200,18 +2348,19 @@ document.addEventListener('keydown', (e) => {
       if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
 
       const { data, error } = await client.auth.verifyOtp({
-        email: tempRegistrationEmail,
+        email: tempRegistrationEmail || getPendingSignupEmail(),
         token: otpCode,
         type: 'signup'
       });
 
       if (error) throw error;
 
+      clearPendingSignup();
       showAuthMessage("حساب شما با موفقیت تایید و فعال شد!", false);
       setTimeout(() => { location.reload(); }, 1200);
 
     } catch (err) {
-      showAuthMessage(err.message || "کد وارد شده اشتباه یا منقضی شده است.", true);
+      showAuthMessage(faAuthError(err), true);
     } finally {
       btn.disabled = false;
       btn.innerText = "تایید و فعال‌سازی حساب";
@@ -2635,13 +2784,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="text-xs text-zinc-300">کد ۶ رقمی ارسال‌شده به <span id="otpEmailDisplay" class="text-white font-semibold"></span> را وارد کنید:</p>
         </div>
         <div>
-          <input type="text" id="otpCode" maxlength="6" required placeholder="123456" class="w-full text-center tracking-[0.5em] text-xl font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-3 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
+          <input type="text" id="otpCode" inputmode="numeric" autocomplete="one-time-code" dir="ltr" maxlength="12" required placeholder="123456" class="w-full text-center tracking-[0.5em] text-xl font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-3 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
         </div>
 
         <button type="submit" id="verifyOtpBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 font-bold text-sm text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
           <i class="fa-solid fa-circle-check text-xs"></i>
           تایید و فعال‌سازی حساب
         </button>
+        <div class="flex items-center justify-between pt-1">
+          <button type="button" onclick="backFromOtp()" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">تغییر ایمیل</button>
+          <button type="button" id="emailResendBtn" onclick="resendSignupCode()" class="text-xs text-red-500 hover:text-red-400 disabled:text-zinc-500 transition-all">ارسال مجدد کد</button>
+        </div>
+        <p class="text-[11px] text-zinc-500 text-center leading-5">ایمیل نرسید؟ پوشه‌ی اسپم (Junk) را هم نگاه کن.</p>
       </form>
 
     </div>

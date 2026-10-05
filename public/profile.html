@@ -1,244 +1,240 @@
 
-
-       <div class="profile">
+<div class="profile">
     <!-- محفظه‌ی نوتیفیکیشن‌های شناور (toast) -->
     <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
     <!-- کانتینر اصلی محتوای پروفایل (حتما باید این id وجود داشته باشه) -->
     <div id="mainProfileContent" class="profile-enter">
 
-        <!-- ===================== کارت عضویت خواننده ===================== -->
-        <div class="panel id-card mb-8 shadow-2xl">
-            <div class="id-card__band"></div>
+        <!-- ===================== هدر پروفایل ===================== -->
+        <section class="hero">
+            <div class="hero__glow" aria-hidden="true"></div>
 
-            <div class="id-card__body">
-                <div class="id-card__identity">
-                    <!-- عکس پروفایل با امکان آپلود -->
-                    <div class="relative group" id="avatarDropZone">
-                        <div id="avatarContainer" class="avatar-frame flex items-center justify-center text-red-500 font-bold">
-                            <span id="avatarFallback" class="material-symbols-outlined text-6xl">account_circle</span>
-                            <img id="avatarImg" src="" alt="Avatar" class="w-full h-full object-cover hidden" />
+            <div class="hero__inner">
+                <!-- عکس پروفایل با امکان آپلود / drag & drop -->
+                <div class="avatar" id="avatarDropZone">
+                    <div id="avatarContainer" class="avatar__frame">
+                        <span id="avatarFallback" class="material-symbols-outlined avatar__fallback">person</span>
+                        <img id="avatarImg" src="" alt="عکس پروفایل" class="hidden" />
+                    </div>
+
+                    <label for="avatarInput" class="avatar__btn avatar__btn--edit" title="تغییر عکس پروفایل">
+                        <span class="material-symbols-outlined">photo_camera</span>
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" onchange="uploadAvatar(event)" />
+
+                    <!-- فقط وقتی عکسی ست شده باشه نمایش داده می‌شه -->
+                    <button type="button" id="removeAvatarBtn" onclick="removeAvatar()" title="حذف عکس پروفایل" class="hidden avatar__btn avatar__btn--remove">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+
+                <div class="hero__info">
+                    <div class="hero__name-row">
+                        <h1 id="dispUsername" class="hero__name">در حال بارگذاری...</h1>
+                        <span id="vipBadge" class="hidden vip-pill">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            اشتراک فعال
+                        </span>
+                    </div>
+
+                    <div id="contactInfoWrap" class="hidden chips">
+                        <div id="contactEmailRow" class="hidden chip">
+                            <span class="material-symbols-outlined">mail</span>
+                            <span id="dispEmail" dir="ltr" class="mono"></span>
                         </div>
+                        <div id="contactPhoneRow" class="hidden chip">
+                            <span class="material-symbols-outlined">smartphone</span>
+                            <span id="dispPhone" dir="ltr" class="mono"></span>
+                        </div>
+                    </div>
 
-                        <!-- دکمه تغییر عکس -->
-                        <label for="avatarInput" class="absolute bottom-1 left-1 bg-red-600 hover:bg-red-500 text-white p-2 rounded-xl cursor-pointer shadow-lg transition-transform hover:scale-110 flex items-center justify-center border border-white/20" title="تغییر عکس پروفایل">
-                            <span class="material-symbols-outlined text-sm">photo_camera</span>
-                        </label>
-                        <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" onchange="uploadAvatar(event)" />
+                    <div class="hero__meta">
+                        <span class="meta">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                            عضویت از <span id="dispCreatedAt" class="meta__strong">...</span>
+                            <span id="dispJoinDays" class="meta__dim"></span>
+                        </span>
 
-                        <!-- دکمه حذف عکس پروفایل — فقط وقتی عکسی ست شده باشه نمایش داده می‌شه -->
-                        <button type="button" id="removeAvatarBtn" onclick="removeAvatar()" title="حذف عکس پروفایل" class="hidden absolute bottom-1 right-1 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white p-2 rounded-xl shadow-lg transition-all flex items-center justify-center border border-white/20">
-                            <span class="material-symbols-outlined text-sm">delete</span>
+                        <button type="button" onclick="copyMemberId()" title="کپی شماره عضویت" class="id-pill mono">
+                            #<span id="dispMemberId">------</span>
+                            <span class="material-symbols-outlined">content_copy</span>
                         </button>
                     </div>
-
-                    <!-- نام و ایمیل -->
-                    <div class="id-card__meta">
-                        <span class="eyebrow-tag mb-1.5 block">شناسه‌ی خواننده</span>
-                        <div class="flex items-center flex-wrap gap-2">
-                            <h1 id="dispUsername" class="text-xl font-extrabold text-white">در حال بارگذاری...</h1>
-                            <span id="vipBadge" class="hidden px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">اشتراک فعال</span>
-                        </div>
-                        <div id="contactInfoWrap" class="hidden mt-1.5 space-y-1">
-                            <div id="contactEmailRow" class="hidden text-xs text-zinc-400 flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-sm text-red-500">mail</span>
-                                <span id="dispEmail" dir="ltr" class="mono"></span>
-                            </div>
-                            <div id="contactPhoneRow" class="hidden text-xs text-zinc-400 flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-sm text-red-500">smartphone</span>
-                                <span id="dispPhone" dir="ltr" class="mono"></span>
-                            </div>
-                        </div>
-                        <div class="text-[11px] text-zinc-500 mt-2 flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-sm text-red-500">calendar_month</span>
-                            عضویت از <span id="dispCreatedAt" class="mono text-zinc-300">...</span>
-                            <span id="dispJoinDays" class="mono text-zinc-600"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تیکه‌ی کنده‌شده‌ی کارت با شماره عضویت -->
-                <div class="id-card__stub">
-                    <button type="button" onclick="copyMemberId()" title="کپی شماره عضویت" class="id-card__stub-number mono flex items-center gap-1.5 hover:text-red-400 transition-colors">
-                        #<span id="dispMemberId">------</span>
-                        <span class="material-symbols-outlined text-sm opacity-60">content_copy</span>
-                    </button>
-                    <div class="id-card__barcode"></div>
-                    <span class="id-card__stub-label">عضو مانهواچی</span>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- ===================== کارت‌های دسترسی سریع ===================== -->
-        <div class="quick-nav grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <a href="#bookmarksSection" class="panel">
-                <div class="w-10 h-10 rounded-xl bg-red-600/10 text-red-500 flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined">bookmark</span>
-                </div>
-                <div>
-                    <div class="text-xs font-bold text-white">علامت‌گذاری‌ها</div>
-                    <div id="bookmarksCountHint" class="text-[11px] text-zinc-400 mt-0.5">مانهواهای ذخیره شده شما</div>
-                </div>
+        <!-- ===================== دسترسی سریع ===================== -->
+        <nav class="stats" aria-label="دسترسی سریع">
+            <a href="#bookmarksSection" class="stat">
+                <span class="stat__icon stat__icon--red"><span class="material-symbols-outlined">bookmark</span></span>
+                <span class="stat__text">
+                    <b>علامت‌گذاری‌ها</b>
+                    <small id="bookmarksCountHint">مانهواهای ذخیره‌شده</small>
+                </span>
             </a>
 
-            <a href="#historySection" class="panel">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined">history</span>
-                </div>
-                <div>
-                    <div class="text-xs font-bold text-white">تاریخچه خواندن</div>
-                    <div id="historyCountHint" class="text-[11px] text-zinc-400 mt-0.5">آخرین چاپترهای مطالعه شده</div>
-                </div>
+            <a href="#historySection" class="stat">
+                <span class="stat__icon stat__icon--gold"><span class="material-symbols-outlined">history</span></span>
+                <span class="stat__text">
+                    <b>تاریخچه خواندن</b>
+                    <small id="historyCountHint">آخرین چپترها</small>
+                </span>
             </a>
 
-            <a href="#commentsSection" class="panel">
-                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined">chat</span>
-                </div>
-                <div>
-                    <div class="text-xs font-bold text-white">دیدگاه‌های من</div>
-                    <div id="commentsCountHint" class="text-[11px] text-zinc-400 mt-0.5">مدیریت نظرات ثبت شده</div>
-                </div>
+            <a href="#commentsSection" class="stat">
+                <span class="stat__icon stat__icon--green"><span class="material-symbols-outlined">chat</span></span>
+                <span class="stat__text">
+                    <b>دیدگاه‌های من</b>
+                    <small id="commentsCountHint">نظرهای ثبت‌شده</small>
+                </span>
             </a>
-        </div>
+        </nav>
 
-        <!-- ===================== وضعیت VIP + تنظیمات ===================== -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- ===================== اشتراک + تنظیمات ===================== -->
+        <div class="split">
 
-            <!-- بلیط اشتراک VIP -->
-            <div class="panel ticket-pass">
-                <div>
-                    <span class="eyebrow-tag mb-3 block">وضعیت حساب</span>
-                    <div class="flex items-center gap-2 mb-4">
+            <!-- کارت اشتراک ویژه -->
+            <section class="vip-card">
+                <div class="vip-card__head">
+                    <div class="vip-card__icon">
                         <span id="vipIcon" class="material-symbols-outlined text-zinc-500 text-3xl">workspace_premium</span>
-                        <h2 class="font-bold text-sm text-white">اشتراک ویژه</h2>
                     </div>
-
-                    <!-- شمارشگر روزهای باقی‌مانده -->
-                    <div id="vipDaysWrap" class="vip-countdown hidden mb-4">
-                        <div class="vip-countdown__row">
-                            <span id="vipDaysNumber" class="vip-countdown__number mono">--</span>
-                            <span class="vip-countdown__label">روز تا پایان اشتراک</span>
-                        </div>
-                        <div class="vip-countdown__track">
-                            <div id="vipProgressBar" class="vip-countdown__fill" style="width: 0%;"></div>
-                        </div>
-                    </div>
-
-                    <div id="vipStatusText" class="text-xs text-zinc-400 leading-relaxed mb-6">
-                        در حال بررسی وضعیت اشتراک...
+                    <div>
+                        <h2 class="vip-card__title">اشتراک ویژه</h2>
+                        <p class="vip-card__sub">وضعیت حساب شما</p>
                     </div>
                 </div>
 
-                <a href="/vip.html" id="vipActionBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center">
+                <!-- شمارشگر روزهای باقی‌مانده -->
+                <div id="vipDaysWrap" class="vip-countdown hidden">
+                    <div class="vip-countdown__row">
+                        <span id="vipDaysNumber" class="vip-countdown__number">--</span>
+                        <span class="vip-countdown__label">روز تا پایان اشتراک</span>
+                    </div>
+                    <div class="vip-countdown__track">
+                        <div id="vipProgressBar" class="vip-countdown__fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div id="vipStatusText" class="vip-card__status">
+                    در حال بررسی وضعیت اشتراک...
+                </div>
+
+                <a href="/vip.html" id="vipActionBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center block">
                     ارتقاء به VIP
                 </a>
+            </section>
+
+            <!-- ستون تنظیمات -->
+            <div class="stack">
+
+                <!-- تنظیمات حساب -->
+                <section class="panel">
+                    <header class="sec-head">
+                        <span class="sec-head__icon"><span class="material-symbols-outlined">manage_accounts</span></span>
+                        <h2 class="sec-head__title">تنظیمات حساب</h2>
+                    </header>
+
+                    <form onsubmit="handleUpdateProfile(event)" class="form">
+                        <div id="msgBox" class="hidden p-3 rounded-xl text-xs"></div>
+
+                        <div class="field">
+                            <label for="usernameInput">نام نمایشی</label>
+                            <input type="text" id="usernameInput" required class="input" placeholder="نام و نام خانوادگی" autocomplete="name" />
+                        </div>
+
+                        <div class="field">
+                            <label for="avatarUrlInput">آدرس تصویر پروفایل <span class="field__opt">(اختیاری)</span></label>
+                            <input type="url" id="avatarUrlInput" class="input" dir="ltr" placeholder="https://example.com/avatar.jpg" />
+                            <span class="field__hint">می‌توانید مستقیم عکس آپلود کنید یا لینک عکس بگذارید.</span>
+                        </div>
+
+                        <div class="form__actions">
+                            <button type="submit" id="saveBtn" class="btn btn--primary">ذخیره تغییرات</button>
+                            <button type="button" onclick="handleLogout()" class="btn btn--ghost">
+                                <span class="material-symbols-outlined">logout</span>
+                                خروج
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- امنیت حساب (جمع‌شونده) -->
+                <details class="panel fold">
+                    <summary class="fold__summary">
+                        <span class="sec-head__icon"><span class="material-symbols-outlined">lock</span></span>
+                        <span class="fold__text">
+                            <b>امنیت حساب</b>
+                            <small>تغییر رمز عبور</small>
+                        </span>
+                        <span class="material-symbols-outlined fold__chev">expand_more</span>
+                    </summary>
+
+                    <form onsubmit="handleChangePassword(event)" class="form fold__body">
+                        <div class="field">
+                            <label for="newPasswordInput">رمز عبور جدید</label>
+                            <input type="password" id="newPasswordInput" minlength="6" required autocomplete="new-password" class="input" dir="ltr" placeholder="حداقل ۶ کاراکتر" />
+                        </div>
+                        <div class="field">
+                            <label for="confirmPasswordInput">تکرار رمز عبور</label>
+                            <input type="password" id="confirmPasswordInput" minlength="6" required autocomplete="new-password" class="input" dir="ltr" placeholder="تکرار رمز عبور" />
+                        </div>
+                        <button type="submit" id="changePasswordBtn" class="btn btn--outline">تغییر رمز عبور</button>
+                    </form>
+                </details>
             </div>
-
-            <!-- فرم ویرایش پروفایل -->
-            <div class="panel p-6 md:p-7 md:col-span-2">
-                <h2 class="font-bold text-sm text-white mb-4 flex items-center gap-2 border-b border-white/[0.08] pb-3">
-                    <span class="eyebrow-tag">تنظیمات حساب</span>
-                </h2>
-
-                <form onsubmit="handleUpdateProfile(event)" class="space-y-4">
-                    <div id="msgBox" class="hidden p-3 rounded-xl text-xs"></div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">نام نمایش (نام و نام خانوادگی)</label>
-                        <input type="text" id="usernameInput" required class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all placeholder-zinc-600" placeholder="نام خود را وارد کنید..." />
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">آدرس تصویر پروفایل (اختیاری)</label>
-                        <input type="url" id="avatarUrlInput" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all dir-ltr text-left placeholder-zinc-600" placeholder="https://example.com/avatar.jpg" />
-                        <span class="text-[11px] text-zinc-500 mt-1 block">می‌توانید مستقیم فایل آپلود کنید یا لینک عکس قرار دهید.</span>
-                    </div>
-
-                    <div class="pt-4 flex items-center gap-3">
-                        <button type="submit" id="saveBtn" class="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 font-bold text-xs text-white transition-all shadow-lg shadow-red-950/40">
-                            ذخیره تغییرات
-                        </button>
-                        <button type="button" onclick="handleLogout()" class="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm">logout</span>
-                            خروج
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-        </div>
-
-        <!-- ===================== امنیت حساب / تغییر رمز عبور ===================== -->
-        <div class="panel p-6 md:p-7 mb-6">
-            <h2 class="font-bold text-sm text-white mb-4 flex items-center gap-2 border-b border-white/[0.08] pb-3">
-                <span class="eyebrow-tag">امنیت حساب</span>
-            </h2>
-
-            <form onsubmit="handleChangePassword(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور جدید</label>
-                    <input type="password" id="newPasswordInput" minlength="6" required autocomplete="new-password" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all dir-ltr text-left placeholder-zinc-600" placeholder="حداقل ۶ کاراکتر" />
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">تکرار رمز عبور</label>
-                    <input type="password" id="confirmPasswordInput" minlength="6" required autocomplete="new-password" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:border-red-600 focus:outline-none transition-all dir-ltr text-left placeholder-zinc-600" placeholder="تکرار رمز عبور" />
-                </div>
-                <button type="submit" id="changePasswordBtn" class="py-2.5 rounded-xl bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 font-bold text-xs text-zinc-300 hover:text-white transition-all">
-                    تغییر رمز عبور
-                </button>
-            </form>
         </div>
 
         <!-- ===================== علامت‌گذاری‌های من ===================== -->
-        <div id="bookmarksSection" class="panel p-6 md:p-7 mb-6 scroll-mt-24">
-            <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
-                <span class="eyebrow-tag flex items-center gap-2">
-                    <span class="material-symbols-outlined text-red-500 text-lg align-middle">bookmark</span>
-                    علامت‌گذاری‌های من
-                </span>
-                <div class="shelf-search">
-                    <span class="material-symbols-outlined text-sm">search</span>
-                    <input type="text" id="bookmarksSearch" oninput="filterShelf('bookmarksList', this.value)" placeholder="جستجو در نشان‌ها..." class="dir-rtl" />
+        <section id="bookmarksSection" class="panel shelf">
+            <header class="sec-head sec-head--wrap">
+                <span class="sec-head__icon"><span class="material-symbols-outlined">bookmark</span></span>
+                <h2 class="sec-head__title">علامت‌گذاری‌های من</h2>
+                <div class="shelf-search sec-head__end">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" id="bookmarksSearch" oninput="filterShelf('bookmarksList', this.value)" placeholder="جستجو در نشان‌ها..." aria-label="جستجو در نشان‌ها" />
                 </div>
-            </div>
-            <div id="bookmarksList" class="shelf-grid mt-4">
+            </header>
+            <div id="bookmarksList" class="shelf-grid">
                 <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
-        </div>
+        </section>
 
-        <!-- ===================== تاریخچه خواندن (فقط روی همین گوشی/مرورگر) ===================== -->
-        <div id="historySection" class="panel p-6 md:p-7 mb-6 scroll-mt-24">
-            <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
-                <span class="eyebrow-tag flex items-center gap-2">
-                    <span class="material-symbols-outlined text-red-500 text-lg align-middle">history</span>
-                    تاریخچه خواندن
-                </span>
-                <button type="button" onclick="clearReadingHistory()" class="text-[11px] text-zinc-500 hover:text-red-400 transition-colors flex items-center gap-1">
-                    <span class="material-symbols-outlined text-sm">delete_sweep</span>
+        <!-- ===================== تاریخچه خواندن ===================== -->
+        <section id="historySection" class="panel shelf">
+            <header class="sec-head sec-head--wrap">
+                <span class="sec-head__icon"><span class="material-symbols-outlined">history</span></span>
+                <h2 class="sec-head__title">تاریخچه خواندن</h2>
+                <button type="button" onclick="clearReadingHistory()" class="link-btn sec-head__end">
+                    <span class="material-symbols-outlined">delete_sweep</span>
                     پاک کردن تاریخچه
                 </button>
+            </header>
+            <p class="note">
+                <span class="material-symbols-outlined">info</span>
+                این تاریخچه فقط روی همین گوشی یا مرورگر ذخیره می‌شه و بین دستگاه‌ها سینک نمی‌شه.
+            </p>
+            <div class="shelf-search shelf-search--block">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" id="historySearch" oninput="filterShelf('historyList', this.value)" placeholder="جستجو در تاریخچه..." aria-label="جستجو در تاریخچه" />
             </div>
-            <p class="text-[11px] text-zinc-500 mb-4">این تاریخچه فقط روی همین گوشی یا مرورگر ذخیره می‌شه و بین دستگاه‌ها سینک نمی‌شه.</p>
-            <div class="shelf-search mb-4">
-                <span class="material-symbols-outlined text-sm">search</span>
-                <input type="text" id="historySearch" oninput="filterShelf('historyList', this.value)" placeholder="جستجو در تاریخچه..." class="dir-rtl" />
-            </div>
-            <div id="historyList" class="shelf-grid mt-4">
+            <div id="historyList" class="shelf-grid">
                 <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
-        </div>
+        </section>
 
         <!-- ===================== دیدگاه‌های من ===================== -->
-        <div id="commentsSection" class="panel p-6 md:p-7 scroll-mt-24">
-            <span class="eyebrow-tag mb-4 flex items-center gap-2">
-                <span class="material-symbols-outlined text-red-500 text-lg align-middle">chat</span>
-                دیدگاه‌های من
-            </span>
-            <div id="commentsList" class="space-y-3 mt-4">
+        <section id="commentsSection" class="panel shelf">
+            <header class="sec-head">
+                <span class="sec-head__icon"><span class="material-symbols-outlined">chat</span></span>
+                <h2 class="sec-head__title">دیدگاه‌های من</h2>
+            </header>
+            <div id="commentsList" class="comments">
                 <p class="text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
-        </div>
+        </section>
 
     </div>
 </div>

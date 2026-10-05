@@ -1,496 +1,379 @@
 <!DOCTYPE html>
 <html class="dark" dir="rtl" lang="fa">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>جستجوی مانهواچی | ManhwaChi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
-    <style>
-        body {
-            background-color: #0b0b0e;
-            color: #e2e2e2;
-            font-family: 'Vazirmatn', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .glass-card {
-            background: rgba(22, 22, 29, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#09090b" />
+<title>جستجوی مانهواچی | ManhwaChi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<style>
+:root{--bg:#09090b;--panel:#131317;--panel2:#1b1b21;--line:rgba(255,255,255,.08);--muted:#8b8b96;--red:#dc2626;--gold:#f5b84a}
+*{-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:#ececf0;font-family:'Vazirmatn',sans-serif;min-height:100vh}
+.material-symbols-outlined{font-size:22px;line-height:1}
+.no-sb{scrollbar-width:none}.no-sb::-webkit-scrollbar{display:none}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
-        .glass-input {
-            background: rgba(28, 28, 36, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+/* Search box */
+.search-box{display:flex;align-items:center;gap:10px;height:56px;padding:0 16px;background:var(--panel);border:1px solid var(--line);border-radius:18px;transition:border-color .2s,box-shadow .2s;cursor:text}
+.search-box:focus-within{border-color:var(--red);box-shadow:0 0 0 4px rgba(220,38,38,.16)}
+.search-box>.material-symbols-outlined{color:var(--muted);transition:color .2s}
+.search-box:focus-within>.material-symbols-outlined{color:var(--red)}
+.search-box input{flex:1;min-width:0;background:transparent;border:0;outline:0!important;color:#fff;font-size:1.05rem;font-weight:500;font-family:inherit}
+.search-box input::placeholder{color:#62626c;font-weight:400}
+.search-box input::-webkit-search-cancel-button{display:none}
+.search-box kbd{font:600 12px/1 inherit;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel2)}
+.search-box input:not(:placeholder-shown)~kbd,.search-box input:placeholder-shown~#clear{display:none}
+@media(hover:none){.search-box kbd{display:none}}
+#clear,.icon-btn{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;color:var(--muted);transition:.15s}
+#clear:hover,.icon-btn:hover{color:#fff;background:var(--panel2)}
+.icon-btn{width:56px;height:56px;border-radius:18px;background:var(--panel);border:1px solid var(--line);flex-shrink:0}
 
-        .search-glow:focus-within {
-            box-shadow: 0 0 30px rgba(220, 38, 38, 0.25);
-            border-color: #dc2626;
-        }
+/* Filters */
+.seg{display:inline-flex;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.seg button{padding:6px 14px;border-radius:10px;font-size:.85rem;font-weight:600;color:var(--muted);transition:.15s;white-space:nowrap}
+.seg button:hover{color:#fff}
+.seg button[aria-pressed=true]{background:var(--red);color:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:.85rem;font-weight:500;color:#c9c9d2;white-space:nowrap;transition:.15s;flex-shrink:0}
+.chip:hover{border-color:rgba(220,38,38,.5);color:#fff}
+.chip[aria-pressed=true]{background:rgba(220,38,38,.16);border-color:var(--red);color:#fff}
+.chip .material-symbols-outlined{font-size:17px}
+#sort{appearance:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:9px 14px;font:600 .85rem inherit;font-family:inherit;color:#c9c9d2;cursor:pointer}
+#genres{mask-image:linear-gradient(to left,#000 92%,transparent);-webkit-mask-image:linear-gradient(to left,#000 92%,transparent)}
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #27272a;
-            border-radius: 99px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #dc2626;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .card-image-hover {
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .group:hover .card-image-hover {
-            transform: scale(1.08);
-        }
-    </style>
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:18px 14px}
+@media(min-width:768px){.cards{grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:22px 18px}}
+.card{display:block;border-radius:16px}
+.cover{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:var(--panel);border:1px solid var(--line);transition:border-color .2s,transform .25s}
+.card:hover .cover{border-color:var(--red);transform:translateY(-3px)}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover img.broken{display:none}
+.cover .ph{position:absolute;inset:0;display:grid;place-items:center;color:#3a3a44;font-size:42px}
+.cover::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(to top,rgba(0,0,0,.65),transparent);pointer-events:none}
+.rate,.tag{position:absolute;top:8px;z-index:1;font-style:normal;font-size:11px;font-weight:700;padding:3px 8px;border-radius:9px;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.1)}
+.rate{right:8px;color:var(--gold)}.tag{left:8px;color:#e5e5ea}
+.card h3{margin-top:10px;font-size:.9rem;font-weight:700;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:color .15s}
+.card:hover h3{color:#f87171}
+.card p{margin-top:2px;font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+mark{background:none;color:#f87171;font-weight:800}
+.sk .cover{border:0;animation:sh 1.3s ease-in-out infinite}
+.sk i{display:block;height:12px;width:70%;margin-top:12px;border-radius:6px;background:var(--panel);animation:sh 1.3s ease-in-out infinite}
+@keyframes sh{50%{opacity:.45}}
+.fade{animation:in .3s ease both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.empty{text-align:center;padding:64px 16px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:14px;background:var(--red);color:#fff;font-weight:700;font-size:.9rem;transition:.15s}
+.btn:hover{background:#b91c1c}
+</style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-start p-4 md:p-8">
+<body>
 
-<!-- Main Search Container -->
-<main class="w-full max-w-5xl mx-auto py-4">
-    
-    <!-- Search Bar & Input Section -->
-    <section class="mb-8 relative">
-        <div class="relative w-full max-w-3xl mx-auto search-glow rounded-2xl transition-all duration-300">
-            <!-- Search Icon -->
-            <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-red-500 transition-colors">
-                <span class="material-symbols-outlined text-2xl">search</span>
-            </div>
-            
-            <input 
-                class="glass-input w-full rounded-2xl py-4 pr-12 pl-12 focus:outline-none transition-all duration-300 font-medium text-zinc-100 placeholder-zinc-500 shadow-2xl text-base sm:text-lg" 
-                id="main-search" 
-                placeholder="عنوان مانهوا، مانگا یا کلمات کلیدی را بنویسید..." 
-                type="text"
-                autocomplete="off"
-            />
-            
-            <!-- Clear Button -->
-            <button class="absolute inset-y-0 left-4 flex items-center text-zinc-400 hover:text-red-500 transition-colors opacity-80 hover:opacity-100" id="clear-search" title="پاک‌کردن">
-                <span class="material-symbols-outlined text-xl">close</span>
-            </button>
-        </div>
-    </section>
+<header class="max-w-6xl mx-auto px-4 pt-4 md:pt-8">
+  <div class="flex items-center gap-3">
+    <a href="/" class="icon-btn" aria-label="بازگشت به صفحه اصلی"><span class="material-symbols-outlined">arrow_forward</span></a>
+    <label class="search-box flex-1">
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      <input id="q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="نام مانهوا، مانگا یا ژانر را بنویسید..." aria-label="جستجو" />
+      <kbd aria-hidden="true">/</kbd>
+      <button id="clear" type="button" aria-label="پاک‌کردن جستجو"><span class="material-symbols-outlined">close</span></button>
+    </label>
+  </div>
 
-    <!-- Controls & Filters Section -->
-    <section class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        
-        <div id="filter-bar" class="w-full flex flex-wrap items-center justify-between sm:justify-start gap-3 glass-card p-2 rounded-2xl">
-            
-            <!-- Toggle Filter Button -->
-            <button id="filter-toggle" class="flex items-center gap-2 font-medium text-sm text-zinc-300 hover:text-white px-4 py-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 transition-all border border-zinc-700/50 active:scale-95">
-                <span class="material-symbols-outlined text-lg text-red-500">tune</span>
-                <span>فیلترهای پیشرفته</span>
-            </button>
-
-            <!-- Custom Select Dropdowns -->
-            <div id="filter-options" class="hidden flex flex-wrap items-center gap-3 transition-all duration-300 w-full sm:w-auto mt-2 sm:mt-0">
-                
-                <div class="relative flex-1 sm:flex-initial">
-                    <select id="type-filter" class="w-full appearance-none bg-zinc-900 text-zinc-300 rounded-xl pr-4 pl-9 py-2 text-sm border border-zinc-700/80 focus:border-red-500 focus:outline-none cursor-pointer font-medium hover:bg-zinc-800 transition-colors">
-                        <option value="">همه انواع</option>
-                        <option value="manhwa">مانهوا (Manhwa)</option>
-                        <option value="manhua">مانها (Manhua)</option>
-                        <option value="manga">مانگا (Manga)</option>
-                    </select>
-                    <span class="material-symbols-outlined text-zinc-400 text-sm absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
-                </div>
-
-                <div class="relative flex-1 sm:flex-initial">
-                    <select id="genre-filter" class="w-full appearance-none bg-zinc-900 text-zinc-300 rounded-xl pr-4 pl-9 py-2 text-sm border border-zinc-700/80 focus:border-red-500 focus:outline-none cursor-pointer font-medium hover:bg-zinc-800 transition-colors">
-                        <option value="">همه ژانرها</option>
-                        <option value="Action">اکشن</option>
-                        <option value="Fantasy">فانتزی</option>
-                        <option value="Romance">عاشقانه</option>
-                        <option value="Drama">درام</option>
-                        <option value="Adventure">ماجراجویی</option>
-                    </select>
-                    <span class="material-symbols-outlined text-zinc-400 text-sm absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
-                </div>
-
-            </div>
-            
-        </div>
-
-    </section>
-
-    <!-- Default State: Search History -->
-    <div id="default-state" class="w-full">
-        <section class="mb-8 animate-fade-in">
-            <div class="flex justify-between items-center mb-4 px-1">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-red-500 text-xl">history</span>
-                    <h2 class="text-base font-bold text-zinc-200">جستجوهای اخیر شما</h2>
-                </div>
-                <button id="clear-history" class="text-xs text-zinc-400 hover:text-red-400 font-medium transition-colors flex items-center gap-1">
-                    <span class="material-symbols-outlined text-sm">delete</span>
-                    پاک‌کردن تاریخچه
-                </button>
-            </div>
-            <div id="recent-searches" class="flex flex-wrap gap-2.5">
-                <!-- Items dynamic injection -->
-            </div>
-        </section>
+  <div class="flex flex-wrap items-center gap-3 mt-4">
+    <div class="seg" id="types" role="group" aria-label="نوع اثر">
+      <button type="button" data-type="" aria-pressed="true">همه</button>
+      <button type="button" data-type="manhwa" aria-pressed="false">مانهوا</button>
+      <button type="button" data-type="manga" aria-pressed="false">مانگا</button>
+      <button type="button" data-type="manhua" aria-pressed="false">مانها</button>
     </div>
+    <select id="sort" aria-label="مرتب‌سازی">
+      <option value="rel">مرتبط‌ترین</option>
+      <option value="rating">بیشترین امتیاز</option>
+      <option value="new" hidden>جدیدترین</option>
+      <option value="az">الفبایی</option>
+    </select>
+  </div>
+  <div id="genres" class="flex gap-2 overflow-x-auto no-sb mt-3 pb-1" role="group" aria-label="ژانرها"></div>
+</header>
 
-    <!-- Results Display State -->
-    <div class="hidden animate-fade-in pb-12 w-full" id="results-state">
-        <div class="flex items-center justify-between mb-6 px-1">
-            <h2 class="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                <span class="material-symbols-outlined text-red-500">grid_view</span>
-                نتایج یافت‌شده
-            </h2>
-        </div>
-        
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-5">
-            <!-- Results will be injected dynamically -->
-        </div>
+<main class="max-w-6xl mx-auto px-4 pb-20">
+  <div class="flex items-center justify-between gap-3 py-5 min-h-[64px]">
+    <p id="status" class="text-sm font-medium text-[var(--muted)]" aria-live="polite"></p>
+    <button id="reset" type="button" hidden class="text-sm font-semibold text-red-400 hover:text-red-300 flex items-center gap-1">
+      <span class="material-symbols-outlined" style="font-size:18px">filter_alt_off</span>حذف فیلترها
+    </button>
+  </div>
+
+  <section id="home">
+    <div id="recent-wrap" hidden class="mb-9">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-bold">جستجوهای اخیر</h2>
+        <button id="clear-history" type="button" class="text-xs text-[var(--muted)] hover:text-red-400">پاک‌کردن تاریخچه</button>
+      </div>
+      <div id="recent" class="flex flex-wrap gap-2"></div>
     </div>
-
-    <!-- Empty State -->
-    <div class="hidden flex-col items-center justify-center py-16 text-center animate-fade-in glass-card rounded-3xl p-8" id="empty-state">
-        <div class="w-20 h-20 mb-4 flex items-center justify-center bg-zinc-800/80 text-zinc-500 rounded-full border border-zinc-700/50 shadow-inner">
-            <span class="material-symbols-outlined text-4xl text-red-500/80">search_off</span>
-        </div>
-        <h3 class="text-lg font-bold text-zinc-100">نتیجه‌ای یافت نشد!</h3>
-        <p class="text-xs sm:text-sm text-zinc-400 max-w-xs mt-2 leading-relaxed">کلمه دیگری را بگردید یا فیلترهای انتخابی را بازنشانی کنید.</p>
-        <button class="mt-6 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-red-600/30 active:scale-95 flex items-center gap-2" onclick="resetSearch()">
-            <span class="material-symbols-outlined text-base">refresh</span>
-            پاکسازی فیلترها
-        </button>
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <h2 class="font-bold">برترین‌ها</h2>
+      <button id="random" type="button" class="chip" hidden><span class="material-symbols-outlined">casino</span>یک پیشنهاد تصادفی</button>
     </div>
+    <div id="top" class="cards"></div>
+  </section>
 
-</main>    
+  <section id="results" hidden>
+    <div id="grid" class="cards"></div>
+    <div id="more" class="h-10"></div>
+  </section>
+
+  <section id="empty" hidden class="empty">
+    <span class="material-symbols-outlined" style="font-size:56px;color:#3a3a44">search_off</span>
+    <h3 class="text-lg font-bold mt-3">نتیجه‌ای پیدا نشد</h3>
+    <p class="text-sm text-[var(--muted)] mt-2">املای کلمه را بررسی کنید یا فیلترها را کم کنید.</p>
+    <div id="did-you-mean" class="mt-4"></div>
+    <button type="button" class="btn mt-6" data-act="reset"><span class="material-symbols-outlined" style="font-size:18px">refresh</span>شروع دوباره</button>
+  </section>
+
+  <section id="error" hidden class="empty">
+    <span class="material-symbols-outlined" style="font-size:56px;color:#3a3a44">cloud_off</span>
+    <h3 class="text-lg font-bold mt-3">اطلاعات بارگذاری نشد</h3>
+    <p class="text-sm text-[var(--muted)] mt-2">اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.</p>
+    <button type="button" class="btn mt-6" id="retry"><span class="material-symbols-outlined" style="font-size:18px">refresh</span>تلاش دوباره</button>
+  </section>
+</main>
 
 <script>
-    let itemsList = [];
+const $ = s => document.querySelector(s);
+const PAGE = 24, HKEY = 'recentSearches';
+const TYPES = { 'مانهوا':'manhwa', manhwa:'manhwa', 'مانگا':'manga', manga:'manga', 'مانها':'manhua', manhua:'manhua' };
+const TL = { manhwa:'مانهوا', manga:'مانگا', manhua:'مانها' };
+const STOP = new Set(['مانهوا','مانگا','مانها','manhwa','manga','manhua','در','به','از','با','و','یک','the','and','of','in','a']);
+const st = { q:'', type:'', genres:new Set(), sort:'rel', list:[], shown:0, words:[] };
+const gname = {}, gcount = {};
+let items = [];
 
-    // DOM Elements
-    const searchInput = document.getElementById('main-search');
-    const clearBtn = document.getElementById('clear-search');
-    const defaultState = document.getElementById('default-state');
-    const resultsState = document.getElementById('results-state');
-    const emptyState = document.getElementById('empty-state');
-    const resultsGrid = resultsState.querySelector('.grid');
-    const typeFilter = document.getElementById('type-filter');
-    const genreFilter = document.getElementById('genre-filter');
-    const filterToggle = document.getElementById('filter-toggle');
-    const filterOptions = document.getElementById('filter-options');
-    const filterBar = document.getElementById('filter-bar');
-    const recentContainer = document.getElementById("recent-searches");
-    const clearHistoryBtn = document.getElementById("clear-history");
+const fa = n => Number(n).toLocaleString('fa-IR');
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = t => String(t ?? '').toLowerCase()
+  .replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[يى]/g,'ی').replace(/ك/g,'ک')
+  .replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ئ/g,'ی')
+  .replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+  .replace(/[\u200c\u200e\u200f_\-:]+/g,' ').replace(/\s+/g,' ').trim();
 
-    async function loadData() {
-        try {
-            const response = await fetch('/data/data.json'); 
-            if (!response.ok) throw new Error('فایل اطلاعات یافت نشد.');
-            const manhwaData = await response.json();
-            
-            itemsList = Object.keys(manhwaData).map(slug => ({
-                slug: slug,
-                ...manhwaData[slug]
-            }));
-        } catch (error) {
-            console.error('بروز خطا در دریافت اطلاعات:', error);
-        }
-    }
+function lev(a, b) {
+  let p = Array.from({length:b.length+1}, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const c = [i];
+    for (let j = 1; j <= b.length; j++) c[j] = Math.min(p[j]+1, c[j-1]+1, p[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    p = c;
+  }
+  return p[b.length];
+}
 
-    function normalizeText(text) {
-        if (!text) return '';
-        return text.toLowerCase()
-            .replace(/ي/g, 'ی')
-            .replace(/ك/g, 'ک')
-            .replace(/‌/g, ' ') 
-            .trim();
-    }
+function hl(raw, words) {
+  raw = String(raw ?? '');
+  if (!words.length) return esc(raw);
+  const re = new RegExp('(' + words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/ی/g,'[یي]').replace(/ک/g,'[کك]')).join('|') + ')', 'gi');
+  return raw.split(re).map((p, i) => i % 2 ? `<mark>${esc(p)}</mark>` : esc(p)).join('');
+}
 
-    // Toggle Filters menu
-    filterToggle.addEventListener('click', () => {
-        filterOptions.classList.toggle('hidden');
-    });
+/* ---------- Data ---------- */
+function prep(v) {
+  v._fa = norm(v.title_fa); v._en = norm(v.title_en); v._desc = norm(v.description);
+  v._words = [...new Set((v._fa + ' ' + v._en).split(' ').filter(w => w.length > 1))];
+  v._genres = (v.genres || []).map(norm);
+  v._type = TYPES[norm(v.type)] || '';
+  v._rate = parseFloat(v.score) || 0;
+  v._date = Date.parse(v.updated_at || v.created_at || '') || 0;
+  (v.genres || []).forEach(g => { const k = norm(g); gcount[k] = (gcount[k] || 0) + 1; gname[k] ??= g; });
+  return v;
+}
 
-    function showDefaultState() {
-        defaultState.classList.remove('hidden');
-        resultsState.classList.add('hidden');
-        emptyState.classList.add('hidden');
-        emptyState.classList.remove('flex');
-    }
-
-    function showEmptyState() {
-        defaultState.classList.add('hidden');
-        resultsState.classList.add('hidden');
-        emptyState.classList.remove('hidden');
-        emptyState.classList.add('flex');
-    }
-
-    function showResultsState() {
-        defaultState.classList.add('hidden');
-        emptyState.classList.add('hidden');
-        emptyState.classList.remove('flex');
-        resultsState.classList.remove('hidden');
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
-    // --- Search History Manager ---
-    const HISTORY_KEY = "recentSearches";
-
-    function getHistory() {
-        return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-    }
-
-    function saveHistory(history) {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    }
-
-    function addToHistory(text) {
-        text = text.trim();
-        const stopWords = ["مانهوا", "مانگا", "مانها", "manhwa", "manga", "manhua"];
-        if (text.length < 2 || stopWords.includes(text.toLowerCase())) return;
-
-        let history = getHistory();
-        history = history.filter(x => x !== text);
-        history.unshift(text);
-        history = history.slice(0, 6);
-        saveHistory(history);
-        renderHistory();
-    }
-
-    function renderHistory() {
-        const history = getHistory();
-        recentContainer.innerHTML = "";
-        
-        if (history.length === 0) {
-            defaultState.classList.add('hidden');
-            return;
-        } else if (searchInput.value === "") {
-            defaultState.classList.remove('hidden');
-        }
-
-        history.forEach(item => {
-            recentContainer.insertAdjacentHTML(
-                "beforeend",
-                `
-                <div class="flex items-center gap-2 bg-zinc-800/80 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/40 px-3.5 py-1.5 rounded-xl group transition-all duration-300 cursor-pointer recent-pill-wrapper" data-value="${escapeHtml(item)}">
-                    <span class="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors">
-                        ${escapeHtml(item)}
-                    </span>
-                    <button class="material-symbols-outlined text-sm text-zinc-400 hover:text-red-500 transition-colors remove-history" data-value="${escapeHtml(item)}">
-                        close
-                    </button>
-                </div>
-                `
-            );
-        });
-    }
-
-    recentContainer.addEventListener("click", e => {
-        const wrapper = e.target.closest('.recent-pill-wrapper');
-        if (!wrapper) return;
-
-        const value = wrapper.dataset.value;
-
-        if (e.target.classList.contains("remove-history")) {
-            e.stopPropagation(); 
-            let history = getHistory();
-            history = history.filter(x => x !== value);
-            saveHistory(history);
-            renderHistory();
-            
-            if (searchInput.value === value) {
-                searchInput.value = '';
-                showDefaultState();
-            }
-            return;
-        }
-
-        searchInput.value = value;
-        performSearch();
-    });
-
-    clearHistoryBtn.addEventListener("click", () => {
-        localStorage.removeItem(HISTORY_KEY);
-        renderHistory();
-        searchInput.value = '';
-        showDefaultState();
-    });
-
-    // --- Search Engine Algorithm ---
-    function performSearch() {
-        const rawQuery = searchInput.value;
-        const query = normalizeText(rawQuery);
-        const selectedType = typeFilter.value.toLowerCase();
-        const selectedGenre = genreFilter.value.toLowerCase();
-
-        if (query === "" && selectedType === "" && selectedGenre === "") {
-            showDefaultState();
-            return;
-        }
-
-        const stopWords = ["مانهوا", "مانگا", "مانها", "manhwa", "manga", "manhua"];
-        const isQueryTooShort = query.length < 2;
-        const isStopWord = stopWords.includes(query);
-        const shouldIgnoreQuery = isQueryTooShort || isStopWord;
-
-        if (shouldIgnoreQuery && selectedType === "" && selectedGenre === "") {
-            showDefaultState();
-            return;
-        }
-
-        const scoredItems = [];
-
-        itemsList.forEach(item => {
-            let score = 0;
-            
-            if (selectedType) {
-                const typeMap = { 'manhwa': 'مانهوا', 'manga': 'مانگا', 'manhua': 'مانها' };
-                const typeInFa = typeMap[selectedType] || selectedType;
-                if (item.type && item.type.toLowerCase() !== typeInFa) return; 
-            }
-
-            if (selectedGenre) {
-                const genreMap = {
-                    'action': 'اکشن', 'fantasy': 'فانتزی', 'romance': 'عاشقانه', 
-                    'drama': 'درام', 'adventure': 'ماجراجویی', 'comedy': 'کمدی', 
-                    'dark fantasy': 'دارک فانتزی', 'horror': 'ترسناک'
-                };
-                const genreInFa = genreMap[selectedGenre] || selectedGenre;
-                const hasGenre = item.genres && item.genres.some(g => normalizeText(g) === normalizeText(genreInFa) || normalizeText(g) === selectedGenre);
-                if (!hasGenre) return; 
-            }
-
-            if (query !== "" && !shouldIgnoreQuery) {
-                const titleFa = normalizeText(item.title_fa);
-                const titleEn = normalizeText(item.title_en);
-                const desc = normalizeText(item.description);
-
-                if (titleFa === query || titleEn === query) score += 200;
-                else if (titleFa.startsWith(query) || titleEn.startsWith(query)) score += 120;
-                
-                if (titleFa.includes(query)) score += 60;
-                if (titleEn.includes(query)) score += 60;
-
-                const queryWords = query.split(/\s+/).filter(w => w.length > 1);
-                queryWords.forEach(word => {
-                    if (["در", "به", "از", "با", "و", "یک", "the", "and", "of", "in", "a"].includes(word)) return;
-                    if (titleFa.includes(word)) score += 20;
-                    if (titleEn.includes(word)) score += 20;
-                    if (desc && desc.includes(word)) score += 3; 
-                });
-
-                if (score === 0) return; 
-            } else {
-                score = 1; 
-            }
-
-            scoredItems.push({ item, score });
-        });
-
-        scoredItems.sort((a, b) => b.score - a.score);
-        const finalResults = scoredItems.map(wrapper => wrapper.item);
-
-        if (finalResults.length === 0) {
-            showEmptyState();
-        } else {
-            renderResults(finalResults);
-            showResultsState();
-        }
-    }
-
-    function renderResults(items) {
-        resultsGrid.innerHTML = '';
-        items.forEach(item => {
-            resultsGrid.insertAdjacentHTML(
-                'beforeend',
-                `
-                <a href="https://manhwachi.ir/comic/${item.slug}" class="group block animate-fade-in">
-                    <div class="aspect-[3/4] rounded-2xl overflow-hidden relative mb-2.5 shadow-lg glass-card group-hover:border-red-500/60 transition-all duration-300">
-                        <img src="/manhwas/${item.slug}/${item.cover_image}" alt="${escapeHtml(item.title_en)}" loading="lazy" class="w-full h-full object-cover card-image-hover">
-                        
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-                        
-                        <div class="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-md text-[11px] font-bold px-2 py-0.5 rounded-lg text-white border border-white/10 flex items-center gap-1 shadow-md">
-                            <span class="text-amber-400 text-xs">★</span> ${item.score || '4.8'}
-                        </div>
-                    </div>
-                    <h3 class="font-bold text-xs sm:text-sm text-zinc-100 line-clamp-1 group-hover:text-red-500 transition-colors text-right" style="direction: rtl;">
-                        ${escapeHtml(item.title_fa)}
-                    </h3>
-                    <p class="text-[11px] text-zinc-400 mt-0.5 text-right line-clamp-1">
-                        ${item.genres ? item.genres.slice(0, 2).join(' • ') : ''}
-                    </p>
-                </a>
-                `
-            );
-        });
-    }
-
-    function debounce(fn, delay = 250) {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn(...args), delay);
-        };
-    }
-
-    const debouncedSearch = debounce(performSearch, 200);
-
-    // Event Listeners
-    searchInput.addEventListener('input', debouncedSearch);
-    typeFilter.addEventListener('change', performSearch);
-    genreFilter.addEventListener('change', performSearch);
-
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') addToHistory(searchInput.value);
-    });
-
-    clearBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        typeFilter.value = '';
-        genreFilter.value = '';
-        showDefaultState();
-    });
-
-    window.resetSearch = function() {
-        searchInput.value = '';
-        typeFilter.value = '';
-        genreFilter.value = '';
-        showDefaultState();
-    };
-
-    async function init() {
-        await loadData();
-        renderHistory();
-    }
-
+async function load() {
+  $('#top').innerHTML = '<div class="card sk"><div class="cover"></div><i></i></div>'.repeat(12);
+  show('home');
+  try {
+    const r = await fetch('/data/data.json');
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    items = Object.entries(d).map(([slug, v]) => prep({ slug, ...v }));
     init();
+  } catch { show('error'); }
+}
+
+/* ---------- Scoring ---------- */
+function scoreItem(it, q, words) {
+  const t = [it._fa, it._en];
+  let s = 0, hit = 0;
+  if (t.includes(q)) s += 300;
+  else if (t.some(x => x.startsWith(q))) s += 180;
+  else if (t.some(x => x.includes(q))) s += 100;
+  for (const w of words) {
+    if (t.some(x => x.includes(w))) { s += 25; hit++; }
+    else if (it._genres.includes(w)) { s += 15; hit++; }
+    else if (it._desc.includes(w)) { s += 3; hit++; }
+    else if (w.length >= 4 && it._words.some(x => lev(w, x) <= (w.length >= 7 ? 2 : 1))) { s += 10; hit++; }
+  }
+  return hit === words.length ? s || 1 : 0;
+}
+
+function suggest(w) {
+  let best = null, bd = 3;
+  for (const it of items) for (const x of it._words) {
+    if (Math.abs(x.length - w.length) > 2) continue;
+    const d = lev(w, x);
+    if (d < bd) { bd = d; best = x; }
+  }
+  return best;
+}
+
+/* ---------- Render ---------- */
+const card = (it, w = []) => `<a class="card fade" href="https://manhwachi.ir/comic/${encodeURIComponent(it.slug)}">
+  <div class="cover"><span class="material-symbols-outlined ph">image</span>
+    <img src="/manhwas/${encodeURIComponent(it.slug)}/${esc(it.cover_image)}" alt="" loading="lazy" decoding="async">
+    ${it._rate ? `<b class="rate">★ ${fa(it._rate)}</b>` : ''}${TL[it._type] ? `<i class="tag">${TL[it._type]}</i>` : ''}
+  </div>
+  <h3>${hl(it.title_fa || it.title_en, w)}</h3>
+  <p>${esc((it.genres || []).slice(0, 3).join('، '))}</p></a>`;
+
+function show(id) {
+  ['home','results','empty','error'].forEach(s => $('#' + s).hidden = s !== id);
+}
+
+function more() {
+  const next = st.list.slice(st.shown, st.shown + PAGE);
+  $('#grid').insertAdjacentHTML('beforeend', next.map(it => card(it, st.words)).join(''));
+  st.shown += next.length;
+}
+
+const io = new IntersectionObserver(e => { if (e[0].isIntersecting && st.shown < st.list.length) more(); }, { rootMargin: '600px' });
+
+function apply() {
+  const words = norm(st.q).split(' ').filter(w => w && !STOP.has(w));
+  const q = words.join(' ');
+  const hasQ = q.length >= 2, active = hasQ || st.type || st.genres.size;
+  st.words = hasQ ? words : [];
+  syncUI();
+
+  if (!active) {
+    show('home');
+    $('#status').textContent = `جستجو بین ${fa(items.length)} عنوان`;
+    document.title = 'جستجوی مانهواچی | ManhwaChi';
+    return;
+  }
+
+  let out = [];
+  for (const it of items) {
+    if (st.type && it._type !== st.type) continue;
+    if (st.genres.size && ![...st.genres].every(g => it._genres.includes(g))) continue;
+    const s = hasQ ? scoreItem(it, q, words) : 1;
+    if (s) out.push([it, s]);
+  }
+  const by = {
+    rel: (a, b) => b[1] - a[1] || b[0]._rate - a[0]._rate,
+    rating: (a, b) => b[0]._rate - a[0]._rate,
+    new: (a, b) => b[0]._date - a[0]._date,
+    az: (a, b) => (a[0].title_fa || '').localeCompare(b[0].title_fa || '', 'fa')
+  };
+  out.sort(by[st.sort] || by.rel);
+  st.list = out.map(x => x[0]); st.shown = 0;
+  $('#grid').innerHTML = '';
+
+  document.title = (hasQ ? `«${st.q.trim()}» · ` : '') + 'جستجوی مانهواچی';
+  $('#status').innerHTML = `${fa(st.list.length)} نتیجه${hasQ ? ` برای «${esc(st.q.trim())}»` : ''}`;
+
+  if (!st.list.length) {
+    const s = hasQ ? suggest(words[words.length - 1]) : null;
+    $('#did-you-mean').innerHTML = s ? `<span class="text-sm text-[var(--muted)]">منظورتان این بود؟</span> <button type="button" class="chip" data-suggest="${esc(s)}">${esc(s)}</button>` : '';
+    show('empty');
+  } else { show('results'); more(); }
+}
+
+function syncUI() {
+  document.querySelectorAll('#types button').forEach(b => b.setAttribute('aria-pressed', b.dataset.type === st.type));
+  document.querySelectorAll('#genres .chip').forEach(b => b.setAttribute('aria-pressed', st.genres.has(b.dataset.g)));
+  $('#reset').hidden = !(st.type || st.genres.size || st.q);
+  const p = new URLSearchParams();
+  if (st.q.trim()) p.set('q', st.q.trim());
+  if (st.type) p.set('type', st.type);
+  if (st.genres.size) p.set('genre', [...st.genres].map(g => gname[g]).join(','));
+  if (st.sort !== 'rel') p.set('sort', st.sort);
+  history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
+}
+
+/* ---------- History ---------- */
+const getH = () => { try { return JSON.parse(localStorage.getItem(HKEY) || '[]'); } catch { return []; } };
+const setH = h => { try { localStorage.setItem(HKEY, JSON.stringify(h)); } catch {} };
+function addH(t) {
+  t = (t || '').trim();
+  if (norm(t).length < 2 || STOP.has(norm(t))) return;
+  setH([t, ...getH().filter(x => x !== t)].slice(0, 8));
+  renderH();
+}
+function renderH() {
+  const h = getH();
+  $('#recent-wrap').hidden = !h.length;
+  $('#recent').innerHTML = h.map(t => `<span class="chip" style="padding:0"><button type="button" data-h="${esc(t)}" class="pl-1 pr-4 py-1.5">${esc(t)}</button><button type="button" data-rm="${esc(t)}" aria-label="حذف" class="px-2 py-1.5 text-[var(--muted)] hover:text-red-400"><span class="material-symbols-outlined" style="font-size:16px">close</span></button></span>`).join('');
+}
+
+/* ---------- Init & events ---------- */
+function init() {
+  const genres = Object.keys(gcount).sort((a, b) => gcount[b] - gcount[a]);
+  $('#genres').innerHTML = genres.map(g => `<button type="button" class="chip" data-g="${esc(g)}" aria-pressed="false">${esc(gname[g])}</button>`).join('');
+  if (items.some(i => i._date)) $('#sort option[value=new]').hidden = false;
+  $('#q').placeholder = `جستجو بین ${fa(items.length)} مانهوا و مانگا...`;
+  $('#top').innerHTML = [...items].sort((a, b) => b._rate - a._rate).slice(0, 12).map(it => card(it)).join('');
+  $('#random').hidden = !items.length;
+  renderH();
+
+  const u = new URLSearchParams(location.search);
+  st.q = u.get('q') || ''; $('#q').value = st.q;
+  st.type = TYPES[norm(u.get('type'))] || '';
+  st.sort = ['rating','new','az'].includes(u.get('sort')) ? u.get('sort') : 'rel'; $('#sort').value = st.sort;
+  (u.get('genre') || '').split(',').map(norm).filter(g => gname[g]).forEach(g => st.genres.add(g));
+  apply();
+}
+
+let timer;
+$('#q').addEventListener('input', e => { st.q = e.target.value; clearTimeout(timer); timer = setTimeout(apply, 120); });
+$('#q').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { addH(st.q); e.target.blur(); }
+  if (e.key === 'Escape') { e.target.value = ''; st.q = ''; apply(); }
+});
+$('#clear').addEventListener('click', () => { $('#q').value = ''; st.q = ''; $('#q').focus(); apply(); });
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $('#q').focus(); }
+});
+
+$('#types').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { st.type = b.dataset.type; apply(); } });
+$('#genres').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const g = b.dataset.g; st.genres.has(g) ? st.genres.delete(g) : st.genres.add(g); apply();
+});
+$('#sort').addEventListener('change', e => { st.sort = e.target.value; apply(); });
+
+function resetAll() { st.q = ''; st.type = ''; st.genres.clear(); st.sort = 'rel'; $('#q').value = ''; $('#sort').value = 'rel'; apply(); }
+$('#reset').addEventListener('click', resetAll);
+$('#empty').addEventListener('click', e => {
+  if (e.target.closest('[data-act=reset]')) resetAll();
+  const s = e.target.closest('[data-suggest]');
+  if (s) { st.q = s.dataset.suggest; $('#q').value = st.q; apply(); }
+});
+$('#recent').addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]'), h = e.target.closest('[data-h]');
+  if (rm) { setH(getH().filter(x => x !== rm.dataset.rm)); renderH(); }
+  else if (h) { st.q = h.dataset.h; $('#q').value = st.q; apply(); }
+});
+$('#clear-history').addEventListener('click', () => { setH([]); renderH(); });
+$('#random').addEventListener('click', () => { const it = items[Math.floor(Math.random() * items.length)]; location.href = `https://manhwachi.ir/comic/${encodeURIComponent(it.slug)}`; });
+$('#grid').addEventListener('click', e => { if (e.target.closest('.card')) addH(st.q); });
+$('#retry').addEventListener('click', load);
+document.addEventListener('error', e => { if (e.target.tagName === 'IMG') e.target.classList.add('broken'); }, true);
+io.observe($('#more'));
+
+load();
 </script>
 </body>
 </html>
