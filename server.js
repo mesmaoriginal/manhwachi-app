@@ -445,6 +445,18 @@ function invalidateAuthCacheForUser(userId) {
   }
 }
 
+// ---------- سیستم امتیازدهی (لاگین + اشتراک سمت سرور اعمال می‌شه) ----------
+// جدول و تابع SQL: فایل ratings.sql (یک‌بار در Supabase > SQL Editor اجرا بشه)
+app.use(
+  "/api/ratings",
+  require("./lib/ratings")({
+    getData,
+    getAuthContext,
+    supabaseUrl: SUPABASE_URL,
+    adminHeaders: supabaseAdminHeaders,
+  })
+);
+
 // ---------- بخش ۳٫۵: ثبت‌نام با OTP پیامکی (شماره موبایل) ----------
 // این بخش یک روش ثبت‌نام دوم، موازی با ثبت‌نام ایمیلی بالا، اضافه می‌کنه.
 // نکته‌ی طراحی مهم: به‌جای فعال کردن Phone Auth خودِ Supabase (که نیازمند
