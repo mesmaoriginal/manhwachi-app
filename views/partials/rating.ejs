@@ -1,0 +1,390 @@
+<%# views/partials/rating.ejs — بخش امتیازدهی. در manga.ejs درست قبل از «Comments Section» include بشه. %>
+<style>
+  /* ───────── سیستم امتیازدهی ───────── */
+  #ratingSection { --rt-gold: #FBBF24; --rt-gold-deep: #F59E0B; --rt-red: #DC2626; --rt-track: #262626; --rt-off: #2c2c2c; }
+  .rt-card {
+    position: relative; overflow: hidden; isolation: isolate;
+    background: linear-gradient(160deg, #1b1b1b 0%, #141414 55%, #1a1212 100%);
+    border: 1px solid rgba(255,255,255,.07); border-radius: 28px;
+    box-shadow: 0 24px 60px -24px rgba(0,0,0,.8);
+  }
+  .rt-card::before { /* درخشش قرمزِ ملایم گوشه */
+    content: ""; position: absolute; z-index: -1; inset-block-start: -90px; inset-inline-end: -90px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(220,38,38,.28), transparent);
+  }
+  .rt-top { display: grid; grid-template-columns: auto 1fr; gap: 2.25rem; padding: 1.75rem 1.75rem 1.5rem; align-items: center; }
+  .rt-score { text-align: center; min-width: 138px; }
+  .rt-avg { font-size: 4rem; line-height: 1; font-weight: 800; color: #fff; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .rt-avg small { font-size: 1.1rem; font-weight: 600; color: var(--color-muted, #8C8C8C); margin-inline-start: .25rem; letter-spacing: 0; }
+  .rt-count { margin-top: .55rem; font-size: .8rem; color: #8C8C8C; }
+
+  /* ردیف ستاره‌ی نمایشی با پرشدگی کسری (راست‌به‌چپ) */
+  .rt-stars-static { position: relative; display: inline-flex; margin-top: .75rem; direction: rtl; }
+  .rt-stars-static .rt-row { display: flex; gap: 3px; }
+  .rt-stars-static .rt-row svg { width: 22px; height: 22px; display: block; }
+  .rt-stars-static .rt-off { color: var(--rt-off); }
+  .rt-stars-static .rt-on {
+    position: absolute; inset: 0; color: var(--rt-gold);
+    filter: drop-shadow(0 0 6px rgba(251,191,36,.45));
+    clip-path: inset(0 0 0 100%); transition: clip-path 1s cubic-bezier(.22,1,.36,1);
+  }
+  .rt-stars-static.is-in .rt-on { clip-path: inset(0 0 0 calc(100% - var(--rt-fill, 0%))); }
+
+  /* توزیع امتیازها */
+  .rt-dist { display: flex; flex-direction: column; gap: .55rem; }
+  .rt-dist-row { display: grid; grid-template-columns: 2.1rem 1fr 2.6rem; align-items: center; gap: .75rem; font-size: .78rem; color: #a3a3a3; }
+  .rt-dist-label { display: flex; align-items: center; gap: .25rem; color: #d4d4d4; font-weight: 600; }
+  .rt-dist-label svg { width: 12px; height: 12px; color: var(--rt-gold); }
+  .rt-bar { height: 8px; border-radius: 99px; background: var(--rt-track); overflow: hidden; }
+  .rt-bar > i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(270deg, var(--rt-red), #f97316 55%, var(--rt-gold)); transition: width .9s cubic-bezier(.22,1,.36,1); }
+  .rt-dist-pct { text-align: start; font-variant-numeric: tabular-nums; }
+
+  /* ناحیه‌ی امتیاز دادن کاربر */
+  .rt-action { border-top: 1px solid rgba(255,255,255,.07); padding: 1.5rem 1.75rem 1.75rem; background: rgba(0,0,0,.28); }
+  .rt-action-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .rt-action-title { font-weight: 700; color: #fff; font-size: 1.05rem; }
+  .rt-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .75rem; border-radius: 99px; font-size: .72rem; font-weight: 700; background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.28); }
+  .rt-chip[hidden] { display: none; } /* کلاس hidden تیلویند با display:inline-flex بالا کورس می‌خورد؛ پس از attribute استفاده می‌کنیم */
+  .rt-chip .material-symbols-outlined { font-size: 15px; }
+
+  /* قلب ماجرا: ریل ستاره‌ی تعاملی */
+  .rt-rail { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+  .rt-input { display: inline-flex; gap: 6px; direction: rtl; }
+  .rt-star {
+    appearance: none; border: 0; background: none; padding: 4px; border-radius: 14px; cursor: pointer;
+    color: var(--rt-off); transition: color .18s, transform .18s cubic-bezier(.34,1.56,.64,1), filter .18s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rt-star svg { width: 42px; height: 42px; display: block; }
+  .rt-star.is-lit { color: var(--rt-gold); filter: drop-shadow(0 0 10px rgba(251,191,36,.5)); }
+  .rt-star:focus-visible { transform: scale(1.18) rotate(-6deg); }
+  @media (hover: hover) { .rt-star:hover { transform: scale(1.18) rotate(-6deg); } } /* روی موبایل hover «می‌چسبه» */
+  .rt-star:focus-visible { outline: 2px solid var(--rt-red); outline-offset: 2px; }
+  .rt-star.is-pop { animation: rtPop .45s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes rtPop { 0% { transform: scale(1); } 40% { transform: scale(1.4) rotate(-12deg); } 100% { transform: scale(1); } }
+  .rt-input[aria-disabled="true"] .rt-star { cursor: not-allowed; opacity: .45; }
+  .rt-input[aria-disabled="true"] .rt-star:hover { transform: none; }
+
+  .rt-label { min-width: 7rem; font-size: 1.15rem; font-weight: 800; color: #fff; transition: color .2s; }
+  .rt-label.is-hint { color: #737373; font-weight: 500; font-size: .9rem; }
+
+  .rt-note { margin-top: 1rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; font-size: .85rem; color: #a3a3a3; min-height: 1.5rem; }
+  .rt-note.is-ok { color: #4ade80; }
+  .rt-note.is-err { color: #f87171; }
+  .rt-link { background: none; border: 0; padding: 0; color: #8C8C8C; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font: inherit; }
+  .rt-link:hover { color: #f87171; }
+
+  /* پیام قفل (مهمان / بدون اشتراک) */
+  .rt-gate { margin-top: 1.1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1rem 1.15rem; border-radius: 18px; background: rgba(220,38,38,.07); border: 1px dashed rgba(220,38,38,.4); }
+  .rt-gate.is-vip { background: rgba(245,158,11,.07); border-color: rgba(245,158,11,.4); }
+  .rt-gate-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; background: rgba(220,38,38,.15); color: #f87171; }
+  .rt-gate.is-vip .rt-gate-ico { background: rgba(245,158,11,.15); color: #fbbf24; }
+  .rt-gate p { flex: 1 1 200px; margin: 0; font-size: .88rem; line-height: 1.8; color: #d4d4d4; }
+  .rt-btn { border: 0; cursor: pointer; font: inherit; font-weight: 700; font-size: .88rem; padding: .65rem 1.4rem; border-radius: 14px; color: #fff; background: var(--rt-red); box-shadow: 0 8px 22px -8px rgba(220,38,38,.7); transition: transform .15s, filter .15s; text-decoration: none; display: inline-block; }
+  .rt-btn:hover { filter: brightness(1.1); } .rt-btn:active { transform: scale(.96); }
+  .rt-btn.is-gold { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 8px 22px -8px rgba(245,158,11,.7); }
+
+  /* اسکلت بارگذاری */
+  .rt-skel { background: linear-gradient(90deg, #202020 25%, #2a2a2a 50%, #202020 75%); background-size: 200% 100%; animation: rtShimmer 1.2s infinite; border-radius: 10px; }
+  @keyframes rtShimmer { to { background-position: -200% 0; } }
+
+  @media (max-width: 640px) {
+    .rt-top { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.4rem 1.2rem 1.2rem; }
+    .rt-score { display: flex; align-items: center; justify-content: center; gap: 1.25rem; text-align: start; }
+    .rt-stars-static { margin-top: .4rem; }
+    .rt-action { padding: 1.25rem 1.2rem 1.4rem; }
+    .rt-star svg { width: 38px; height: 38px; }
+    .rt-avg { font-size: 3.2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rt-bar > i, .rt-stars-static .rt-on { transition: none; }
+    .rt-star, .rt-star.is-pop, .rt-skel { animation: none; transition: none; }
+  }
+</style>
+
+<section id="ratingSection" class="mt-12 px-5 lg:max-w-4xl lg:mx-auto lg:px-8" aria-labelledby="ratingTitle">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="rt-star-shape" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.4l2.95 6.1 6.7.93-4.87 4.7 1.18 6.67L12 17.6l-5.96 3.2 1.18-6.67-4.87-4.7 6.7-.93L12 2.4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <div class="flex items-center justify-between mb-6">
+    <h3 id="ratingTitle" class="text-2xl font-bold">امتیاز کاربران</h3>
+    <span id="ratingVipChip" class="rt-chip" hidden><span class="material-symbols-outlined">workspace_premium</span>اثر اشتراکی</span>
+  </div>
+
+  <div class="rt-card">
+    <!-- بالا: میانگین + توزیع -->
+    <div class="rt-top" id="rtTop">
+      <div class="rt-score">
+        <div class="rt-avg" id="rtAvg"><span class="rt-skel" style="display:inline-block;width:92px;height:56px"></span></div>
+        <div>
+          <div class="rt-stars-static" id="rtStatic" role="img" aria-label="میانگین امتیاز">
+            <div class="rt-row rt-off"><% for (var i=0;i<5;i++){ %><svg aria-hidden="true"><use href="#rt-star-shape"/></svg><% } %></div>
+            <div class="rt-row rt-on"><% for (var j=0;j<5;j++){ %><svg aria-hidden="true"><use href="#rt-star-shape"/></svg><% } %></div>
+          </div>
+          <div class="rt-count" id="rtCount">&nbsp;</div>
+        </div>
+      </div>
+      <div class="rt-dist" id="rtDist" aria-label="توزیع امتیازها"></div>
+    </div>
+
+    <!-- پایین: امتیاز دادن -->
+    <div class="rt-action">
+      <div class="rt-action-head">
+        <span class="rt-action-title" id="rtActionTitle">نظرت درباره‌ی این اثر چیه؟</span>
+      </div>
+
+      <div class="rt-rail">
+        <div class="rt-input" id="rtInput" role="radiogroup" aria-label="امتیاز شما" aria-disabled="true">
+          <% var faN=['۱','۲','۳','۴','۵']; for (var k=1;k<=5;k++){ %>
+            <button type="button" class="rt-star" role="radio" aria-checked="false" aria-label="<%= faN[k-1] %> ستاره" data-v="<%= k %>" tabindex="-1">
+              <svg aria-hidden="true"><use href="#rt-star-shape"/></svg>
+            </button>
+          <% } %>
+        </div>
+        <div class="rt-label is-hint" id="rtLabel">ستاره‌ها رو لمس کن</div>
+      </div>
+
+      <div class="rt-note" id="rtNote" aria-live="polite"></div>
+      <div id="rtGate"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  const SLUG = <%- JSON.stringify(slug).replace(/</g, '\\u003c') %>;
+  const API = '/api/ratings';
+  const VIP_PAGE = '/vip.html';
+  const SYNC_HERO_SCORE = true; // اگه مقدار score در data.json مقیاس ۱۰ تایی داره، این رو false کن
+  const LABELS = ['ضعیف', 'معمولی', 'خوب', 'عالی', 'شاهکار'];
+  const fa = (n, d = 0) => Number(n).toLocaleString('fa-IR', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    avg: $('rtAvg'), stat: $('rtStatic'), count: $('rtCount'), dist: $('rtDist'),
+    input: $('rtInput'), label: $('rtLabel'), note: $('rtNote'), gate: $('rtGate'),
+    title: $('rtActionTitle'), chip: $('ratingVipChip'), section: $('ratingSection'),
+  };
+  const stars = Array.from(el.input.querySelectorAll('.rt-star'));
+
+  const state = { summary: null, my: null, canRate: false, reason: 'AUTH_REQUIRED', requiresVip: false, busy: false };
+  let revealed = false;
+
+  // ───── ابزارهای شبکه / نشست ─────
+  async function token() {
+    try {
+      const c = window.supabaseClient;
+      if (!c) return null;
+      const { data } = await c.auth.getSession();
+      return data?.session?.access_token || null;
+    } catch { return null; }
+  }
+  async function api(path, opts = {}) {
+    const t = await token();
+    const headers = { 'Content-Type': 'application/json', ...(t ? { Authorization: 'Bearer ' + t } : {}) };
+    const res = await fetch(path, { ...opts, headers });
+    let body = null; try { body = await res.json(); } catch {}
+    if (!res.ok) { const e = new Error(body?.error || 'خطا در ارتباط با سرور'); e.code = body?.code; e.status = res.status; throw e; }
+    return body;
+  }
+
+  // ───── رندر ─────
+  function renderSummary() {
+    const s = state.summary; if (!s) return;
+    const has = s.count > 0;
+    el.avg.innerHTML = has ? `${fa(s.average, 1)}<small>از ۵</small>` : `<span style="font-size:1.6rem;color:#737373;font-weight:600">—</span>`;
+    el.count.textContent = has ? `از ${fa(s.count)} رأی` : 'هنوز کسی امتیاز نداده';
+    el.stat.setAttribute('aria-label', has ? `میانگین امتیاز ${fa(s.average, 1)} از ۵` : 'بدون امتیاز');
+    el.stat.style.setProperty('--rt-fill', (has ? (s.average / 5) * 100 : 0) + '%');
+
+    el.dist.innerHTML = [5, 4, 3, 2, 1].map((n) => {
+      const c = s.distribution[n - 1] || 0;
+      const pct = s.count ? Math.round((c / s.count) * 100) : 0;
+      return `<div class="rt-dist-row">
+        <span class="rt-dist-label">${fa(n)}<svg aria-hidden="true"><use href="#rt-star-shape"/></svg></span>
+        <div class="rt-bar" role="presentation"><i data-w="${pct}" style="width:${revealed ? pct : 0}%"></i></div>
+        <span class="rt-dist-pct">${fa(pct)}٪</span>
+      </div>`;
+    }).join('');
+
+    if (SYNC_HERO_SCORE && has) { const h = document.getElementById('dynamic-score'); if (h) h.textContent = fa(s.average, 1); }
+    if (revealed) { el.stat.classList.add('is-in'); }
+  }
+
+  function paintStars(n) {
+    stars.forEach((st, i) => {
+      const on = i < n;
+      st.classList.toggle('is-lit', on);
+    });
+  }
+  function setLabel(n, hint) {
+    if (n) { el.label.textContent = LABELS[n - 1]; el.label.classList.remove('is-hint'); }
+    else { el.label.textContent = hint; el.label.classList.add('is-hint'); }
+  }
+  function restLabel() {
+    if (state.my) setLabel(state.my);
+    else setLabel(0, state.canRate ? 'ستاره‌ها رو لمس کن' : 'برای امتیاز دادن شرایط زیر لازمه');
+  }
+
+  function setNote(msg, kind) {
+    el.note.className = 'rt-note' + (kind ? ' is-' + kind : '');
+    el.note.textContent = '';
+    if (msg) el.note.append(document.createTextNode(msg));
+  }
+
+  function renderUser(flash) {
+    const { canRate, reason, my, requiresVip } = state;
+    el.chip.hidden = !requiresVip;
+    el.input.setAttribute('aria-disabled', canRate ? 'false' : 'true');
+    stars.forEach((s, i) => {
+      s.disabled = false; // دکمه‌ها کلیک رو می‌گیرن تا پیام مناسب نشون بدیم
+      s.tabIndex = canRate ? ((my ? my - 1 : 0) === i ? 0 : -1) : -1;
+      s.setAttribute('aria-checked', my === i + 1 ? 'true' : 'false');
+    });
+    paintStars(my || 0);
+    restLabel();
+
+    el.title.textContent = my ? 'امتیاز تو' : 'نظرت درباره‌ی این اثر چیه؟';
+    setNote('');
+    el.gate.innerHTML = '';
+
+    if (canRate && my) {
+      setNote(flash ? flash + ' ' : 'امتیازت ثبت شده؛ می‌تونی عوضش کنی یا ', flash ? 'ok' : '');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'rt-link'; b.textContent = 'حذفش کنی';
+      b.addEventListener('click', removeRating);
+      el.note.append(b);
+    } else if (flash) {
+      setNote(flash, 'ok');
+    }
+
+    if (reason === 'UNAVAILABLE') {
+      setNote('سرویس امتیازدهی موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کن.', 'err');
+    } else if (!canRate && reason === 'AUTH_REQUIRED') {
+      el.gate.innerHTML = `<div class="rt-gate">
+        <div class="rt-gate-ico"><span class="material-symbols-outlined">lock</span></div>
+        <p>برای امتیاز دادن باید وارد حسابت بشی${requiresVip ? ' و اشتراک فعال داشته باشی' : ''}.</p>
+        <button type="button" class="rt-btn" id="rtLogin">ورود / ثبت‌نام</button></div>`;
+      $('rtLogin').addEventListener('click', openLogin);
+    } else if (!canRate && reason === 'VIP_REQUIRED') {
+      el.gate.innerHTML = `<div class="rt-gate is-vip">
+        <div class="rt-gate-ico"><span class="material-symbols-outlined">workspace_premium</span></div>
+        <p>این اثر اشتراکیه و فقط کاربرای دارای اشتراک فعال می‌تونن بهش امتیاز بدن.</p>
+        <a class="rt-btn is-gold" href="${VIP_PAGE}">خرید اشتراک</a></div>`;
+    }
+  }
+
+  function openLogin() {
+    if (typeof window.openAuthModal === 'function') window.openAuthModal('login');
+    else location.href = '/?action=login';
+  }
+
+  // ───── بارگذاری ─────
+  let loading = null;
+  async function load() {
+    if (loading) return loading;
+    loading = (async () => {
+      try {
+        const d = await api(`${API}/${encodeURIComponent(SLUG)}`);
+        state.summary = { average: d.average, count: d.count, distribution: d.distribution };
+        state.my = d.myRating; state.canRate = d.canRate; state.reason = d.reason; state.requiresVip = d.requiresVip;
+        renderSummary(); renderUser();
+      } catch (e) {
+        el.avg.innerHTML = '<span style="font-size:1.1rem;color:#737373">—</span>';
+        el.count.textContent = '';
+        setNote('بارگذاری امتیازها ناموفق بود. صفحه رو دوباره باز کن.', 'err');
+      } finally { loading = null; }
+    })();
+    return loading;
+  }
+
+  // ───── ثبت / حذف ─────
+  async function submit(n) {
+    if (state.busy) return;
+    if (!state.canRate) {
+      if (state.reason === 'AUTH_REQUIRED') openLogin();
+      else setNote('برای امتیاز دادن به این اثر اشتراک لازم داری.', 'err');
+      return;
+    }
+    state.busy = true;
+    const prev = state.my;
+    state.my = n; paintStars(n); setLabel(n);
+    stars[n - 1].classList.remove('is-pop'); void stars[n - 1].offsetWidth; stars[n - 1].classList.add('is-pop');
+    setNote('در حال ثبت…');
+    try {
+      const d = await api(API, { method: 'POST', body: JSON.stringify({ slug: SLUG, rating: n }) });
+      if (d.stale) await load(); // امتیاز ثبت شد ولی خلاصه نیومد؛ دوباره می‌خونیم
+      else state.summary = { average: d.average, count: d.count, distribution: d.distribution };
+      state.my = d.myRating; renderSummary();
+      renderUser(prev ? 'امتیازت به‌روز شد. ممنون!' : 'امتیازت ثبت شد. ممنون!');
+    } catch (e) {
+      state.my = prev; paintStars(prev || 0); restLabel();
+      if (e.code === 'AUTH_REQUIRED') { await load(); openLogin(); }
+      else if (e.code === 'VIP_REQUIRED') { await load(); }
+      else setNote(e.message, 'err');
+    } finally { state.busy = false; }
+  }
+
+  async function removeRating() {
+    if (state.busy) return;
+    state.busy = true; setNote('در حال حذف…');
+    try {
+      const d = await api(`${API}/${encodeURIComponent(SLUG)}`, { method: 'DELETE' });
+      if (d.stale) await load();
+      else state.summary = { average: d.average, count: d.count, distribution: d.distribution };
+      state.my = null; renderSummary(); renderUser('امتیازت حذف شد.');
+    } catch (e) { setNote(e.message, 'err'); }
+    finally { state.busy = false; }
+  }
+
+  // ───── تعامل با ستاره‌ها (ماوس، لمس، کیبورد) ─────
+  stars.forEach((st, i) => {
+    const n = i + 1;
+    st.addEventListener('mouseenter', () => { if (state.canRate) { paintStars(n); setLabel(n); } });
+    st.addEventListener('focus', () => { if (state.canRate) { paintStars(n); setLabel(n); } });
+    st.addEventListener('click', () => submit(n));
+    st.addEventListener('keydown', (e) => {
+      if (!state.canRate) return;
+      // چیدمان راست‌به‌چپ است: فلش چپ = ستاره‌ی بالاتر
+      let next = null;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = Math.min(5, n + 1);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = Math.max(1, n - 1);
+      if (next) { e.preventDefault(); stars.forEach((s) => (s.tabIndex = -1)); stars[next - 1].tabIndex = 0; stars[next - 1].focus(); }
+    });
+  });
+  el.input.addEventListener('mouseleave', () => { paintStars(state.my || 0); restLabel(); });
+  el.input.addEventListener('focusout', (e) => { if (!el.input.contains(e.relatedTarget)) { paintStars(state.my || 0); restLabel(); } });
+
+  // ───── انیمیشن ورود (یک‌بار، وقتی بخش دیده شد) ─────
+  function reveal() {
+    if (revealed) return; revealed = true;
+    el.stat.classList.add('is-in');
+    el.dist.querySelectorAll('.rt-bar > i').forEach((b) => (b.style.width = b.dataset.w + '%'));
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { reveal(); io.disconnect(); } }, { threshold: 0.25 });
+    io.observe(el.section);
+  } else { reveal(); }
+
+  // ───── شروع + هماهنگی با ورود/خروج کاربر ─────
+  let t = null;
+  const loadSoon = () => { clearTimeout(t); t = setTimeout(load, 150); };
+  // supabase-js روی هر بازگشت به تب / رفرش توکن هم event می‌فرسته؛ فقط وقتی «کاربر» عوض شد دوباره می‌خونیم.
+  let lastUid;
+  async function start() {
+    try { const { data } = await window.supabaseClient.auth.getSession(); lastUid = data?.session?.user?.id || null; } catch { lastUid = null; }
+    load();
+    try {
+      window.supabaseClient?.auth.onAuthStateChange((_ev, session) => {
+        const uid = session?.user?.id || null;
+        if (uid !== lastUid) { lastUid = uid; loadSoon(); }
+      });
+    } catch {}
+  }
+  // اسکریپت اصلی صفحه (Supabase و openAuthModal) بعد از این بخش تعریف می‌شه؛ پس تا آماده شدن DOM صبر می‌کنیم.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
