@@ -457,6 +457,28 @@ app.use(
   })
 );
 
+// کپی میانگین/تعداد رأی (از ۵) داخل data.json؛ نیاز به ratings_sync.sql و متغیر DATA_JSON_PATH
+if (process.env.DATA_JSON_PATH) {
+  require("./lib/ratingsSync").start({ supabaseUrl: SUPABASE_URL, adminHeaders: supabaseAdminHeaders });
+} else {
+  console.warn("[ratingsSync] DATA_JSON_PATH تنظیم نشده؛ همگام‌سازی امتیاز با data.json غیرفعال است");
+}
+
+// کپی روزانه‌ی میانگین/تعداد رأی داخل data.json (مقیاس ۵). منبع اصلی Supabase می‌مونه.
+// ⚠️ مسیر data.json و نام تابع reload در lib/dataStore.js رو با پروژه‌ی خودت چک کن.
+const ratingsSync = require("./lib/ratingsSync")({
+  dataFilePath: process.env.DATA_JSON_PATH || path.join(__dirname, "data", "data.json"),
+  supabaseUrl: SUPABASE_URL,
+  adminHeaders: supabaseAdminHeaders,
+  reload: () => {
+    const ds = require("./lib/dataStore");
+    const fn = ds.reloadData || ds.reload || ds.refresh || ds.invalidate;
+    if (typeof fn === "function") fn();
+    else console.warn("[ratingsSync] تابع reload در dataStore پیدا نشد؛ کش تا ری‌استارت بعدی قدیمی می‌مونه");
+  },
+});
+ratingsSync.start();
+
 // ---------- بخش ۳٫۵: ثبت‌نام با OTP پیامکی (شماره موبایل) ----------
 // این بخش یک روش ثبت‌نام دوم، موازی با ثبت‌نام ایمیلی بالا، اضافه می‌کنه.
 // نکته‌ی طراحی مهم: به‌جای فعال کردن Phone Auth خودِ Supabase (که نیازمند
