@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>پنل مدیریت تیم | مانهواچی</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<style>
+:root{--bg:#0b0b12;--card:#15151f;--line:#ffffff14;--tx:#f3f3f7;--mut:#9a9ab0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Vazirmatn',system-ui,sans-serif;background:radial-gradient(900px 500px at 85% -10%,#f59e0b1f,transparent),radial-gradient(800px 500px at 0% 0%,#7c3aed26,transparent),var(--bg);color:var(--tx);min-height:100vh}
+.wrap{max-width:1100px;margin:auto;padding:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.top h1{font-size:20px;font-weight:800}.top a{color:var(--mut);font-size:13px;text-decoration:none;margin-left:12px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--card);padding:5px;border-radius:14px;border:1px solid var(--line);width:fit-content;max-width:100%;overflow:auto}
+.tabs button{background:none;border:0;color:var(--mut);padding:9px 18px;border-radius:10px;font:inherit;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{--c:#fff;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 20%,var(--card)),var(--card));border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:16px;padding:14px;text-align:right;color:var(--tx);font:inherit}
+button.stat{cursor:pointer}.stat.on{box-shadow:0 0 0 2px var(--c)}
+.stat b{display:block;font-size:24px;color:var(--c)}.stat span{font-size:12px;color:var(--mut)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.task{--c:#22d3ee;border-right:4px solid var(--c)}
+.task.late{box-shadow:0 0 0 1px #ef444488}
+.lbl{background:var(--c);color:#000;font-weight:800;border-radius:8px;padding:2px 10px;font-size:13px}
+.task h3{font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.task p{color:var(--mut);font-size:12px;line-height:1.8;white-space:pre-wrap;margin-top:6px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.tok{background:#f59e0b22;color:#fbbf24;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700}
+.st{border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;background:#ffffff14;color:#ccc}
+.st.claimed{background:#3b82f622;color:#60a5fa}.st.submitted{background:#a855f722;color:#c084fc}.st.approved{background:#22c55e22;color:#4ade80}.st.draft{background:#f59e0b22;color:#fbbf24}.st.late{background:#ef444433;color:#fca5a5}
+button.b,label.b{background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;padding:7px 14px;border-radius:10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:inline-block}
+.b.g{background:#ffffff14}.b.ok{background:linear-gradient(135deg,#16a34a,#22c55e)}.b.no{background:linear-gradient(135deg,#dc2626,#f97316)}.b:disabled{opacity:.5;cursor:wait}
+input,select,textarea{width:100%;background:#0d0d15;border:1px solid var(--line);color:var(--tx);padding:9px;border-radius:10px;font:inherit;font-size:13px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.full{grid-column:1/-1}
+.chk{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}.chk label{display:flex;gap:5px;align-items:center}.chk input{width:auto}
+.empty{text-align:center;color:var(--mut);padding:24px;font-size:14px}
+h2{font-size:15px;margin:16px 0 10px;display:flex;gap:8px;align-items:center}
+.note{background:#ef444422;color:#fca5a5;border-radius:10px;padding:8px 12px;font-size:12px;margin-top:8px}
+.bar{height:6px;background:#ffffff14;border-radius:9px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f59e0b,#ef4444)}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:right}th{color:var(--mut);font-weight:500}
+.pos{color:#4ade80;font-weight:700}.neg{color:#f87171;font-weight:700}
+.hint{font-size:11px;color:var(--mut);margin-top:4px}
+#pv{position:fixed;inset:0;background:#000c;z-index:20;display:flex;align-items:center;justify-content:center;padding:12px}#pv[hidden]{display:none}
+.pvc{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(900px,100%);height:100%;max-height:96vh;display:flex;flex-direction:column}
+.pvh,.pvf{padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pvh{justify-content:space-between;border-bottom:1px solid var(--line)}.pvf{border-top:1px solid var(--line)}.pvf:empty{display:none}
+#pvb{flex:1;min-height:0;overflow:auto;padding:12px}#pvb iframe{width:100%;height:calc(96vh - 140px);border:0;border-radius:10px;background:#fff}
+.pvi{width:min(100%,720px);min-height:240px;margin:0 auto;background:#0d0d15;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:center}.pvi img{width:100%;display:block}
+#tkm{position:fixed;inset:0;background:#000c;z-index:30;display:flex;align-items:center;justify-content:center;padding:12px}#tkm[hidden]{display:none}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;border:1px solid var(--line);padding:10px 18px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:9}#toast.s{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1><i class="fa-solid fa-sliders" style="color:#f59e0b"></i> پنل مدیریت تیم</h1><div><a href="team.html">نمای کارمندها</a><a href="/">سایت</a><button class="b g" id="reload"><i class="fa-solid fa-rotate"></i> به‌روزرسانی</button></div></div>
+  <div id="msg" class="empty" hidden></div>
+  <div id="app" hidden><div class="tabs" id="tabs"></div><div id="view"></div></div>
+</div>
+<div id="pv" hidden><div class="pvc"><div class="pvh"><b id="pvt"></b><button class="b g" id="pvx">✕ بستن</button></div><div id="pvb"></div><div class="pvf" id="pvf"></div></div></div>
+<div id="tkm" hidden><div class="pvc" style="height:auto;max-width:520px"><div class="pvh"><b id="tkt">🎫 ارسال تیکت</b><button class="b g" id="tkx">✕</button></div><div style="padding:14px;display:grid;gap:10px">
+<select id="tkl"><option value="warning">⚠️ هشدار (قرمز)</option><option value="info">ℹ️ پیام (آبی)</option><option value="praise">⭐ تشویق (سبز)</option></select>
+<textarea id="tkmsg" rows="4" placeholder="متن تیکت — کارمند این را خیلی واضح بالای صفحه‌اش می‌بیند تا «متوجه شدم» را بزند"></textarea><button class="b" id="tks">ارسال تیکت</button></div></div></div>
+<div id="toast"></div>
+<script>
+const R={typist:{n:'تایپیست معمولی',i:'fa-keyboard',c:'#22d3ee'},font:{n:'تغییر دهنده فونت',i:'fa-font',c:'#a78bfa'},translator:{n:'مترجم',i:'fa-language',c:'#34d399'},cleaner:{n:'کلینر',i:'fa-broom',c:'#fb923c'}};
+const ST={draft:'پیش‌نویس (فایل نیاز دارد)',open:'آزاد',claimed:'در حال انجام',submitted:'منتظر تایید',approved:'تایید شده'};
+const MAXMB=100,LATE_H=72;
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString('fa-IR');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token,O,tab='dash',dRole='',filt={role:'',status:'',q:''},editId=null,ledUid='';
+
+function toast(t){const e=$('#toast');e.textContent=t;e.className='s';clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',3000)}
+async function api(m,p,b){
+  const r=await fetch('/api/team'+p,{method:m,headers:{Authorization:'Bearer '+token,...(b?{'Content-Type':'application/json'}:{})},body:b?JSON.stringify(b):undefined});
+  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'خطا در ارتباط با سرور');return d}
+function sendZip(p,f,bar){return new Promise((ok,no)=>{
+  if(!/\.zip$/i.test(f.name))return no(new Error('فقط فایل zip قابل قبوله.'));
+  if(f.size>MAXMB*1048576)return no(new Error(`حجم فایل بیشتر از ${MAXMB} مگابایته.`));
+  const x=new XMLHttpRequest();x.open('PUT','/api/team'+p);x.setRequestHeader('Authorization','Bearer '+token);x.setRequestHeader('Content-Type','application/zip');
+  x.upload.onprogress=e=>{if(bar&&e.lengthComputable)bar.style.width=(e.loaded/e.total*100)+'%'};
+  x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(new Error(d.error||'آپلود ناموفق بود'))};
+  x.onerror=()=>no(new Error('قطع شدن ارتباط هنگام آپلود'));x.send(f)})}
+async function dl(id,kind,name){try{
+  const r=await fetch(`/api/team/admin/tasks/${id}/download?kind=${kind}`,{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'دانلود ناموفق بود');
+  const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}catch(e){toast(e.message)}}
+const act=async(b,fn)=>{b.disabled=true;try{await fn()}catch(e){toast(e.message)}finally{b.disabled=false}};
+const ago=iso=>{if(!iso)return'';const m=(Date.now()-new Date(iso))/6e4;return m<60?fa(Math.max(1,Math.round(m)))+' دقیقه':m<2880?fa(Math.round(m/60))+' ساعت':fa(Math.round(m/1440))+' روز'};
+const late=t=>t.status==='claimed'&&t.claimed_at&&(Date.now()-new Date(t.claimed_at))/36e5>LATE_H;
+
+(async()=>{
+  for(let i=0;i<50&&!window.supabaseClient;i++)await new Promise(r=>setTimeout(r,100));
+  const {data}=await(window.supabaseClient?.auth.getSession()||{data:{}});
+  if(!data.session){location.href='/?action=login';return}
+  token=data.session.access_token;
+  try{const me=await api('GET','/me');if(!me.isAdmin){$('#msg').hidden=false;$('#msg').textContent='این صفحه فقط برای ادمین است.';return}}catch(e){$('#msg').hidden=false;$('#msg').textContent=e.message;return}
+  $('#app').hidden=false;$('#reload').onclick=load;await load();setInterval(()=>{if(tab==='dash')load(true)},60000);
+})();
+async function load(soft){try{O=await api('GET','/admin/overview');draw()}catch(e){if(!soft)toast(e.message)}}
+function draw(){
+  const T=[['dash','داشبورد و کارهای در جریان'],['chap','چپترها (خودکار)'],['tasks','مدیریت کارها'],['manhwa','مانهواها'],['members','اعضا'],['fin','مالی و توکن‌ها']];
+  $('#tabs').innerHTML=T.map(([k,n])=>`<button class="${tab===k?'on':''}" data-t="${k}">${n}</button>`).join('');
+  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw()});
+  ({dash:vDash,chap:vChap,tasks:vTasks,manhwa:vManhwa,members:vMembers,fin:vFin})[tab]();
+}
+
+/* ---------- کارت کار (مشترک) ---------- */
+function tcard(t){
+  const r=R[t.role],rule=O.rules[t.role],L=late(t),a=[];
+  if(['draft','open','claimed'].includes(t.status))a.push(`<button class="b g" data-edit="${t.id}"><i class="fa-solid fa-pen"></i> ویرایش</button>`);
+  if(rule.source&&t.status!=='approved')a.push(`<label class="b g"><i class="fa-solid fa-file-zipper"></i> ${t.has_source?'جایگزینی فایل':'آپلود فایل'}<input type="file" accept=".zip" hidden data-src="${t.id}"></label>`);
+  if(t.has_result)a.push(`<button class="b" data-pv="${t.id}" data-k="result"><i class="fa-solid fa-eye"></i> ${t.status==='submitted'?'بررسی نتیجه':'مشاهده نتیجه'}</button>`);
+  if(t.assignee)a.push(`<button class="b g" data-tk="${t.id}"><i class="fa-solid fa-ticket"></i> تیکت</button>`);
+  if(t.has_source)a.push(`<button class="b g" data-pv="${t.id}" data-k="source"><i class="fa-solid fa-eye"></i> مشاهده ورودی</button>`);
+  if(t.has_extra)a.push(`<button class="b g" data-pv="${t.id}" data-k="extra"><i class="fa-solid fa-eye"></i> مشاهده ترجمه</button>`);
+  if(t.has_source)a.push(`<button class="b g" data-dl="${t.id}" data-k="source" data-n="${esc(t.label)}.zip"><i class="fa-solid fa-download"></i> فایل ورودی</button>`);
+  if(t.has_result)a.push(`<button class="b g" data-dl="${t.id}" data-k="result" data-n="${esc(t.label)}-result.${t.role==='translator'?'docx':'zip'}"><i class="fa-solid fa-download"></i> ${t.role==='translator'?'فایل Word':'نتیجه'}</button>`);
+  if(t.has_extra)a.push(`<button class="b g" data-dl="${t.id}" data-k="extra" data-n="${esc(t.label)}.docx"><i class="fa-solid fa-file-word"></i> ترجمه (Word)</button>`);
+  if(t.status==='submitted')a.push(`<button class="b ok" data-ap="${t.id}">تایید و پرداخت ${fa(t.reward_tokens)} توکن</button><button class="b no" data-rj="${t.id}">نیاز به اصلاح</button>`);
+  if(['claimed','submitted'].includes(t.status))a.push(`<button class="b no" data-rel="${t.id}"><i class="fa-solid fa-rotate-left"></i> پس گرفتن</button>`);
+  if(['draft','open'].includes(t.status))a.push(`<button class="b no" data-del="${t.id}"><i class="fa-solid fa-trash"></i></button>`);
+  return `<div class="box task ${L?'late':''}" style="--c:${r.c}"><h3><span class="lbl">${esc(t.label)}</span> ${esc(t.title)}<span class="st">${r.n}</span></h3>
+  ${t.description?`<p><b>دستور کار:</b> ${esc(t.description)}</p>`:''}${t.address?`<p><b>آدرس:</b> ${esc(t.address)}</p>`:''}
+  ${t.admin_note&&t.status==='claimed'?`<div class="note">اصلاحیه‌ی ارسالی: ${esc(t.admin_note)}</div>`:''}
+  <div class="row"><span class="st ${t.status}">${ST[t.status]}</span><span class="tok">${fa(t.reward_tokens)} توکن</span>
+  ${t.worker?`<span class="st ${L?'late':'claimed'}"><i class="fa-solid fa-user"></i> ${esc(t.worker)}${t.claimed_at?` · ${ago(t.claimed_at)} است در دست ایشان${L?' ⚠':''}`:''}</span>`:''}${a.join('')}</div></div>`;
+}
+function bind(root){
+  root.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{const t=O.tasks.find(x=>x.id===b.dataset.tk);if(t)openTicket({task_id:t.id,name:t.worker||'کارمند'})});
+  root.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>preview(b.dataset.pv,b.dataset.k));
+  root.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>dl(b.dataset.dl,b.dataset.k,b.dataset.n));
+  root.querySelectorAll('[data-src]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(f)sendZip(`/admin/tasks/${i.dataset.src}/source`,f).then(()=>{toast('فایل آپلود شد ✅');load()}).catch(e=>toast(e.message))});
+  root.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('POST',`/admin/tasks/${b.dataset.ap}/approve`);toast('تایید شد و توکن واریز شد 💰');load()}));
+  root.querySelectorAll('[data-rj]').forEach(b=>b.onclick=()=>{const n=prompt('چه چیزی باید اصلاح بشه؟ (کارمند این متن را می‌بیند)');if(n)act(b,async()=>{await api('POST',`/admin/tasks/${b.dataset.rj}/reject`,{note:n});toast('برای اصلاح برگشت');load()})});
+  root.querySelectorAll('[data-rel]').forEach(b=>b.onclick=()=>{if(confirm('کار از کارمند پس گرفته و دوباره آزاد شود؟ (فایل تحویلی او حذف می‌شود)'))act(b,async()=>{await api('POST',`/admin/tasks/${b.dataset.rel}/release`);toast('کار آزاد شد');load()})});
+  root.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('این کار حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/tasks/'+b.dataset.del);toast('حذف شد');load()})});
+  root.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{editId=b.dataset.edit;tab='tasks';draw();fillForm();scrollTo({top:0,behavior:'smooth'})});
+}
+
+/* ---------- نمایش تصویر / مانهواها ---------- */
+async function showImg(p,title){
+  const seq=++pvSeq;$('#pv').hidden=false;$('#pvt').textContent=title;$('#pvf').innerHTML='';$('#pvb').innerHTML='<div class="empty">در حال بارگذاری…</div>';
+  try{const u=URL.createObjectURL(await blobGet(p));if(seq!==pvSeq){URL.revokeObjectURL(u);return}pvBlobs.push(u);$('#pvb').innerHTML=`<div class="pvi" style="min-height:0"><img src="${u}" alt=""></div>`}
+  catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+function sendImg(p,f,bar){return new Promise((ok,no)=>{
+  if(!/\.(jpe?g|png|webp)$/i.test(f.name))return no(new Error('فقط JPG، PNG یا WebP قابل قبوله.'));
+  if(f.size>30*1048576)return no(new Error('حجم تصویر بیشتر از ۳۰ مگابایته.'));
+  const x=new XMLHttpRequest();x.open('PUT','/api/team'+p);x.setRequestHeader('Authorization','Bearer '+token);x.setRequestHeader('Content-Type',f.type||'application/octet-stream');
+  x.upload.onprogress=e=>{if(bar&&e.lengthComputable)bar.style.width=(e.loaded/e.total*100)+'%'};
+  x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(new Error(d.error||'آپلود ناموفق بود'))};
+  x.onerror=()=>no(new Error('قطع شدن ارتباط هنگام آپلود'));x.send(f)})}
+function vManhwa(){
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">📖 افزودن مانهوا</h2>
+   <div class="hint" style="margin-bottom:10px">تصویر هر مانهوا را یک‌بار آپلود کن؛ زیر بنر همه‌ی چپترهای آن مانهوا همان‌طور که هست (بدون برش) چسبانده می‌شود. عرض تصویر باید دقیقاً هم‌اندازه‌ی عرض بنر PSD باشد. ${O.bannerReady?'':'<b style="color:#fca5a5">⚠ تنظیمات Adobe روی سرور هنوز گذاشته نشده؛ بنر ساخته نمی‌شود.</b>'}</div>
+   <div class="form"><input id="mhn" placeholder="نام مانهوا (فقط برای خودت)"><div><button class="b" id="mhadd">افزودن</button></div></div></div>
+  ${O.manhwas.map(m=>`<div class="box"><div class="row" style="margin:0"><b>${esc(m.name)}</b><span class="st ${m.has_image?'approved':'late'}">${m.has_image?'تصویر دارد':'بدون تصویر'}</span>
+   <label class="b g"><i class="fa-solid fa-image"></i> ${m.has_image?'جایگزینی تصویر':'آپلود تصویر'}<input type="file" accept="image/jpeg,image/png,image/webp" hidden data-mi="${m.id}"></label>
+   ${m.has_image?`<button class="b g" data-mv="${m.id}" data-n="${esc(m.name)}">👁 مشاهده</button>`:''}
+   <button class="b no" data-md="${m.id}"><i class="fa-solid fa-trash"></i></button></div><div class="bar" hidden><i></i></div></div>`).join('')||'<div class="empty">هنوز مانهوایی ثبت نشده.</div>'}`;
+  const v=$('#view');
+  $('#mhadd').onclick=function(){act(this,async()=>{await api('POST','/admin/manhwas',{name:$('#mhn').value});toast('مانهوا اضافه شد ✅');load()})};
+  v.querySelectorAll('[data-mi]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(!f)return;const bar=i.closest('.box').querySelector('.bar');bar.hidden=false;
+    sendImg(`/admin/manhwas/${i.dataset.mi}/image`,f,bar.firstChild).then(()=>{toast('تصویر ذخیره شد ✅');load()}).catch(e=>{toast(e.message);bar.hidden=true})});
+  v.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>showImg(`/admin/manhwas/${b.dataset.mv}/image`,b.dataset.n));
+  v.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{if(confirm('این مانهوا و تصویرش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/manhwas/'+b.dataset.md);toast('حذف شد');load()})});
+}
+
+/* ---------- تیکت ---------- */
+let tkCtx=null;
+function openTicket(c){tkCtx=c;$('#tkt').textContent='🎫 تیکت برای '+c.name;$('#tkmsg').value='';$('#tkm').hidden=false;$('#tkmsg').focus()}
+$('#tkx').onclick=()=>$('#tkm').hidden=true;
+$('#tks').onclick=function(){act(this,async()=>{await api('POST','/admin/tickets',{user_id:tkCtx.user_id,task_id:tkCtx.task_id,message:$('#tkmsg').value,level:$('#tkl').value});$('#tkm').hidden=true;toast('تیکت ارسال شد 🎫');if(tab==='members')draw()})};
+
+/* ---------- پیش‌نمایش فایل (تصاویر zip / متن docx) ---------- */
+const pvBlobs=[];let pvSeq=0,pvIO=null;
+async function blobGet(p){const r=await fetch('/api/team'+p,{headers:{Authorization:'Bearer '+token}});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'خطا');return r.blob()}
+function pvClose(){pvSeq++;if(pvIO)pvIO.disconnect();$('#pv').hidden=true;pvBlobs.splice(0).forEach(u=>URL.revokeObjectURL(u));$('#pvb').innerHTML='';$('#pvf').innerHTML=''}
+$('#pvx').onclick=pvClose;addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#pv').hidden)pvClose()});
+async function preview(id,kind){
+  const t=O.tasks.find(x=>x.id===id);if(!t)return;const seq=++pvSeq;
+  $('#pv').hidden=false;$('#pvt').textContent=`${t.label} — ${t.title}`;$('#pvb').innerHTML='<div class="empty">در حال بارگذاری فایل…</div>';
+  const review=t.status==='submitted'&&kind==='result';
+  $('#pvf').innerHTML=(review?`<button class="b ok" id="pvap">تایید و پرداخت ${fa(t.reward_tokens)} توکن</button><button class="b no" id="pvrj">نیاز به اصلاح</button>`:'')+(t.assignee?'<button class="b g" id="pvtk">🎫 تیکت به کارمند</button>':'');
+  if(t.assignee)$('#pvtk').onclick=()=>openTicket({task_id:t.id,name:t.worker||'کارمند'});
+  if(review){
+    $('#pvap').onclick=function(){act(this,async()=>{await api('POST',`/admin/tasks/${id}/approve`);toast('تایید شد و توکن واریز شد 💰');pvClose();load()})};
+    $('#pvrj').onclick=function(){const n=prompt('چه چیزی باید اصلاح بشه؟ (کارمند این متن را می‌بیند)');if(n)act(this,async()=>{await api('POST',`/admin/tasks/${id}/reject`,{note:n});toast('برای اصلاح برگشت');pvClose();load()})};
+  }
+  try{
+    const d=await api('GET',`/admin/tasks/${id}/preview?kind=${kind}`);if(seq!==pvSeq)return;
+    if(d.type==='docx'){
+      $('#pvb').innerHTML='<iframe sandbox></iframe>';
+      $('#pvb').firstChild.srcdoc=`<html dir="rtl"><body style="font-family:Tahoma,sans-serif;line-height:2;padding:16px;color:#111">${d.html}</body></html>`;
+    }else if(!d.images.length){
+      $('#pvb').innerHTML=`<div class="empty">تصویری داخل zip پیدا نشد${d.others?` (${fa(d.others)} فایل غیرتصویری دارد)`:''}.</div>`;
+    }else{
+      $('#pvb').innerHTML=`<div class="hint" style="margin-bottom:8px">${fa(d.total)} تصویر${d.total>d.images.length?` (${fa(d.images.length)} تای اول نمایش داده می‌شود)`:''}${d.others?` · ${fa(d.others)} فایل غیرتصویری`:''}</div>`+d.images.map(im=>`<div class="pvi" data-i="${im.i}"><span>${esc(im.name.split('/').pop())}</span></div>`).join('');
+      pvIO=new IntersectionObserver(es=>es.forEach(async e=>{
+        if(!e.isIntersecting)return;pvIO.unobserve(e.target);const el=e.target;
+        try{const u=URL.createObjectURL(await blobGet(`/admin/tasks/${id}/preview/entry?kind=${kind}&i=${el.dataset.i}`));
+          if(seq!==pvSeq){URL.revokeObjectURL(u);return}pvBlobs.push(u);el.style.minHeight='0';el.innerHTML=`<img src="${u}" alt="">`}
+        catch(err){el.textContent='خطا در نمایش: '+err.message}
+      }),{root:$('#pvb'),rootMargin:'400px'});
+      $('#pvb').querySelectorAll('.pvi').forEach(el=>pvIO.observe(el));
+    }
+  }catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+
+/* ---------- داشبورد ---------- */
+function vDash(){
+  const c=s=>O.tasks.filter(t=>t.status===s&&(!dRole||t.role===dRole)).length;
+  const sub=O.tasks.filter(t=>t.status==='submitted'&&(!dRole||t.role===dRole)),cl=O.tasks.filter(t=>t.status==='claimed'&&(!dRole||t.role===dRole)).sort((a,b)=>new Date(a.claimed_at)-new Date(b.claimed_at));
+  $('#view').innerHTML=`
+  <div class="grid">${Object.entries(R).map(([k,r])=>`<button class="stat ${dRole===k?'on':''}" style="--c:${r.c}" data-dr="${k}"><i class="fa-solid ${r.i}" style="color:${r.c}"></i> <span>${r.n}</span><b>${fa(O.tasks.filter(t=>t.role===k&&['claimed','submitted'].includes(t.status)).length)}</b><span>در جریان · ${fa(O.tasks.filter(t=>t.role===k&&t.status==='open').length)} آزاد</span></button>`).join('')}</div>
+  <div class="grid">
+    <div class="stat" style="--c:#fbbf24"><b>${fa(c('draft'))}</b><span>پیش‌نویس (منتظر فایل)</span></div>
+    <div class="stat" style="--c:#cbd5e1"><b>${fa(c('open'))}</b><span>آزاد برای برداشتن</span></div>
+    <div class="stat" style="--c:#60a5fa"><b>${fa(c('claimed'))}</b><span>در دست کارمندها</span></div>
+    <div class="stat" style="--c:#c084fc"><b>${fa(c('submitted'))}</b><span>منتظر تایید شما</span></div>
+    <div class="stat" style="--c:#4ade80"><b>${fa(c('approved'))}</b><span>تایید شده</span></div>
+    <div class="stat" style="--c:#f59e0b"><b>${fa(O.stats.owed*O.tomanPerToken)}</b><span>تومان بدهی به تیم</span></div></div>
+  <div class="hint">🤖 خودکار: ${O.auto.claimHours?`کار تحویل‌نشده بعد از ${fa(O.auto.claimHours)} ساعت آزاد می‌شود`:'آزادسازی خودکار خاموش'} · ${O.auto.autoApproveHours?`تحویل بررسی‌نشده بعد از ${fa(O.auto.autoApproveHours)} ساعت تایید می‌شود`:'تایید خودکار زمانی خاموش'} · اعضای «مورد اعتماد» بدون نیاز به شما تایید می‌شوند</div>${dRole?`<div class="hint">فیلتر: ${R[dRole].n} — برای حذف فیلتر دوباره روی کارت بزن.</div>`:''}
+  <h2><i class="fa-solid fa-bell" style="color:#c084fc"></i> منتظر تایید (${fa(sub.length)})</h2>${sub.map(tcard).join('')||'<div class="empty">موردی نیست.</div>'}
+  <h2><i class="fa-solid fa-hourglass-half" style="color:#60a5fa"></i> در دست انجام (${fa(cl.length)}) <span class="hint">قدیمی‌ترین بالاتر؛ بیش از ${LATE_H} ساعت قرمز می‌شود</span></h2>${cl.map(tcard).join('')||'<div class="empty">الان کسی کاری در دست ندارد.</div>'}`;
+  document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{dRole=dRole===b.dataset.dr?'':b.dataset.dr;vDash()});bind($('#view'));
+}
+
+/* ---------- مدیریت کارها ---------- */
+function vTasks(){
+  const ro=Object.entries(R).map(([k,r])=>`<option value="${k}">${r.n}</option>`).join('');
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0" id="ftitle">➕ ثبت کار جدید</h2><div class="form">
+    <select id="frole">${ro}</select>
+    <input id="flabel" placeholder="برچسب عمومی — مثلاً CH1 (کارمند فقط همین را می‌بیند)">
+    <input id="ftitle2" placeholder="عنوان داخلی — مثلاً سولو لولینگ چپتر ۱ (فقط شما)">
+    <input id="ftok" type="number" min="1" placeholder="توکن پاداش (هر توکن ۱۰۰۰ تومان)">
+    <div class="full"><textarea id="fdesc" rows="3"></textarea><div class="hint" id="fdhint"></div></div>
+    <div id="faddr" class="full"><input id="faddr2" placeholder="آدرس کار (مخصوص تغییر دهنده فونت)"></div>
+    <div id="ffile" class="full"><label class="b g" style="padding:10px 16px"><i class="fa-solid fa-file-zipper"></i> <span id="ffn">انتخاب فایل zip ورودی (حداکثر ${MAXMB} مگابایت)</span><input id="ffi" type="file" accept=".zip" hidden></label><div class="bar" id="fbar" hidden><i></i></div></div>
+    <div class="full"><button class="b" id="fsave">ثبت کار</button> <button class="b g" id="fcancel" hidden>انصراف از ویرایش</button></div></div></div>
+  <div class="box"><div class="form"><select id="sr"><option value="">همه‌ی نقش‌ها</option>${ro}</select>
+    <select id="ss"><option value="">همه‌ی وضعیت‌ها</option>${Object.entries(ST).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select>
+    <input id="sq" placeholder="جستجو: برچسب، عنوان، کارمند"></div></div><div id="tlist"></div>`;
+  $('#frole').onchange=sync;$('#ffi').onchange=e=>$('#ffn').textContent=e.target.files[0]?.name||'انتخاب فایل zip ورودی';
+  ['sr','ss'].forEach(i=>{$('#'+i).value=filt[i==='sr'?'role':'status'];$('#'+i).onchange=()=>{filt.role=$('#sr').value;filt.status=$('#ss').value;list()}});
+  $('#sq').value=filt.q;$('#sq').oninput=()=>{filt.q=$('#sq').value;list()};
+  $('#fsave').onclick=function(){act(this,save)};$('#fcancel').onclick=()=>{editId=null;vTasks()};
+  sync();list();if(editId)fillForm();
+}
+function sync(){
+  const rule=O.rules[$('#frole').value];
+  $('#ffile').hidden=!rule.source;$('#faddr').hidden=!rule.address;
+  $('#fdesc').placeholder=rule.text?'لینک / پیام / نام کار (الزامی) — کارمند بعد از برداشتن کار می‌بیند':'دستور کار (اختیاری) — فقط بعد از برداشتن کار دیده می‌شود';
+  $('#fdhint').textContent=rule.text?'مترجم فایل ورودی ندارد؛ فقط همین متن/لینک را می‌بیند و باید zip تحویل بدهد.':rule.address?'تغییر دهنده فونت هم zip و هم آدرس دریافت می‌کند و فقط zip تحویل می‌دهد.':'کارمند فقط zip را می‌بیند و فقط zip تحویل می‌دهد.';
+}
+function fillForm(){
+  const t=O.tasks.find(x=>x.id===editId);if(!t){editId=null;return}
+  $('#ftitle').textContent='✏️ ویرایش کار';$('#frole').value=t.role;$('#frole').disabled=true;sync();
+  $('#flabel').value=t.label;$('#ftitle2').value=t.title;$('#ftok').value=t.reward_tokens;$('#fdesc').value=t.description||'';$('#faddr2').value=t.address||'';
+  $('#fsave').textContent='ذخیره‌ی تغییرات';$('#fcancel').hidden=false;
+}
+async function save(){
+  const body={role:$('#frole').value,label:$('#flabel').value,title:$('#ftitle2').value,reward_tokens:$('#ftok').value,description:$('#fdesc').value,address:$('#faddr2').value};
+  const f=$('#ffi').files[0],rule=O.rules[body.role];let id=editId;
+  if(f&&f.size>MAXMB*1048576)throw new Error(`حجم فایل بیشتر از ${MAXMB} مگابایته.`);
+  if(editId)await api('PATCH','/admin/tasks/'+editId,body);else id=(await api('POST','/admin/tasks',body)).id;
+  if(f&&rule.source){$('#fbar').hidden=false;await sendZip(`/admin/tasks/${id}/source`,f,$('#fbar').firstChild)}
+  toast(!editId&&rule.source&&!f?'ثبت شد، ولی تا آپلود فایل «پیش‌نویس» می‌ماند':'ذخیره شد ✅');editId=null;await load();
+}
+function list(){
+  const f=filt,q=f.q.toLowerCase();
+  const l=O.tasks.filter(t=>(!f.role||t.role===f.role)&&(!f.status||t.status===f.status)&&(!q||(t.title+' '+t.label+' '+(t.worker||'')).toLowerCase().includes(q)));
+  $('#tlist').innerHTML=l.map(tcard).join('')||'<div class="empty">کاری پیدا نشد.</div>';bind($('#tlist'));
+}
+
+/* ---------- چپترها (زنجیره‌ی خودکار) ---------- */
+function vChap(){
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">📚 ثبت چپتر جدید — بقیه‌ی مسیر خودکار است</h2>
+   <div class="hint" style="margin-bottom:10px">مترجم و کلینر خودکار ساخته می‌شوند. هر وقت هر دو تایید شدند، کار تایپیست (zip کلین‌شده + فایل Word ترجمه) خودکار آزاد می‌شود. ترجمه و کلین تاییدشده تا آن موقع نگه‌داری می‌شوند.</div>
+   <div class="form"><input id="ctitle" placeholder="عنوان داخلی — مثلاً سولو لولینگ چپتر ۱ (فقط شما)"><input id="clabel" placeholder="برچسب عمومی — مثلاً CH1">
+   <input id="ctr" type="number" min="1" placeholder="توکن مترجم"><input id="ccl" type="number" min="0" placeholder="توکن کلینر (۰ = بدون کلین)"><input id="cty" type="number" min="1" placeholder="توکن تایپیست">
+   <select id="cmh"><option value="">مانهوا (برای تصویر زیر بنر)…</option>${O.manhwas.map(m=>`<option value="${m.id}">${esc(m.name)}${m.has_image?'':' — بدون تصویر'}</option>`).join('')}</select>
+   <div class="full"><textarea id="cnote" rows="3" placeholder="لینک / پیام / نام کار برای مترجم (الزامی — بعد از برداشتن کار دیده می‌شود)"></textarea></div>
+   <div class="full"><label class="b g" style="padding:10px 16px"><i class="fa-solid fa-file-zipper"></i> <span id="cfn">zip تصاویر برای کلینر (حداکثر ${MAXMB} مگابایت)</span><input id="cfile" type="file" accept=".zip" hidden></label><div class="bar" id="cbar" hidden><i></i></div></div>
+   <div class="full"><button class="b" id="csave">ثبت چپتر</button></div></div></div>
+  ${O.chapters.map(ch=>{const ts=O.tasks.filter(t=>t.chapter_id===ch.id),done=ch.status==='done';
+    const step=r=>{const t=ts.find(x=>x.role===r);return `<span class="st ${t?t.status:''}"><i class="fa-solid ${R[r].i}"></i> ${R[r].n}: ${t?ST[t.status]:(r==='typist'?'منتظر ترجمه و کلین':'ندارد')}${t&&t.worker?` · ${esc(t.worker)}`:''}</span>`};
+    return `<div class="box"><div class="row" style="margin:0"><span class="lbl" style="--c:#a78bfa">${esc(ch.label)}</span><b>${esc(ch.title)}</b><span class="st ${done?'approved':'claimed'}">${done?'تمام شد':'در جریان'}</span>
+    <button class="b g" data-cq="${esc(ch.label)}">مشاهده کارها</button><button class="b no" data-cdel="${ch.id}"><i class="fa-solid fa-trash"></i></button></div>
+    <div class="row">${step('translator')} ${step('cleaner')} ${step('typist')}</div>
+    ${(()=>{const busy=O.bannerBusy.includes(ch.id);return `<div class="row">${busy?'<span class="st claimed">⏳ در حال ساخت بنر…</span>':ch.banner_file?'<span class="st approved">🖼 بنر آماده</span>':(done?'<span class="st late">بنر ساخته نشده</span>':'<span class="st">بنر بعد از اتمام چپتر ساخته می‌شود</span>')}
+      ${ch.banner_file?`<button class="b" data-bv="${ch.id}" data-n="${esc(ch.label)}">👁 مشاهده بنر</button><button class="b g" data-bd="${ch.id}" data-n="${esc(ch.label)}-banner.png"><i class="fa-solid fa-download"></i></button>`:''}
+      ${done&&!busy?`<button class="b g" data-brb="${ch.id}">🔄 ${ch.banner_file?'ساخت دوباره':'ساخت بنر'}</button>`:''}</div>${ch.banner_note?`<div class="note">${esc(ch.banner_note)}</div>`:''}`})()}</div>`}).join('')||'<div class="empty">هنوز چپتری ثبت نشده.</div>'}`;
+  $('#cfile').onchange=e=>$('#cfn').textContent=e.target.files[0]?.name||'zip تصاویر برای کلینر';
+  const v=$('#view');
+  v.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{filt={role:'',status:'',q:b.dataset.cq};tab='tasks';draw()});
+  v.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>showImg(`/admin/chapters/${b.dataset.bv}/banner`,'بنر '+b.dataset.n));
+  v.querySelectorAll('[data-bd]').forEach(b=>b.onclick=async()=>{try{const u=URL.createObjectURL(await blobGet(`/admin/chapters/${b.dataset.bd}/banner?dl=1`));const l=document.createElement('a');l.href=u;l.download=b.dataset.n;l.click();setTimeout(()=>URL.revokeObjectURL(u),5000)}catch(e){toast(e.message)}});
+  v.querySelectorAll('[data-brb]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('POST',`/admin/chapters/${b.dataset.brb}/banner`);toast('ساخت بنر شروع شد ⏳ (حدود یک دقیقه)');await load();[10000,25000,45000,80000].forEach(ms=>setTimeout(()=>{const f=document.querySelector('#ctitle');if(tab==='chap'&&f&&!f.value)load(true)},ms))}));
+  v.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{if(confirm('این چپتر و کارهای آزادش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/chapters/'+b.dataset.cdel);toast('حذف شد');load()})});
+  $('#csave').onclick=function(){act(this,async()=>{
+    const f=$('#cfile').files[0],cl=parseInt($('#ccl').value)||0;
+    if(cl>0&&!f)throw new Error('برای کلینر، zip تصاویر را انتخاب کن (یا توکن کلینر را ۰ بگذار).');
+    if(f&&f.size>MAXMB*1048576)throw new Error(`حجم فایل بیشتر از ${MAXMB} مگابایته.`);
+    const r=await api('POST','/admin/chapters',{title:$('#ctitle').value,label:$('#clabel').value,translator_note:$('#cnote').value,manhwa_id:$('#cmh').value,translator_reward:$('#ctr').value,cleaner_reward:cl,typist_reward:$('#cty').value});
+    if(f&&r.cleaner_task_id){$('#cbar').hidden=false;await sendZip(`/admin/tasks/${r.cleaner_task_id}/source`,f,$('#cbar').firstChild)}
+    toast('چپتر ثبت شد ✅ — مسیر خودکار شروع شد');load()})};
+}
+
+/* ---------- اعضا ---------- */
+function vMembers(){
+  const chk=(sel=[])=>Object.entries(R).map(([k,r])=>`<label><input type="checkbox" value="${k}" ${sel.includes(k)?'checked':''}> ${r.n}</label>`).join('');
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">➕ افزودن عضو</h2><div class="form">
+    <input id="mid" placeholder="ایمیل یا شماره موبایلِ ثبت‌نام‌شده در سایت"><input id="mname" placeholder="نام نمایشی">
+    <div class="chk full" id="mroles">${chk()}</div><div class="full"><button class="b" id="madd">افزودن</button></div></div></div>
+  ${O.members.map(m=>`<div class="box" style="${m.active?'':'opacity:.55'}"><div class="row" style="margin:0"><b>${esc(m.name||m.user_id.slice(0,8))}</b>
+    <span class="tok">${fa(m.balance)} توکن = ${fa(m.balance*O.tomanPerToken)} تومان</span><span class="st approved">${fa(m.done)} کار تایید شده</span>${m.active?'':'<span class="st late">غیرفعال</span>'}</div>
+    <div class="chk row" data-mr="${m.user_id}">${chk(m.roles)}<button class="b g" data-ms="${m.user_id}">ذخیره‌ی نقش‌ها</button></div>
+    <div class="row"><button class="b ok" data-po="${m.user_id}">ثبت تسویه</button><button class="b g" data-adj="${m.user_id}">اصلاح موجودی</button><button class="b g" data-led="${m.user_id}">تاریخچه</button><button class="b g" data-mtk="${m.user_id}" data-n="${esc(m.name||'')}">🎫 تیکت</button><button class="b g" data-bn="${m.user_id}" data-v="${esc(m.banner_name||'')}">🏷 نام روی بنر${m.banner_name?`: ${esc(m.banner_name)}`:''}</button>
+    <button class="b ${m.active?'no':'ok'}" data-act="${m.user_id}" data-v="${!m.active}">${m.active?'غیرفعال کردن':'فعال کردن'}</button>
+    <button class="b ${m.auto_approve?'ok':'g'}" data-aa="${m.user_id}" data-v="${!m.auto_approve}">${m.auto_approve?'✅ مورد اعتماد (تایید خودکار)':'مورد اعتماد کردن'}</button></div></div>`).join('')||'<div class="empty">هنوز عضوی نیست.</div>'}<h2>🎫 تیکت‌های اخیر</h2><div class="box" id="tklist">...</div>`;
+  $('#madd').onclick=function(){act(this,async()=>{await api('POST','/admin/members',{identifier:$('#mid').value,name:$('#mname').value,roles:[...document.querySelectorAll('#mroles input:checked')].map(c=>c.value)});toast('عضو ذخیره شد ✅');load()})};
+  const v=$('#view');
+  v.querySelectorAll('[data-bn]').forEach(b=>b.onclick=()=>{const n=prompt('نام این عضو روی بنر (خالی = همان نام نمایشی). برای اسم انگلیسی، فونت دیگری استفاده می‌شود:',b.dataset.v);if(n===null)return;act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.bn,{banner_name:n});toast('ذخیره شد ✅');load()})});
+  v.querySelectorAll('[data-mtk]').forEach(b=>b.onclick=()=>openTicket({user_id:b.dataset.mtk,name:b.dataset.n||'کارمند'}));
+  api('GET','/admin/tickets').then(rows=>{
+    $('#tklist').innerHTML=rows.length?`<div style="overflow:auto"><table><tr><th>زمان</th><th>عضو</th><th>کار</th><th>نوع</th><th>متن</th><th>وضعیت</th><th></th></tr>${rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString('fa-IR')}</td><td>${esc(r.name)}</td><td>${esc(r.label||'')}</td><td>${{warning:'هشدار',info:'پیام',praise:'تشویق'}[r.level]}</td><td>${esc(r.message)}</td><td>${r.read_at?'خوانده شد ✅':'<span class="neg">هنوز نخوانده</span>'}</td><td><button class="b no" data-tdel="${r.id}">حذف</button></td></tr>`).join('')}</table></div>`:'<div class="empty">تیکتی نفرستاده‌ای.</div>';
+    $('#tklist').querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('DELETE','/admin/tickets/'+b.dataset.tdel);draw()}));
+  }).catch(e=>{$('#tklist').textContent=e.message});
+  v.querySelectorAll('[data-ms]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.ms,{roles:[...v.querySelectorAll(`[data-mr="${b.dataset.ms}"] input:checked`)].map(c=>c.value)});toast('نقش‌ها ذخیره شد ✅');load()}));
+  v.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.act,{active:b.dataset.v==='true'});load()}));
+  v.querySelectorAll('[data-po]').forEach(b=>b.onclick=()=>{const n=prompt('چند توکن تسویه شد؟ (بعد از پرداخت واقعی پول)');if(n)act(b,async()=>{const r=await api('POST','/admin/payout',{user_id:b.dataset.po,tokens:n});toast(`تسویه ${fa(r.toman)} تومان ثبت شد`);load()})});
+  v.querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{const n=prompt('تعداد توکن (مثبت = اضافه، منفی = کسر):');if(!n)return;const note=prompt('دلیل:');if(note)act(b,async()=>{await api('POST','/admin/adjust',{user_id:b.dataset.adj,tokens:n,note});toast('ثبت شد');load()})});
+  v.querySelectorAll('[data-aa]').forEach(b=>b.onclick=()=>{if(b.dataset.v!=='true'||confirm('تحویل‌های این عضو بعد از اعتبارسنجی فایل، بدون بررسی شما تایید و توکن واریز می‌شود. مطمئنی؟'))act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.aa,{auto_approve:b.dataset.v==='true'});load()})});
+  v.querySelectorAll('[data-led]').forEach(b=>b.onclick=()=>{ledUid=b.dataset.led;tab='fin';draw()});
+}
+
+/* ---------- مالی ---------- */
+async function vFin(){
+  const s=O.stats;
+  $('#view').innerHTML=`<div class="grid">
+    <div class="stat" style="--c:#4ade80"><b>${fa(s.rewarded)}</b><span>کل توکن پاداش‌داده‌شده (${fa(s.rewarded*O.tomanPerToken)} تومان)</span></div>
+    <div class="stat" style="--c:#60a5fa"><b>${fa(s.cashedOut)}</b><span>تسویه‌شده (${fa(s.cashedOut*O.tomanPerToken)} تومان)</span></div>
+    <div class="stat" style="--c:#f59e0b"><b>${fa(s.owed)}</b><span>بدهی فعلی (${fa(s.owed*O.tomanPerToken)} تومان)</span></div></div>
+  <div class="box"><select id="lu"><option value="">همه‌ی اعضا</option>${O.members.map(m=>`<option value="${m.user_id}">${esc(m.name||m.user_id.slice(0,8))}</option>`).join('')}</select></div><div class="box" id="lt">...</div>`;
+  $('#lu').value=ledUid;const nm=Object.fromEntries(O.members.map(m=>[m.user_id,m.name||m.user_id.slice(0,8)]));
+  const go=async()=>{const rows=await api('GET','/admin/ledger'+(ledUid?'?user_id='+ledUid:''));
+    $('#lt').innerHTML=rows.length?`<div style="overflow:auto"><table><tr><th>زمان</th><th>عضو</th><th>نوع</th><th>توکن</th><th>تومان</th><th>توضیح</th></tr>${rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString('fa-IR')}</td><td>${esc(nm[r.user_id]||'')}</td><td>${{reward:'پاداش',payout:'تسویه',adjust:'اصلاح'}[r.kind]}</td><td class="${r.tokens>0?'pos':'neg'}">${r.tokens>0?'+':''}${fa(r.tokens)}</td><td>${fa(r.tokens*O.tomanPerToken)}</td><td>${esc(r.note||'')}</td></tr>`).join('')}</table></div>`:'<div class="empty">تراکنشی نیست.</div>'};
+  $('#lu').onchange=()=>{ledUid=$('#lu').value;go()};go().catch(e=>toast(e.message));
+}
+</script>
+</body>
+</html>
