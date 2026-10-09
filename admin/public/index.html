@@ -6,23 +6,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
+
+
   :root{
-    --bg:#0c0d11;
-    --panel:#15161d;
-    --panel-2:#1b1d26;
-    --border:#272935;
-    --text:#eceef2;
-    --muted:#8b8e9c;
-    --accent:#f0a500;
-    --accent-ink:#1a1200;
-    --danger:#ef4444;
-    --danger-bg:#2a1518;
-    --ok:#22c55e;
-    --ok-bg:#0f2419;
-    --vip-bg:#3a2900;
-    --radius:14px;
-    --radius-sm:9px;
-    --shadow: 0 8px 24px rgba(0,0,0,.35);
+    --bg:#0B1918;
+    --bg-2:#13221F;
+    --panel:#263B36;
+    --panel-2:#1A2D28;
+    --ph:#344A43;
+    --border:#496057;
+    --text:#F1EEE5;
+    --muted:#C4D2CC;
+    --accent:#BDA779;
+    --accent-ink:#0B1918;
+    --accent-bg:rgba(189,167,121,.12);
+    --danger:#D98585;
+    --danger-bg:rgba(217,133,133,.12);
+    --danger-line:rgba(217,133,133,.5);
+    --ok:#83B89A;
+    --ok-bg:rgba(131,184,154,.14);
+    --warn:#D9B66F;
+    --radius:16px;
+    --radius-sm:11px;
+    --shadow:0 10px 28px rgba(0,0,0,.28);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; }
@@ -31,51 +37,58 @@
     background: var(--bg);
     color: var(--text);
     margin: 0;
-    padding: 0 0 90px;
-    line-height: 1.6;
+    padding: 0 0 calc(96px + env(safe-area-inset-bottom));
+    line-height: 1.7;
+    overflow-x: hidden;
   }
   a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   /* ---------- هدر بالای صفحه ---------- */
   .topbar {
     position: sticky;
     top: 0;
     z-index: 30;
-    background: rgba(12,13,17,.9);
-    backdrop-filter: blur(10px);
+    background: rgba(11,25,24,.88);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
-    padding: 14px 16px;
-    padding-top: calc(14px + env(safe-area-inset-top));
+    padding: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+    padding-right: calc(16px + env(safe-area-inset-right));
+    padding-left: calc(16px + env(safe-area-inset-left));
   }
-  .topbar h1 { font-size: 17px; margin: 0; font-weight: 800; }
+  .topbar h1 { font-size: 18px; margin: 0; font-weight: 800; color: var(--text); }
   .topbar .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
 
-  .wrap { max-width: 920px; margin: 0 auto; padding: 16px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 20px 16px; }
 
   /* ---------- کارت‌های عمومی ---------- */
   .card {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 16px;
+    padding: 20px;
+    margin-bottom: 18px;
     box-shadow: var(--shadow);
   }
   .card h2 {
     font-size: 15px;
-    margin: 0 0 14px;
+    margin: 0 0 16px;
     color: var(--accent);
+    font-weight: 800;
     display: flex;
     align-items: center;
     gap: 8px;
   }
+  .card .card { background: var(--panel-2); box-shadow: none; }
 
   /* ---------- دکمه‌ها ---------- */
   button, .btn {
-    background: var(--panel-2);
+    background: var(--ph);
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 10px 14px;
+    padding: 10px 16px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 13px;
@@ -83,26 +96,29 @@
     font-weight: 600;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    min-height: 40px;
-    transition: transform .06s ease, background .15s ease, border-color .15s ease;
+    min-height: 42px;
+    transition: background .18s ease, border-color .18s ease, filter .18s ease, transform .08s ease;
   }
-  button:hover { background: #22242f; border-color: #3a3d4a; }
-  button:active { transform: scale(.97); }
-  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button:hover, .btn:hover { border-color: var(--accent); }
+  button:active, .btn:active { transform: scale(.98); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
   button.primary:hover { filter: brightness(1.08); }
-  button.danger { background: var(--danger-bg); border-color: #5a2a2e; color: #ffb3b3; }
-  button.danger:hover { background: #3a1b1f; }
+  button.danger { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); }
+  button.danger:hover { background: rgba(217,133,133,.22); border-color: var(--danger); }
   button.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+  button.ghost:hover { color: var(--accent); border-color: transparent; }
   button.block { width: 100%; justify-content: center; }
   button:disabled { opacity: .5; cursor: not-allowed; }
+  button:disabled:hover { border-color: var(--border); }
 
   .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
 
   /* ---------- فرم‌ها ---------- */
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
   input, select, textarea {
-    background: var(--bg);
+    background: var(--panel-2);
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -110,17 +126,30 @@
     font-size: 14px;
     width: 100%;
     font-family: inherit;
-    min-height: 42px;
+    min-height: 44px;
+    transition: border-color .18s ease, box-shadow .18s ease;
   }
+  .card .card input, .card .card select, .card .card textarea,
+  tbody tr input, tbody tr select { background: var(--bg-2); }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: .55; }
+  input:hover, select:hover, textarea:hover { border-color: #5f7b70; }
   input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(240,165,0,.15);
+    box-shadow: 0 0 0 3px rgba(189,167,121,.2);
   }
-  textarea { min-height: 80px; resize: vertical; }
-  .field { margin-bottom: 12px; }
-  .checkbox-field { display: flex; align-items: center; gap: 8px; }
-  .checkbox-field input { width: 18px; height: 18px; min-height: auto; flex: none; }
+  option { background: var(--panel-2); color: var(--text); }
+  textarea { min-height: 84px; resize: vertical; }
+  input[type=file] { padding: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  input[type=file]::file-selector-button {
+    background: var(--ph); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; margin-inline-end: 10px;
+    font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  input[type=file]::file-selector-button:hover { border-color: var(--accent); }
+  .field { margin-bottom: 14px; }
+  .checkbox-field { display: flex; align-items: center; gap: 10px; }
+  .checkbox-field input { width: 18px; height: 18px; min-height: auto; flex: none; accent-color: var(--accent); padding: 0; }
   .checkbox-field label { margin: 0; color: var(--text); font-weight: 500; }
 
   .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
@@ -130,26 +159,27 @@
 
   /* ---------- پیام‌ها ---------- */
   .msg {
-    padding: 10px 14px;
+    padding: 11px 14px;
     border-radius: var(--radius-sm);
+    border: 1px solid;
     font-size: 13px;
     margin-bottom: 12px;
     font-weight: 600;
   }
-  .msg.err { background: var(--danger-bg); color: #ffb0b0; }
-  .msg.ok { background: var(--ok-bg); color: #a6f0c6; }
+  .msg.err { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); }
+  .msg.ok { background: var(--ok-bg); border-color: rgba(131,184,154,.5); color: var(--ok); }
 
   /* ---------- بج وضعیت ---------- */
-  .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-  .badge.vip { background: var(--vip-bg); color: var(--accent); }
-  .badge.free { background: var(--ok-bg); color: #4ade80; }
+  .badge { padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; border: 1px solid transparent; }
+  .badge.vip { background: var(--accent-bg); color: var(--accent); border-color: rgba(189,167,121,.45); }
+  .badge.free { background: var(--ok-bg); color: var(--ok); border-color: rgba(131,184,154,.4); }
 
   /* ---------- جستجو ---------- */
-  .search-box { position: relative; margin-bottom: 14px; }
-  .search-box input { padding-inline-start: 38px; }
+  .search-box { position: relative; margin-bottom: 16px; }
+  .search-box input { padding-inline-start: 40px; }
   .search-box .icon {
-    position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); font-size: 15px; pointer-events: none;
+    position: absolute; inset-inline-start: 13px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 15px; pointer-events: none; display: grid; place-items: center; transition: color .18s ease;
   }
 
   /* ---------- جدول / لیست ریسپانسیو ---------- */
@@ -158,19 +188,23 @@
     color: var(--muted);
     font-weight: 600;
     text-align: right;
-    padding: 8px 10px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border);
     font-size: 11px;
+    letter-spacing: .02em;
   }
-  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(73,96,87,.6); transition: background .15s ease; }
+  tbody tr:hover { background: rgba(26,45,40,.55); }
   tbody tr:last-child { border-bottom: none; }
-  tbody td { padding: 10px; vertical-align: middle; }
+  tbody td { padding: 12px; vertical-align: middle; }
   .title-cell { font-weight: 700; }
-  .title-cell .en { display: block; color: var(--muted); font-size: 11px; font-weight: 400; margin-top: 2px; }
-  .empty-row { text-align: center; color: var(--muted); padding: 24px 10px; }
+  .title-cell .en { display: block; color: var(--muted); font-size: 11px; font-weight: 400; margin-top: 2px; direction: ltr; text-align: right; }
+  .empty-row { text-align: center; color: var(--muted); padding: 28px 10px; }
 
   /* موبایل: جدول به کارت تبدیل می‌شه */
   @media (max-width: 680px) {
+    .wrap { padding: 14px 12px; }
+    .card { padding: 16px; }
     table, thead, tbody, tr, td { display: block; width: 100%; }
     thead { display: none; }
     tbody tr {
@@ -180,6 +214,7 @@
       padding: 12px;
       margin-bottom: 10px;
     }
+    tbody tr:hover { background: var(--panel-2); }
     tbody td {
       display: flex;
       justify-content: space-between;
@@ -196,36 +231,45 @@
       font-weight: 600;
       flex: none;
     }
-    tbody td.actions-cell { justify-content: flex-start; padding-top: 10px; }
+    tbody td.actions-cell { justify-content: flex-start; padding-top: 12px; margin-top: 6px; border-top: 1px solid rgba(73,96,87,.6); }
     tbody td.actions-cell::before { display: none; }
+    tbody td.actions-cell .btn-group { width: 100%; }
+    tbody td.actions-cell .btn-group > * { flex: 1 1 0; min-height: 44px; }
+    tbody td input, tbody td select { max-width: 60%; }
     .empty-row { display: block; }
+    input, select, textarea { font-size: 16px; }
+    .btn-group > button { min-height: 44px; }
   }
 
   /* ---------- جزئیات چپترها ---------- */
   .ep-row-num { font-weight: 800; color: var(--accent); }
 
   details {
-    margin-top: 10px;
+    margin-top: 12px;
     border: 1px solid var(--border);
+    background: var(--panel-2);
     border-radius: var(--radius-sm);
     overflow: hidden;
+    transition: border-color .18s ease;
   }
+  details[open] { border-color: rgba(189,167,121,.5); }
   summary {
     cursor: pointer;
-    color: #7ec8ff;
+    color: var(--text);
     font-size: 13px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     font-weight: 600;
     list-style: none;
+    transition: color .18s ease, background .18s ease;
   }
+  summary:hover { color: var(--accent); background: rgba(189,167,121,.06); }
   summary::-webkit-details-marker { display: none; }
-  summary::before { content: "▸ "; }
-  details[open] summary::before { content: "▾ "; }
-  details .inner { padding: 0 14px 14px; }
+  details[open] summary { color: var(--accent); border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  details .inner { padding: 0 16px 16px; }
 
-  .warn { color: var(--accent); }
-  .missing { color: #ff8080; }
-  .sync-ok { color: #4ade80; font-weight: 600; }
+  .warn { color: var(--warn); }
+  .missing { color: var(--danger); }
+  .sync-ok { color: var(--ok); font-weight: 600; }
 
   #newFormPanel { display: none; }
 
@@ -233,19 +277,23 @@
   .fab {
     position: fixed;
     bottom: calc(20px + env(safe-area-inset-bottom));
-    left: 20px;
+    left: calc(20px + env(safe-area-inset-left));
     z-index: 40;
     width: 56px; height: 56px;
+    min-height: 56px;
+    padding: 0;
     border-radius: 50%;
     background: var(--accent);
     color: var(--accent-ink);
-    border: none;
+    border: 1px solid rgba(11,25,24,.35);
     font-size: 26px;
-    box-shadow: 0 10px 30px rgba(240,165,0,.4);
+    font-weight: 400;
+    box-shadow: 0 8px 22px rgba(0,0,0,.45), 0 0 0 4px rgba(189,167,121,.14);
     display: none;
     align-items: center;
     justify-content: center;
   }
+  .fab:hover { filter: brightness(1.08); border-color: rgba(11,25,24,.35); }
   @media (max-width: 680px) {
     .fab { display: flex; }
     .desktop-add-btn { display: none; }
@@ -254,17 +302,52 @@
   .skeleton {
     color: var(--muted);
     text-align: center;
-    padding: 20px;
+    padding: 24px;
     font-size: 13px;
   }
 
-  .slug-tag { color: var(--muted); font-size: 12px; }
+  .slug-tag { color: var(--muted); font-size: 12px; direction: ltr; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 2px 10px; }
   .detail-title { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+
+/* ---------- سیستم آیکون یکپارچه (Lucide، SVG درون‌خطی، قلم ۱٫۸۵) ---------- */
+.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;transition:color .18s ease,opacity .18s ease}
+.ic-xs{width:12px;height:12px;margin-inline-end:4px;vertical-align:-1px}
+.ic-lg{width:32px;height:32px;stroke-width:1.5}
+.ic-spin{animation:ic-spin 1s linear infinite}
+@keyframes ic-spin{to{transform:rotate(360deg)}}
+:root{--m-ok:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='m9 12 2 2 4-4'%3E%3C/path%3E%3C/svg%3E");--m-err:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='m15 9-6 6'%3E%3C/path%3E%3Cpath d='m9 9 6 6'%3E%3C/path%3E%3C/svg%3E");--m-info:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M12 16v-4'%3E%3C/path%3E%3Cpath d='M12 8h.01'%3E%3C/path%3E%3C/svg%3E");--m-chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");--m-inbox:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='22 12 16 12 14 15 10 15 8 12 2 12'%3E%3C/polyline%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'%3E%3C/path%3E%3C/svg%3E");--m-load:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 1 1-6.219-8.56'%3E%3C/path%3E%3C/svg%3E");--m-alert:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' x2='12' y1='8' y2='12'%3E%3C/line%3E%3Cline x1='12' x2='12.01' y1='16' y2='16'%3E%3C/line%3E%3C/svg%3E")}
+
+.topbar h1{display:flex;align-items:center;gap:12px}
+.topbar h1>.ic{box-sizing:content-box;width:20px;height:20px;padding:9px;border-radius:12px;background:var(--ph);border:1px solid var(--border);color:var(--accent)}
+.card h2>.ic:first-child{box-sizing:content-box;width:16px;height:16px;padding:7px;border-radius:10px;background:var(--accent-bg);border:1px solid rgba(189,167,121,.3);color:var(--accent)}
+button .ic,.btn .ic{vertical-align:middle}
+button:not(.primary):not(.danger):not(.fab) .ic,label.btn .ic{color:var(--muted)}
+button:not(.primary):not(.danger):not(.fab):hover .ic,label.btn:hover .ic{color:var(--accent)}
+button.ghost:hover .ic{color:var(--accent)}
+.fab .ic{width:26px;height:26px;stroke-width:2.2;vertical-align:middle;color:var(--accent-ink)}
+.search-box .icon .ic{width:17px;height:17px;vertical-align:middle}
+.search-box:focus-within .icon{color:var(--accent)}
+.badge .ic{width:12px;height:12px;vertical-align:-2px;margin-inline-end:5px}
+.msg{display:flex;align-items:flex-start;gap:10px}.msg .ic{margin-top:4px}
+.sync-ok,.missing,.warn{display:flex;align-items:flex-start;gap:8px}.sync-ok .ic,.missing .ic,.warn .ic{margin-top:4px}
+.skeleton .ic{margin-inline-end:6px;color:var(--accent)}
+.empty-row .ic{display:block;margin:0 auto 8px;color:var(--accent);opacity:.7}
+summary{display:flex;align-items:center;gap:10px}
+summary .ic{color:var(--accent)}
+summary::before{content:"";width:16px;height:16px;flex:none;background:var(--accent);-webkit-mask:var(--m-chev) center/contain no-repeat;mask:var(--m-chev) center/contain no-repeat;transform:rotate(90deg);transition:transform .2s ease}
+details[open] summary::before{transform:rotate(0)}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BDA779' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;background-size:16px;padding-left:36px}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-book-plus" viewBox="0 0 24 24"><path d="M12 7v6"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path><path d="M9 10h6"></path></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></symbol><symbol id="i-circle-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></symbol><symbol id="i-crown" viewBox="0 0 24 24"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></symbol><symbol id="i-inbox" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></symbol><symbol id="i-layout-dashboard" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></symbol><symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></symbol><symbol id="i-lock-open" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="M12 5v14"></path></symbol><symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></symbol></defs></svg>
+
   <div class="topbar">
-    <h1>🎛️ پنل مدیریت مانهواچی</h1>
+    <h1><svg class="ic" aria-hidden="true"><use href="#i-layout-dashboard"/></svg> پنل مدیریت مانهواچی</h1>
     <div class="sub">مدیریت مانهواها و چپترها بدون دست زدن دستی به data.json</div>
   </div>
 
@@ -272,8 +355,8 @@
     <div id="globalMsg"></div>
 
     <div class="card">
-      <h2>➕ مانهوای جدید</h2>
-      <button class="primary desktop-add-btn" onclick="toggleNewForm()">+ افزودن مانهوای جدید</button>
+      <h2><svg class="ic" aria-hidden="true"><use href="#i-book-plus"/></svg> مانهوای جدید</h2>
+      <button class="primary desktop-add-btn" onclick="toggleNewForm()"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> افزودن مانهوای جدید</button>
       <div id="newFormPanel" style="margin-top:14px;">
         <div class="grid cols-2">
           <div class="field"><label>Slug (فقط انگلیسی و خط تیره)</label><input id="n_slug" placeholder="my-new-manhwa" /></div>
@@ -293,37 +376,38 @@
         </div>
         <div class="field"><label>توضیحات</label><textarea id="n_desc" rows="3"></textarea></div>
         <div class="btn-group" style="margin-top:6px;">
-          <button class="primary" onclick="createManga()">ثبت مانهوا</button>
-          <button class="ghost" onclick="toggleNewForm()">انصراف</button>
+          <button class="primary" onclick="createManga()"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg> ثبت مانهوا</button>
+          <button class="ghost" onclick="toggleNewForm()"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg> انصراف</button>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>📚 لیست مانهواها</h2>
+      <h2><svg class="ic" aria-hidden="true"><use href="#i-library"/></svg> لیست مانهواها</h2>
       <div class="search-box">
-        <span class="icon">🔍</span>
+        <span class="icon"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></span>
         <input id="searchInput" placeholder="جستجو بر اساس عنوان یا slug..." oninput="renderList()" />
       </div>
       <table>
         <thead>
           <tr><th>عنوان</th><th>وضعیت</th><th>چپترها</th><th>آخرین</th><th></th></tr>
         </thead>
-        <tbody id="mangaList"><tr><td class="skeleton" colspan="5">در حال بارگذاری...</td></tr></tbody>
+        <tbody id="mangaList"><tr><td class="skeleton" colspan="5"><svg class="ic ic-spin" aria-hidden="true"><use href="#i-loader-circle"/></svg> در حال بارگذاری...</td></tr></tbody>
       </table>
     </div>
 
     <div id="detailArea"></div>
   </div>
 
-  <button class="fab" onclick="toggleNewForm(); window.scrollTo({top:0, behavior:'smooth'});" aria-label="افزودن مانهوای جدید">+</button>
+  <button class="fab" onclick="toggleNewForm(); window.scrollTo({top:0, behavior:'smooth'});" aria-label="افزودن مانهوای جدید" title="افزودن مانهوای جدید"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>
 
 <script>
 const $ = (id) => document.getElementById(id);
+const ic = (n, c = '') => `<svg class="ic${c ? ' ' + c : ''}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 let fullMangaList = [];
 
 function showMsg(target, text, ok) {
-  target.innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${text}</div>`;
+  target.innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${ic(ok ? 'circle-check' : 'circle-x')}<span>${text}</span></div>`;
   setTimeout(() => { target.innerHTML = ''; }, 5000);
 }
 
@@ -424,11 +508,11 @@ function renderList() {
 
   const tbody = $('mangaList');
   if (!fullMangaList.length) {
-    tbody.innerHTML = '<tr><td class="empty-row" colspan="5">هنوز مانهوایی ثبت نشده.</td></tr>';
+    tbody.innerHTML = '<tr><td class="empty-row" colspan="5"><svg class="ic ic-lg" aria-hidden="true"><use href="#i-inbox"/></svg>هنوز مانهوایی ثبت نشده.</td></tr>';
     return;
   }
   if (!list.length) {
-    tbody.innerHTML = '<tr><td class="empty-row" colspan="5">چیزی با این جستجو پیدا نشد.</td></tr>';
+    tbody.innerHTML = '<tr><td class="empty-row" colspan="5"><svg class="ic ic-lg" aria-hidden="true"><use href="#i-search"/></svg>چیزی با این جستجو پیدا نشد.</td></tr>';
     return;
   }
 
@@ -440,13 +524,13 @@ function renderList() {
           <span class="en">${escapeHtml(m.slug)}</span>
         </span>
       </td>
-      <td data-label="وضعیت">${m.is_vip ? '<span class="badge vip">VIP</span>' : '<span class="badge free">رایگان</span>'}</td>
+      <td data-label="وضعیت">${m.is_vip ? '<span class="badge vip"><svg class="ic" aria-hidden="true"><use href="#i-crown"/></svg>VIP</span>' : '<span class="badge free"><svg class="ic" aria-hidden="true"><use href="#i-lock-open"/></svg>رایگان</span>'}</td>
       <td data-label="چپترها">${m.episodeCount}</td>
       <td data-label="آخرین چپتر">${m.lastEpisode ?? '-'}</td>
       <td class="actions-cell" data-label="">
         <div class="btn-group">
-          <button onclick="openDetail('${m.slug}')">⚙️ مدیریت</button>
-          <button class="danger" onclick="deleteManga('${m.slug}')">🗑️ حذف</button>
+          <button onclick="openDetail('${m.slug}')"><svg class="ic" aria-hidden="true"><use href="#i-settings-2"/></svg> مدیریت</button>
+          <button class="danger" onclick="deleteManga('${m.slug}')"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg> حذف</button>
         </div>
       </td>
     </tr>
@@ -480,10 +564,10 @@ async function openDetail(slug) {
       <td class="actions-cell" data-label="">
         <div class="btn-group">
           <label class="btn" style="cursor:pointer;" title="آپلود/جایگزینی تصویر بندانگشتی این چپتر">
-            🖼️ کاور
+            <svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> کاور
             <input type="file" accept="image/*" style="display:none" onchange="uploadEpisodeCover('${slug}', ${ep.num}, this)" />
           </label>
-          <button class="danger" onclick="deleteEpisode('${slug}', ${ep.num})">🗑️ حذف</button>
+          <button class="danger" onclick="deleteEpisode('${slug}', ${ep.num})"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg> حذف</button>
         </div>
       </td>
     </tr>
@@ -492,24 +576,24 @@ async function openDetail(slug) {
   $('detailArea').innerHTML = `
     <div class="card">
       <div class="detail-title">
-        <h2 style="margin-bottom:0;">🛠️ مدیریت: ${escapeHtml(m.title_fa || m.title_en)}</h2>
+        <h2 style="margin-bottom:0;"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg> مدیریت: ${escapeHtml(m.title_fa || m.title_en)}</h2>
         <span class="slug-tag">${escapeHtml(slug)}</span>
       </div>
       <div id="detailMsg" style="margin-top:10px;"></div>
 
       <div class="btn-group" style="margin:14px 0 6px;">
-        <button class="primary" onclick="quickAddEpisode('${slug}')">➕ افزودن چپتر جدید (خودکار)</button>
-        <button onclick="checkSync('${slug}')">🔄 بررسی همگام‌سازی با S3</button>
+        <button class="primary" onclick="quickAddEpisode('${slug}')"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> افزودن چپتر جدید (خودکار)</button>
+        <button onclick="checkSync('${slug}')"><svg class="ic" aria-hidden="true"><use href="#i-refresh-cw"/></svg> بررسی همگام‌سازی با S3</button>
       </div>
       <div id="syncResult"></div>
 
       <table style="margin-top:10px;">
         <thead><tr><th>شماره</th><th>تاریخ</th><th>وضعیت</th><th></th></tr></thead>
-        <tbody>${episodesRows || '<tr><td class="empty-row" colspan="4">هنوز چپتری ثبت نشده.</td></tr>'}</tbody>
+        <tbody>${episodesRows || '<tr><td class="empty-row" colspan="4"><svg class="ic ic-lg" aria-hidden="true"><use href="#i-inbox"/></svg>هنوز چپتری ثبت نشده.</td></tr>'}</tbody>
       </table>
 
       <details open>
-        <summary>📤 آپلود مستقیم عکس‌های چپتر (به‌جای آپلود دستی روی S3)</summary>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg> آپلود مستقیم عکس‌های چپتر (به‌جای آپلود دستی روی S3)</summary>
         <div class="inner">
           <div class="grid cols-2">
             <div class="field"><label>شماره چپتر (خالی = بعدی)</label><input id="u_num_${slug}" type="number" /></div>
@@ -527,13 +611,13 @@ async function openDetail(slug) {
             <label>تصویر بندانگشتی چپتر (اختیاری - همون کاور کوچیک لیست اپیزودها)</label>
             <input id="u_cover_${slug}" type="file" accept="image/*" />
           </div>
-          <button class="primary" onclick="uploadNewEpisode('${slug}')">آپلود و ثبت چپتر</button>
+          <button class="primary" onclick="uploadNewEpisode('${slug}')"><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg> آپلود و ثبت چپتر</button>
           <div id="u_status_${slug}" style="margin-top:8px;"></div>
         </div>
       </details>
 
       <details>
-        <summary>افزودن چپتر با شماره و تاریخ دلخواه (بدون آپلود عکس - فقط وقتی عکس‌ها از قبل رو S3 هستن)</summary>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book-plus"/></svg> افزودن چپتر با شماره و تاریخ دلخواه (بدون آپلود عکس - فقط وقتی عکس‌ها از قبل رو S3 هستن)</summary>
         <div class="inner">
           <div class="grid cols-2">
             <div class="field"><label>شماره چپتر</label><input id="e_num_${slug}" type="number" /></div>
@@ -543,12 +627,12 @@ async function openDetail(slug) {
             <input type="checkbox" id="e_free_${slug}" checked />
             <label for="e_free_${slug}">رایگان</label>
           </div>
-          <button class="primary" onclick="manualAddEpisode('${slug}')">افزودن</button>
+          <button class="primary" onclick="manualAddEpisode('${slug}')"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> افزودن</button>
         </div>
       </details>
 
       <details style="margin-top:12px;">
-        <summary>ویرایش اطلاعات مانهوا</summary>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg> ویرایش اطلاعات مانهوا</summary>
         <div class="inner">
           <div class="grid cols-2">
             <div class="field"><label>عنوان فارسی</label><input id="m_title_fa" value="${escapeHtml(m.title_fa || '')}" /></div>
@@ -563,7 +647,7 @@ async function openDetail(slug) {
             <label for="m_vip">VIP باشد</label>
           </div>
           <div class="field"><label>توضیحات</label><textarea id="m_desc" rows="3">${escapeHtml(m.description || '')}</textarea></div>
-          <button class="primary" onclick="saveMangaEdit('${slug}')">ذخیره تغییرات</button>
+          <button class="primary" onclick="saveMangaEdit('${slug}')"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> ذخیره تغییرات</button>
         </div>
       </details>
     </div>
@@ -615,7 +699,7 @@ async function uploadNewEpisode(slug) {
   fd.append('free', free ? 'true' : 'false');
   files.forEach((f) => fd.append('pages', f, f.name));
 
-  statusBox.innerHTML = `<div class="msg ok">در حال پردازش و آپلود ${files.length} تصویر... ممکنه چند ده ثانیه طول بکشه، صفحه رو نبند.</div>`;
+  statusBox.innerHTML = `<div class="msg ok">${ic('loader-circle', 'ic-spin')}<span>در حال پردازش و آپلود ${files.length} تصویر... ممکنه چند ده ثانیه طول بکشه، صفحه رو نبند.</span></div>`;
 
   try {
     const r = await apiUpload(`/admin/api/manga/${encodeURIComponent(slug)}/episodes/upload`, fd);
@@ -689,25 +773,25 @@ async function saveMangaEdit(slug) {
 
 async function checkSync(slug) {
   const box = $('syncResult');
-  box.innerHTML = '<div class="skeleton">در حال بررسی...</div>';
+  box.innerHTML = '<div class="skeleton"><svg class="ic ic-spin" aria-hidden="true"><use href="#i-loader-circle"/></svg> در حال بررسی...</div>';
   try {
     const r = await api(`/admin/api/sync-check/${encodeURIComponent(slug)}`);
     let html = '<div class="card" style="margin-top:10px;">';
     if (r.missingInJson.length) {
-      html += `<div class="missing">این چپترها روی S3 آپلود شدن ولی تو JSON ثبت نشدن: ${r.missingInJson.join(', ')}</div>`;
+      html += `<div class="missing">${ic('circle-x')}<span>این چپترها روی S3 آپلود شدن ولی تو JSON ثبت نشدن: ${r.missingInJson.join(', ')}</span></div>`;
       html += `<div class="btn-group" style="margin-top:8px;">` +
-        r.missingInJson.map(n => `<button onclick="addSpecificEpisode('${slug}', ${n})">+ افزودن چپتر ${n}</button>`).join(' ') +
+        r.missingInJson.map(n => `<button onclick="addSpecificEpisode('${slug}', ${n})">${ic('plus')} افزودن چپتر ${n}</button>`).join(' ') +
         `</div>`;
     } else {
-      html += '<div class="sync-ok">همه‌ی چپترهای آپلودشده تو JSON هم ثبت شدن ✓</div>';
+      html += '<div class="sync-ok"><svg class="ic" aria-hidden="true"><use href="#i-circle-check"/></svg><span>همه‌ی چپترهای آپلودشده تو JSON هم ثبت شدن</span></div>';
     }
     if (r.missingInS3.length) {
-      html += `<div class="warn" style="margin-top:8px;">این چپترها تو JSON هستن ولی هنوز عکسی روی S3 براشون پیدا نشد: ${r.missingInS3.join(', ')}</div>`;
+      html += `<div class="warn" style="margin-top:8px;">${ic('triangle-alert')}<span>این چپترها تو JSON هستن ولی هنوز عکسی روی S3 براشون پیدا نشد: ${r.missingInS3.join(', ')}</span></div>`;
     }
     html += '</div>';
     box.innerHTML = html;
   } catch (err) {
-    box.innerHTML = `<div class="msg err">${err.message}</div>`;
+    box.innerHTML = `<div class="msg err">${ic('circle-x')}<span>${err.message}</span></div>`;
   }
 }
 
