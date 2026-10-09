@@ -38,7 +38,8 @@ const report = {};
 for (const [t, T] of Object.entries(SCHEMA)) {
   const f = path.join(dir, `${t}.json`);
   if (!fs.existsSync(f)) { console.warn("فایل نیست:", f); continue; }
-  const rows = JSON.parse(fs.readFileSync(f, "utf8"));
+  let rows = JSON.parse(fs.readFileSync(f, "utf8"));
+if (Array.isArray(rows) && rows.length === 1 && rows[0] && Array.isArray(rows[0].coalesce)) rows = rows[0].coalesce; // خروجی SQL Editor سوپابیس
   tx(() => {
     for (const r of rows) {
       const names = Object.keys(r).filter((k) => T.cols[k]);
