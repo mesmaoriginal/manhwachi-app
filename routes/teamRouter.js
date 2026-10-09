@@ -1,5 +1,5 @@
 // team/teamRouter.js — سیستم کار تیمی (تایپیست / تغییر فونت / مترجم / کلینر) + توکن
-// هر توکن = ۱۰۰۰ تومان. فایل‌ها (zip/docx) در باکت S3 (PARSPACK_BUCKET) زیر پوشه‌ی TEAM_S3_PREFIX (پیش‌فرض team-files) ذخیره می‌شن.
+// قیمت هر توکن فقط سمت سرور (TEAM_TOMAN_PER_TOKEN) تعیین می‌شود و هرگز برای کارمندها نمایش داده نمی‌شود؛ کارمند فقط تومان می‌بیند. فایل‌ها (zip/docx) در باکت S3 (PARSPACK_BUCKET) زیر پوشه‌ی TEAM_S3_PREFIX (پیش‌فرض team-files) ذخیره می‌شن.
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -15,7 +15,12 @@ const { Upload } = require("@aws-sdk/lib-storage");
 const { s3 } = require("../lib/chapterCache"); // همان کلاینت S3 (ParsPack) که بقیه‌ی سایت استفاده می‌کند
 
 const ROLES = { typist: "تایپیست", font: "تغییر دهنده فونت", translator: "مترجم", cleaner: "کلینر" };
-const TOMAN_PER_TOKEN = 1000;
+const TOMAN_PER_TOKEN = Math.max(1, Number(process.env.TEAM_TOMAN_PER_TOKEN) || 1000); // قیمت هر توکن (تومان). فقط همین‌جا/ENV عوض می‌شود؛ به کلاینتِ کارمند نمی‌رود
+const MIN_WITHDRAW_TOKENS = Math.max(1, Number(process.env.TEAM_MIN_WITHDRAW_TOKENS) || 150); // حداقل توکن برای برداشت
+const SUPPORT_MAX_OPEN = 3; // هر کارمند حداکثر ۳ تیکتِ بی‌پاسخ
+const toman = (tokens) => Math.round(Number(tokens) * TOMAN_PER_TOKEN);
+const fmt = (n) => Number(n).toLocaleString("fa-IR");
+const latinDigits = (x) => String(x || "").replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 // قوانین هر نقش: source = ادمین فایل zip ورودی می‌دهد | text = لینک/پیام/نام کار اجباری | address = آدرس اجباری
 // کارمند در همه‌ی نقش‌ها فقط یک zip (حداکثر ۱۰۰ مگابایت) تحویل می‌دهد.
 const ROLE_RULES = {
@@ -27,9 +32,20 @@ const ROLE_RULES = {
 const safeName = (s) => String(s || "task").replace(/[^\w\-. \u0600-\u06FF]/g, "_").slice(0, 60);
 const dlName = (t, kind, f) => `${safeName(t.label)}${kind === "result" ? "-result" : ""}${path.extname(f)}`;
 const MAX_ACTIVE_PER_USER = 3; // هر نفر هم‌زمان حداکثر ۳ کار باز
+const MAX_IN_PROGRESS = 1; // هم‌زمان فقط یک کار «در حال انجام»؛ بعد از تحویل (حتی تایید‌نشده) می‌تواند کار بعدی را بردارد، تا سقف MAX_ACTIVE_PER_USER
+const claimBusy = new Set(); // قفل کوتاه برای جلوگیری از دو درخواست هم‌زمانِ برداشتن
 const MAX_ZIP = 100 * 1024 * 1024; // ۱۰۰ مگابایت
 const CLAIM_HOURS = Number(process.env.TEAM_CLAIM_HOURS || 72);            // کار برداشته‌شده‌ی تحویل‌نشده بعد از این مدت خودکار آزاد می‌شود (۰ = خاموش)
 const AUTO_APPROVE_HOURS = Number(process.env.TEAM_AUTO_APPROVE_HOURS || 0); // تحویل‌های بررسی‌نشده بعد از این مدت خودکار تایید می‌شوند (۰ = خاموش)
+// ---- سیستم پاداش / جریمه ----
+// مهلت تحویل از لحظه‌ی «برداشتن کار» حساب می‌شود.
+const DEADLINE_H = Number(process.env.TEAM_DEADLINE_HOURS || 24); // مهلت عادی
+const GRACE_H = Number(process.env.TEAM_GRACE_HOURS || 12);       // ۱۲ ساعت بعدش: ۳ توکن کسر؛ بعد از آن: آزادسازی + کسر کل توکن کار
+const FAST_H = Number(process.env.TEAM_FAST_HOURS || 4);          // تحویل زیر این مدت = پاداش سرعت
+const FLAT = { mode: "flat", quality: 2, speed: 3, bad: 2, late: 3 };        // تایپیست / فونت: مقدار ثابت توکن
+const MULT = { mode: "mult", quality: 0.10, speed: 0.15, bad: 2, late: 3 };  // مترجم / کلینر: ضریب ۱.۱ و ۱.۱۵ (گرد می‌شود)
+const PAY = { typist: FLAT, font: FLAT, translator: MULT, cleaner: MULT };
+const BASE_RANGE = { typist: [20, 20], font: [20, 20], translator: [12, 15] }; // حقوق پایه؛ کلینر محدودیتی ندارد
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DIR = process.env.TEAM_FILES_DIR || path.join(__dirname, "..", "team_files");
 fs.mkdirSync(DIR, { recursive: true }); // فقط برای فایل‌های قدیمی که قبل از انتقال به S3 آپلود شده‌اند
@@ -64,19 +80,56 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   const patch = (q, body) => sb(q, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
   const sum = (rows) => (rows || []).reduce((a, r) => a + r.tokens, 0);
   const balanceOf = async (uid) => sum(await sb(`team_ledger?user_id=eq.${uid}&select=tokens`));
+  const pendingTokens = async (uid) => sum(await sb(`team_withdrawals?user_id=eq.${uid}&status=eq.pending&select=tokens`));
+  // قوانین به تومان (برای نمایش به کارمند؛ نرخ توکن در آن نیست)
+  const workerRules = () => ({
+    deadlineH: DEADLINE_H, graceH: GRACE_H, fastH: FAST_H,
+    base: { flat: toman(BASE_RANGE.typist[0]), translator: [toman(BASE_RANGE.translator[0]), toman(BASE_RANGE.translator[1])] },
+    qualityFlat: toman(FLAT.quality), speedFlat: toman(FLAT.speed), bad: toman(FLAT.bad), late: toman(FLAT.late),
+    multQuality: Math.round((1 + MULT.quality) * 100) / 100, multSpeed: Math.round((1 + MULT.speed) * 100) / 100,
+  });
+  const dueAt = (t, h) => (t.status === "claimed" && t.first_claimed_at && !t.first_submitted_at ? new Date(new Date(t.first_claimed_at).getTime() + h * 36e5).toISOString() : null);
   // نمای کارمند: فقط برچسب عمومی (CH1). عنوان داخلی هرگز نمی‌رود؛ توضیح/آدرس فقط بعد از برداشتن کار.
   const pubWorker = (t, mine) => ({
-    id: t.id, role: t.role, label: t.label || "کار", reward_tokens: t.reward_tokens, status: t.status,
+    id: t.id, role: t.role, label: t.label || "کار", reward_toman: toman(t.reward_tokens), status: t.status,
     has_source: mine && !!t.source_file, has_extra: mine && !!t.extra_file, description: mine ? t.description : null,
     address: mine ? t.address : null, admin_note: mine ? t.admin_note : null,
+    deadline_at: mine ? dueAt(t, DEADLINE_H) : null, hard_deadline_at: mine ? dueAt(t, DEADLINE_H + GRACE_H) : null,
   });
   const pubAdmin = (t) => ({
     id: t.id, role: t.role, title: t.title, label: t.label, description: t.description, address: t.address,
     reward_tokens: t.reward_tokens, status: t.status, has_source: !!t.source_file, has_extra: !!t.extra_file, has_result: !!t.result_file, chapter_id: t.chapter_id,
     admin_note: t.admin_note, assignee: t.assignee, created_at: t.created_at, claimed_at: t.claimed_at, submitted_at: t.submitted_at,
+    first_claimed_at: t.first_claimed_at, first_submitted_at: t.first_submitted_at, quality: t.quality,
   });
   const fail = (res, e, code = 500) => { console.error("[team]", e.message || e); res.status(code).json({ error: "خطای داخلی سرور." }); };
 
+  // ---------- پاداش / جریمه ----------
+  const ledgerAdd = (rows) => sb("team_ledger", { method: "POST", body: JSON.stringify(rows.map((r) => ({ kind: "adjust", ...r }))) });
+  const notify = (user_id, task_id, message, level) =>
+    sb("team_tickets", { method: "POST", body: JSON.stringify([{ user_id, task_id: task_id || null, message, level }]) }).catch((e) => console.error("[team] ticket:", e.message));
+  // تعدیل‌های زمان/کیفیت روی پایه‌ی حقوق (پایه را خود approve_team_task می‌پردازد)
+  function adjustments(t, quality) {
+    const p = PAY[t.role] || FLAT, flat = p.mode === "flat";
+    const amt = (v) => (flat ? v : Math.round(t.reward_tokens * v));
+    const bad = t.quality === "bad", lines = [];
+    if (quality === "high" && !bad) lines.push({ tokens: amt(p.quality), note: "پاداش کیفیت بالا" });
+    const fc = t.first_claimed_at, fs = t.first_submitted_at || t.submitted_at;
+    if (fc && fs) {
+      const h = (new Date(fs) - new Date(fc)) / 36e5;
+      if (h < FAST_H && !bad) lines.push({ tokens: amt(p.speed), note: `پاداش سرعت (زیر ${FAST_H} ساعت)` });
+      else if (h > DEADLINE_H) lines.push({ tokens: -p.late, note: `جریمه‌ی تاخیر (بیش از ${DEADLINE_H} ساعت)` });
+    }
+    return lines.filter((l) => l.tokens);
+  }
+  async function settle(id, quality) {
+    const t = (await sb(`team_tasks?id=eq.${id}&select=*`))[0];
+    if (!t || !t.assignee) return 0;
+    const lines = adjustments(t, quality);
+    if (lines.length) await ledgerAdd(lines.map((l) => ({ user_id: t.assignee, tokens: l.tokens, note: `${l.note} — ${t.label}` })));
+    if (quality === "high" && t.quality !== "bad") await patch(`team_tasks?id=eq.${id}`, { quality: "high" });
+    return lines.reduce((a, l) => a + l.tokens, 0);
+  }
   // وقتی ترجمه و کلین یک چپتر هر دو تایید شدند، کار تایپیست (فایل کلین + Word ترجمه) خودکار ساخته می‌شود
   async function advanceChapter(chapterId) {
     if (!chapterId) return;
@@ -154,7 +207,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   };
 
   // تایید اتمیک + پرداخت توکن + حرکت دادن چپتر در زنجیره
-  async function approveTask(id) {
+  async function approveTask(id, quality = "normal") {
     const r = await fetch(`${supabaseUrl}/rest/v1/rpc/approve_team_task`, {
       method: "POST", headers: adminHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ p_task: id }), signal: AbortSignal.timeout(15_000),
@@ -162,6 +215,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     if (!r.ok) throw new Error(await r.text());
     const out = await r.json();
     if (!out.ok) return out;
+    try { out.adjust = await settle(id, quality); } catch (e) { console.error("[team] settle:", e.message); out.adjust = 0; }
     const t = (await sb(`team_tasks?id=eq.${id}&select=chapter_id,role`))[0];
     if (t && t.chapter_id) {
       if (t.role === "typist") { await patch(`team_chapters?id=eq.${t.chapter_id}`, { status: "done" }); makeBanner(t.chapter_id).catch(() => {}); }
@@ -305,13 +359,16 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   // ================== کاربر عادی ==================
   router.get("/me", async (req, res) => {
     try {
-      res.json({
-        isAdmin: req.isAdmin,
-        member: req.member ? { roles: req.member.roles, name: req.member.display_name } : null,
-        balance: req.member ? await balanceOf(req.user.id) : 0,
-        tomanPerToken: TOMAN_PER_TOKEN,
-        roles: ROLES,
-      });
+      const out = { isAdmin: req.isAdmin, member: req.member ? { roles: req.member.roles, name: req.member.display_name } : null, roles: ROLES };
+      if (req.member) {
+        const [bal, pend] = await Promise.all([balanceOf(req.user.id), pendingTokens(req.user.id).catch(() => 0)]);
+        const avail = Math.max(0, bal - pend);
+        Object.assign(out, {
+          balanceToman: toman(bal), pendingToman: toman(pend), availableToman: toman(avail),
+          minWithdrawToman: toman(MIN_WITHDRAW_TOKENS), canWithdraw: avail >= MIN_WITHDRAW_TOKENS, rules: workerRules(),
+        });
+      }
+      res.json(out);
     } catch (e) { fail(res, e); }
   });
 
@@ -319,7 +376,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     try {
       const [open, mine] = await Promise.all([
         sb("team_tasks?status=eq.open&select=role"),
-        sb(`team_tasks?assignee=eq.${req.user.id}&status=in.(claimed,submitted)&select=role`),
+        sb(`team_tasks?assignee=eq.${req.user.id}&status=in.(claimed,submitted)&select=role,status`),
       ]);
       const out = {};
       for (const k of Object.keys(ROLES)) {
@@ -329,6 +386,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
           mine: mine.filter((t) => t.role === k).length,
         };
       }
+      out.slots = { max: MAX_ACTIVE_PER_USER, claimed: mine.filter((t) => t.status === "claimed").length, submitted: mine.filter((t) => t.status === "submitted").length };
       res.json(out);
     } catch (e) { fail(res, e); }
   });
@@ -367,6 +425,72 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     } catch (e) { fail(res, e); }
   });
 
+  // ---------- برداشت (درخواست کارمند) ----------
+  const wdBusy = new Set();
+  router.get("/withdrawals", needMember, async (req, res) => {
+    try {
+      const rows = await sb(`team_withdrawals?user_id=eq.${req.user.id}&order=created_at.desc&limit=20&select=id,tokens,toman_per_token,status,admin_note,created_at,decided_at`);
+      res.json(rows.map((r) => ({ id: r.id, toman: r.tokens * r.toman_per_token, status: r.status, admin_note: r.admin_note, created_at: r.created_at, decided_at: r.decided_at })));
+    } catch (e) { fail(res, e); }
+  });
+  router.post("/withdraw", needMember, async (req, res) => {
+    const uid = req.user.id, b = req.body || {};
+    const account = latinDigits(b.account).replace(/[\s-]/g, "").toUpperCase();
+    if (!/^\d{16}$/.test(account) && !/^IR\d{24}$/.test(account)) return res.status(400).json({ error: "شماره کارت (۱۶ رقم) یا شماره شبا (IR و ۲۴ رقم) معتبر وارد کن." });
+    if (wdBusy.has(uid)) return res.status(429).json({ error: "درخواست قبلی هنوز در حال انجام است." });
+    wdBusy.add(uid);
+    try {
+      const avail = (await balanceOf(uid)) - (await pendingTokens(uid));
+      const want = Number(latinDigits(b.amount_toman));
+      const tokens = want > 0 ? Math.floor(want / TOMAN_PER_TOKEN) : avail; // بدون مبلغ = کل موجودیِ قابل برداشت
+      if (avail < MIN_WITHDRAW_TOKENS) return res.status(400).json({ error: `موجودی قابل برداشتت هنوز به حداقل برداشت (${fmt(toman(MIN_WITHDRAW_TOKENS))} تومان) نرسیده.` });
+      if (tokens < MIN_WITHDRAW_TOKENS) return res.status(400).json({ error: `حداقل مبلغ برداشت ${fmt(toman(MIN_WITHDRAW_TOKENS))} تومان است.` });
+      if (tokens > avail) return res.status(400).json({ error: "مبلغ از موجودی قابل برداشتت بیشتره." });
+      try {
+        await sb("team_withdrawals", { method: "POST", body: JSON.stringify([{ user_id: uid, tokens, toman_per_token: TOMAN_PER_TOKEN, account }]) });
+      } catch (e) {
+        if (/23505|duplicate/i.test(e.message)) return res.status(409).json({ error: "یک درخواست برداشتِ در حال بررسی داری؛ تا نتیجه‌اش مشخص نشه درخواست جدید نمی‌تونی بدی." });
+        throw e;
+      }
+      res.json({ ok: true, toman: toman(tokens) });
+    } catch (e) { fail(res, e); } finally { wdBusy.delete(uid); }
+  });
+
+  // ---------- تیکت کارمند به ادمین ----------
+  router.get("/support", needMember, async (req, res) => {
+    try {
+      const rows = await sb(`team_support?user_id=eq.${req.user.id}&order=created_at.desc&limit=30&select=*`);
+      const ids = [...new Set(rows.map((r) => r.task_id).filter(Boolean))];
+      const lab = ids.length ? Object.fromEntries((await sb(`team_tasks?id=in.(${ids.join(",")})&select=id,label`)).map((t) => [t.id, t.label])) : {};
+      res.json(rows.map((r) => ({ id: r.id, message: r.message, reply: r.reply, status: r.status, created_at: r.created_at, replied_at: r.replied_at, label: r.task_id ? lab[r.task_id] || null : null, unread: !!r.reply && !r.user_read_at })));
+    } catch (e) { fail(res, e); }
+  });
+  router.post("/support", needMember, async (req, res) => {
+    const b = req.body || {}, uid = req.user.id;
+    const message = String(b.message || "").trim().slice(0, 1000);
+    if (!message) return res.status(400).json({ error: "متن تیکت را بنویس." });
+    try {
+      let taskId = null;
+      if (b.task_id) {
+        if (!UUID_RE.test(String(b.task_id))) return res.status(400).json({ error: "شناسه‌ی کار نامعتبر است." });
+        const t = (await sb(`team_tasks?id=eq.${b.task_id}&assignee=eq.${uid}&select=id`))[0];
+        if (!t) return res.status(404).json({ error: "این کار برای تو نیست." });
+        taskId = t.id;
+      }
+      const open = await sb(`team_support?user_id=eq.${uid}&status=eq.open&select=id`);
+      if (open.length >= SUPPORT_MAX_OPEN) return res.status(429).json({ error: `${SUPPORT_MAX_OPEN} تیکت بی‌پاسخ داری؛ صبر کن ادمین جواب بده.` });
+      await sb("team_support", { method: "POST", body: JSON.stringify([{ user_id: uid, task_id: taskId, message }]) });
+      res.json({ ok: true });
+    } catch (e) { fail(res, e); }
+  });
+  router.post("/support/:id/read", needMember, async (req, res) => {
+    if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
+    try {
+      await patch(`team_support?id=eq.${req.params.id}&user_id=eq.${req.user.id}&reply=not.is.null&user_read_at=is.null`, { user_read_at: new Date().toISOString() });
+      res.json({ ok: true });
+    } catch (e) { fail(res, e); }
+  });
+
   router.post("/tasks/:id/claim", needMember, async (req, res) => {
     const id = req.params.id;
     if (!UUID_RE.test(id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
@@ -374,13 +498,19 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       const t = (await sb(`team_tasks?id=eq.${id}&select=role`))[0];
       if (!t) return res.status(404).json({ error: "کار پیدا نشد." });
       if (!req.member.roles.includes(t.role)) return res.status(403).json({ error: "این نقش برای شما فعال نیست." });
-      const active = await sb(`team_tasks?assignee=eq.${req.user.id}&status=in.(claimed,submitted)&select=id`);
+      const uid = req.user.id;
+      if (claimBusy.has(uid)) return res.status(429).json({ error: "درخواست قبلی هنوز در حال انجام است." });
+      claimBusy.add(uid); res.once("close", () => claimBusy.delete(uid));
+      const active = await sb(`team_tasks?assignee=eq.${uid}&status=in.(claimed,submitted)&select=id,status`);
+      if (active.filter((a) => a.status === "claimed").length >= MAX_IN_PROGRESS) {
+        return res.status(429).json({ error: "همزمان فقط یک کار در حال انجام داری. اول همون رو تحویل بده، بعد می‌تونی کار بعدی رو برداری." });
+      }
       if (active.length >= MAX_ACTIVE_PER_USER) {
-        return res.status(429).json({ error: `حداکثر ${MAX_ACTIVE_PER_USER} کار هم‌زمان می‌تونی داشته باشی. اول یکی رو تحویل بده.` });
+        return res.status(429).json({ error: `${MAX_ACTIVE_PER_USER} کارت در جریانه (در انتظار تایید). بعد از تایید یکی‌شون می‌تونی کار جدید برداری.` });
       }
       // برداشتن اتمیک: فقط اگه هنوز open باشه
       const rows = await patch(`team_tasks?id=eq.${id}&status=eq.open`, {
-        status: "claimed", assignee: req.user.id, claimed_at: new Date().toISOString(), admin_note: null,
+        status: "claimed", assignee: req.user.id, claimed_at: new Date().toISOString(), first_claimed_at: new Date().toISOString(), first_submitted_at: null, quality: null, admin_note: null,
       });
       if (!rows.length) return res.status(409).json({ error: "این کار همین الان توسط شخص دیگری برداشته شد." });
       res.json({ ok: true });
@@ -392,11 +522,16 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     const id = req.params.id;
     if (!UUID_RE.test(id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
     try {
-      const t = (await sb(`team_tasks?id=eq.${id}&assignee=eq.${req.user.id}&status=eq.claimed&select=role,result_file`))[0];
+      const t = (await sb(`team_tasks?id=eq.${id}&assignee=eq.${req.user.id}&status=eq.claimed&select=role,result_file,first_claimed_at,first_submitted_at`))[0];
       if (!t) return res.status(404).json({ error: "این کار در حالت تحویل نیست." });
+      // بعد از ۳۶ ساعت (برای اولین تحویل) کار دیگر مال او نیست: جارو آزادش می‌کند و جریمه ثبت می‌شود
+      if (!t.first_submitted_at && t.first_claimed_at && Date.now() - new Date(t.first_claimed_at) > (DEADLINE_H + GRACE_H) * 36e5) {
+        await sweep();
+        return res.status(410).json({ error: `مهلت ${DEADLINE_H + GRACE_H} ساعته‌ی این کار تمام شده؛ کار آزاد و جریمه ثبت شد.` });
+      }
       const name = await saveZip(req, ROLE_RULES[t.role].result, id, t.role, "result");
       const rows = await patch(`team_tasks?id=eq.${id}&assignee=eq.${req.user.id}&status=eq.claimed`, {
-        status: "submitted", result_file: name, submitted_at: new Date().toISOString(),
+        status: "submitted", result_file: name, submitted_at: new Date().toISOString(), first_submitted_at: t.first_submitted_at || new Date().toISOString(),
       });
       if (!rows.length) { await rmFile(name); return res.status(409).json({ error: "وضعیت کار تغییر کرده است." }); }
       await rmFile(t.result_file);
@@ -425,12 +560,14 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
 
   admin.get("/overview", async (req, res) => {
     try {
-      const [tasks, members, ledger, chapters, manhwas] = await Promise.all([
+      const [tasks, members, ledger, chapters, manhwas, wdPend, supOpen] = await Promise.all([
         sb("team_tasks?order=created_at.desc&limit=1000&select=*"),
         sb("team_members?select=*&order=created_at.desc"),
         sb("team_ledger?select=user_id,tokens,kind"),
         sb("team_chapters?order=created_at.desc&limit=300&select=*"),
         sb("team_manhwas?order=created_at.desc&select=id,name,image_file"),
+        sb("team_withdrawals?status=eq.pending&select=tokens").catch(() => []), // اگر SQL هنوز اجرا نشده، پنل خراب نشود
+        sb("team_support?status=eq.open&select=id").catch(() => []),
       ]);
       const bal = {};
       let rewarded = 0, cashedOut = 0;
@@ -444,9 +581,12 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       tasks.forEach((t) => { if (t.status === "approved" && t.assignee) done[t.assignee] = (done[t.assignee] || 0) + 1; });
       res.json({
         tomanPerToken: TOMAN_PER_TOKEN, rules: ROLE_RULES, roles: ROLES, chapters,
+        pay: { deadlineH: DEADLINE_H, graceH: GRACE_H, fastH: FAST_H, roles: PAY, baseRange: BASE_RANGE },
         manhwas: manhwas.map((m) => ({ id: m.id, name: m.name, has_image: !!m.image_file })), bannerBusy: [...bannerBusy], bannerReady: banner.configured(),
         auto: { claimHours: CLAIM_HOURS, autoApproveHours: AUTO_APPROVE_HOURS },
         stats: { rewarded, cashedOut, owed: Object.values(bal).reduce((a, b) => a + b, 0) },
+        pending: { withdrawals: wdPend.length, withdrawTokens: sum(wdPend), support: supOpen.length },
+        minWithdrawTokens: MIN_WITHDRAW_TOKENS,
         tasks: tasks.map((t) => ({ ...pubAdmin(t), worker: t.assignee ? name[t.assignee] || t.assignee.slice(0, 8) : null })),
         members: members.map((m) => ({ user_id: m.user_id, name: m.display_name, roles: m.roles, active: m.active, balance: bal[m.user_id] || 0, done: done[m.user_id] || 0, auto_approve: !!m.auto_approve, banner_name: m.banner_name || "" })),
       });
@@ -462,6 +602,8 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     const tokens = parseInt(b.reward_tokens, 10);
     if (!title || !label) return { err: "عنوان داخلی و برچسب عمومی (مثلاً CH1) را وارد کن." };
     if (!(tokens > 0 && tokens <= 100000)) return { err: "تعداد توکن نامعتبر است." };
+    const rg = BASE_RANGE[role];
+    if (rg && (tokens < rg[0] || tokens > rg[1])) return { err: rg[0] === rg[1] ? `حقوق ${ROLES[role]} ثابت و ${rg[0]} توکن است.` : `حقوق ${ROLES[role]} باید بین ${rg[0]} تا ${rg[1]} توکن باشد.` };
     if (rule.text && !description) return { err: "برای مترجم، لینک/پیام/نام کار را بنویس." };
     if (rule.address && !address) return { err: "برای تغییر دهنده فونت، آدرس لازم است." };
     return { v: { title, label, description, address: rule.address ? address : null, reward_tokens: tokens } };
@@ -575,7 +717,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       const t = (await sb(`team_tasks?id=eq.${id}&status=in.(claimed,submitted)&select=result_file`))[0];
       if (!t) return res.status(409).json({ error: "این کار در دست کارمند نیست." });
       const rows = await patch(`team_tasks?id=eq.${id}&status=in.(claimed,submitted)`, {
-        status: "open", assignee: null, claimed_at: null, submitted_at: null, result_file: null, admin_note: null,
+        status: "open", assignee: null, claimed_at: null, submitted_at: null, first_claimed_at: null, first_submitted_at: null, quality: null, result_file: null, admin_note: null,
       });
       if (rows.length) await rmFile(t.result_file);
       res.json({ ok: true });
@@ -603,6 +745,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     if (!title || !label) return res.status(400).json({ error: "عنوان داخلی و برچسب (مثلاً CH1) لازم است." });
     if (!note) return res.status(400).json({ error: "لینک/پیام/نام کار برای مترجم لازم است." });
     if (!(tr > 0 && ty > 0 && cl >= 0) || Math.max(tr, cl, ty) > 100000) return res.status(400).json({ error: "توکن‌های هر مرحله را درست وارد کن (کلین می‌تواند ۰ باشد)." });
+    for (const [r, v] of [["translator", tr], ["typist", ty]]) { const g = BASE_RANGE[r]; if (v < g[0] || v > g[1]) return res.status(400).json({ error: g[0] === g[1] ? `حقوق ${ROLES[r]} ثابت و ${g[0]} توکن است.` : `حقوق ${ROLES[r]} باید بین ${g[0]} تا ${g[1]} توکن باشد.` }); }
     try {
       const ch = (await sb("team_chapters", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify([{ title, label, typist_reward: ty, manhwa_id: UUID_RE.test(String(b.manhwa_id || "")) ? b.manhwa_id : null }]) }))[0];
       const rows = [{ role: "translator", chapter_id: ch.id, title: `${title} — ترجمه`, label, description: note, reward_tokens: tr, status: "open" }];
@@ -662,9 +805,9 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   admin.post("/tasks/:id/approve", async (req, res) => {
     if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
     try {
-      const out = await approveTask(req.params.id);
+      const out = await approveTask(req.params.id, (req.body || {}).quality === "high" ? "high" : "normal");
       if (!out.ok) return res.status(409).json({ error: "این کار در انتظار تایید نیست (شاید قبلاً تایید شده)." });
-      res.json({ ok: true, tokens: out.tokens });
+      res.json({ ok: true, tokens: out.tokens, adjust: out.adjust || 0 });
     } catch (e) { fail(res, e); }
   });
 
@@ -673,9 +816,15 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     const note = String((req.body || {}).note || "").trim().slice(0, 500);
     if (!note) return res.status(400).json({ error: "دلیل نیاز به اصلاح را بنویس." });
     try {
-      const rows = await patch(`team_tasks?id=eq.${req.params.id}&status=eq.submitted`, { status: "claimed", admin_note: note, claimed_at: new Date().toISOString() });
+      const penalty = !!(req.body || {}).penalty; // کیفیت بد: کسر توکن + برگشت برای اصلاح
+      const rows = await patch(`team_tasks?id=eq.${req.params.id}&status=eq.submitted`, { status: "claimed", admin_note: note, claimed_at: new Date().toISOString(), ...(penalty ? { quality: "bad" } : {}) });
       if (!rows.length) return res.status(409).json({ error: "این کار در انتظار تایید نیست." });
-      res.json({ ok: true });
+      const tk = rows[0], cut = penalty ? (PAY[tk.role] || FLAT).bad : 0;
+      if (penalty && tk.assignee) {
+        await ledgerAdd([{ user_id: tk.assignee, tokens: -cut, note: `جریمه‌ی کیفیت بد — ${tk.label}` }]);
+        await notify(tk.assignee, tk.id, `کیفیت کار ${tk.label} پایین بود؛ ${fmt(toman(cut))} تومان کسر شد و برای اصلاح برگشت: ${note}`, "warning");
+      }
+      res.json({ ok: true, penalty: cut });
     } catch (e) { fail(res, e); }
   });
 
@@ -772,6 +921,70 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     catch (e) { fail(res, e); }
   });
 
+  // ---------- برداشت‌ها (ادمین) ----------
+  admin.get("/withdrawals", async (req, res) => {
+    try {
+      const rows = await sb("team_withdrawals?order=created_at.desc&limit=100&select=*");
+      const mem = Object.fromEntries((await sb("team_members?select=user_id,display_name")).map((m) => [m.user_id, m.display_name || m.user_id.slice(0, 8)]));
+      res.json(rows.map((r) => ({ ...r, name: mem[r.user_id] || r.user_id.slice(0, 8), toman: r.tokens * r.toman_per_token })));
+    } catch (e) { fail(res, e); }
+  });
+  // «پرداخت شد»: بعد از واریز واقعی پول؛ توکن از حساب کم می‌شود (kind=payout مثل تسویه‌ی دستی)
+  admin.post("/withdrawals/:id/pay", async (req, res) => {
+    if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
+    const note = String((req.body || {}).note || "").trim().slice(0, 300) || null;
+    try {
+      const w = (await sb(`team_withdrawals?id=eq.${req.params.id}&select=*`))[0];
+      if (!w || w.status !== "pending") return res.status(409).json({ error: "این درخواست در انتظار بررسی نیست." });
+      if ((await balanceOf(w.user_id)) < w.tokens) return res.status(400).json({ error: "موجودی عضو از مبلغ درخواست کمتر شده؛ درخواست را رد کن یا موجودی را اصلاح کن." });
+      const rows = await patch(`team_withdrawals?id=eq.${w.id}&status=eq.pending`, { status: "paid", admin_note: note, decided_at: new Date().toISOString() });
+      if (!rows.length) return res.status(409).json({ error: "این درخواست همین الان بررسی شد." });
+      const amount = w.tokens * w.toman_per_token;
+      try {
+        await sb("team_ledger", { method: "POST", body: JSON.stringify([{ user_id: w.user_id, tokens: -w.tokens, kind: "payout", note: `برداشت ${amount} تومان` }]) });
+      } catch (e) { await patch(`team_withdrawals?id=eq.${w.id}`, { status: "pending", decided_at: null }).catch(() => {}); throw e; }
+      await notify(w.user_id, null, `برداشت ${fmt(amount)} تومان انجام شد.${note ? " " + note : ""}`, "info");
+      res.json({ ok: true, toman: amount });
+    } catch (e) { fail(res, e); }
+  });
+  admin.post("/withdrawals/:id/reject", async (req, res) => {
+    if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
+    const note = String((req.body || {}).note || "").trim().slice(0, 300);
+    if (!note) return res.status(400).json({ error: "دلیل رد را بنویس." });
+    try {
+      const rows = await patch(`team_withdrawals?id=eq.${req.params.id}&status=eq.pending`, { status: "rejected", admin_note: note, decided_at: new Date().toISOString() });
+      if (!rows.length) return res.status(409).json({ error: "این درخواست در انتظار بررسی نیست." });
+      await notify(rows[0].user_id, null, `درخواست برداشت ${fmt(rows[0].tokens * rows[0].toman_per_token)} تومان رد شد: ${note}`, "warning");
+      res.json({ ok: true });
+    } catch (e) { fail(res, e); }
+  });
+
+  // ---------- تیکت‌های کارمندها (ادمین) ----------
+  admin.get("/support", async (req, res) => {
+    try {
+      const rows = await sb("team_support?order=created_at.desc&limit=100&select=*");
+      const ids = [...new Set(rows.map((r) => r.task_id).filter(Boolean))];
+      const lab = ids.length ? Object.fromEntries((await sb(`team_tasks?id=in.(${ids.join(",")})&select=id,label,title`)).map((t) => [t.id, `${t.label} — ${t.title}`])) : {};
+      const mem = Object.fromEntries((await sb("team_members?select=user_id,display_name")).map((m) => [m.user_id, m.display_name || m.user_id.slice(0, 8)]));
+      res.json(rows.map((r) => ({ ...r, name: mem[r.user_id] || r.user_id.slice(0, 8), task: r.task_id ? lab[r.task_id] || null : null })));
+    } catch (e) { fail(res, e); }
+  });
+  admin.post("/support/:id/reply", async (req, res) => {
+    if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
+    const message = String((req.body || {}).message || "").trim().slice(0, 1000);
+    if (!message) return res.status(400).json({ error: "متن پاسخ را بنویس." });
+    try {
+      const rows = await patch(`team_support?id=eq.${req.params.id}`, { reply: message, status: "answered", replied_at: new Date().toISOString(), user_read_at: null });
+      if (!rows.length) return res.status(404).json({ error: "تیکت پیدا نشد." });
+      res.json({ ok: true });
+    } catch (e) { fail(res, e); }
+  });
+  admin.delete("/support/:id", async (req, res) => {
+    if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
+    try { await sb(`team_support?id=eq.${req.params.id}`, { method: "DELETE" }); res.json({ ok: true }); }
+    catch (e) { fail(res, e); }
+  });
+
   // افزودن/ویرایش عضو با ایمیل یا شماره موبایل
   admin.post("/members", async (req, res) => {
     const { identifier, name, roles } = req.body || {};
@@ -822,9 +1035,21 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   // جارو: آزادسازی کارهای رهاشده + (اختیاری) تایید خودکار تحویل‌های بررسی‌نشده
   async function sweep() {
     try {
+      // بعد از ۳۶ ساعت بدون اولین تحویل: آزادسازی + کسر کل توکن کار از کارمند
+      {
+        const cut = encodeURIComponent(new Date(Date.now() - (DEADLINE_H + GRACE_H) * 36e5).toISOString());
+        const over = await sb(`team_tasks?status=eq.claimed&first_submitted_at=is.null&first_claimed_at=lt.${cut}&select=id,assignee,reward_tokens,label`);
+        for (const t of over) {
+          const rows = await patch(`team_tasks?id=eq.${t.id}&status=eq.claimed&first_submitted_at=is.null`, { status: "open", assignee: null, claimed_at: null, first_claimed_at: null, quality: null, admin_note: null });
+          if (!rows.length || !t.assignee) continue;
+          await ledgerAdd([{ user_id: t.assignee, tokens: -t.reward_tokens, note: `جریمه‌ی عدم تحویل در ${DEADLINE_H + GRACE_H} ساعت (کسر کل توکن کار) — ${t.label}` }]);
+          await notify(t.assignee, null, `کار ${t.label} را در ${DEADLINE_H + GRACE_H} ساعت تحویل ندادی؛ کار آزاد شد و ${fmt(toman(t.reward_tokens))} تومان کسر شد.`, "warning");
+          console.log(`[team] کار ${t.label} بعد از مهلت آزاد و جریمه شد`);
+        }
+      }
       if (CLAIM_HOURS > 0) {
         const cut = encodeURIComponent(new Date(Date.now() - CLAIM_HOURS * 36e5).toISOString());
-        const freed = await patch(`team_tasks?status=eq.claimed&claimed_at=lt.${cut}`, { status: "open", assignee: null, claimed_at: null, admin_note: null });
+        const freed = await patch(`team_tasks?status=eq.claimed&claimed_at=lt.${cut}`, { status: "open", assignee: null, claimed_at: null, first_claimed_at: null, first_submitted_at: null, quality: null, admin_note: null });
         if (freed.length) console.log(`[team] ${freed.length} کار رهاشده خودکار آزاد شد`);
       }
       if (AUTO_APPROVE_HOURS > 0) {
@@ -847,7 +1072,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   }
   setInterval(cleanTmp, 10 * 60 * 1000).unref();
   cleanTmp();
-  setInterval(sweep, 15 * 60 * 1000).unref();
+  setInterval(sweep, 5 * 60 * 1000).unref();
   setTimeout(sweep, 60 * 1000).unref();
 
   router.use("/admin", admin);
