@@ -1,0 +1,7578 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "title": "standard public schema",
+    "version": "14.5"
+  },
+  "host": "vumnujygswotstvwljaz.supabase.co:443",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "produces": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "produces": [
+          "application/openapi+json",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "OpenAPI description (this document)",
+        "tags": [
+          "Introspection"
+        ]
+      }
+    },
+    "/reels": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.reels.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.image_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.video_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.creator"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.avatar_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.comments_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.tags"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.music_title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.music_cover"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.level"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.likes_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.share_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.manhwa_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.manhwa_title"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/reels"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "reels"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.reels"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "reels"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.reels.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.image_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.video_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.creator"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.avatar_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.comments_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.tags"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.music_title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.music_cover"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.level"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.likes_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.share_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.manhwa_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.manhwa_title"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "reels"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.reels.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.image_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.video_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.creator"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.avatar_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.comments_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.tags"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.music_title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.music_cover"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.level"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.likes_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.share_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.manhwa_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reels.manhwa_title"
+          },
+          {
+            "$ref": "#/parameters/body.reels"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "reels"
+        ]
+      }
+    },
+    "/bookmarks": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.title_en"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.title_fa"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.cover_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/bookmarks"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "bookmarks"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.bookmarks"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "bookmarks"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.title_en"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.title_fa"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.cover_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "bookmarks"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.title_en"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.title_fa"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.cover_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bookmarks.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.bookmarks"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "bookmarks"
+        ]
+      }
+    },
+    "/payments": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.payments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.track_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.plan_key"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.ref_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/payments"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.payments"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.payments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.track_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.plan_key"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.ref_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.payments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.track_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.plan_key"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.ref_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.payments.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.payments"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/profile_contacts": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/profile_contacts"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "profile_contacts"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.profile_contacts"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "profile_contacts"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profile_contacts"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profile_contacts.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.profile_contacts"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profile_contacts"
+        ]
+      }
+    },
+    "/team_tasks": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.reward_tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.assignee"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.source_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.result_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.admin_note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.claimed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.reviewed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.label"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.chapter_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.extra_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.first_claimed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.first_submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.quality"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_tasks"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_tasks"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_tasks"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_tasks"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.reward_tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.assignee"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.source_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.result_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.admin_note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.claimed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.reviewed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.label"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.chapter_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.extra_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.first_claimed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.first_submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.quality"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_tasks"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.reward_tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.assignee"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.source_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.result_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.admin_note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.claimed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.reviewed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.label"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.chapter_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.extra_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.first_claimed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.first_submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tasks.quality"
+          },
+          {
+            "$ref": "#/parameters/body.team_tasks"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_tasks"
+        ]
+      }
+    },
+    "/ads": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.ads.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.image_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.link"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.position"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.start_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.end_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.description"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ads"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "ads"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.ads"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "ads"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.ads.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.image_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.link"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.position"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.start_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.end_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.description"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "ads"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.ads.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.image_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.link"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.position"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.start_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.end_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.ads.description"
+          },
+          {
+            "$ref": "#/parameters/body.ads"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "ads"
+        ]
+      }
+    },
+    "/manhwa_stats": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.views"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/manhwa_stats"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "manhwa_stats"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.manhwa_stats"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "manhwa_stats"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.views"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "manhwa_stats"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.views"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_stats.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.manhwa_stats"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "manhwa_stats"
+        ]
+      }
+    },
+    "/team_ledger": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.kind"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_ledger"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_ledger"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_ledger"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_ledger"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.kind"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_ledger"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.kind"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_ledger.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.team_ledger"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_ledger"
+        ]
+      }
+    },
+    "/profiles": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.avatar_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.is_vip"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.vip_until"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/profiles"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.profiles"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.avatar_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.is_vip"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.vip_until"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.avatar_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.is_vip"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.vip_until"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.profiles"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/team_chapters": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.label"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.typist_reward"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.manhwa_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.banner_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.banner_note"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_chapters"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_chapters"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_chapters"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_chapters"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.label"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.typist_reward"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.manhwa_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.banner_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.banner_note"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_chapters"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.title"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.label"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.typist_reward"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.manhwa_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.banner_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_chapters.banner_note"
+          },
+          {
+            "$ref": "#/parameters/body.team_chapters"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_chapters"
+        ]
+      }
+    },
+    "/reel_likes": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.reel_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.device_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/reel_likes"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "reel_likes"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.reel_likes"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "reel_likes"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.reel_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.device_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "reel_likes"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.reel_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.device_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.reel_likes.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.reel_likes"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "reel_likes"
+        ]
+      }
+    },
+    "/team_support": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_support.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.reply"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.replied_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.user_read_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_support"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_support"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_support"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_support"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_support.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.reply"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.replied_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.user_read_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_support"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_support.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.reply"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.replied_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_support.user_read_at"
+          },
+          {
+            "$ref": "#/parameters/body.team_support"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_support"
+        ]
+      }
+    },
+    "/chapter_reports": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.chapter_num"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.page"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/chapter_reports"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "chapter_reports"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.chapter_reports"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "chapter_reports"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.chapter_num"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.page"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "chapter_reports"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.chapter_num"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.page"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.chapter_reports.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.chapter_reports"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "chapter_reports"
+        ]
+      }
+    },
+    "/admins": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.admins.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.display_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.role_tag"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/admins"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "admins"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.admins"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "admins"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.admins.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.display_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.role_tag"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "admins"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.admins.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.display_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.role_tag"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.admins.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.admins"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "admins"
+        ]
+      }
+    },
+    "/manhwa_ratings": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.rating"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/manhwa_ratings"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "manhwa_ratings"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.manhwa_ratings"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "manhwa_ratings"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.rating"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "manhwa_ratings"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.rating"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.manhwa_ratings.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.manhwa_ratings"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "manhwa_ratings"
+        ]
+      }
+    },
+    "/team_tickets": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.level"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.read_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_tickets"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_tickets"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_tickets"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_tickets"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.level"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.read_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_tickets"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.task_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.level"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_tickets.read_at"
+          },
+          {
+            "$ref": "#/parameters/body.team_tickets"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_tickets"
+        ]
+      }
+    },
+    "/plans": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.plans.key"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.amount_rial"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.days"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.months"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.label"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/plans"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "plans"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.plans"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "plans"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.plans.key"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.amount_rial"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.days"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.months"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.label"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "plans"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.plans.key"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.amount_rial"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.days"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.months"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.plans.label"
+          },
+          {
+            "$ref": "#/parameters/body.plans"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "plans"
+        ]
+      }
+    },
+    "/messages": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.messages.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.approved"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.approved_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.parent_message_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.user_id"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/messages"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "messages"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.messages"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "messages"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.messages.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.approved"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.approved_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.parent_message_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.user_id"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "messages"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.messages.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.manhwa_slug"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.approved"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.approved_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.parent_message_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.messages.user_id"
+          },
+          {
+            "$ref": "#/parameters/body.messages"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/team_manhwas": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.image_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_manhwas"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_manhwas"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_manhwas"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_manhwas"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.image_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_manhwas"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.image_file"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_manhwas.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.team_manhwas"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_manhwas"
+        ]
+      }
+    },
+    "/replies": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.replies.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.message_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.reply_text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.is_admin"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.user_id"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/replies"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "replies"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.replies"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "replies"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.replies.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.message_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.reply_text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.is_admin"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.user_id"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "replies"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.replies.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.message_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.reply_text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.admin_role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.is_admin"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.replies.user_id"
+          },
+          {
+            "$ref": "#/parameters/body.replies"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "replies"
+        ]
+      }
+    },
+    "/comments": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.comments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.reel_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.device_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.approved"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/comments"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "comments"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.comments"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "comments"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.comments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.reel_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.device_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.approved"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "comments"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.comments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.reel_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.device_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.text"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.approved"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.comments.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.comments"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "comments"
+        ]
+      }
+    },
+    "/team_withdrawals": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.toman_per_token"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.account"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.admin_note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.decided_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_withdrawals"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_withdrawals"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_withdrawals"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_withdrawals"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.toman_per_token"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.account"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.admin_note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.decided_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_withdrawals"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.tokens"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.toman_per_token"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.account"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.admin_note"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_withdrawals.decided_at"
+          },
+          {
+            "$ref": "#/parameters/body.team_withdrawals"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_withdrawals"
+        ]
+      }
+    },
+    "/applications": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.applications.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.age"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.platform"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.social_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.bio"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/applications"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "applications"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.applications"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "applications"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.applications.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.age"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.platform"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.social_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.bio"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "applications"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.applications.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.age"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.platform"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.social_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.applications.bio"
+          },
+          {
+            "$ref": "#/parameters/body.applications"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/team_members": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_members.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.display_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.roles"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.auto_approve"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.banner_name"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/team_members"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "team_members"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.team_members"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "team_members"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_members.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.display_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.roles"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.auto_approve"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.banner_name"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_members"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.team_members.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.display_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.roles"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.auto_approve"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.team_members.banner_name"
+          },
+          {
+            "$ref": "#/parameters/body.team_members"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "team_members"
+        ]
+      }
+    },
+    "/rpc/net_await_response": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_max_wait_ms": {
+                  "format": "integer",
+                  "type": "integer"
+                },
+                "p_poll_interval_ms": {
+                  "format": "integer",
+                  "type": "integer"
+                },
+                "p_request_id": {
+                  "format": "bigint",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "p_request_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) net_await_response"
+        ]
+      }
+    },
+    "/rpc/zibal_verify_request": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_track_id": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_track_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) zibal_verify_request"
+        ]
+      }
+    },
+    "/rpc/approve_team_task": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_task": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_task"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) approve_team_task"
+        ]
+      }
+    },
+    "/rpc/activate_user_vip": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "duration_days": {
+                  "format": "integer",
+                  "type": "integer"
+                },
+                "target_user_id": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "target_user_id",
+                "duration_days"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) activate_user_vip"
+        ]
+      }
+    },
+    "/rpc/increment_like": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "r_id": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "r_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) increment_like"
+        ]
+      }
+    },
+    "/rpc/find_auth_user": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_email": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "p_phone": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) find_auth_user"
+        ]
+      }
+    },
+    "/rpc/set_vip_status": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_is_vip": {
+                  "format": "boolean",
+                  "type": "boolean"
+                },
+                "p_user_id": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "p_vip_until": {
+                  "format": "timestamp with time zone",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_user_id",
+                "p_is_vip",
+                "p_vip_until"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) set_vip_status"
+        ]
+      }
+    },
+    "/rpc/show_trgm": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) show_trgm"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                ""
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) show_trgm"
+        ]
+      }
+    },
+    "/rpc/increment_likes": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "reel_id_param": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reel_id_param"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) increment_likes"
+        ]
+      }
+    },
+    "/rpc/search_manhwas": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "search_query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "integer",
+            "in": "query",
+            "name": "result_limit",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "format": "text",
+            "in": "query",
+            "name": "selected_type",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "format": "text",
+            "in": "query",
+            "name": "selected_genre",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) search_manhwas"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "result_limit": {
+                  "format": "integer",
+                  "type": "integer"
+                },
+                "search_query": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "selected_genre": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "selected_type": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "search_query"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) search_manhwas"
+        ]
+      }
+    },
+    "/rpc/manhwa_rating_summary": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "p_slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) manhwa_rating_summary"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_slug": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_slug"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) manhwa_rating_summary"
+        ]
+      }
+    },
+    "/rpc/update_own_profile": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_avatar_url": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "p_full_name": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_full_name",
+                "p_avatar_url"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) update_own_profile"
+        ]
+      }
+    },
+    "/rpc/decrement_like": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "r_id": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "r_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) decrement_like"
+        ]
+      }
+    },
+    "/rpc/show_limit": {
+      "get": {
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) show_limit"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) show_limit"
+        ]
+      }
+    },
+    "/rpc/zibal_create_request": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_plan_key": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "p_user_email": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "p_user_id": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "p_user_phone": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_user_id",
+                "p_plan_key",
+                "p_user_email"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) zibal_create_request"
+        ]
+      }
+    },
+    "/rpc/increment_manhwa_views": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_slug": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_slug"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) increment_manhwa_views"
+        ]
+      }
+    },
+    "/rpc/decrement_likes": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "reel_id_param": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reel_id_param"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) decrement_likes"
+        ]
+      }
+    },
+    "/rpc/manhwa_rating_totals": {
+      "get": {
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) manhwa_rating_totals"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) manhwa_rating_totals"
+        ]
+      }
+    },
+    "/rpc/unaccent": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) unaccent"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "": {
+                  "format": "text",
+                  "type": "string"
+                }
+              },
+              "required": [
+                ""
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) unaccent"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "reels": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "extensions.uuid_generate_v4()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "title": {
+          "format": "text",
+          "type": "string"
+        },
+        "description": {
+          "format": "text",
+          "type": "string"
+        },
+        "image_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "video_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "creator": {
+          "format": "text",
+          "type": "string"
+        },
+        "avatar_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "comments_count": {
+          "default": 0,
+          "format": "integer",
+          "type": "integer"
+        },
+        "tags": {
+          "format": "text[]",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "music_title": {
+          "format": "text",
+          "type": "string"
+        },
+        "music_cover": {
+          "format": "text",
+          "type": "string"
+        },
+        "level": {
+          "format": "text",
+          "type": "string"
+        },
+        "likes_count": {
+          "default": 0,
+          "format": "integer",
+          "type": "integer"
+        },
+        "share_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "manhwa_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "manhwa_title": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "bookmarks": {
+      "required": [
+        "id",
+        "user_id",
+        "manhwa_slug",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "manhwa_slug": {
+          "format": "text",
+          "type": "string"
+        },
+        "title_en": {
+          "format": "text",
+          "type": "string"
+        },
+        "title_fa": {
+          "format": "text",
+          "type": "string"
+        },
+        "cover_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "payments": {
+      "required": [
+        "id",
+        "user_id",
+        "track_id",
+        "amount",
+        "plan_key",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "track_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "amount": {
+          "format": "bigint",
+          "type": "integer"
+        },
+        "plan_key": {
+          "format": "text",
+          "type": "string"
+        },
+        "status": {
+          "default": "pending",
+          "format": "text",
+          "type": "string"
+        },
+        "ref_number": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "profile_contacts": {
+      "required": [
+        "user_id",
+        "updated_at"
+      ],
+      "properties": {
+        "user_id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "phone": {
+          "format": "text",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_tasks": {
+      "required": [
+        "id",
+        "role",
+        "title",
+        "reward_tokens",
+        "status",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "role": {
+          "format": "text",
+          "type": "string"
+        },
+        "title": {
+          "format": "text",
+          "type": "string"
+        },
+        "description": {
+          "format": "text",
+          "type": "string"
+        },
+        "reward_tokens": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "status": {
+          "default": "open",
+          "format": "text",
+          "type": "string"
+        },
+        "assignee": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "source_file": {
+          "format": "text",
+          "type": "string"
+        },
+        "result_file": {
+          "format": "text",
+          "type": "string"
+        },
+        "admin_note": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "claimed_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "reviewed_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "label": {
+          "format": "text",
+          "type": "string"
+        },
+        "address": {
+          "format": "text",
+          "type": "string"
+        },
+        "chapter_id": {
+          "description": "Note:\nThis is a Foreign Key to `team_chapters.id`.<fk table='team_chapters' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "extra_file": {
+          "format": "text",
+          "type": "string"
+        },
+        "first_claimed_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "first_submitted_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "quality": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ads": {
+      "required": [
+        "id",
+        "title",
+        "image_url",
+        "link",
+        "position",
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "format": "text",
+          "type": "string"
+        },
+        "image_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "link": {
+          "format": "text",
+          "type": "string"
+        },
+        "position": {
+          "default": "top-right",
+          "format": "text",
+          "type": "string"
+        },
+        "start_date": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "end_date": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "active": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "description": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "manhwa_stats": {
+      "required": [
+        "slug"
+      ],
+      "properties": {
+        "slug": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "text",
+          "type": "string"
+        },
+        "views": {
+          "default": 0,
+          "format": "bigint",
+          "type": "integer"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_ledger": {
+      "required": [
+        "id",
+        "user_id",
+        "tokens",
+        "kind",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "bigint",
+          "type": "integer"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "tokens": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "kind": {
+          "format": "text",
+          "type": "string"
+        },
+        "note": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "profiles": {
+      "required": [
+        "id",
+        "is_vip",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "full_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "avatar_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "is_vip": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "vip_until": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_chapters": {
+      "required": [
+        "id",
+        "title",
+        "label",
+        "typist_reward",
+        "status",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "format": "text",
+          "type": "string"
+        },
+        "label": {
+          "format": "text",
+          "type": "string"
+        },
+        "typist_reward": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "status": {
+          "default": "active",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "manhwa_id": {
+          "description": "Note:\nThis is a Foreign Key to `team_manhwas.id`.<fk table='team_manhwas' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "banner_file": {
+          "format": "text",
+          "type": "string"
+        },
+        "banner_note": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "reel_likes": {
+      "required": [
+        "id",
+        "device_id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "reel_id": {
+          "description": "Note:\nThis is a Foreign Key to `reels.id`.<fk table='reels' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "device_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_support": {
+      "required": [
+        "id",
+        "user_id",
+        "message",
+        "status",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "task_id": {
+          "description": "Note:\nThis is a Foreign Key to `team_tasks.id`.<fk table='team_tasks' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "message": {
+          "format": "text",
+          "type": "string"
+        },
+        "reply": {
+          "format": "text",
+          "type": "string"
+        },
+        "status": {
+          "default": "open",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "replied_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "user_read_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "chapter_reports": {
+      "required": [
+        "id",
+        "slug",
+        "message"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "slug": {
+          "format": "text",
+          "type": "string"
+        },
+        "chapter_num": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "page": {
+          "format": "text",
+          "type": "string"
+        },
+        "message": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "admins": {
+      "required": [
+        "id",
+        "display_name",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "display_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "role_tag": {
+          "default": "مدیریت مانهواچی",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "timezone('utc'::text, now())",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "manhwa_ratings": {
+      "required": [
+        "id",
+        "user_id",
+        "manhwa_slug",
+        "rating",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "bigint",
+          "type": "integer"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "manhwa_slug": {
+          "format": "text",
+          "type": "string"
+        },
+        "rating": {
+          "format": "smallint",
+          "type": "integer"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_tickets": {
+      "required": [
+        "id",
+        "user_id",
+        "message",
+        "level",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "task_id": {
+          "description": "Note:\nThis is a Foreign Key to `team_tasks.id`.<fk table='team_tasks' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "message": {
+          "format": "text",
+          "type": "string"
+        },
+        "level": {
+          "default": "warning",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "read_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "plans": {
+      "required": [
+        "key",
+        "amount_rial",
+        "label"
+      ],
+      "properties": {
+        "key": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "text",
+          "type": "string"
+        },
+        "amount_rial": {
+          "format": "bigint",
+          "type": "integer"
+        },
+        "days": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "months": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "label": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "messages": {
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "bigint",
+          "type": "integer"
+        },
+        "text": {
+          "format": "text",
+          "type": "string"
+        },
+        "manhwa_slug": {
+          "format": "text",
+          "type": "string"
+        },
+        "approved": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "approved_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "name": {
+          "default": "",
+          "format": "text",
+          "type": "string"
+        },
+        "parent_message_id": {
+          "format": "bigint",
+          "type": "integer"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_manhwas": {
+      "required": [
+        "id",
+        "name",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "image_file": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "replies": {
+      "required": [
+        "id",
+        "message_id",
+        "reply_text"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "bigint",
+          "type": "integer"
+        },
+        "message_id": {
+          "description": "Note:\nThis is a Foreign Key to `messages.id`.<fk table='messages' column='id'/>",
+          "format": "bigint",
+          "type": "integer"
+        },
+        "reply_text": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "admin_id": {
+          "description": "Note:\nThis is a Foreign Key to `admins.id`.<fk table='admins' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "admin_name": {
+          "default": "مدیریت مانهواچی",
+          "format": "text",
+          "type": "string"
+        },
+        "admin_role": {
+          "default": "ادمین",
+          "format": "text",
+          "type": "string"
+        },
+        "is_admin": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "comments": {
+      "required": [
+        "id",
+        "reel_id",
+        "device_id",
+        "username",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "default": "extensions.uuid_generate_v4()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "reel_id": {
+          "description": "Note:\nThis is a Foreign Key to `reels.id`.<fk table='reels' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "device_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "username": {
+          "format": "text",
+          "type": "string"
+        },
+        "text": {
+          "format": "text",
+          "type": "string"
+        },
+        "approved": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_withdrawals": {
+      "required": [
+        "id",
+        "user_id",
+        "tokens",
+        "toman_per_token",
+        "account",
+        "status",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "tokens": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "toman_per_token": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "account": {
+          "format": "text",
+          "type": "string"
+        },
+        "status": {
+          "default": "pending",
+          "format": "text",
+          "type": "string"
+        },
+        "admin_note": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "applications": {
+      "required": [
+        "id",
+        "created_at",
+        "role",
+        "full_name",
+        "platform",
+        "social_id"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "bigint",
+          "type": "integer"
+        },
+        "created_at": {
+          "default": "timezone('utc'::text, now())",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "role": {
+          "format": "text",
+          "type": "string"
+        },
+        "full_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "age": {
+          "format": "text",
+          "type": "string"
+        },
+        "platform": {
+          "format": "text",
+          "type": "string"
+        },
+        "social_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "bio": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "team_members": {
+      "required": [
+        "user_id",
+        "roles",
+        "active",
+        "created_at",
+        "auto_approve"
+      ],
+      "properties": {
+        "user_id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "display_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "roles": {
+          "format": "text[]",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "active": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "auto_approve": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "banner_name": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "parameters": {
+    "preferParams": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "preferReturn": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferCount": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "count=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferPost": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none",
+        "resolution=ignore-duplicates",
+        "resolution=merge-duplicates"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "select": {
+      "name": "select",
+      "description": "Filtering Columns",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "on_conflict": {
+      "name": "on_conflict",
+      "description": "On Conflict",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "order": {
+      "name": "order",
+      "description": "Ordering",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "range": {
+      "name": "Range",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "rangeUnit": {
+      "name": "Range-Unit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "default": "items",
+      "in": "header",
+      "type": "string"
+    },
+    "offset": {
+      "name": "offset",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "limit": {
+      "name": "limit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.reels": {
+      "name": "reels",
+      "description": "reels",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/reels"
+      }
+    },
+    "rowFilter.reels.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.title": {
+      "name": "title",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.description": {
+      "name": "description",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.image_url": {
+      "name": "image_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.video_url": {
+      "name": "video_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.creator": {
+      "name": "creator",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.avatar_url": {
+      "name": "avatar_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.comments_count": {
+      "name": "comments_count",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.tags": {
+      "name": "tags",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.music_title": {
+      "name": "music_title",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.music_cover": {
+      "name": "music_cover",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.level": {
+      "name": "level",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.likes_count": {
+      "name": "likes_count",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.share_url": {
+      "name": "share_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.manhwa_url": {
+      "name": "manhwa_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reels.manhwa_title": {
+      "name": "manhwa_title",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.bookmarks": {
+      "name": "bookmarks",
+      "description": "bookmarks",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/bookmarks"
+      }
+    },
+    "rowFilter.bookmarks.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bookmarks.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bookmarks.manhwa_slug": {
+      "name": "manhwa_slug",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bookmarks.title_en": {
+      "name": "title_en",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bookmarks.title_fa": {
+      "name": "title_fa",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bookmarks.cover_url": {
+      "name": "cover_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bookmarks.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.payments": {
+      "name": "payments",
+      "description": "payments",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/payments"
+      }
+    },
+    "rowFilter.payments.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.track_id": {
+      "name": "track_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.amount": {
+      "name": "amount",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.plan_key": {
+      "name": "plan_key",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.ref_number": {
+      "name": "ref_number",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.payments.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.profile_contacts": {
+      "name": "profile_contacts",
+      "description": "profile_contacts",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/profile_contacts"
+      }
+    },
+    "rowFilter.profile_contacts.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profile_contacts.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profile_contacts.phone": {
+      "name": "phone",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profile_contacts.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_tasks": {
+      "name": "team_tasks",
+      "description": "team_tasks",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_tasks"
+      }
+    },
+    "rowFilter.team_tasks.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.role": {
+      "name": "role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.title": {
+      "name": "title",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.description": {
+      "name": "description",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.reward_tokens": {
+      "name": "reward_tokens",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.assignee": {
+      "name": "assignee",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.source_file": {
+      "name": "source_file",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.result_file": {
+      "name": "result_file",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.admin_note": {
+      "name": "admin_note",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.claimed_at": {
+      "name": "claimed_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.submitted_at": {
+      "name": "submitted_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.reviewed_at": {
+      "name": "reviewed_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.label": {
+      "name": "label",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.address": {
+      "name": "address",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.chapter_id": {
+      "name": "chapter_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.extra_file": {
+      "name": "extra_file",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.first_claimed_at": {
+      "name": "first_claimed_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.first_submitted_at": {
+      "name": "first_submitted_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tasks.quality": {
+      "name": "quality",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.ads": {
+      "name": "ads",
+      "description": "ads",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/ads"
+      }
+    },
+    "rowFilter.ads.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.title": {
+      "name": "title",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.image_url": {
+      "name": "image_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.link": {
+      "name": "link",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.position": {
+      "name": "position",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.start_date": {
+      "name": "start_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.end_date": {
+      "name": "end_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.active": {
+      "name": "active",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.ads.description": {
+      "name": "description",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.manhwa_stats": {
+      "name": "manhwa_stats",
+      "description": "manhwa_stats",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/manhwa_stats"
+      }
+    },
+    "rowFilter.manhwa_stats.slug": {
+      "name": "slug",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_stats.views": {
+      "name": "views",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_stats.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_ledger": {
+      "name": "team_ledger",
+      "description": "team_ledger",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_ledger"
+      }
+    },
+    "rowFilter.team_ledger.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_ledger.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_ledger.task_id": {
+      "name": "task_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_ledger.tokens": {
+      "name": "tokens",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_ledger.kind": {
+      "name": "kind",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_ledger.note": {
+      "name": "note",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_ledger.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.profiles": {
+      "name": "profiles",
+      "description": "profiles",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/profiles"
+      }
+    },
+    "rowFilter.profiles.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.full_name": {
+      "name": "full_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.avatar_url": {
+      "name": "avatar_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.is_vip": {
+      "name": "is_vip",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.vip_until": {
+      "name": "vip_until",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_chapters": {
+      "name": "team_chapters",
+      "description": "team_chapters",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_chapters"
+      }
+    },
+    "rowFilter.team_chapters.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.title": {
+      "name": "title",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.label": {
+      "name": "label",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.typist_reward": {
+      "name": "typist_reward",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.manhwa_id": {
+      "name": "manhwa_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.banner_file": {
+      "name": "banner_file",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_chapters.banner_note": {
+      "name": "banner_note",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.reel_likes": {
+      "name": "reel_likes",
+      "description": "reel_likes",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/reel_likes"
+      }
+    },
+    "rowFilter.reel_likes.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reel_likes.reel_id": {
+      "name": "reel_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reel_likes.device_id": {
+      "name": "device_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.reel_likes.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_support": {
+      "name": "team_support",
+      "description": "team_support",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_support"
+      }
+    },
+    "rowFilter.team_support.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.task_id": {
+      "name": "task_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.message": {
+      "name": "message",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.reply": {
+      "name": "reply",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.replied_at": {
+      "name": "replied_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_support.user_read_at": {
+      "name": "user_read_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.chapter_reports": {
+      "name": "chapter_reports",
+      "description": "chapter_reports",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/chapter_reports"
+      }
+    },
+    "rowFilter.chapter_reports.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.chapter_reports.slug": {
+      "name": "slug",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.chapter_reports.chapter_num": {
+      "name": "chapter_num",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.chapter_reports.page": {
+      "name": "page",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.chapter_reports.message": {
+      "name": "message",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.chapter_reports.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.admins": {
+      "name": "admins",
+      "description": "admins",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/admins"
+      }
+    },
+    "rowFilter.admins.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.admins.display_name": {
+      "name": "display_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.admins.role_tag": {
+      "name": "role_tag",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.admins.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.manhwa_ratings": {
+      "name": "manhwa_ratings",
+      "description": "manhwa_ratings",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/manhwa_ratings"
+      }
+    },
+    "rowFilter.manhwa_ratings.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_ratings.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_ratings.manhwa_slug": {
+      "name": "manhwa_slug",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_ratings.rating": {
+      "name": "rating",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_ratings.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.manhwa_ratings.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_tickets": {
+      "name": "team_tickets",
+      "description": "team_tickets",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_tickets"
+      }
+    },
+    "rowFilter.team_tickets.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tickets.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tickets.task_id": {
+      "name": "task_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tickets.message": {
+      "name": "message",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tickets.level": {
+      "name": "level",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tickets.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_tickets.read_at": {
+      "name": "read_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.plans": {
+      "name": "plans",
+      "description": "plans",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/plans"
+      }
+    },
+    "rowFilter.plans.key": {
+      "name": "key",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.plans.amount_rial": {
+      "name": "amount_rial",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.plans.days": {
+      "name": "days",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.plans.months": {
+      "name": "months",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.plans.label": {
+      "name": "label",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.messages": {
+      "name": "messages",
+      "description": "messages",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/messages"
+      }
+    },
+    "rowFilter.messages.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.text": {
+      "name": "text",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.manhwa_slug": {
+      "name": "manhwa_slug",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.approved": {
+      "name": "approved",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.approved_at": {
+      "name": "approved_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.parent_message_id": {
+      "name": "parent_message_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.messages.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_manhwas": {
+      "name": "team_manhwas",
+      "description": "team_manhwas",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_manhwas"
+      }
+    },
+    "rowFilter.team_manhwas.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_manhwas.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_manhwas.image_file": {
+      "name": "image_file",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_manhwas.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.replies": {
+      "name": "replies",
+      "description": "replies",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/replies"
+      }
+    },
+    "rowFilter.replies.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.message_id": {
+      "name": "message_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.reply_text": {
+      "name": "reply_text",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.admin_id": {
+      "name": "admin_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.admin_name": {
+      "name": "admin_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.admin_role": {
+      "name": "admin_role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.is_admin": {
+      "name": "is_admin",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.replies.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.comments": {
+      "name": "comments",
+      "description": "comments",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/comments"
+      }
+    },
+    "rowFilter.comments.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.comments.reel_id": {
+      "name": "reel_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.comments.device_id": {
+      "name": "device_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.comments.username": {
+      "name": "username",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.comments.text": {
+      "name": "text",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.comments.approved": {
+      "name": "approved",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.comments.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_withdrawals": {
+      "name": "team_withdrawals",
+      "description": "team_withdrawals",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_withdrawals"
+      }
+    },
+    "rowFilter.team_withdrawals.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.tokens": {
+      "name": "tokens",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.toman_per_token": {
+      "name": "toman_per_token",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.account": {
+      "name": "account",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.admin_note": {
+      "name": "admin_note",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_withdrawals.decided_at": {
+      "name": "decided_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.applications": {
+      "name": "applications",
+      "description": "applications",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/applications"
+      }
+    },
+    "rowFilter.applications.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.role": {
+      "name": "role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.full_name": {
+      "name": "full_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.age": {
+      "name": "age",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.platform": {
+      "name": "platform",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.social_id": {
+      "name": "social_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.applications.bio": {
+      "name": "bio",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.team_members": {
+      "name": "team_members",
+      "description": "team_members",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/team_members"
+      }
+    },
+    "rowFilter.team_members.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_members.display_name": {
+      "name": "display_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_members.roles": {
+      "name": "roles",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_members.active": {
+      "name": "active",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_members.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_members.auto_approve": {
+      "name": "auto_approve",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.team_members.banner_name": {
+      "name": "banner_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    }
+  },
+  "externalDocs": {
+    "description": "PostgREST Documentation",
+    "url": "https://postgrest.org/en/v14/references/api.html"
+  }
+}
