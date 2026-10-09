@@ -1,0 +1,1023 @@
+{
+ "tables": {
+  "reels": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    },
+    "title": {
+     "t": "text"
+    },
+    "description": {
+     "t": "text"
+    },
+    "image_url": {
+     "t": "text"
+    },
+    "video_url": {
+     "t": "text"
+    },
+    "creator": {
+     "t": "text"
+    },
+    "avatar_url": {
+     "t": "text"
+    },
+    "comments_count": {
+     "t": "int",
+     "def": {
+      "value": 0
+     }
+    },
+    "tags": {
+     "t": "arr"
+    },
+    "music_title": {
+     "t": "text"
+    },
+    "music_cover": {
+     "t": "text"
+    },
+    "level": {
+     "t": "text"
+    },
+    "likes_count": {
+     "t": "int",
+     "def": {
+      "value": 0
+     }
+    },
+    "share_url": {
+     "t": "text"
+    },
+    "manhwa_url": {
+     "t": "text"
+    },
+    "manhwa_title": {
+     "t": "text"
+    }
+   }
+  },
+  "bookmarks": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "manhwa_slug": {
+     "t": "text",
+     "nn": true
+    },
+    "title_en": {
+     "t": "text"
+    },
+    "title_fa": {
+     "t": "text"
+    },
+    "cover_url": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "payments": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "track_id": {
+     "t": "text",
+     "nn": true
+    },
+    "amount": {
+     "t": "int",
+     "nn": true
+    },
+    "plan_key": {
+     "t": "text",
+     "nn": true
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "pending"
+     }
+    },
+    "ref_number": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "updated_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "profile_contacts": {
+   "pk": [
+    "user_id"
+   ],
+   "cols": {
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "email": {
+     "t": "text"
+    },
+    "phone": {
+     "t": "text"
+    },
+    "updated_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "team_tasks": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "role": {
+     "t": "text",
+     "nn": true
+    },
+    "title": {
+     "t": "text",
+     "nn": true
+    },
+    "description": {
+     "t": "text"
+    },
+    "reward_tokens": {
+     "t": "int",
+     "nn": true
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "open"
+     }
+    },
+    "assignee": {
+     "t": "text"
+    },
+    "source_file": {
+     "t": "text"
+    },
+    "result_file": {
+     "t": "text"
+    },
+    "admin_note": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "claimed_at": {
+     "t": "ts"
+    },
+    "submitted_at": {
+     "t": "ts"
+    },
+    "reviewed_at": {
+     "t": "ts"
+    },
+    "label": {
+     "t": "text"
+    },
+    "address": {
+     "t": "text"
+    },
+    "chapter_id": {
+     "t": "text"
+    },
+    "extra_file": {
+     "t": "text"
+    },
+    "first_claimed_at": {
+     "t": "ts"
+    },
+    "first_submitted_at": {
+     "t": "ts"
+    },
+    "quality": {
+     "t": "text"
+    }
+   }
+  },
+  "ads": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "title": {
+     "t": "text",
+     "nn": true
+    },
+    "image_url": {
+     "t": "text",
+     "nn": true
+    },
+    "link": {
+     "t": "text",
+     "nn": true
+    },
+    "position": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "top-right"
+     }
+    },
+    "start_date": {
+     "t": "ts",
+     "nn": true
+    },
+    "end_date": {
+     "t": "ts",
+     "nn": true
+    },
+    "active": {
+     "t": "bool",
+     "def": {
+      "value": true
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    },
+    "description": {
+     "t": "text"
+    }
+   }
+  },
+  "manhwa_stats": {
+   "pk": [
+    "slug"
+   ],
+   "cols": {
+    "slug": {
+     "t": "text",
+     "nn": true
+    },
+    "views": {
+     "t": "int",
+     "def": {
+      "value": 0
+     }
+    },
+    "updated_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "team_ledger": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "int",
+     "nn": true,
+     "auto": true
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "task_id": {
+     "t": "text"
+    },
+    "tokens": {
+     "t": "int",
+     "nn": true
+    },
+    "kind": {
+     "t": "text",
+     "nn": true
+    },
+    "note": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "profiles": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true
+    },
+    "full_name": {
+     "t": "text"
+    },
+    "avatar_url": {
+     "t": "text"
+    },
+    "is_vip": {
+     "t": "bool",
+     "nn": true,
+     "def": {
+      "value": false
+     }
+    },
+    "vip_until": {
+     "t": "ts"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "updated_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "team_chapters": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "title": {
+     "t": "text",
+     "nn": true
+    },
+    "label": {
+     "t": "text",
+     "nn": true
+    },
+    "typist_reward": {
+     "t": "int",
+     "nn": true
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "active"
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "manhwa_id": {
+     "t": "text"
+    },
+    "banner_file": {
+     "t": "text"
+    },
+    "banner_note": {
+     "t": "text"
+    }
+   }
+  },
+  "reel_likes": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "reel_id": {
+     "t": "text"
+    },
+    "device_id": {
+     "t": "text",
+     "nn": true
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "team_support": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "task_id": {
+     "t": "text"
+    },
+    "message": {
+     "t": "text",
+     "nn": true
+    },
+    "reply": {
+     "t": "text"
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "open"
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "replied_at": {
+     "t": "ts"
+    },
+    "user_read_at": {
+     "t": "ts"
+    }
+   }
+  },
+  "chapter_reports": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "slug": {
+     "t": "text",
+     "nn": true
+    },
+    "chapter_num": {
+     "t": "int"
+    },
+    "page": {
+     "t": "text"
+    },
+    "message": {
+     "t": "text",
+     "nn": true
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "admins": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true
+    },
+    "display_name": {
+     "t": "text",
+     "nn": true
+    },
+    "role_tag": {
+     "t": "text",
+     "def": {
+      "value": "مدیریت مانهواچی"
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "manhwa_ratings": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "int",
+     "nn": true,
+     "auto": true
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "manhwa_slug": {
+     "t": "text",
+     "nn": true
+    },
+    "rating": {
+     "t": "int",
+     "nn": true
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "updated_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "team_tickets": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "task_id": {
+     "t": "text"
+    },
+    "message": {
+     "t": "text",
+     "nn": true
+    },
+    "level": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "warning"
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "read_at": {
+     "t": "ts"
+    }
+   }
+  },
+  "plans": {
+   "pk": [
+    "key"
+   ],
+   "cols": {
+    "key": {
+     "t": "text",
+     "nn": true
+    },
+    "amount_rial": {
+     "t": "int",
+     "nn": true
+    },
+    "days": {
+     "t": "int"
+    },
+    "months": {
+     "t": "int"
+    },
+    "label": {
+     "t": "text",
+     "nn": true
+    }
+   }
+  },
+  "messages": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "int",
+     "nn": true,
+     "auto": true
+    },
+    "text": {
+     "t": "text"
+    },
+    "manhwa_slug": {
+     "t": "text"
+    },
+    "approved": {
+     "t": "bool",
+     "def": {
+      "value": false
+     }
+    },
+    "approved_at": {
+     "t": "ts"
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    },
+    "name": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": ""
+     }
+    },
+    "parent_message_id": {
+     "t": "int"
+    },
+    "user_id": {
+     "t": "text"
+    }
+   }
+  },
+  "team_manhwas": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "name": {
+     "t": "text",
+     "nn": true
+    },
+    "image_file": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "replies": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "int",
+     "nn": true,
+     "auto": true
+    },
+    "message_id": {
+     "t": "int",
+     "nn": true
+    },
+    "reply_text": {
+     "t": "text",
+     "nn": true
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    },
+    "admin_id": {
+     "t": "text"
+    },
+    "admin_name": {
+     "t": "text",
+     "def": {
+      "value": "مدیریت مانهواچی"
+     }
+    },
+    "admin_role": {
+     "t": "text",
+     "def": {
+      "value": "ادمین"
+     }
+    },
+    "is_admin": {
+     "t": "bool",
+     "def": {
+      "value": true
+     }
+    },
+    "user_id": {
+     "t": "text"
+    }
+   }
+  },
+  "comments": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "reel_id": {
+     "t": "text",
+     "nn": true
+    },
+    "device_id": {
+     "t": "text",
+     "nn": true
+    },
+    "username": {
+     "t": "text",
+     "nn": true
+    },
+    "text": {
+     "t": "text",
+     "nn": true
+    },
+    "approved": {
+     "t": "bool",
+     "def": {
+      "value": true
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "def": {
+      "now": true
+     }
+    }
+   }
+  },
+  "team_withdrawals": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "tokens": {
+     "t": "int",
+     "nn": true
+    },
+    "toman_per_token": {
+     "t": "int",
+     "nn": true
+    },
+    "account": {
+     "t": "text",
+     "nn": true
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "pending"
+     }
+    },
+    "admin_note": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "decided_at": {
+     "t": "ts"
+    }
+   }
+  },
+  "applications": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "int",
+     "nn": true,
+     "auto": true
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "role": {
+     "t": "text",
+     "nn": true
+    },
+    "full_name": {
+     "t": "text",
+     "nn": true
+    },
+    "age": {
+     "t": "text"
+    },
+    "platform": {
+     "t": "text",
+     "nn": true
+    },
+    "social_id": {
+     "t": "text",
+     "nn": true
+    },
+    "bio": {
+     "t": "text"
+    }
+   }
+  },
+  "team_members": {
+   "pk": [
+    "user_id"
+   ],
+   "cols": {
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "display_name": {
+     "t": "text"
+    },
+    "roles": {
+     "t": "arr",
+     "nn": true
+    },
+    "active": {
+     "t": "bool",
+     "nn": true,
+     "def": {
+      "value": true
+     }
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "auto_approve": {
+     "t": "bool",
+     "nn": true,
+     "def": {
+      "value": false
+     }
+    },
+    "banner_name": {
+     "t": "text"
+    }
+   }
+  }
+ }
+}
