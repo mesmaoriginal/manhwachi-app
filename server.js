@@ -90,6 +90,8 @@ app.use(
           "https://cdnjs.cloudflare.com", // استایل Font Awesome
         ],
         imgSrc: ["'self'", "data:", "https:"], // اجازه بارگذاری تصاویر از لینک‌ها یا CDN
+        // ویدیوی ریلز: بدون این خط، media-src به default-src ('self') برمی‌گردد و ویدیوهای بیرونی/blob بلاک می‌شوند
+        mediaSrc: ["'self'", "data:", "blob:", "https:"],
         fontSrc: [
           "'self'",
           "https://fonts.gstatic.com",
