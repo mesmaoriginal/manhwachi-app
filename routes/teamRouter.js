@@ -1,5 +1,5 @@
 // team/teamRouter.js — سیستم کار تیمی (تایپیست / تغییر فونت / مترجم / کلینر) + توکن
-// قیمت هر توکن فقط سمت سرور (TEAM_TOMAN_PER_TOKEN) تعیین می‌شود و هرگز برای کارمندها نمایش داده نمی‌شود؛ کارمند فقط تومان می‌بیند. فایل‌ها (zip/docx) در باکت S3 (PARSPACK_BUCKET) زیر پوشه‌ی TEAM_S3_PREFIX (پیش‌فرض team-files) ذخیره می‌شن.
+// قیمت هر توکن فقط سمت سرور (TEAM_TOMAN_PER_TOKEN) تعیین می‌شود؛ کارمند در همه‌جا توکن می‌بیند و تومان فقط در تب برداشت. فایل‌ها (zip/docx) در باکت S3 (PARSPACK_BUCKET) زیر پوشه‌ی TEAM_S3_PREFIX (پیش‌فرض team-files) ذخیره می‌شن.
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -84,14 +84,14 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   // قوانین به تومان (برای نمایش به کارمند؛ نرخ توکن در آن نیست)
   const workerRules = () => ({
     deadlineH: DEADLINE_H, graceH: GRACE_H, fastH: FAST_H,
-    base: { flat: toman(BASE_RANGE.typist[0]), translator: [toman(BASE_RANGE.translator[0]), toman(BASE_RANGE.translator[1])] },
-    qualityFlat: toman(FLAT.quality), speedFlat: toman(FLAT.speed), bad: toman(FLAT.bad), late: toman(FLAT.late),
+    base: { flat: BASE_RANGE.typist[0], translator: [BASE_RANGE.translator[0], BASE_RANGE.translator[1]] },
+    qualityFlat: FLAT.quality, speedFlat: FLAT.speed, bad: FLAT.bad, late: FLAT.late,
     multQuality: Math.round((1 + MULT.quality) * 100) / 100, multSpeed: Math.round((1 + MULT.speed) * 100) / 100,
   });
   const dueAt = (t, h) => (t.status === "claimed" && t.first_claimed_at && !t.first_submitted_at ? new Date(new Date(t.first_claimed_at).getTime() + h * 36e5).toISOString() : null);
   // نمای کارمند: فقط برچسب عمومی (CH1). عنوان داخلی هرگز نمی‌رود؛ توضیح/آدرس فقط بعد از برداشتن کار.
   const pubWorker = (t, mine) => ({
-    id: t.id, role: t.role, label: t.label || "کار", reward_toman: toman(t.reward_tokens), status: t.status,
+    id: t.id, role: t.role, label: t.label || "کار", reward_tokens: t.reward_tokens, status: t.status,
     has_source: mine && !!t.source_file, has_extra: mine && !!t.extra_file, description: mine ? t.description : null,
     address: mine ? t.address : null, admin_note: mine ? t.admin_note : null,
     deadline_at: mine ? dueAt(t, DEADLINE_H) : null, hard_deadline_at: mine ? dueAt(t, DEADLINE_H + GRACE_H) : null,
@@ -249,6 +249,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     const ws = fs.createWriteStream(full, { flags: "wx" });
     let size = 0;
     let head = Buffer.alloc(0);
+    const t0 = Date.now();
     try {
       await new Promise((resolve, reject) => {
         req.on("data", (c) => {
@@ -281,6 +282,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       return key;
     } catch (e) {
       ws.destroy();
+      console.error("[team] upload failed:", e.message, JSON.stringify({ role, kind, taskId, contentLength: len, received: size, head: head.toString("hex"), seconds: Math.round((Date.now() - t0) / 1000) }));
       throw e;
     } finally {
       await fs.promises.unlink(full).catch(() => {});
@@ -364,6 +366,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
         const [bal, pend] = await Promise.all([balanceOf(req.user.id), pendingTokens(req.user.id).catch(() => 0)]);
         const avail = Math.max(0, bal - pend);
         Object.assign(out, {
+          balance: bal, pending: pend, available: avail, minWithdraw: MIN_WITHDRAW_TOKENS,
           balanceToman: toman(bal), pendingToman: toman(pend), availableToman: toman(avail),
           minWithdrawToman: toman(MIN_WITHDRAW_TOKENS), canWithdraw: avail >= MIN_WITHDRAW_TOKENS, rules: workerRules(),
         });
@@ -430,7 +433,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   router.get("/withdrawals", needMember, async (req, res) => {
     try {
       const rows = await sb(`team_withdrawals?user_id=eq.${req.user.id}&order=created_at.desc&limit=20&select=id,tokens,toman_per_token,status,admin_note,created_at,decided_at`);
-      res.json(rows.map((r) => ({ id: r.id, toman: r.tokens * r.toman_per_token, status: r.status, admin_note: r.admin_note, created_at: r.created_at, decided_at: r.decided_at })));
+      res.json(rows.map((r) => ({ id: r.id, tokens: r.tokens, toman: r.tokens * r.toman_per_token, status: r.status, admin_note: r.admin_note, created_at: r.created_at, decided_at: r.decided_at })));
     } catch (e) { fail(res, e); }
   });
   router.post("/withdraw", needMember, async (req, res) => {
@@ -822,7 +825,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       const tk = rows[0], cut = penalty ? (PAY[tk.role] || FLAT).bad : 0;
       if (penalty && tk.assignee) {
         await ledgerAdd([{ user_id: tk.assignee, tokens: -cut, note: `جریمه‌ی کیفیت بد — ${tk.label}` }]);
-        await notify(tk.assignee, tk.id, `کیفیت کار ${tk.label} پایین بود؛ ${fmt(toman(cut))} تومان کسر شد و برای اصلاح برگشت: ${note}`, "warning");
+        await notify(tk.assignee, tk.id, `کیفیت کار ${tk.label} پایین بود؛ ${cut} توکن کسر شد و برای اصلاح برگشت: ${note}`, "warning");
       }
       res.json({ ok: true, penalty: cut });
     } catch (e) { fail(res, e); }
@@ -1043,7 +1046,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
           const rows = await patch(`team_tasks?id=eq.${t.id}&status=eq.claimed&first_submitted_at=is.null`, { status: "open", assignee: null, claimed_at: null, first_claimed_at: null, quality: null, admin_note: null });
           if (!rows.length || !t.assignee) continue;
           await ledgerAdd([{ user_id: t.assignee, tokens: -t.reward_tokens, note: `جریمه‌ی عدم تحویل در ${DEADLINE_H + GRACE_H} ساعت (کسر کل توکن کار) — ${t.label}` }]);
-          await notify(t.assignee, null, `کار ${t.label} را در ${DEADLINE_H + GRACE_H} ساعت تحویل ندادی؛ کار آزاد شد و ${fmt(toman(t.reward_tokens))} تومان کسر شد.`, "warning");
+          await notify(t.assignee, null, `کار ${t.label} را در ${DEADLINE_H + GRACE_H} ساعت تحویل ندادی؛ کار آزاد شد و ${t.reward_tokens} توکن کسر شد.`, "warning");
           console.log(`[team] کار ${t.label} بعد از مهلت آزاد و جریمه شد`);
         }
       }
