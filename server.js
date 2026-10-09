@@ -456,7 +456,7 @@ app.use(
     adminHeaders: supabaseAdminHeaders,
   })
 );
-
+app.use("/api/team", require("./routes/teamRouter")({ getAuthContext, supabaseUrl: SUPABASE_URL, adminHeaders: supabaseAdminHeaders }));
 // کپی میانگین/تعداد رأی (از ۵) داخل data.json؛ نیاز به ratings_sync.sql و متغیر DATA_JSON_PATH
 if (process.env.DATA_JSON_PATH) {
   require("./lib/ratingsSync").start({ supabaseUrl: SUPABASE_URL, adminHeaders: supabaseAdminHeaders });
