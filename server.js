@@ -119,6 +119,16 @@ app.use(compression());
 // آرگومان صدا زده می‌شد که به‌صورت ضمنی همون ۱۰۰kb پیش‌فرض خودِ Express رو
 // اعمال می‌کرد - این خط همون رفتار رو صریح و کمی سخت‌گیرانه‌تر می‌کنه، تا
 // معلوم باشه عمدیه، نه یک پیش‌فرض فراموش‌شده.
+// ---------- دیتابیس و احراز هویت محلی (جایگزین Supabase؛ داخل همین پروسه‌ی Node) ----------
+// با LOCAL_DB=1 فعال می‌شود: /rest/v1 و /auth/v1 روی همین سایت سرو می‌شوند و کدهای فعلی سرور
+// (fetch به SUPABASE_URL) بدون هیچ تغییری مستقیم و درون‌پردازشی به SQLite می‌رسند. باید قبل از express.json باشد.
+if (process.env.LOCAL_DB === "1") {
+  const localdb = require("./lib/localdb");
+  process.env.SUPABASE_URL = localdb.LOCAL_PREFIX; // http://supabase.local (آدرس مجازی؛ شبکه استفاده نمی‌شود)
+  localdb.init();
+  localdb.installFetch();
+  localdb.mount(app, express);
+}
 app.use(express.json({ limit: "50kb" }));
 
 // ---------- پنل ادمین (مدیریت مانهواها و چپترها بدون ویرایش دستی data.json) ----------
