@@ -5,75 +5,136 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>پنل مدیریت تیم | مانهواچی</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
 <style>
-:root{--bg:#0b0b12;--card:#15151f;--line:#ffffff14;--tx:#f3f3f7;--mut:#9a9ab0}
+
+
+:root{--bg:#0B1918;--bg2:#13221F;--card:#263B36;--el:#1A2D28;--ph:#344A43;--gold:#BDA779;--tx:#F1EEE5;--mut:#C4D2CC;--line:#496057;--goldbg:rgba(189,167,121,.12);--ok:#83B89A;--warn:#D9B66F;--bad:#D98585}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Vazirmatn',system-ui,sans-serif;background:radial-gradient(900px 500px at 85% -10%,#f59e0b1f,transparent),radial-gradient(800px 500px at 0% 0%,#7c3aed26,transparent),var(--bg);color:var(--tx);min-height:100vh}
+body{font-family:'Vazirmatn',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wrap{max-width:1100px;margin:auto;padding:16px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.top h1{font-size:20px;font-weight:800}.top a{color:var(--mut);font-size:13px;text-decoration:none;margin-left:12px}
-.tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--card);padding:5px;border-radius:14px;border:1px solid var(--line);width:fit-content;max-width:100%;overflow:auto}
-.tabs button{background:none;border:0;color:var(--mut);padding:9px 18px;border-radius:10px;font:inherit;cursor:pointer;white-space:nowrap}
-.tabs button.on{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:700}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-.stat{--c:#fff;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 20%,var(--card)),var(--card));border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:16px;padding:14px;text-align:right;color:var(--tx);font:inherit}
-button.stat{cursor:pointer}.stat.on{box-shadow:0 0 0 2px var(--c)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.top>div{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.top h1{font-size:20px;font-weight:800;display:flex;align-items:center;gap:12px}
+
+.top a{color:var(--mut);font-size:13px;text-decoration:none;margin-left:12px;transition:color .2s}.top a:hover{color:var(--gold)}
+.tabs{display:flex;gap:6px;margin-bottom:18px;background:var(--el);padding:5px;border-radius:14px;border:1px solid var(--line);width:fit-content;max-width:100%;overflow:auto}
+.tabs button{background:none;border:0;color:var(--mut);padding:10px 18px;border-radius:10px;font:inherit;cursor:pointer;white-space:nowrap;transition:color .2s,background .2s}
+.tabs button:hover{color:var(--tx)}
+.tabs button.on{background:var(--gold);color:var(--bg);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.stat{--c:var(--tx)!important;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:right;color:var(--tx);font:inherit;transition:border-color .2s}
+.stat[style*="#f59e0b"],.stat[style*="#c084fc"]{--c:var(--gold)!important}
+.stat[style*="#4ade80"]{--c:var(--ok)!important}
+.stat[style*="#fbbf24"]{--c:var(--warn)!important}
+button.stat{cursor:pointer}button.stat:hover{border-color:var(--gold)}
+.stat.on{border-color:var(--gold);background:var(--goldbg);box-shadow:inset 0 0 0 1px var(--gold)}
+
 .stat b{display:block;font-size:24px;color:var(--c)}.stat span{font-size:12px;color:var(--mut)}
-.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
-.task{--c:#22d3ee;border-right:4px solid var(--c)}
-.task.late{box-shadow:0 0 0 1px #ef444488}
-.lbl{background:var(--c);color:#000;font-weight:800;border-radius:8px;padding:2px 10px;font-size:13px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.task{--c:var(--gold)!important;border-right:3px solid var(--c)}
+.task.late{--c:var(--bad)!important;box-shadow:0 0 0 1px rgba(217,133,133,.55)}
+.lbl{background:var(--goldbg);color:var(--c);border:1px solid var(--c);font-weight:800;border-radius:8px;padding:2px 10px;font-size:13px}
 .task h3{font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .task p{color:var(--mut);font-size:12px;line-height:1.8;white-space:pre-wrap;margin-top:6px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
-.tok{background:#f59e0b22;color:#fbbf24;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700}
-.st{border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;background:#ffffff14;color:#ccc}
-.st.claimed{background:#3b82f622;color:#60a5fa}.st.submitted{background:#a855f722;color:#c084fc}.st.approved{background:#22c55e22;color:#4ade80}.st.draft{background:#f59e0b22;color:#fbbf24}.st.late{background:#ef444433;color:#fca5a5}
-button.b,label.b{background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;padding:7px 14px;border-radius:10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:inline-block}
-.b.g{background:#ffffff14}.b.ok{background:linear-gradient(135deg,#16a34a,#22c55e)}.b.no{background:linear-gradient(135deg,#dc2626,#f97316)}.b:disabled{opacity:.5;cursor:wait}
-input,select,textarea{width:100%;background:#0d0d15;border:1px solid var(--line);color:var(--tx);padding:9px;border-radius:10px;font:inherit;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.tok{background:var(--goldbg);color:var(--gold);border:1px solid rgba(189,167,121,.35);border-radius:8px;padding:2px 10px;font-size:12px;font-weight:700}
+.st{border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--ph);color:var(--mut)}
+.st.claimed{background:var(--goldbg);color:var(--gold)}.st.submitted{background:rgba(217,182,111,.14);color:var(--warn)}.st.approved{background:rgba(131,184,154,.16);color:var(--ok)}.st.draft{background:transparent;border:1px dashed var(--line);color:var(--mut)}.st.late{background:rgba(217,133,133,.16);color:var(--bad)}
+button.b,label.b{background:var(--gold);color:var(--bg);border:1px solid var(--gold);padding:8px 14px;min-height:36px;border-radius:10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:filter .2s,border-color .2s,background .2s}
+button.b:hover:not(:disabled),label.b:hover{filter:brightness(1.08)}
+.b.g{background:var(--ph);color:var(--tx);border-color:var(--line)}button.b.g:hover:not(:disabled),label.b.g:hover{border-color:var(--gold);filter:none}
+.b.ok{background:rgba(131,184,154,.16);color:var(--ok);border-color:rgba(131,184,154,.55)}button.b.ok:hover:not(:disabled){background:rgba(131,184,154,.26);filter:none}
+.b.no{background:rgba(217,133,133,.12);color:var(--bad);border-color:rgba(217,133,133,.55)}button.b.no:hover:not(:disabled){background:rgba(217,133,133,.22);filter:none}
+.b:disabled{opacity:.5;cursor:wait}
+input,select,textarea{width:100%;background:var(--el);border:1px solid var(--line);color:var(--tx);padding:10px;border-radius:10px;font:inherit;font-size:13px;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 1px var(--gold)}
+input::placeholder,textarea::placeholder{color:var(--mut);opacity:.6}
+option{background:var(--el);color:var(--tx)}
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.full{grid-column:1/-1}
-.chk{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}.chk label{display:flex;gap:5px;align-items:center}.chk input{width:auto}
+.chk{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}.chk label{display:flex;gap:6px;align-items:center}.chk input{width:auto;accent-color:var(--gold)}
+input[type=checkbox],input[type=radio]{accent-color:var(--gold)}
 .empty{text-align:center;color:var(--mut);padding:24px;font-size:14px}
-h2{font-size:15px;margin:16px 0 10px;display:flex;gap:8px;align-items:center}
-.note{background:#ef444422;color:#fca5a5;border-radius:10px;padding:8px 12px;font-size:12px;margin-top:8px}
-.bar{height:6px;background:#ffffff14;border-radius:9px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f59e0b,#ef4444)}
-table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:right}th{color:var(--mut);font-weight:500}
-.pos{color:#4ade80;font-weight:700}.neg{color:#f87171;font-weight:700}
+h2{font-size:15px;margin:18px 0 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint b[style]{color:var(--warn)!important}
+.note{background:rgba(217,133,133,.12);border:1px solid rgba(217,133,133,.45);color:var(--bad);border-radius:10px;padding:8px 12px;font-size:12px;margin-top:8px}
+.bar{height:6px;background:var(--ph);border-radius:9px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;width:0;background:var(--gold)}
+table{display:block;max-width:100%;overflow-x:auto;width:100%;border-collapse:collapse;font-size:12px}td,th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right}th{color:var(--mut);font-weight:500}
+.pos{color:var(--ok);font-weight:700}.neg{color:var(--bad);font-weight:700}
 .hint{font-size:11px;color:var(--mut);margin-top:4px}
-#pv{position:fixed;inset:0;background:#000c;z-index:20;display:flex;align-items:center;justify-content:center;padding:12px}#pv[hidden]{display:none}
-.pvc{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(900px,100%);height:100%;max-height:96vh;display:flex;flex-direction:column}
-.pvh,.pvf{padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pvh{justify-content:space-between;border-bottom:1px solid var(--line)}.pvf{border-top:1px solid var(--line)}.pvf:empty{display:none}
-#pvb{flex:1;min-height:0;overflow:auto;padding:12px}#pvb iframe{width:100%;height:calc(96vh - 140px);border:0;border-radius:10px;background:#fff}
-.pvi{width:min(100%,720px);min-height:240px;margin:0 auto;background:#0d0d15;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:center}.pvi img{width:100%;display:block}
-#tkm{position:fixed;inset:0;background:#000c;z-index:30;display:flex;align-items:center;justify-content:center;padding:12px}#tkm[hidden]{display:none}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;border:1px solid var(--line);padding:10px 18px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:9}#toast.s{opacity:1}
+#pv{position:fixed;inset:0;background:rgba(11,25,24,.88);z-index:20;display:flex;align-items:center;justify-content:center;padding:12px}#pv[hidden]{display:none}
+.pvc{background:var(--card);border:1px solid var(--line);border-radius:18px;width:min(900px,100%);height:100%;max-height:96vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.pvh,.pvf{padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pvh{justify-content:space-between;border-bottom:1px solid var(--line)}.pvf{border-top:1px solid var(--line)}.pvf:empty{display:none}
+#pvb{flex:1;min-height:0;overflow:auto;padding:12px}#pvb iframe{width:100%;height:calc(96vh - 140px);border:1px solid var(--line);border-radius:10px;background:#fff}
+.pvi{width:min(100%,720px);min-height:240px;margin:0 auto 10px;background:var(--el);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:center}.pvi img{width:100%;display:block}
+#tkm{position:fixed;inset:0;background:rgba(11,25,24,.88);z-index:30;display:flex;align-items:center;justify-content:center;padding:12px}#tkm[hidden]{display:none}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--tx);border:1px solid var(--gold);padding:10px 18px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:40;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.4)}#toast.s{opacity:1}
+@media(max-width:640px){.wrap{padding:12px}.top h1{font-size:17px}.top a{margin-left:6px}.box{padding:14px}.grid{grid-template-columns:repeat(2,1fr)}button.b,label.b{min-height:40px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- سیستم آیکون یکپارچه (Lucide، SVG درون‌خطی، قلم ۱٫۸۵) ---------- */
+.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;transition:color .18s ease,opacity .18s ease}
+.ic-xs{width:12px;height:12px;margin-inline-end:4px;vertical-align:-1px}
+.ic-lg{width:32px;height:32px;stroke-width:1.5}
+.ic-spin{animation:ic-spin 1s linear infinite}
+@keyframes ic-spin{to{transform:rotate(360deg)}}
+:root{--m-ok:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='m9 12 2 2 4-4'%3E%3C/path%3E%3C/svg%3E");--m-err:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='m15 9-6 6'%3E%3C/path%3E%3Cpath d='m9 9 6 6'%3E%3C/path%3E%3C/svg%3E");--m-info:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M12 16v-4'%3E%3C/path%3E%3Cpath d='M12 8h.01'%3E%3C/path%3E%3C/svg%3E");--m-chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");--m-inbox:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='22 12 16 12 14 15 10 15 8 12 2 12'%3E%3C/polyline%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'%3E%3C/path%3E%3C/svg%3E");--m-load:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 1 1-6.219-8.56'%3E%3C/path%3E%3C/svg%3E");--m-alert:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' x2='12' y1='8' y2='12'%3E%3C/line%3E%3Cline x1='12' x2='12.01' y1='16' y2='16'%3E%3C/line%3E%3C/svg%3E")}
+
+.top h1>.ic{box-sizing:content-box;width:20px;height:20px;padding:10px;border-radius:12px;background:var(--ph);border:1px solid var(--line);color:var(--gold);vertical-align:middle}
+.top a{display:inline-flex;align-items:center;gap:6px}.top a .ic{color:var(--mut)}.top a:hover .ic{color:var(--gold)}
+.tabs button{display:inline-flex;align-items:center;gap:8px}
+.tabs button .ic{color:var(--mut)}.tabs button:hover .ic{color:var(--tx)}.tabs button.on .ic{color:var(--bg)}
+h2>.ic:first-child{box-sizing:content-box;width:16px;height:16px;padding:7px;border-radius:10px;background:var(--goldbg);border:1px solid rgba(189,167,121,.3);color:var(--gold);vertical-align:middle}
+.stat>.ic{box-sizing:content-box;display:inline-block;width:16px;height:16px;padding:7px;margin-bottom:8px;border-radius:10px;background:var(--ph);border:1px solid var(--line);color:var(--mut);vertical-align:middle}
+button.stat>.ic{margin-inline-end:8px}
+.stat.on>.ic,button.stat:hover>.ic{color:var(--gold);background:var(--goldbg);border-color:rgba(189,167,121,.45)}
+.stat[style*="#4ade80"]>.ic{color:var(--ok)}.stat[style*="#f59e0b"]>.ic,.stat[style*="#c084fc"]>.ic{color:var(--gold)}.stat[style*="#fbbf24"]>.ic{color:var(--warn)}
+.b .ic{width:15px;height:15px;vertical-align:middle}
+.b.g .ic{color:var(--mut)}.b.g:hover .ic{color:var(--gold)}
+.st .ic{width:13px;height:13px;vertical-align:-2px;margin-inline-end:4px}
+.hint .ic,.hint b .ic{width:14px;height:14px;margin-inline-end:4px}
+.note .ic{vertical-align:-3px}
+.pvh b{display:inline-flex;align-items:center;gap:8px}.pvh b .ic{color:var(--gold)}
+.pvh .b,.pvf .b{min-height:36px}
+#tkx{padding:8px 10px}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BDA779' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;background-size:16px;padding-left:36px}
+.empty:not(:empty)::before{content:"";display:block;width:28px;height:28px;margin:0 auto 10px;background:var(--gold);opacity:.7;-webkit-mask:var(--m-inbox) center/contain no-repeat;mask:var(--m-inbox) center/contain no-repeat}
+.empty.loading::before{-webkit-mask-image:var(--m-load);mask-image:var(--m-load);animation:ic-spin 1s linear infinite}
+.empty.err::before,#msg.empty::before{background:var(--bad);-webkit-mask-image:var(--m-alert);mask-image:var(--m-alert)}
+td .empty::before,th .empty::before{display:none}
+#toast{display:flex;align-items:center;gap:10px}
+#toast::before{content:"";width:18px;height:18px;flex:none;background:var(--ok);-webkit-mask:var(--m-ok) center/contain no-repeat;mask:var(--m-ok) center/contain no-repeat}
+#toast.err::before{background:var(--bad);-webkit-mask-image:var(--m-err);mask-image:var(--m-err)}
+.tabs em{font-style:normal;background:var(--bad);color:var(--bg);border-radius:99px;padding:0 7px;font-size:11px;font-weight:700}.tabs button.on em{background:var(--bg);color:var(--gold)}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-banknote" viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></symbol><symbol id="i-book-plus" viewBox="0 0 24 24"><path d="M12 7v6"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path><path d="M9 10h6"></path></symbol><symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></symbol><symbol id="i-check-check" viewBox="0 0 24 24"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></symbol><symbol id="i-clipboard-list" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></symbol><symbol id="i-clipboard-plus" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M9 14h6"></path><path d="M12 17v-6"></path></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></symbol><symbol id="i-coins" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="m16.71 13.88.7.71-2.82 2.82"></path></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></symbol><symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="M22 21H7"></path><path d="m5 11 9 9"></path></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></symbol><symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"></path><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"></path><path d="m2 2 20 20"></path></symbol><symbol id="i-file-archive" viewBox="0 0 24 24"><path d="M10 12v-1"></path><path d="M10 18v-2"></path><path d="M10 7V6"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v16a2 2 0 0 0 .274 1.01"></path><circle cx="10" cy="20" r="2"></circle></symbol><symbol id="i-file-pen" viewBox="0 0 24 24"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M13.378 15.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"></path></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol><symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></symbol><symbol id="i-inbox" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></symbol><symbol id="i-keyboard" viewBox="0 0 24 24"><path d="M10 8h.01"></path><path d="M12 12h.01"></path><path d="M14 8h.01"></path><path d="M16 12h.01"></path><path d="M18 8h.01"></path><path d="M6 8h.01"></path><path d="M7 16h10"></path><path d="M8 12h.01"></path><rect width="20" height="16" x="2" y="4" rx="2"></rect></symbol><symbol id="i-languages" viewBox="0 0 24 24"><path d="m5 8 6 6"></path><path d="m4 14 6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="m22 22-5-10-5 10"></path><path d="M14 18h6"></path></symbol><symbol id="i-layout-dashboard" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></symbol><symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="M12 5v14"></path></symbol><symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"></path><path d="M15 8h-5"></path><path d="M19 17V5a2 2 0 0 0-2-2H4"></path><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"></path></symbol><symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></symbol><symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></symbol><symbol id="i-sliders-horizontal" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></symbol><symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></symbol><symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></symbol><symbol id="i-thumbs-down" viewBox="0 0 24 24"><path d="M17 14V2"></path><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"></path></symbol><symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></symbol><symbol id="i-timer" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2"></line><line x1="12" x2="15" y1="14" y2="11"></line><circle cx="12" cy="14" r="8"></circle></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></symbol><symbol id="i-type" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></symbol><symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"></path></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></symbol><symbol id="i-user-check" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></symbol><symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></symbol><symbol id="i-user-x" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" x2="22" y1="8" y2="13"></line><line x1="22" x2="17" y1="8" y2="13"></line></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></symbol></defs></svg>
+
 <div class="wrap">
-  <div class="top"><h1><i class="fa-solid fa-sliders" style="color:#f59e0b"></i> پنل مدیریت تیم</h1><div><a href="team.html">نمای کارمندها</a><a href="/">سایت</a><button class="b g" id="reload"><i class="fa-solid fa-rotate"></i> به‌روزرسانی</button></div></div>
+  <div class="top"><h1><svg class="ic" aria-hidden="true"><use href="#i-sliders-horizontal"/></svg> پنل مدیریت تیم</h1><div><a href="team.html"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg> نمای کارمندها</a><a href="/"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg> سایت</a><button class="b g" id="reload"><svg class="ic" aria-hidden="true"><use href="#i-refresh-cw"/></svg> به‌روزرسانی</button></div></div>
   <div id="msg" class="empty" hidden></div>
   <div id="app" hidden><div class="tabs" id="tabs"></div><div id="view"></div></div>
 </div>
-<div id="pv" hidden><div class="pvc"><div class="pvh"><b id="pvt"></b><button class="b g" id="pvx">✕ بستن</button></div><div id="pvb"></div><div class="pvf" id="pvf"></div></div></div>
-<div id="tkm" hidden><div class="pvc" style="height:auto;max-width:520px"><div class="pvh"><b id="tkt">🎫 ارسال تیکت</b><button class="b g" id="tkx">✕</button></div><div style="padding:14px;display:grid;gap:10px">
-<select id="tkl"><option value="warning">⚠️ هشدار (قرمز)</option><option value="info">ℹ️ پیام (آبی)</option><option value="praise">⭐ تشویق (سبز)</option></select>
-<textarea id="tkmsg" rows="4" placeholder="متن تیکت — کارمند این را خیلی واضح بالای صفحه‌اش می‌بیند تا «متوجه شدم» را بزند"></textarea><button class="b" id="tks">ارسال تیکت</button></div></div></div>
+<div id="pv" hidden><div class="pvc"><div class="pvh"><b id="pvt"></b><button class="b g" id="pvx"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg> بستن</button></div><div id="pvb"></div><div class="pvf" id="pvf"></div></div></div>
+<div id="tkm" hidden><div class="pvc" style="height:auto;max-width:520px"><div class="pvh"><b id="tkt"><svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg> ارسال تیکت</b><button class="b g" id="tkx" aria-label="بستن" title="بستن"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div><div style="padding:14px;display:grid;gap:10px">
+<select id="tkl"><option value="warning">هشدار (قرمز)</option><option value="info">پیام (آبی)</option><option value="praise">تشویق (سبز)</option></select>
+<textarea id="tkmsg" rows="4" placeholder="متن تیکت — کارمند این را خیلی واضح بالای صفحه‌اش می‌بیند تا «متوجه شدم» را بزند"></textarea><button class="b" id="tks"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg> ارسال تیکت</button></div></div></div>
 <div id="toast"></div>
 <script>
-const R={typist:{n:'تایپیست معمولی',i:'fa-keyboard',c:'#22d3ee'},font:{n:'تغییر دهنده فونت',i:'fa-font',c:'#a78bfa'},translator:{n:'مترجم',i:'fa-language',c:'#34d399'},cleaner:{n:'کلینر',i:'fa-broom',c:'#fb923c'}};
+const R={typist:{n:'تایپیست معمولی',i:'keyboard',c:'#22d3ee'},font:{n:'تغییر دهنده فونت',i:'type',c:'#a78bfa'},translator:{n:'مترجم',i:'languages',c:'#34d399'},cleaner:{n:'کلینر',i:'eraser',c:'#fb923c'}};
 const ST={draft:'پیش‌نویس (فایل نیاز دارد)',open:'آزاد',claimed:'در حال انجام',submitted:'منتظر تایید',approved:'تایید شده'};
-const MAXMB=100,LATE_H=72;
+const MAXMB=100;
 const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString('fa-IR');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(n,c='')=>`<svg class="ic${c?' '+c:''}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const SI={draft:'file-pen',open:'inbox',claimed:'clock',submitted:'hourglass',approved:'circle-check'};
 let token,O,tab='dash',dRole='',filt={role:'',status:'',q:''},editId=null,ledUid='';
 
-function toast(t){const e=$('#toast');e.textContent=t;e.className='s';clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',3000)}
+function toast(t,k){const e=$('#toast');e.textContent=t;e.className='s '+(k||'');clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',3000)}
 async function api(m,p,b){
   const r=await fetch('/api/team'+p,{method:m,headers:{Authorization:'Bearer '+token,...(b?{'Content-Type':'application/json'}:{})},body:b?JSON.stringify(b):undefined});
   const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'خطا در ارتباط با سرور');return d}
@@ -87,10 +148,19 @@ function sendZip(p,f,bar){return new Promise((ok,no)=>{
 async function dl(id,kind,name){try{
   const r=await fetch(`/api/team/admin/tasks/${id}/download?kind=${kind}`,{headers:{Authorization:'Bearer '+token}});
   if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'دانلود ناموفق بود');
-  const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}catch(e){toast(e.message)}}
-const act=async(b,fn)=>{b.disabled=true;try{await fn()}catch(e){toast(e.message)}finally{b.disabled=false}};
+  const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}catch(e){toast(e.message,'err')}}
+const act=async(b,fn)=>{b.disabled=true;try{await fn()}catch(e){toast(e.message,'err')}finally{b.disabled=false}};
 const ago=iso=>{if(!iso)return'';const m=(Date.now()-new Date(iso))/6e4;return m<60?fa(Math.max(1,Math.round(m)))+' دقیقه':m<2880?fa(Math.round(m/60))+' ساعت':fa(Math.round(m/1440))+' روز'};
-const late=t=>t.status==='claimed'&&t.claimed_at&&(Date.now()-new Date(t.claimed_at))/36e5>LATE_H;
+const late=t=>t.status==='claimed'&&!t.first_submitted_at&&(t.first_claimed_at||t.claimed_at)&&(Date.now()-new Date(t.first_claimed_at||t.claimed_at))/36e5>(O.pay?O.pay.deadlineH:24);
+/* ---------- پاداش / جریمه: محاسبه‌ی پیش‌نمایش (سرور مرجع است) ---------- */
+const hrs=t=>t.first_claimed_at&&(t.first_submitted_at||t.submitted_at)?(new Date(t.first_submitted_at||t.submitted_at)-new Date(t.first_claimed_at))/36e5:null;
+const dur=t=>{const x=hrs(t);if(x===null)return'';const P=O.pay,c=x<P.fastH&&t.quality!=='bad'?'approved':x>P.deadlineH?'late':'';return `<span class="st ${c}">${ic('timer')} ${fa(Math.round(x*10)/10)} ساعت${x<P.fastH&&t.quality!=='bad'?' · سریع':x>P.deadlineH?' · با تاخیر':''}</span>`};
+function calc(t,q){const p=O.pay.roles[t.role]||{mode:'flat',quality:0,speed:0,late:0},fl=p.mode==='flat',amt=v=>fl?v:Math.round(t.reward_tokens*v),bad=t.quality==='bad';let d=0;
+  if(q==='high'&&!bad)d+=amt(p.quality);const x=hrs(t);if(x!==null){if(x<O.pay.fastH&&!bad)d+=amt(p.speed);else if(x>O.pay.deadlineH)d-=p.late}return t.reward_tokens+d}
+function approveBtns(t){const bad=(O.pay.roles[t.role]||{}).bad||0;
+  return `<button class="b ok" data-ap="${t.id}" data-q="normal">${ic('check')} تایید و پرداخت ${fa(calc(t,'normal'))} توکن</button>`+(t.quality==='bad'?'':`<button class="b ok" data-ap="${t.id}" data-q="high">${ic('star')} کیفیت بالا — ${fa(calc(t,'high'))} توکن</button>`)+`<button class="b no" data-rj="${t.id}">${ic('pencil')} نیاز به اصلاح</button><button class="b no" data-rjp="${t.id}">${ic('thumbs-down')} کیفیت بد (−${fa(bad)} توکن) و برگشت</button>`}
+function doApprove(b,id,q){act(b,async()=>{const r=await api('POST',`/admin/tasks/${id}/approve`,{quality:q});toast(`تایید شد، ${fa((r.tokens||0)+(r.adjust||0))} توکن واریز شد`);if(!$('#pv').hidden)pvClose();load()})}
+function doReject(b,id,pen){const n=prompt(pen?'دلیل کیفیت بد و موارد اصلاح (کارمند می‌بیند؛ توکن کسر می‌شود):':'چه چیزی باید اصلاح بشه؟ (کارمند این متن را می‌بیند)');if(n)act(b,async()=>{const r=await api('POST',`/admin/tasks/${id}/reject`,{note:n,penalty:pen});toast(pen?`برگشت داده شد و ${fa(r.penalty)} توکن کسر شد`:'برای اصلاح برگشت');if(!$('#pv').hidden)pvClose();load()})}
 
 (async()=>{
   for(let i=0;i<50&&!window.supabaseClient;i++)await new Promise(r=>setTimeout(r,100));
@@ -100,42 +170,43 @@ const late=t=>t.status==='claimed'&&t.claimed_at&&(Date.now()-new Date(t.claimed
   try{const me=await api('GET','/me');if(!me.isAdmin){$('#msg').hidden=false;$('#msg').textContent='این صفحه فقط برای ادمین است.';return}}catch(e){$('#msg').hidden=false;$('#msg').textContent=e.message;return}
   $('#app').hidden=false;$('#reload').onclick=load;await load();setInterval(()=>{if(tab==='dash')load(true)},60000);
 })();
-async function load(soft){try{O=await api('GET','/admin/overview');draw()}catch(e){if(!soft)toast(e.message)}}
+async function load(soft){try{O=await api('GET','/admin/overview');draw()}catch(e){if(!soft)toast(e.message,'err')}}
 function draw(){
-  const T=[['dash','داشبورد و کارهای در جریان'],['chap','چپترها (خودکار)'],['tasks','مدیریت کارها'],['manhwa','مانهواها'],['members','اعضا'],['fin','مالی و توکن‌ها']];
-  $('#tabs').innerHTML=T.map(([k,n])=>`<button class="${tab===k?'on':''}" data-t="${k}">${n}</button>`).join('');
+  const T=[['dash','داشبورد و کارهای در جریان','layout-dashboard'],['chap','چپترها (خودکار)','book-open'],['tasks','مدیریت کارها','clipboard-list'],['manhwa','مانهواها','library'],['members','اعضا','users'],['fin','مالی و توکن‌ها','wallet'],['wd','برداشت‌ها','banknote'],['sup','تیکت کارمندها','ticket']];
+  $('#tabs').innerHTML=T.map(([k,n,i])=>`<button class="${tab===k?'on':''}" data-t="${k}">${ic(i)}${n}${(k==='wd'?(O.pending||{}).withdrawals:k==='sup'?(O.pending||{}).support:0)?`<em>${fa(k==='wd'?O.pending.withdrawals:O.pending.support)}</em>`:''}</button>`).join('');
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw()});
-  ({dash:vDash,chap:vChap,tasks:vTasks,manhwa:vManhwa,members:vMembers,fin:vFin})[tab]();
+  ({dash:vDash,chap:vChap,tasks:vTasks,manhwa:vManhwa,members:vMembers,fin:vFin,wd:vWd,sup:vSup})[tab]();
 }
 
 /* ---------- کارت کار (مشترک) ---------- */
 function tcard(t){
   const r=R[t.role],rule=O.rules[t.role],L=late(t),a=[];
-  if(['draft','open','claimed'].includes(t.status))a.push(`<button class="b g" data-edit="${t.id}"><i class="fa-solid fa-pen"></i> ویرایش</button>`);
-  if(rule.source&&t.status!=='approved')a.push(`<label class="b g"><i class="fa-solid fa-file-zipper"></i> ${t.has_source?'جایگزینی فایل':'آپلود فایل'}<input type="file" accept=".zip" hidden data-src="${t.id}"></label>`);
-  if(t.has_result)a.push(`<button class="b" data-pv="${t.id}" data-k="result"><i class="fa-solid fa-eye"></i> ${t.status==='submitted'?'بررسی نتیجه':'مشاهده نتیجه'}</button>`);
-  if(t.assignee)a.push(`<button class="b g" data-tk="${t.id}"><i class="fa-solid fa-ticket"></i> تیکت</button>`);
-  if(t.has_source)a.push(`<button class="b g" data-pv="${t.id}" data-k="source"><i class="fa-solid fa-eye"></i> مشاهده ورودی</button>`);
-  if(t.has_extra)a.push(`<button class="b g" data-pv="${t.id}" data-k="extra"><i class="fa-solid fa-eye"></i> مشاهده ترجمه</button>`);
-  if(t.has_source)a.push(`<button class="b g" data-dl="${t.id}" data-k="source" data-n="${esc(t.label)}.zip"><i class="fa-solid fa-download"></i> فایل ورودی</button>`);
-  if(t.has_result)a.push(`<button class="b g" data-dl="${t.id}" data-k="result" data-n="${esc(t.label)}-result.${t.role==='translator'?'docx':'zip'}"><i class="fa-solid fa-download"></i> ${t.role==='translator'?'فایل Word':'نتیجه'}</button>`);
-  if(t.has_extra)a.push(`<button class="b g" data-dl="${t.id}" data-k="extra" data-n="${esc(t.label)}.docx"><i class="fa-solid fa-file-word"></i> ترجمه (Word)</button>`);
-  if(t.status==='submitted')a.push(`<button class="b ok" data-ap="${t.id}">تایید و پرداخت ${fa(t.reward_tokens)} توکن</button><button class="b no" data-rj="${t.id}">نیاز به اصلاح</button>`);
-  if(['claimed','submitted'].includes(t.status))a.push(`<button class="b no" data-rel="${t.id}"><i class="fa-solid fa-rotate-left"></i> پس گرفتن</button>`);
-  if(['draft','open'].includes(t.status))a.push(`<button class="b no" data-del="${t.id}"><i class="fa-solid fa-trash"></i></button>`);
+  if(['draft','open','claimed'].includes(t.status))a.push(`<button class="b g" data-edit="${t.id}"><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg> ویرایش</button>`);
+  if(rule.source&&t.status!=='approved')a.push(`<label class="b g"><svg class="ic" aria-hidden="true"><use href="#i-file-archive"/></svg> ${t.has_source?'جایگزینی فایل':'آپلود فایل'}<input type="file" accept=".zip" hidden data-src="${t.id}"></label>`);
+  if(t.has_result)a.push(`<button class="b" data-pv="${t.id}" data-k="result"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg> ${t.status==='submitted'?'بررسی نتیجه':'مشاهده نتیجه'}</button>`);
+  if(t.assignee)a.push(`<button class="b g" data-tk="${t.id}"><svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg> تیکت</button>`);
+  if(t.has_source)a.push(`<button class="b g" data-pv="${t.id}" data-k="source"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg> مشاهده ورودی</button>`);
+  if(t.has_extra)a.push(`<button class="b g" data-pv="${t.id}" data-k="extra"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg> مشاهده ترجمه</button>`);
+  if(t.has_source)a.push(`<button class="b g" data-dl="${t.id}" data-k="source" data-n="${esc(t.label)}.zip"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> فایل ورودی</button>`);
+  if(t.has_result)a.push(`<button class="b g" data-dl="${t.id}" data-k="result" data-n="${esc(t.label)}-result.${t.role==='translator'?'docx':'zip'}"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> ${t.role==='translator'?'فایل Word':'نتیجه'}</button>`);
+  if(t.has_extra)a.push(`<button class="b g" data-dl="${t.id}" data-k="extra" data-n="${esc(t.label)}.docx"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg> ترجمه (Word)</button>`);
+  if(t.status==='submitted')a.push(approveBtns(t));
+  if(['claimed','submitted'].includes(t.status))a.push(`<button class="b no" data-rel="${t.id}"><svg class="ic" aria-hidden="true"><use href="#i-undo-2"/></svg> پس گرفتن</button>`);
+  if(['draft','open'].includes(t.status))a.push(`<button class="b no" data-del="${t.id}" aria-label="حذف کار" title="حذف کار"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg></button>`);
   return `<div class="box task ${L?'late':''}" style="--c:${r.c}"><h3><span class="lbl">${esc(t.label)}</span> ${esc(t.title)}<span class="st">${r.n}</span></h3>
   ${t.description?`<p><b>دستور کار:</b> ${esc(t.description)}</p>`:''}${t.address?`<p><b>آدرس:</b> ${esc(t.address)}</p>`:''}
   ${t.admin_note&&t.status==='claimed'?`<div class="note">اصلاحیه‌ی ارسالی: ${esc(t.admin_note)}</div>`:''}
-  <div class="row"><span class="st ${t.status}">${ST[t.status]}</span><span class="tok">${fa(t.reward_tokens)} توکن</span>
-  ${t.worker?`<span class="st ${L?'late':'claimed'}"><i class="fa-solid fa-user"></i> ${esc(t.worker)}${t.claimed_at?` · ${ago(t.claimed_at)} است در دست ایشان${L?' ⚠':''}`:''}</span>`:''}${a.join('')}</div></div>`;
+  <div class="row"><span class="st ${t.status}">${SI[t.status]?ic(SI[t.status]):''}${ST[t.status]}</span><span class="tok">${fa(t.reward_tokens)} توکن</span>${dur(t)}${t.quality==='bad'?'<span class="st late"><svg class="ic" aria-hidden="true"><use href="#i-thumbs-down"/></svg> کیفیت بد داشته</span>':t.quality==='high'?'<span class="st approved"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> کیفیت بالا</span>':''}
+  ${t.worker?`<span class="st ${L?'late':'claimed'}"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg> ${esc(t.worker)}${t.claimed_at?` · ${ago(t.claimed_at)} است در دست ایشان${L?' <svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>':''}`:''}</span>`:''}${a.join('')}</div></div>`;
 }
 function bind(root){
   root.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{const t=O.tasks.find(x=>x.id===b.dataset.tk);if(t)openTicket({task_id:t.id,name:t.worker||'کارمند'})});
   root.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>preview(b.dataset.pv,b.dataset.k));
   root.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>dl(b.dataset.dl,b.dataset.k,b.dataset.n));
-  root.querySelectorAll('[data-src]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(f)sendZip(`/admin/tasks/${i.dataset.src}/source`,f).then(()=>{toast('فایل آپلود شد ✅');load()}).catch(e=>toast(e.message))});
-  root.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('POST',`/admin/tasks/${b.dataset.ap}/approve`);toast('تایید شد و توکن واریز شد 💰');load()}));
-  root.querySelectorAll('[data-rj]').forEach(b=>b.onclick=()=>{const n=prompt('چه چیزی باید اصلاح بشه؟ (کارمند این متن را می‌بیند)');if(n)act(b,async()=>{await api('POST',`/admin/tasks/${b.dataset.rj}/reject`,{note:n});toast('برای اصلاح برگشت');load()})});
+  root.querySelectorAll('[data-src]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(f)sendZip(`/admin/tasks/${i.dataset.src}/source`,f).then(()=>{toast('فایل آپلود شد');load()}).catch(e=>toast(e.message,'err'))});
+  root.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>doApprove(b,b.dataset.ap,b.dataset.q));
+  root.querySelectorAll('[data-rj]').forEach(b=>b.onclick=()=>doReject(b,b.dataset.rj,false));
+  root.querySelectorAll('[data-rjp]').forEach(b=>b.onclick=()=>doReject(b,b.dataset.rjp,true));
   root.querySelectorAll('[data-rel]').forEach(b=>b.onclick=()=>{if(confirm('کار از کارمند پس گرفته و دوباره آزاد شود؟ (فایل تحویلی او حذف می‌شود)'))act(b,async()=>{await api('POST',`/admin/tasks/${b.dataset.rel}/release`);toast('کار آزاد شد');load()})});
   root.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('این کار حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/tasks/'+b.dataset.del);toast('حذف شد');load()})});
   root.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{editId=b.dataset.edit;tab='tasks';draw();fillForm();scrollTo({top:0,behavior:'smooth'})});
@@ -143,9 +214,9 @@ function bind(root){
 
 /* ---------- نمایش تصویر / مانهواها ---------- */
 async function showImg(p,title){
-  const seq=++pvSeq;$('#pv').hidden=false;$('#pvt').textContent=title;$('#pvf').innerHTML='';$('#pvb').innerHTML='<div class="empty">در حال بارگذاری…</div>';
+  const seq=++pvSeq;$('#pv').hidden=false;$('#pvt').textContent=title;$('#pvf').innerHTML='';$('#pvb').innerHTML='<div class="empty loading">در حال بارگذاری…</div>';
   try{const u=URL.createObjectURL(await blobGet(p));if(seq!==pvSeq){URL.revokeObjectURL(u);return}pvBlobs.push(u);$('#pvb').innerHTML=`<div class="pvi" style="min-height:0"><img src="${u}" alt=""></div>`}
-  catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+  catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty err">${esc(e.message)}</div>`}
 }
 function sendImg(p,f,bar){return new Promise((ok,no)=>{
   if(!/\.(jpe?g|png|webp)$/i.test(f.name))return no(new Error('فقط JPG، PNG یا WebP قابل قبوله.'));
@@ -155,26 +226,26 @@ function sendImg(p,f,bar){return new Promise((ok,no)=>{
   x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(new Error(d.error||'آپلود ناموفق بود'))};
   x.onerror=()=>no(new Error('قطع شدن ارتباط هنگام آپلود'));x.send(f)})}
 function vManhwa(){
-  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">📖 افزودن مانهوا</h2>
-   <div class="hint" style="margin-bottom:10px">تصویر هر مانهوا را یک‌بار آپلود کن؛ زیر بنر همه‌ی چپترهای آن مانهوا همان‌طور که هست (بدون برش) چسبانده می‌شود. عرض تصویر باید دقیقاً هم‌اندازه‌ی عرض بنر PSD باشد. ${O.bannerReady?'':'<b style="color:#fca5a5">⚠ تنظیمات Adobe روی سرور هنوز گذاشته نشده؛ بنر ساخته نمی‌شود.</b>'}</div>
-   <div class="form"><input id="mhn" placeholder="نام مانهوا (فقط برای خودت)"><div><button class="b" id="mhadd">افزودن</button></div></div></div>
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0"><svg class="ic" aria-hidden="true"><use href="#i-book-open"/></svg> افزودن مانهوا</h2>
+   <div class="hint" style="margin-bottom:10px">تصویر هر مانهوا را یک‌بار آپلود کن؛ زیر بنر همه‌ی چپترهای آن مانهوا همان‌طور که هست (بدون برش) چسبانده می‌شود. عرض تصویر باید دقیقاً هم‌اندازه‌ی عرض بنر PSD باشد. ${O.bannerReady?'':'<b style="color:#fca5a5"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg> تنظیمات Adobe روی سرور هنوز گذاشته نشده؛ بنر ساخته نمی‌شود.</b>'}</div>
+   <div class="form"><input id="mhn" placeholder="نام مانهوا (فقط برای خودت)"><div><button class="b" id="mhadd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> افزودن</button></div></div></div>
   ${O.manhwas.map(m=>`<div class="box"><div class="row" style="margin:0"><b>${esc(m.name)}</b><span class="st ${m.has_image?'approved':'late'}">${m.has_image?'تصویر دارد':'بدون تصویر'}</span>
-   <label class="b g"><i class="fa-solid fa-image"></i> ${m.has_image?'جایگزینی تصویر':'آپلود تصویر'}<input type="file" accept="image/jpeg,image/png,image/webp" hidden data-mi="${m.id}"></label>
-   ${m.has_image?`<button class="b g" data-mv="${m.id}" data-n="${esc(m.name)}">👁 مشاهده</button>`:''}
-   <button class="b no" data-md="${m.id}"><i class="fa-solid fa-trash"></i></button></div><div class="bar" hidden><i></i></div></div>`).join('')||'<div class="empty">هنوز مانهوایی ثبت نشده.</div>'}`;
+   <label class="b g"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> ${m.has_image?'جایگزینی تصویر':'آپلود تصویر'}<input type="file" accept="image/jpeg,image/png,image/webp" hidden data-mi="${m.id}"></label>
+   ${m.has_image?`<button class="b g" data-mv="${m.id}" data-n="${esc(m.name)}">${ic('eye')} مشاهده</button>`:''}
+   <button class="b no" data-md="${m.id}" aria-label="حذف مانهوا" title="حذف مانهوا"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg></button></div><div class="bar" hidden><i></i></div></div>`).join('')||'<div class="empty">هنوز مانهوایی ثبت نشده.</div>'}`;
   const v=$('#view');
-  $('#mhadd').onclick=function(){act(this,async()=>{await api('POST','/admin/manhwas',{name:$('#mhn').value});toast('مانهوا اضافه شد ✅');load()})};
+  $('#mhadd').onclick=function(){act(this,async()=>{await api('POST','/admin/manhwas',{name:$('#mhn').value});toast('مانهوا اضافه شد');load()})};
   v.querySelectorAll('[data-mi]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(!f)return;const bar=i.closest('.box').querySelector('.bar');bar.hidden=false;
-    sendImg(`/admin/manhwas/${i.dataset.mi}/image`,f,bar.firstChild).then(()=>{toast('تصویر ذخیره شد ✅');load()}).catch(e=>{toast(e.message);bar.hidden=true})});
+    sendImg(`/admin/manhwas/${i.dataset.mi}/image`,f,bar.firstChild).then(()=>{toast('تصویر ذخیره شد');load()}).catch(e=>{toast(e.message,'err');bar.hidden=true})});
   v.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>showImg(`/admin/manhwas/${b.dataset.mv}/image`,b.dataset.n));
   v.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{if(confirm('این مانهوا و تصویرش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/manhwas/'+b.dataset.md);toast('حذف شد');load()})});
 }
 
 /* ---------- تیکت ---------- */
 let tkCtx=null;
-function openTicket(c){tkCtx=c;$('#tkt').textContent='🎫 تیکت برای '+c.name;$('#tkmsg').value='';$('#tkm').hidden=false;$('#tkmsg').focus()}
+function openTicket(c){tkCtx=c;$('#tkt').innerHTML=ic('ticket')+' '+esc('تیکت برای '+c.name);$('#tkmsg').value='';$('#tkm').hidden=false;$('#tkmsg').focus()}
 $('#tkx').onclick=()=>$('#tkm').hidden=true;
-$('#tks').onclick=function(){act(this,async()=>{await api('POST','/admin/tickets',{user_id:tkCtx.user_id,task_id:tkCtx.task_id,message:$('#tkmsg').value,level:$('#tkl').value});$('#tkm').hidden=true;toast('تیکت ارسال شد 🎫');if(tab==='members')draw()})};
+$('#tks').onclick=function(){act(this,async()=>{await api('POST','/admin/tickets',{user_id:tkCtx.user_id,task_id:tkCtx.task_id,message:$('#tkmsg').value,level:$('#tkl').value});$('#tkm').hidden=true;toast('تیکت ارسال شد');if(tab==='members')draw()})};
 
 /* ---------- پیش‌نمایش فایل (تصاویر zip / متن docx) ---------- */
 const pvBlobs=[];let pvSeq=0,pvIO=null;
@@ -183,14 +254,11 @@ function pvClose(){pvSeq++;if(pvIO)pvIO.disconnect();$('#pv').hidden=true;pvBlob
 $('#pvx').onclick=pvClose;addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#pv').hidden)pvClose()});
 async function preview(id,kind){
   const t=O.tasks.find(x=>x.id===id);if(!t)return;const seq=++pvSeq;
-  $('#pv').hidden=false;$('#pvt').textContent=`${t.label} — ${t.title}`;$('#pvb').innerHTML='<div class="empty">در حال بارگذاری فایل…</div>';
+  $('#pv').hidden=false;$('#pvt').textContent=`${t.label} — ${t.title}`;$('#pvb').innerHTML='<div class="empty loading">در حال بارگذاری فایل…</div>';
   const review=t.status==='submitted'&&kind==='result';
-  $('#pvf').innerHTML=(review?`<button class="b ok" id="pvap">تایید و پرداخت ${fa(t.reward_tokens)} توکن</button><button class="b no" id="pvrj">نیاز به اصلاح</button>`:'')+(t.assignee?'<button class="b g" id="pvtk">🎫 تیکت به کارمند</button>':'');
+  $('#pvf').innerHTML=(review?approveBtns(t):'')+(t.assignee?'<button class="b g" id="pvtk"><svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg> تیکت به کارمند</button>':'');
   if(t.assignee)$('#pvtk').onclick=()=>openTicket({task_id:t.id,name:t.worker||'کارمند'});
-  if(review){
-    $('#pvap').onclick=function(){act(this,async()=>{await api('POST',`/admin/tasks/${id}/approve`);toast('تایید شد و توکن واریز شد 💰');pvClose();load()})};
-    $('#pvrj').onclick=function(){const n=prompt('چه چیزی باید اصلاح بشه؟ (کارمند این متن را می‌بیند)');if(n)act(this,async()=>{await api('POST',`/admin/tasks/${id}/reject`,{note:n});toast('برای اصلاح برگشت');pvClose();load()})};
-  }
+  if(review)bind($('#pvf'));
   try{
     const d=await api('GET',`/admin/tasks/${id}/preview?kind=${kind}`);if(seq!==pvSeq)return;
     if(d.type==='docx'){
@@ -208,7 +276,7 @@ async function preview(id,kind){
       }),{root:$('#pvb'),rootMargin:'400px'});
       $('#pvb').querySelectorAll('.pvi').forEach(el=>pvIO.observe(el));
     }
-  }catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+  }catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty err">${esc(e.message)}</div>`}
 }
 
 /* ---------- داشبورد ---------- */
@@ -216,32 +284,33 @@ function vDash(){
   const c=s=>O.tasks.filter(t=>t.status===s&&(!dRole||t.role===dRole)).length;
   const sub=O.tasks.filter(t=>t.status==='submitted'&&(!dRole||t.role===dRole)),cl=O.tasks.filter(t=>t.status==='claimed'&&(!dRole||t.role===dRole)).sort((a,b)=>new Date(a.claimed_at)-new Date(b.claimed_at));
   $('#view').innerHTML=`
-  <div class="grid">${Object.entries(R).map(([k,r])=>`<button class="stat ${dRole===k?'on':''}" style="--c:${r.c}" data-dr="${k}"><i class="fa-solid ${r.i}" style="color:${r.c}"></i> <span>${r.n}</span><b>${fa(O.tasks.filter(t=>t.role===k&&['claimed','submitted'].includes(t.status)).length)}</b><span>در جریان · ${fa(O.tasks.filter(t=>t.role===k&&t.status==='open').length)} آزاد</span></button>`).join('')}</div>
+  <div class="grid">${Object.entries(R).map(([k,r])=>`<button class="stat ${dRole===k?'on':''}" style="--c:${r.c}" data-dr="${k}">${ic(r.i)}<span>${r.n}</span><b>${fa(O.tasks.filter(t=>t.role===k&&['claimed','submitted'].includes(t.status)).length)}</b><span>در جریان · ${fa(O.tasks.filter(t=>t.role===k&&t.status==='open').length)} آزاد</span></button>`).join('')}</div>
   <div class="grid">
-    <div class="stat" style="--c:#fbbf24"><b>${fa(c('draft'))}</b><span>پیش‌نویس (منتظر فایل)</span></div>
-    <div class="stat" style="--c:#cbd5e1"><b>${fa(c('open'))}</b><span>آزاد برای برداشتن</span></div>
-    <div class="stat" style="--c:#60a5fa"><b>${fa(c('claimed'))}</b><span>در دست کارمندها</span></div>
-    <div class="stat" style="--c:#c084fc"><b>${fa(c('submitted'))}</b><span>منتظر تایید شما</span></div>
-    <div class="stat" style="--c:#4ade80"><b>${fa(c('approved'))}</b><span>تایید شده</span></div>
-    <div class="stat" style="--c:#f59e0b"><b>${fa(O.stats.owed*O.tomanPerToken)}</b><span>تومان بدهی به تیم</span></div></div>
-  <div class="hint">🤖 خودکار: ${O.auto.claimHours?`کار تحویل‌نشده بعد از ${fa(O.auto.claimHours)} ساعت آزاد می‌شود`:'آزادسازی خودکار خاموش'} · ${O.auto.autoApproveHours?`تحویل بررسی‌نشده بعد از ${fa(O.auto.autoApproveHours)} ساعت تایید می‌شود`:'تایید خودکار زمانی خاموش'} · اعضای «مورد اعتماد» بدون نیاز به شما تایید می‌شوند</div>${dRole?`<div class="hint">فیلتر: ${R[dRole].n} — برای حذف فیلتر دوباره روی کارت بزن.</div>`:''}
-  <h2><i class="fa-solid fa-bell" style="color:#c084fc"></i> منتظر تایید (${fa(sub.length)})</h2>${sub.map(tcard).join('')||'<div class="empty">موردی نیست.</div>'}
-  <h2><i class="fa-solid fa-hourglass-half" style="color:#60a5fa"></i> در دست انجام (${fa(cl.length)}) <span class="hint">قدیمی‌ترین بالاتر؛ بیش از ${LATE_H} ساعت قرمز می‌شود</span></h2>${cl.map(tcard).join('')||'<div class="empty">الان کسی کاری در دست ندارد.</div>'}`;
+    <div class="stat" style="--c:#fbbf24"><svg class="ic" aria-hidden="true"><use href="#i-file-pen"/></svg><b>${fa(c('draft'))}</b><span>پیش‌نویس (منتظر فایل)</span></div>
+    <div class="stat" style="--c:#cbd5e1"><svg class="ic" aria-hidden="true"><use href="#i-inbox"/></svg><b>${fa(c('open'))}</b><span>آزاد برای برداشتن</span></div>
+    <div class="stat" style="--c:#60a5fa"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><b>${fa(c('claimed'))}</b><span>در دست کارمندها</span></div>
+    <div class="stat" style="--c:#c084fc"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><b>${fa(c('submitted'))}</b><span>منتظر تایید شما</span></div>
+    <div class="stat" style="--c:#4ade80"><svg class="ic" aria-hidden="true"><use href="#i-circle-check"/></svg><b>${fa(c('approved'))}</b><span>تایید شده</span></div>
+    <div class="stat" style="--c:#f59e0b"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg><b>${fa(O.stats.owed*O.tomanPerToken)}</b><span>تومان بدهی به تیم</span></div></div>
+  <div class="hint"><svg class="ic" aria-hidden="true"><use href="#i-bot"/></svg> خودکار: ${O.auto.claimHours?`کار تحویل‌نشده بعد از ${fa(O.auto.claimHours)} ساعت آزاد می‌شود`:'آزادسازی خودکار خاموش'} · ${O.auto.autoApproveHours?`تحویل بررسی‌نشده بعد از ${fa(O.auto.autoApproveHours)} ساعت تایید می‌شود`:'تایید خودکار زمانی خاموش'} · اعضای «مورد اعتماد» بدون نیاز به شما تایید می‌شوند</div>
+  <div class="hint"><svg class="ic" aria-hidden="true"><use href="#i-scroll-text"/></svg> قوانین: مهلت ${fa(O.pay.deadlineH)} ساعت از برداشتن کار · ${fa(O.pay.deadlineH)} تا ${fa(O.pay.deadlineH+O.pay.graceH)} ساعت = ۳ توکن جریمه · بعد از ${fa(O.pay.deadlineH+O.pay.graceH)} ساعت = آزاد شدن کار و کسر کل توکن آن · زیر ${fa(O.pay.fastH)} ساعت = پاداش سرعت · کیفیت بالا = پاداش · کیفیت بد = ${fa(2)} توکن جریمه و برگشت</div>${dRole?`<div class="hint">فیلتر: ${R[dRole].n} — برای حذف فیلتر دوباره روی کارت بزن.</div>`:''}
+  <h2><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg> منتظر تایید (${fa(sub.length)})</h2>${sub.map(tcard).join('')||'<div class="empty">موردی نیست.</div>'}
+  <h2><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg> در دست انجام (${fa(cl.length)}) <span class="hint">قدیمی‌ترین بالاتر؛ بیش از ${O.pay.deadlineH} ساعت قرمز می‌شود</span></h2>${cl.map(tcard).join('')||'<div class="empty">الان کسی کاری در دست ندارد.</div>'}`;
   document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{dRole=dRole===b.dataset.dr?'':b.dataset.dr;vDash()});bind($('#view'));
 }
 
 /* ---------- مدیریت کارها ---------- */
 function vTasks(){
   const ro=Object.entries(R).map(([k,r])=>`<option value="${k}">${r.n}</option>`).join('');
-  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0" id="ftitle">➕ ثبت کار جدید</h2><div class="form">
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0" id="ftitle"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-plus"/></svg> ثبت کار جدید</h2><div class="form">
     <select id="frole">${ro}</select>
     <input id="flabel" placeholder="برچسب عمومی — مثلاً CH1 (کارمند فقط همین را می‌بیند)">
     <input id="ftitle2" placeholder="عنوان داخلی — مثلاً سولو لولینگ چپتر ۱ (فقط شما)">
-    <input id="ftok" type="number" min="1" placeholder="توکن پاداش (هر توکن ۱۰۰۰ تومان)">
+    <input id="ftok" type="number" min="1" placeholder="توکن پاداش (هر توکن ${fa(O.tomanPerToken)} تومان)">
     <div class="full"><textarea id="fdesc" rows="3"></textarea><div class="hint" id="fdhint"></div></div>
     <div id="faddr" class="full"><input id="faddr2" placeholder="آدرس کار (مخصوص تغییر دهنده فونت)"></div>
-    <div id="ffile" class="full"><label class="b g" style="padding:10px 16px"><i class="fa-solid fa-file-zipper"></i> <span id="ffn">انتخاب فایل zip ورودی (حداکثر ${MAXMB} مگابایت)</span><input id="ffi" type="file" accept=".zip" hidden></label><div class="bar" id="fbar" hidden><i></i></div></div>
-    <div class="full"><button class="b" id="fsave">ثبت کار</button> <button class="b g" id="fcancel" hidden>انصراف از ویرایش</button></div></div></div>
+    <div id="ffile" class="full"><label class="b g" style="padding:10px 16px"><svg class="ic" aria-hidden="true"><use href="#i-file-archive"/></svg> <span id="ffn">انتخاب فایل zip ورودی (حداکثر ${MAXMB} مگابایت)</span><input id="ffi" type="file" accept=".zip" hidden></label><div class="bar" id="fbar" hidden><i></i></div></div>
+    <div class="full"><button class="b" id="fsave"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> ثبت کار</button> <button class="b g" id="fcancel" hidden><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg> انصراف از ویرایش</button></div></div></div>
   <div class="box"><div class="form"><select id="sr"><option value="">همه‌ی نقش‌ها</option>${ro}</select>
     <select id="ss"><option value="">همه‌ی وضعیت‌ها</option>${Object.entries(ST).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select>
     <input id="sq" placeholder="جستجو: برچسب، عنوان، کارمند"></div></div><div id="tlist"></div>`;
@@ -254,14 +323,15 @@ function vTasks(){
 function sync(){
   const rule=O.rules[$('#frole').value];
   $('#ffile').hidden=!rule.source;$('#faddr').hidden=!rule.address;
+  {const rg=O.pay.baseRange[$('#frole').value];$('#ftok').placeholder=rg?(rg[0]===rg[1]?`حقوق ثابت: ${fa(rg[0])} توکن`:`حقوق: ${fa(rg[0])} تا ${fa(rg[1])} توکن`):`توکن پاداش (هر توکن ${fa(O.tomanPerToken)} تومان)`;if(!editId)$('#ftok').value=rg&&rg[0]===rg[1]?rg[0]:''}
   $('#fdesc').placeholder=rule.text?'لینک / پیام / نام کار (الزامی) — کارمند بعد از برداشتن کار می‌بیند':'دستور کار (اختیاری) — فقط بعد از برداشتن کار دیده می‌شود';
   $('#fdhint').textContent=rule.text?'مترجم فایل ورودی ندارد؛ فقط همین متن/لینک را می‌بیند و باید zip تحویل بدهد.':rule.address?'تغییر دهنده فونت هم zip و هم آدرس دریافت می‌کند و فقط zip تحویل می‌دهد.':'کارمند فقط zip را می‌بیند و فقط zip تحویل می‌دهد.';
 }
 function fillForm(){
   const t=O.tasks.find(x=>x.id===editId);if(!t){editId=null;return}
-  $('#ftitle').textContent='✏️ ویرایش کار';$('#frole').value=t.role;$('#frole').disabled=true;sync();
+  $('#ftitle').innerHTML=ic('pencil')+' ویرایش کار';$('#frole').value=t.role;$('#frole').disabled=true;sync();
   $('#flabel').value=t.label;$('#ftitle2').value=t.title;$('#ftok').value=t.reward_tokens;$('#fdesc').value=t.description||'';$('#faddr2').value=t.address||'';
-  $('#fsave').textContent='ذخیره‌ی تغییرات';$('#fcancel').hidden=false;
+  $('#fsave').innerHTML=ic('save')+' ذخیره‌ی تغییرات';$('#fcancel').hidden=false;
 }
 async function save(){
   const body={role:$('#frole').value,label:$('#flabel').value,title:$('#ftitle2').value,reward_tokens:$('#ftok').value,description:$('#fdesc').value,address:$('#faddr2').value};
@@ -269,7 +339,7 @@ async function save(){
   if(f&&f.size>MAXMB*1048576)throw new Error(`حجم فایل بیشتر از ${MAXMB} مگابایته.`);
   if(editId)await api('PATCH','/admin/tasks/'+editId,body);else id=(await api('POST','/admin/tasks',body)).id;
   if(f&&rule.source){$('#fbar').hidden=false;await sendZip(`/admin/tasks/${id}/source`,f,$('#fbar').firstChild)}
-  toast(!editId&&rule.source&&!f?'ثبت شد، ولی تا آپلود فایل «پیش‌نویس» می‌ماند':'ذخیره شد ✅');editId=null;await load();
+  toast(!editId&&rule.source&&!f?'ثبت شد، ولی تا آپلود فایل «پیش‌نویس» می‌ماند':'ذخیره شد');editId=null;await load();
 }
 function list(){
   const f=filt,q=f.q.toLowerCase();
@@ -279,28 +349,28 @@ function list(){
 
 /* ---------- چپترها (زنجیره‌ی خودکار) ---------- */
 function vChap(){
-  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">📚 ثبت چپتر جدید — بقیه‌ی مسیر خودکار است</h2>
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0"><svg class="ic" aria-hidden="true"><use href="#i-book-plus"/></svg> ثبت چپتر جدید — بقیه‌ی مسیر خودکار است</h2>
    <div class="hint" style="margin-bottom:10px">مترجم و کلینر خودکار ساخته می‌شوند. هر وقت هر دو تایید شدند، کار تایپیست (zip کلین‌شده + فایل Word ترجمه) خودکار آزاد می‌شود. ترجمه و کلین تاییدشده تا آن موقع نگه‌داری می‌شوند.</div>
    <div class="form"><input id="ctitle" placeholder="عنوان داخلی — مثلاً سولو لولینگ چپتر ۱ (فقط شما)"><input id="clabel" placeholder="برچسب عمومی — مثلاً CH1">
-   <input id="ctr" type="number" min="1" placeholder="توکن مترجم"><input id="ccl" type="number" min="0" placeholder="توکن کلینر (۰ = بدون کلین)"><input id="cty" type="number" min="1" placeholder="توکن تایپیست">
+   <input id="ctr" type="number" min="12" max="15" placeholder="توکن مترجم (۱۲ تا ۱۵)"><input id="ccl" type="number" min="0" placeholder="توکن کلینر (۰ = بدون کلین)"><input id="cty" type="number" value="20" placeholder="توکن تایپیست (ثابت ۲۰)">
    <select id="cmh"><option value="">مانهوا (برای تصویر زیر بنر)…</option>${O.manhwas.map(m=>`<option value="${m.id}">${esc(m.name)}${m.has_image?'':' — بدون تصویر'}</option>`).join('')}</select>
    <div class="full"><textarea id="cnote" rows="3" placeholder="لینک / پیام / نام کار برای مترجم (الزامی — بعد از برداشتن کار دیده می‌شود)"></textarea></div>
-   <div class="full"><label class="b g" style="padding:10px 16px"><i class="fa-solid fa-file-zipper"></i> <span id="cfn">zip تصاویر برای کلینر (حداکثر ${MAXMB} مگابایت)</span><input id="cfile" type="file" accept=".zip" hidden></label><div class="bar" id="cbar" hidden><i></i></div></div>
-   <div class="full"><button class="b" id="csave">ثبت چپتر</button></div></div></div>
+   <div class="full"><label class="b g" style="padding:10px 16px"><svg class="ic" aria-hidden="true"><use href="#i-file-archive"/></svg> <span id="cfn">zip تصاویر برای کلینر (حداکثر ${MAXMB} مگابایت)</span><input id="cfile" type="file" accept=".zip" hidden></label><div class="bar" id="cbar" hidden><i></i></div></div>
+   <div class="full"><button class="b" id="csave"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> ثبت چپتر</button></div></div></div>
   ${O.chapters.map(ch=>{const ts=O.tasks.filter(t=>t.chapter_id===ch.id),done=ch.status==='done';
-    const step=r=>{const t=ts.find(x=>x.role===r);return `<span class="st ${t?t.status:''}"><i class="fa-solid ${R[r].i}"></i> ${R[r].n}: ${t?ST[t.status]:(r==='typist'?'منتظر ترجمه و کلین':'ندارد')}${t&&t.worker?` · ${esc(t.worker)}`:''}</span>`};
+    const step=r=>{const t=ts.find(x=>x.role===r);return `<span class="st ${t?t.status:''}">${ic(R[r].i)} ${R[r].n}: ${t?ST[t.status]:(r==='typist'?'منتظر ترجمه و کلین':'ندارد')}${t&&t.worker?` · ${esc(t.worker)}`:''}</span>`};
     return `<div class="box"><div class="row" style="margin:0"><span class="lbl" style="--c:#a78bfa">${esc(ch.label)}</span><b>${esc(ch.title)}</b><span class="st ${done?'approved':'claimed'}">${done?'تمام شد':'در جریان'}</span>
-    <button class="b g" data-cq="${esc(ch.label)}">مشاهده کارها</button><button class="b no" data-cdel="${ch.id}"><i class="fa-solid fa-trash"></i></button></div>
+    <button class="b g" data-cq="${esc(ch.label)}">${ic('clipboard-list')} مشاهده کارها</button><button class="b no" data-cdel="${ch.id}" aria-label="حذف چپتر" title="حذف چپتر"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg></button></div>
     <div class="row">${step('translator')} ${step('cleaner')} ${step('typist')}</div>
-    ${(()=>{const busy=O.bannerBusy.includes(ch.id);return `<div class="row">${busy?'<span class="st claimed">⏳ در حال ساخت بنر…</span>':ch.banner_file?'<span class="st approved">🖼 بنر آماده</span>':(done?'<span class="st late">بنر ساخته نشده</span>':'<span class="st">بنر بعد از اتمام چپتر ساخته می‌شود</span>')}
-      ${ch.banner_file?`<button class="b" data-bv="${ch.id}" data-n="${esc(ch.label)}">👁 مشاهده بنر</button><button class="b g" data-bd="${ch.id}" data-n="${esc(ch.label)}-banner.png"><i class="fa-solid fa-download"></i></button>`:''}
-      ${done&&!busy?`<button class="b g" data-brb="${ch.id}">🔄 ${ch.banner_file?'ساخت دوباره':'ساخت بنر'}</button>`:''}</div>${ch.banner_note?`<div class="note">${esc(ch.banner_note)}</div>`:''}`})()}</div>`}).join('')||'<div class="empty">هنوز چپتری ثبت نشده.</div>'}`;
+    ${(()=>{const busy=O.bannerBusy.includes(ch.id);return `<div class="row">${busy?'<span class="st claimed"><svg class="ic ic-spin" aria-hidden="true"><use href="#i-loader-circle"/></svg> در حال ساخت بنر…</span>':ch.banner_file?'<span class="st approved"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> بنر آماده</span>':(done?'<span class="st late">بنر ساخته نشده</span>':'<span class="st">بنر بعد از اتمام چپتر ساخته می‌شود</span>')}
+      ${ch.banner_file?`<button class="b" data-bv="${ch.id}" data-n="${esc(ch.label)}">${ic('eye')} مشاهده بنر</button><button class="b g" data-bd="${ch.id}" data-n="${esc(ch.label)}-banner.png" aria-label="دانلود بنر" title="دانلود بنر"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg></button>`:''}
+      ${done&&!busy?`<button class="b g" data-brb="${ch.id}">${ic('refresh-cw')} ${ch.banner_file?'ساخت دوباره':'ساخت بنر'}</button>`:''}</div>${ch.banner_note?`<div class="note">${esc(ch.banner_note)}</div>`:''}`})()}</div>`}).join('')||'<div class="empty">هنوز چپتری ثبت نشده.</div>'}`;
   $('#cfile').onchange=e=>$('#cfn').textContent=e.target.files[0]?.name||'zip تصاویر برای کلینر';
   const v=$('#view');
   v.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{filt={role:'',status:'',q:b.dataset.cq};tab='tasks';draw()});
   v.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>showImg(`/admin/chapters/${b.dataset.bv}/banner`,'بنر '+b.dataset.n));
-  v.querySelectorAll('[data-bd]').forEach(b=>b.onclick=async()=>{try{const u=URL.createObjectURL(await blobGet(`/admin/chapters/${b.dataset.bd}/banner?dl=1`));const l=document.createElement('a');l.href=u;l.download=b.dataset.n;l.click();setTimeout(()=>URL.revokeObjectURL(u),5000)}catch(e){toast(e.message)}});
-  v.querySelectorAll('[data-brb]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('POST',`/admin/chapters/${b.dataset.brb}/banner`);toast('ساخت بنر شروع شد ⏳ (حدود یک دقیقه)');await load();[10000,25000,45000,80000].forEach(ms=>setTimeout(()=>{const f=document.querySelector('#ctitle');if(tab==='chap'&&f&&!f.value)load(true)},ms))}));
+  v.querySelectorAll('[data-bd]').forEach(b=>b.onclick=async()=>{try{const u=URL.createObjectURL(await blobGet(`/admin/chapters/${b.dataset.bd}/banner?dl=1`));const l=document.createElement('a');l.href=u;l.download=b.dataset.n;l.click();setTimeout(()=>URL.revokeObjectURL(u),5000)}catch(e){toast(e.message,'err')}});
+  v.querySelectorAll('[data-brb]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('POST',`/admin/chapters/${b.dataset.brb}/banner`);toast('ساخت بنر شروع شد (حدود یک دقیقه)');await load();[10000,25000,45000,80000].forEach(ms=>setTimeout(()=>{const f=document.querySelector('#ctitle');if(tab==='chap'&&f&&!f.value)load(true)},ms))}));
   v.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{if(confirm('این چپتر و کارهای آزادش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/chapters/'+b.dataset.cdel);toast('حذف شد');load()})});
   $('#csave').onclick=function(){act(this,async()=>{
     const f=$('#cfile').files[0],cl=parseInt($('#ccl').value)||0;
@@ -308,30 +378,30 @@ function vChap(){
     if(f&&f.size>MAXMB*1048576)throw new Error(`حجم فایل بیشتر از ${MAXMB} مگابایته.`);
     const r=await api('POST','/admin/chapters',{title:$('#ctitle').value,label:$('#clabel').value,translator_note:$('#cnote').value,manhwa_id:$('#cmh').value,translator_reward:$('#ctr').value,cleaner_reward:cl,typist_reward:$('#cty').value});
     if(f&&r.cleaner_task_id){$('#cbar').hidden=false;await sendZip(`/admin/tasks/${r.cleaner_task_id}/source`,f,$('#cbar').firstChild)}
-    toast('چپتر ثبت شد ✅ — مسیر خودکار شروع شد');load()})};
+    toast('چپتر ثبت شد — مسیر خودکار شروع شد');load()})};
 }
 
 /* ---------- اعضا ---------- */
 function vMembers(){
   const chk=(sel=[])=>Object.entries(R).map(([k,r])=>`<label><input type="checkbox" value="${k}" ${sel.includes(k)?'checked':''}> ${r.n}</label>`).join('');
-  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">➕ افزودن عضو</h2><div class="form">
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0"><svg class="ic" aria-hidden="true"><use href="#i-user-plus"/></svg> افزودن عضو</h2><div class="form">
     <input id="mid" placeholder="ایمیل یا شماره موبایلِ ثبت‌نام‌شده در سایت"><input id="mname" placeholder="نام نمایشی">
-    <div class="chk full" id="mroles">${chk()}</div><div class="full"><button class="b" id="madd">افزودن</button></div></div></div>
+    <div class="chk full" id="mroles">${chk()}</div><div class="full"><button class="b" id="madd"><svg class="ic" aria-hidden="true"><use href="#i-user-plus"/></svg> افزودن</button></div></div></div>
   ${O.members.map(m=>`<div class="box" style="${m.active?'':'opacity:.55'}"><div class="row" style="margin:0"><b>${esc(m.name||m.user_id.slice(0,8))}</b>
     <span class="tok">${fa(m.balance)} توکن = ${fa(m.balance*O.tomanPerToken)} تومان</span><span class="st approved">${fa(m.done)} کار تایید شده</span>${m.active?'':'<span class="st late">غیرفعال</span>'}</div>
-    <div class="chk row" data-mr="${m.user_id}">${chk(m.roles)}<button class="b g" data-ms="${m.user_id}">ذخیره‌ی نقش‌ها</button></div>
-    <div class="row"><button class="b ok" data-po="${m.user_id}">ثبت تسویه</button><button class="b g" data-adj="${m.user_id}">اصلاح موجودی</button><button class="b g" data-led="${m.user_id}">تاریخچه</button><button class="b g" data-mtk="${m.user_id}" data-n="${esc(m.name||'')}">🎫 تیکت</button><button class="b g" data-bn="${m.user_id}" data-v="${esc(m.banner_name||'')}">🏷 نام روی بنر${m.banner_name?`: ${esc(m.banner_name)}`:''}</button>
-    <button class="b ${m.active?'no':'ok'}" data-act="${m.user_id}" data-v="${!m.active}">${m.active?'غیرفعال کردن':'فعال کردن'}</button>
-    <button class="b ${m.auto_approve?'ok':'g'}" data-aa="${m.user_id}" data-v="${!m.auto_approve}">${m.auto_approve?'✅ مورد اعتماد (تایید خودکار)':'مورد اعتماد کردن'}</button></div></div>`).join('')||'<div class="empty">هنوز عضوی نیست.</div>'}<h2>🎫 تیکت‌های اخیر</h2><div class="box" id="tklist">...</div>`;
-  $('#madd').onclick=function(){act(this,async()=>{await api('POST','/admin/members',{identifier:$('#mid').value,name:$('#mname').value,roles:[...document.querySelectorAll('#mroles input:checked')].map(c=>c.value)});toast('عضو ذخیره شد ✅');load()})};
+    <div class="chk row" data-mr="${m.user_id}">${chk(m.roles)}<button class="b g" data-ms="${m.user_id}">${ic('save')} ذخیره‌ی نقش‌ها</button></div>
+    <div class="row"><button class="b ok" data-po="${m.user_id}">${ic('banknote')} ثبت تسویه</button><button class="b g" data-adj="${m.user_id}">${ic('scale')} اصلاح موجودی</button><button class="b g" data-led="${m.user_id}">${ic('history')} تاریخچه</button><button class="b g" data-mtk="${m.user_id}" data-n="${esc(m.name||'')}">${ic('ticket')} تیکت</button><button class="b g" data-bn="${m.user_id}" data-v="${esc(m.banner_name||'')}">${ic('tag')} نام روی بنر${m.banner_name?`: ${esc(m.banner_name)}`:''}</button>
+    <button class="b ${m.active?'no':'ok'}" data-act="${m.user_id}" data-v="${!m.active}">${m.active?ic('user-x')+' غیرفعال کردن':ic('user-check')+' فعال کردن'}</button>
+    <button class="b ${m.auto_approve?'ok':'g'}" data-aa="${m.user_id}" data-v="${!m.auto_approve}">${m.auto_approve?'<svg class="ic" aria-hidden="true"><use href="#i-shield-check"/></svg> مورد اعتماد (تایید خودکار)':'<svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg> مورد اعتماد کردن'}</button></div></div>`).join('')||'<div class="empty">هنوز عضوی نیست.</div>'}<h2><svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg> تیکت‌های اخیر</h2><div class="box" id="tklist">...</div>`;
+  $('#madd').onclick=function(){act(this,async()=>{await api('POST','/admin/members',{identifier:$('#mid').value,name:$('#mname').value,roles:[...document.querySelectorAll('#mroles input:checked')].map(c=>c.value)});toast('عضو ذخیره شد');load()})};
   const v=$('#view');
-  v.querySelectorAll('[data-bn]').forEach(b=>b.onclick=()=>{const n=prompt('نام این عضو روی بنر (خالی = همان نام نمایشی). برای اسم انگلیسی، فونت دیگری استفاده می‌شود:',b.dataset.v);if(n===null)return;act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.bn,{banner_name:n});toast('ذخیره شد ✅');load()})});
+  v.querySelectorAll('[data-bn]').forEach(b=>b.onclick=()=>{const n=prompt('نام این عضو روی بنر (خالی = همان نام نمایشی). برای اسم انگلیسی، فونت دیگری استفاده می‌شود:',b.dataset.v);if(n===null)return;act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.bn,{banner_name:n});toast('ذخیره شد');load()})});
   v.querySelectorAll('[data-mtk]').forEach(b=>b.onclick=()=>openTicket({user_id:b.dataset.mtk,name:b.dataset.n||'کارمند'}));
   api('GET','/admin/tickets').then(rows=>{
-    $('#tklist').innerHTML=rows.length?`<div style="overflow:auto"><table><tr><th>زمان</th><th>عضو</th><th>کار</th><th>نوع</th><th>متن</th><th>وضعیت</th><th></th></tr>${rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString('fa-IR')}</td><td>${esc(r.name)}</td><td>${esc(r.label||'')}</td><td>${{warning:'هشدار',info:'پیام',praise:'تشویق'}[r.level]}</td><td>${esc(r.message)}</td><td>${r.read_at?'خوانده شد ✅':'<span class="neg">هنوز نخوانده</span>'}</td><td><button class="b no" data-tdel="${r.id}">حذف</button></td></tr>`).join('')}</table></div>`:'<div class="empty">تیکتی نفرستاده‌ای.</div>';
+    $('#tklist').innerHTML=rows.length?`<div style="overflow:auto"><table><tr><th>زمان</th><th>عضو</th><th>کار</th><th>نوع</th><th>متن</th><th>وضعیت</th><th></th></tr>${rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString('fa-IR')}</td><td>${esc(r.name)}</td><td>${esc(r.label||'')}</td><td>${{warning:'هشدار',info:'پیام',praise:'تشویق'}[r.level]}</td><td>${esc(r.message)}</td><td>${r.read_at?'<span class="pos"><svg class="ic" aria-hidden="true"><use href="#i-check-check"/></svg> خوانده شد</span>':'<span class="neg"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg> هنوز نخوانده</span>'}</td><td><button class="b no" data-tdel="${r.id}"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg> حذف</button></td></tr>`).join('')}</table></div>`:'<div class="empty">تیکتی نفرستاده‌ای.</div>';
     $('#tklist').querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('DELETE','/admin/tickets/'+b.dataset.tdel);draw()}));
   }).catch(e=>{$('#tklist').textContent=e.message});
-  v.querySelectorAll('[data-ms]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.ms,{roles:[...v.querySelectorAll(`[data-mr="${b.dataset.ms}"] input:checked`)].map(c=>c.value)});toast('نقش‌ها ذخیره شد ✅');load()}));
+  v.querySelectorAll('[data-ms]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.ms,{roles:[...v.querySelectorAll(`[data-mr="${b.dataset.ms}"] input:checked`)].map(c=>c.value)});toast('نقش‌ها ذخیره شد');load()}));
   v.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('PATCH','/admin/members/'+b.dataset.act,{active:b.dataset.v==='true'});load()}));
   v.querySelectorAll('[data-po]').forEach(b=>b.onclick=()=>{const n=prompt('چند توکن تسویه شد؟ (بعد از پرداخت واقعی پول)');if(n)act(b,async()=>{const r=await api('POST','/admin/payout',{user_id:b.dataset.po,tokens:n});toast(`تسویه ${fa(r.toman)} تومان ثبت شد`);load()})});
   v.querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{const n=prompt('تعداد توکن (مثبت = اضافه، منفی = کسر):');if(!n)return;const note=prompt('دلیل:');if(note)act(b,async()=>{await api('POST','/admin/adjust',{user_id:b.dataset.adj,tokens:n,note});toast('ثبت شد');load()})});
@@ -343,14 +413,40 @@ function vMembers(){
 async function vFin(){
   const s=O.stats;
   $('#view').innerHTML=`<div class="grid">
-    <div class="stat" style="--c:#4ade80"><b>${fa(s.rewarded)}</b><span>کل توکن پاداش‌داده‌شده (${fa(s.rewarded*O.tomanPerToken)} تومان)</span></div>
-    <div class="stat" style="--c:#60a5fa"><b>${fa(s.cashedOut)}</b><span>تسویه‌شده (${fa(s.cashedOut*O.tomanPerToken)} تومان)</span></div>
-    <div class="stat" style="--c:#f59e0b"><b>${fa(s.owed)}</b><span>بدهی فعلی (${fa(s.owed*O.tomanPerToken)} تومان)</span></div></div>
+    <div class="stat" style="--c:#4ade80"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg><b>${fa(s.rewarded)}</b><span>کل توکن پاداش‌داده‌شده (${fa(s.rewarded*O.tomanPerToken)} تومان)</span></div>
+    <div class="stat" style="--c:#60a5fa"><svg class="ic" aria-hidden="true"><use href="#i-banknote"/></svg><b>${fa(s.cashedOut)}</b><span>تسویه‌شده (${fa(s.cashedOut*O.tomanPerToken)} تومان)</span></div>
+    <div class="stat" style="--c:#f59e0b"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg><b>${fa(s.owed)}</b><span>بدهی فعلی (${fa(s.owed*O.tomanPerToken)} تومان)</span></div></div>
   <div class="box"><select id="lu"><option value="">همه‌ی اعضا</option>${O.members.map(m=>`<option value="${m.user_id}">${esc(m.name||m.user_id.slice(0,8))}</option>`).join('')}</select></div><div class="box" id="lt">...</div>`;
   $('#lu').value=ledUid;const nm=Object.fromEntries(O.members.map(m=>[m.user_id,m.name||m.user_id.slice(0,8)]));
   const go=async()=>{const rows=await api('GET','/admin/ledger'+(ledUid?'?user_id='+ledUid:''));
-    $('#lt').innerHTML=rows.length?`<div style="overflow:auto"><table><tr><th>زمان</th><th>عضو</th><th>نوع</th><th>توکن</th><th>تومان</th><th>توضیح</th></tr>${rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString('fa-IR')}</td><td>${esc(nm[r.user_id]||'')}</td><td>${{reward:'پاداش',payout:'تسویه',adjust:'اصلاح'}[r.kind]}</td><td class="${r.tokens>0?'pos':'neg'}">${r.tokens>0?'+':''}${fa(r.tokens)}</td><td>${fa(r.tokens*O.tomanPerToken)}</td><td>${esc(r.note||'')}</td></tr>`).join('')}</table></div>`:'<div class="empty">تراکنشی نیست.</div>'};
-  $('#lu').onchange=()=>{ledUid=$('#lu').value;go()};go().catch(e=>toast(e.message));
+    $('#lt').innerHTML=rows.length?`<div style="overflow:auto"><table><tr><th>زمان</th><th>عضو</th><th>نوع</th><th>توکن</th><th>تومان</th><th>توضیح</th></tr>${rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString('fa-IR')}</td><td>${esc(nm[r.user_id]||'')}</td><td>${{reward:'پاداش',payout:'تسویه',adjust:'پاداش/جریمه/اصلاح'}[r.kind]}</td><td class="${r.tokens>0?'pos':'neg'}">${r.tokens>0?'+':''}${fa(r.tokens)}</td><td>${fa(r.tokens*O.tomanPerToken)}</td><td>${esc(r.note||'')}</td></tr>`).join('')}</table></div>`:'<div class="empty">تراکنشی نیست.</div>'};
+  $('#lu').onchange=()=>{ledUid=$('#lu').value;go()};go().catch(e=>toast(e.message,'err'));
+}
+
+/* ---------- برداشت‌ها ---------- */
+async function vWd(){
+  const v=$('#view');v.innerHTML='<div class="empty">در حال بارگذاری…</div>';
+  let rows;try{rows=await api('GET','/admin/withdrawals')}catch(e){v.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  const S={pending:['در انتظار','submitted'],paid:['پرداخت شد','approved'],rejected:['رد شد','late']};
+  v.innerHTML=`<div class="hint" style="margin-bottom:10px">${ic('info')} حداقل برداشت ${fa(O.minWithdrawTokens)} توکن (${fa(O.minWithdrawTokens*O.tomanPerToken)} تومان). مبلغ هر درخواست با قیمت توکنِ لحظه‌ی ثبت حساب شده. بعد از واریز واقعی پول «پرداخت شد» را بزن تا توکن از حساب عضو کم شود.</div>`+
+  (rows.map(r=>`<div class="box"><div class="row" style="margin:0"><b>${esc(r.name)}</b><span class="tok">${fa(r.tokens)} توکن = ${fa(r.toman)} تومان</span><span class="st ${S[r.status][1]}">${S[r.status][0]}</span><span class="hint">${new Date(r.created_at).toLocaleString('fa-IR')}</span></div>
+    <div class="row"><span class="hint">کارت / شبا:</span><input readonly dir="ltr" value="${esc(r.account)}" onclick="this.select()" style="max-width:320px"></div>
+    ${r.admin_note?`<div class="hint" style="margin-top:6px">${esc(r.admin_note)}</div>`:''}
+    ${r.status==='pending'?`<div class="row"><button class="b ok" data-wpay="${r.id}">${ic('check')} پرداخت شد</button><button class="b no" data-wrej="${r.id}">${ic('x')} رد</button></div>`:''}</div>`).join('')||'<div class="empty">درخواستی نیست.</div>');
+  v.querySelectorAll('[data-wpay]').forEach(b=>b.onclick=()=>{const n=prompt('کد پیگیری / توضیح برای کارمند (اختیاری):','');if(n===null)return;act(b,async()=>{const d=await api('POST',`/admin/withdrawals/${b.dataset.wpay}/pay`,{note:n});toast(`پرداخت ${fa(d.toman)} تومان ثبت شد`);load()})});
+  v.querySelectorAll('[data-wrej]').forEach(b=>b.onclick=()=>{const n=prompt('دلیل رد (کارمند می‌بیند):');if(n)act(b,async()=>{await api('POST',`/admin/withdrawals/${b.dataset.wrej}/reject`,{note:n});toast('رد شد');load()})});
+}
+/* ---------- تیکت کارمندها ---------- */
+async function vSup(){
+  const v=$('#view');v.innerHTML='<div class="empty">در حال بارگذاری…</div>';
+  let rows;try{rows=await api('GET','/admin/support')}catch(e){v.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  v.innerHTML=rows.map(r=>`<div class="box"><div class="row" style="margin:0"><b>${esc(r.name)}</b>${r.task?`<span class="tok">${esc(r.task)}</span>`:''}<span class="st ${r.reply?'approved':'submitted'}">${r.reply?'پاسخ داده شد':'منتظر پاسخ'}</span><span class="hint">${new Date(r.created_at).toLocaleString('fa-IR')}</span></div>
+    <p style="margin:10px 0;white-space:pre-wrap">${esc(r.message)}</p>
+    ${r.reply?`<div class="hint">${ic('send')} پاسخ شما${r.user_read_at?' (خوانده شد)':' (هنوز نخوانده)'}:</div><p style="white-space:pre-wrap;color:var(--gold);margin:4px 0 10px">${esc(r.reply)}</p>`:''}
+    <textarea rows="2" data-sm="${r.id}" placeholder="${r.reply?'پاسخ جدید (جایگزین پاسخ قبلی می‌شود)':'پاسخ به کارمند'}"></textarea>
+    <div class="row"><button class="b" data-sr="${r.id}">${ic('send')} ارسال پاسخ</button><button class="b no" data-sd="${r.id}">${ic('trash-2')} حذف</button></div></div>`).join('')||'<div class="empty">تیکتی نیست.</div>';
+  v.querySelectorAll('[data-sr]').forEach(b=>b.onclick=()=>act(b,async()=>{const m=v.querySelector(`[data-sm="${b.dataset.sr}"]`).value;await api('POST',`/admin/support/${b.dataset.sr}/reply`,{message:m});toast('پاسخ ارسال شد');load()}));
+  v.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>{if(confirm('این تیکت حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/support/'+b.dataset.sd);toast('حذف شد');load()})});
 }
 </script>
 </body>
