@@ -167,7 +167,7 @@ button.wallet{font:inherit;cursor:pointer;text-align:right}
   <header>
     <div class="brand"><div class="logo"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></div><div><h1>پنل تیم مانهواچی</h1><a href="/"><svg class="ic" aria-hidden="true"><use href="#i-arrow-right"/></svg> بازگشت به سایت</a><span id="adm"></span></div></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="wallet" id="wallet" type="button" hidden title="برداشت"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg><div><b id="bal">۰</b> تومان<small id="avail"></small></div></button>
+      <button class="wallet" id="wallet" type="button" hidden title="برداشت"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg><div><b id="bal">۰</b> توکن<small id="avail"></small></div></button>
       <button class="icon-btn" id="rulesBtn" aria-label="قوانین" title="قوانین"><svg class="ic" aria-hidden="true"><use href="#i-scroll-text"/></svg></button>
     </div>
   </header>
@@ -266,7 +266,7 @@ async function refresh(soft){
   if(uploading)return; // وسط آپلود صفحه دوباره ساخته نشود
   try{
     me=await api('GET','/me');sum=await api('GET','/summary');
-    $('#bal').textContent=fa(me.balanceToman);$('#avail').textContent=me.pendingToman?fa(me.pendingToman)+' تومان در حال بررسی':'برای برداشت کلیک کن';
+    $('#bal').textContent=fa(me.balance);$('#avail').textContent=me.pending?fa(me.pending)+' توکن در حال بررسی':'برای برداشت کلیک کن';
     supRows=await api('GET','/support').catch(()=>supRows);
     await drawTickets();drawSlots();drawRoles();drawTabs();await drawView(soft);
   }catch(e){if(!soft)toast(e.message,'err')}
@@ -322,11 +322,11 @@ function countdown(t){
     start=new Date(t.deadline_at)-24*36e5,pct=Math.min(100,Math.max(0,(now-start)/(36*36e5)*100)),
     f=ms=>{const m=Math.max(0,Math.round(ms/6e4));return m>=60?fa(Math.floor(m/60))+' ساعت و '+fa(m%60)+' دقیقه':fa(m)+' دقیقه'};
   const cls=a<=0?'bad':a<4*36e5?'warn':'';
-  return `<div class="dl"><div class="dl-bar"><i style="right:${pct}%"></i></div><div class="dl-t ${cls}"><span>${a>0?`${f(a)} تا پایان مهلت عادی`:`مهلت عادی گذشته؛ ${fa(me.rules.late)} تومان جریمه`}</span><span>${a>0?'':`${f(b)} تا آزاد شدن کار`}</span></div></div>`;
+  return `<div class="dl"><div class="dl-bar"><i style="right:${pct}%"></i></div><div class="dl-t ${cls}"><span>${a>0?`${f(a)} تا پایان مهلت عادی`:`مهلت عادی گذشته؛ ${fa(me.rules.late)} توکن جریمه`}</span><span>${a>0?'':`${f(b)} تا آزاد شدن کار`}</span></div></div>`;
 }
 function card(t,actions,extra){
   const r=ROLES[t.role];
-  return `<div class="card" style="--c:${r.c}"><div class="card-h"><h3>${ic(r.i)}${esc(t.label)}</h3><span class="pill tok"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg>${fa(t.reward_toman)} تومان</span></div>${extra||''}
+  return `<div class="card" style="--c:${r.c}"><div class="card-h"><h3>${ic(r.i)}${esc(t.label)}</h3><span class="pill tok"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg>${fa(t.reward_tokens)} توکن</span></div>${extra||''}
   ${t.description&&t.status!=='approved'?`<div class="info"><b>${t.role==='translator'?'لینک / پیام / نام کار':'توضیحات'}</b><p>${linkify(t.description)}</p></div>`:''}
   ${t.address&&t.status!=='approved'?`<div class="info"><b>آدرس</b><p>${linkify(t.address)}</p></div>`:''}
   ${t.admin_note&&t.status==='claimed'?`<div class="note"><b>نیاز به اصلاح:</b> ${esc(t.admin_note)}</div>`:''}
@@ -342,7 +342,7 @@ function mine(t){
     a+=`<label class="drop dz" style="flex:1 1 100%" data-id="${t.id}" data-x="${ex}"><svg class="ic ic-lg" aria-hidden="true"><use href="#i-cloud-upload"/></svg><b>${ex==='docx'?'فایل Word را اینجا رها کن':'فایل zip را اینجا رها کن'}</b><small>یا کلیک کن و انتخاب کن · حداکثر ۱۰۰ مگابایت</small><input type="file" accept=".${ex}" hidden></label>`;
   }
   if(t.status==='submitted')a='<span class="pill st-submitted"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg> منتظر بررسی ادمین</span>';
-  if(t.status==='approved')a=`<span class="pill st-approved"><svg class="ic" aria-hidden="true"><use href="#i-circle-check"/></svg> ${fa(t.reward_toman)}+ تومان به حسابت اضافه شد</span>`;
+  if(t.status==='approved')a=`<span class="pill st-approved"><svg class="ic" aria-hidden="true"><use href="#i-circle-check"/></svg> ${fa(t.reward_tokens)}+ توکن به حسابت اضافه شد</span>`;
   return card(t,a,`<div class="steps">${steps}</div>${countdown(t)}`);
 }
 /* ---- ناحیه‌ی آپلود: کشیدن و رها کردن + شروع خودکار ---- */
@@ -368,7 +368,7 @@ function bindDrop(z){
     box.querySelector('button').onclick=()=>p.abort();
     try{
       const d=await p;box.classList.add('done');bar.classList.remove('wait');bar.firstChild.style.width='100%';
-      A.textContent='تحویل شد';B.textContent='';toast(d.auto?'تحویل شد و مبلغ به حسابت اضافه شد':'کار تحویل داده شد؛ حالا می‌تونی کار بعدی رو برداری','ok');
+      A.textContent='تحویل شد';B.textContent='';toast(d.auto?'تحویل شد و توکن واریز شد':'کار تحویل داده شد؛ حالا می‌تونی کار بعدی رو برداری','ok');
       uploading--;setTimeout(refresh,900);
     }catch(e){
       uploading--;if(!e.cancel)toast(e.message,'err');else toast(e.message);
@@ -380,27 +380,27 @@ function bindDrop(z){
 
 /* ---- قوانین (همه‌ی مبلغ‌ها به تومان) ---- */
 function rulesHtml(){
-  const R=me.rules,fm=n=>fa(n)+' تومان',h=R.deadlineH,hh=R.deadlineH+R.graceH;
+  const R=me.rules,fm=n=>fa(n)+' توکن',h=R.deadlineH,hh=R.deadlineH+R.graceH;
   return [
     'هم‌زمان فقط یک کار «در حال انجام» داری. بعد از تحویل، حتی قبل از تایید، می‌تونی کار بعدی رو برداری؛ حداکثر ۳ کار در جریان (در حال انجام + در انتظار تایید). با تایید هر کار، یک جا خالی می‌شه.',
     `حقوق ثابت تایپیست و تغییر دهنده فونت ${fm(R.base.flat)} و مترجم ${fm(R.base.translator[0])} تا ${fm(R.base.translator[1])} است.`,
     `کیفیت بالا = پاداش (تایپیست و فونت ${fm(R.qualityFlat)}، مترجم و کلینر ضریب ${fa(R.multQuality)}). تحویل زیر ${fa(R.fastH)} ساعت = پاداش سرعت (${fm(R.speedFlat)}، یا ضریب ${fa(R.multSpeed)}).`,
     `مهلت تحویل ${fa(h)} ساعت از لحظه‌ی برداشتن است. بین ${fa(h)} تا ${fa(hh)} ساعت: ${fm(R.late)} جریمه. بعد از ${fa(hh)} ساعت: کار از تو گرفته می‌شه و کل مبلغ کار از حسابت کسر می‌شه.`,
     `کیفیت بد = ${fm(R.bad)} کسر و برگشت برای اصلاح. کاری که یک‌بار به‌خاطر کیفیت بد برگشته، پاداش سرعت و کیفیت بالا نمی‌گیره.`,
-    `برداشت: هر وقت خواستی می‌تونی درخواست برداشت بدی؛ حداقل مبلغ برداشت ${fm(me.minWithdrawToman)} است و هم‌زمان فقط یک درخواست در حال بررسی می‌تونی داشته باشی.`
+    `برداشت: هر وقت خواستی می‌تونی درخواست برداشت بدی؛ حداقل برداشت ${fm(me.minWithdraw)} است و هم‌زمان فقط یک درخواست در حال بررسی می‌تونی داشته باشی.`
   ].map(x=>`<li>${x}</li>`).join('');
 }
 /* ---- برداشت ---- */
 async function drawWallet(v){
   const rows=await api('GET','/withdrawals'),pend=rows.find(r=>r.status==='pending'),S={pending:'در حال بررسی',paid:'پرداخت شد',rejected:'رد شد'};
   const body=pend?`<div class="info"><b>درخواست در حال بررسی</b><p>${fa(pend.toman)} تومان — بعد از بررسی و واریز ادمین، اینجا «پرداخت شد» می‌شه.</p></div>`
-    :me.canWithdraw?`<div class="frm"><label>مبلغ برداشت (تومان)<input id="wAmt" type="number" inputmode="numeric" min="${me.minWithdrawToman}" max="${me.availableToman}" value="${me.availableToman}"><small>حداقل مبلغ برداشت ${fa(me.minWithdrawToman)} تومان</small></label>
+    :me.canWithdraw?`<div class="frm"><label>مبلغ برداشت (تومان)<input id="wAmt" type="number" inputmode="numeric" min="${me.minWithdrawToman}" max="${me.availableToman}" value="${me.availableToman}"><small>حداقل برداشت ${fa(me.minWithdraw)} توکن (${fa(me.minWithdrawToman)} تومان)</small></label>
       <label>شماره کارت یا شبا<input id="wAcc" dir="ltr" autocomplete="off" placeholder="6037… یا IR…"></label>
       <div class="acts"><button class="btn" id="wGo">${ic('banknote')} ثبت درخواست برداشت</button></div></div>`
-    :`<div class="info"><b>هنوز نمی‌تونی برداشت کنی</b><p>حداقل مبلغ برداشت ${fa(me.minWithdrawToman)} تومان است؛ موجودی قابل برداشتت به این مقدار نرسیده.</p></div>`;
+    :`<div class="info"><b>هنوز نمی‌تونی برداشت کنی</b><p>حداقل برداشت ${fa(me.minWithdraw)} توکن (${fa(me.minWithdrawToman)} تومان) است؛ موجودی قابل برداشتت به این مقدار نرسیده.</p></div>`;
   v.innerHTML=`<div class="card" style="--c:#bda779"><div class="card-h"><h3>${ic('wallet')}موجودی تو</h3></div>
-    <div class="info"><b>موجودی کل</b><p>${fa(me.balanceToman)} تومان</p></div>
-    <div class="info"><b>قابل برداشت</b><p>${fa(me.availableToman)} تومان${me.pendingToman?` (${fa(me.pendingToman)} تومان در درخواست برداشت)`:''}</p></div>${body}</div>
+    <div class="info"><b>موجودی کل</b><p>${fa(me.balance)} توکن ≈ ${fa(me.balanceToman)} تومان</p></div>
+    <div class="info"><b>قابل برداشت</b><p>${fa(me.available)} توکن ≈ ${fa(me.availableToman)} تومان${me.pendingToman?` (${fa(me.pendingToman)} تومان در درخواست برداشت)`:''}</p></div>${body}</div>
     ${rows.length?`<h2 style="margin:18px 0 10px;font-size:15px">تاریخچه‌ی برداشت</h2>`+rows.map(r=>`<div class="info"><b>${new Date(r.created_at).toLocaleString('fa-IR')} — ${S[r.status]||r.status}</b><p>${fa(r.toman)} تومان${r.admin_note?` — ${esc(r.admin_note)}`:''}</p></div>`).join(''):''}`;
   const go=$('#wGo');if(go)go.onclick=()=>act(go,async()=>{const d=await api('POST','/withdraw',{amount_toman:$('#wAmt').value,account:$('#wAcc').value});toast(`درخواست برداشت ${fa(d.toman)} تومان ثبت شد`,'ok');await refresh()});
 }

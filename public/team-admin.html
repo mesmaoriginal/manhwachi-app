@@ -144,7 +144,7 @@ function sendZip(p,f,bar){return new Promise((ok,no)=>{
   const x=new XMLHttpRequest();x.open('PUT','/api/team'+p);x.setRequestHeader('Authorization','Bearer '+token);x.setRequestHeader('Content-Type','application/zip');
   x.upload.onprogress=e=>{if(bar&&e.lengthComputable)bar.style.width=(e.loaded/e.total*100)+'%'};
   x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(new Error(d.error||'آپلود ناموفق بود'))};
-  x.onerror=()=>no(new Error('قطع شدن ارتباط هنگام آپلود'));x.send(f)})}
+  const t0=Date.now();x.onerror=()=>no(new Error(`قطع شدن ارتباط هنگام آپلود (بعد از ${Math.round((Date.now()-t0)/1000)} ثانیه)`));x.send(f)})}
 async function dl(id,kind,name){try{
   const r=await fetch(`/api/team/admin/tasks/${id}/download?kind=${kind}`,{headers:{Authorization:'Bearer '+token}});
   if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'دانلود ناموفق بود');
@@ -215,7 +215,7 @@ function bind(root){
 /* ---------- نمایش تصویر / مانهواها ---------- */
 async function showImg(p,title){
   const seq=++pvSeq;$('#pv').hidden=false;$('#pvt').textContent=title;$('#pvf').innerHTML='';$('#pvb').innerHTML='<div class="empty loading">در حال بارگذاری…</div>';
-  try{const u=URL.createObjectURL(await blobGet(p));if(seq!==pvSeq){URL.revokeObjectURL(u);return}pvBlobs.push(u);$('#pvb').innerHTML=`<div class="pvi" style="min-height:0"><img src="${u}" alt=""></div>`}
+  try{const u=await toDataUrl(await blobGet(p));if(seq!==pvSeq){URL.revokeObjectURL(u);return}pvBlobs.push(u);$('#pvb').innerHTML=`<div class="pvi" style="min-height:0"><img src="${u}" alt=""></div>`}
   catch(e){if(seq===pvSeq)$('#pvb').innerHTML=`<div class="empty err">${esc(e.message)}</div>`}
 }
 function sendImg(p,f,bar){return new Promise((ok,no)=>{
@@ -249,6 +249,7 @@ $('#tks').onclick=function(){act(this,async()=>{await api('POST','/admin/tickets
 
 /* ---------- پیش‌نمایش فایل (تصاویر zip / متن docx) ---------- */
 const pvBlobs=[];let pvSeq=0,pvIO=null;
+const toDataUrl=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error('خواندن تصویر ناموفق بود'));r.readAsDataURL(b)}); // CSP سایت فقط data: و https: را برای تصویر می‌پذیرد، نه blob:
 async function blobGet(p){const r=await fetch('/api/team'+p,{headers:{Authorization:'Bearer '+token}});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'خطا');return r.blob()}
 function pvClose(){pvSeq++;if(pvIO)pvIO.disconnect();$('#pv').hidden=true;pvBlobs.splice(0).forEach(u=>URL.revokeObjectURL(u));$('#pvb').innerHTML='';$('#pvf').innerHTML=''}
 $('#pvx').onclick=pvClose;addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#pv').hidden)pvClose()});
@@ -270,7 +271,7 @@ async function preview(id,kind){
       $('#pvb').innerHTML=`<div class="hint" style="margin-bottom:8px">${fa(d.total)} تصویر${d.total>d.images.length?` (${fa(d.images.length)} تای اول نمایش داده می‌شود)`:''}${d.others?` · ${fa(d.others)} فایل غیرتصویری`:''}</div>`+d.images.map(im=>`<div class="pvi" data-i="${im.i}"><span>${esc(im.name.split('/').pop())}</span></div>`).join('');
       pvIO=new IntersectionObserver(es=>es.forEach(async e=>{
         if(!e.isIntersecting)return;pvIO.unobserve(e.target);const el=e.target;
-        try{const u=URL.createObjectURL(await blobGet(`/admin/tasks/${id}/preview/entry?kind=${kind}&i=${el.dataset.i}`));
+        try{const u=await toDataUrl(await blobGet(`/admin/tasks/${id}/preview/entry?kind=${kind}&i=${el.dataset.i}`));
           if(seq!==pvSeq){URL.revokeObjectURL(u);return}pvBlobs.push(u);el.style.minHeight='0';el.innerHTML=`<img src="${u}" alt="">`}
         catch(err){el.textContent='خطا در نمایش: '+err.message}
       }),{root:$('#pvb'),rootMargin:'400px'});
