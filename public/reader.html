@@ -363,7 +363,8 @@
         <button onclick="toggleSettings()" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold transition-colors text-sm sm:text-base">بستن تنظیمات</button>
     </div>
 </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/vendor/supabase.min.js"></script>
+    <script src="/js/supabase.js"></script>
     <script>
         let slug = "the-forgotten-field";
         let chNum = null;
@@ -388,8 +389,7 @@
             window.location.href = `/comic/${slug}`;
         };
 
-        const { createClient } = supabase;
-        const db = createClient('https://vumnujygswotstvwljaz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
+        const db = window.supabaseClient; // کلاینت مشترک سایت (js/supabase.js) تا نشست لاگین همان باشد
         
         let manhwaData = null;
         let totalPanels = 0;
@@ -771,8 +771,8 @@
                 if(!isCurrent) {
                     div.onclick = () => {
                         toggleEpisodeModal();
-                        if (ep.free) window.location.href = `/comic/${slug}/${epNum}`;
-                        else alert(`این قسمت قفل است.`);
+                        // قسمت قفل هم باز می‌شود؛ سرور تصمیم می‌گیرد VIP هست یا نه
+                        window.location.href = `/comic/${slug}/${epNum}`;
                     };
                 }
                 container.appendChild(div);
