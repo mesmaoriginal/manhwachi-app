@@ -19,6 +19,7 @@ const {
   coverKey,
   removeTempFile,
 } = require("./imageUpload");
+const { notifyNewChapter } = require("./telegramNotify");
 
 const router = express.Router();
 
@@ -256,6 +257,7 @@ router.post("/api/manga/:slug/episodes", async (req, res) => {
       );
     }
 
+    let freeFlag = true;
     await updateData((data) => {
       const m = data[slug];
       if (!m) throw new Error("مانهوا یافت نشد");
@@ -264,6 +266,7 @@ router.post("/api/manga/:slug/episodes", async (req, res) => {
       if (m.episodes.some((e) => Number(e.num) === num)) {
         throw new Error(`چپتر ${num} از قبل در JSON موجود است`);
       }
+      freeFlag = free === undefined ? true : !!free;
 
       m.episodes.push({
         num,
@@ -275,6 +278,11 @@ router.post("/api/manga/:slug/episodes", async (req, res) => {
     });
 
     res.json({ ok: true, num, imageCount: images.length });
+
+    // پست تلگرام (بعد از پاسخ، بدون اینکه ثبت چپتر منتظرش بمونه)
+    if (images.length > 0) {
+      notifyNewChapter(slug, readData()[slug] || mSnapshot, num, freeFlag);
+    }
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -321,12 +329,14 @@ router.post("/api/manga/:slug/episodes/upload", uploadPages, async (req, res) =>
 
     const freeBool = free === undefined ? true : free === "true" || free === true;
 
+    let isNewChapter = false;
     await updateData((data) => {
       const m = data[slug];
       if (!m) throw new Error("مانهوا یافت نشد");
       if (!Array.isArray(m.episodes)) m.episodes = [];
 
       const existing = m.episodes.find((e) => Number(e.num) === num);
+      isNewChapter = !existing;
       if (existing) {
         existing.images = keys;
         if (date) existing.date = date;
@@ -345,6 +355,11 @@ router.post("/api/manga/:slug/episodes/upload", uploadPages, async (req, res) =>
     invalidateChapterCache(slug, num);
 
     res.json({ ok: true, num, imageCount: keys.length });
+
+    // فقط برای چپتر جدید (نه جایگزینی عکس‌های چپتر قدیمی) پست تلگرام می‌ره
+    if (isNewChapter) {
+      notifyNewChapter(slug, readData()[slug] || mSnapshot, num, freeBool);
+    }
   } catch (err) {
     res.status(400).json({ error: "خطا در آپلود چپتر: " + err.message });
   } finally {
