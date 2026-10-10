@@ -70,14 +70,25 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   const isAdminUser = (u) => adminIds.includes(String(u.id).toLowerCase()) || (u.email && adminIds.includes(String(u.email).toLowerCase()));
 
   async function sb(q, opts = {}) {
-    const r = await fetch(`${supabaseUrl}/rest/v1/${q}`, {
-      ...opts,
-      headers: adminHeaders({ "Content-Type": "application/json", ...(opts.headers || {}) }),
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!r.ok) throw new Error(`supabase ${r.status}: ${await r.text()}`);
-    const t = await r.text();
-    return t ? JSON.parse(t) : null;
+    const isGet = !opts.method || opts.method === "GET"; // فقط درخواست‌های خواندنی دوباره تلاش می‌شوند (امن‌اند)
+    for (let i = 0; ; i++) {
+      try {
+        const r = await fetch(`${supabaseUrl}/rest/v1/${q}`, {
+          ...opts,
+          headers: adminHeaders({ "Content-Type": "application/json", ...(opts.headers || {}) }),
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (!r.ok) {
+          if (isGet && r.status >= 500 && i < 2) { await new Promise((ok) => setTimeout(ok, 400 * (i + 1))); continue; }
+          throw new Error(`supabase ${r.status}: ${await r.text()}`);
+        }
+        const t = await r.text();
+        return t ? JSON.parse(t) : null;
+      } catch (e) {
+        if (isGet && i < 2 && !String(e.message).startsWith("supabase ")) { await new Promise((ok) => setTimeout(ok, 400 * (i + 1))); continue; }
+        throw e;
+      }
+    }
   }
   const patch = (q, body) => sb(q, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
   const sum = (rows) => (rows || []).reduce((a, r) => a + r.tokens, 0);
@@ -227,9 +238,17 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   }
 
   // ---------- احراز هویت (همون توکن Supabase سایت) ----------
+  // برای تکه‌های آپلود (PUT .../part) نتیجه‌ی احراز هویت ۵ دقیقه کش می‌شود تا هر تکه دوباره به Supabase نرود
+  const authCache = new Map();
+  const AUTH_TTL = 5 * 60 * 1000;
   router.use(async (req, res, next) => {
     const token = (req.headers.authorization || "").replace(/^Bearer /, "");
     if (!token) return res.status(401).json({ error: "ابتدا وارد حساب شوید." });
+    const isPart = (req.method === "PUT" && /\/part$/.test(req.path)) || (req.method === "GET" && /\/download$/.test(req.path) && !!req.headers.range);
+    if (isPart) {
+      const hit = authCache.get(token);
+      if (hit && hit.exp > Date.now()) { req.user = hit.user; req.isAdmin = hit.isAdmin; req.member = hit.member; return next(); }
+    }
     try {
       const ctx = await getAuthContext(token);
       if (!ctx) return res.status(401).json({ error: "نشست نامعتبر است. دوباره وارد شوید." });
@@ -237,6 +256,10 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       req.isAdmin = isAdminUser(ctx.user);
       const rows = await sb(`team_members?user_id=eq.${ctx.user.id}&select=*`);
       req.member = rows[0] && rows[0].active ? rows[0] : null;
+      if (isPart) {
+        if (authCache.size > 200) for (const [k, v] of authCache) if (v.exp < Date.now()) authCache.delete(k);
+        authCache.set(token, { user: req.user, isAdmin: req.isAdmin, member: req.member, exp: Date.now() + AUTH_TTL });
+      }
       next();
     } catch (e) { fail(res, e, 503); }
   });
@@ -345,7 +368,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
   function chunkedRoutes(rt, base, mw, ctx, done) {
     const run = (fn) => async (req, res) => { try { await fn(req, res); } catch (e) { e.user ? res.status(e.code || 400).json({ error: e.message }) : fail(res, e); } };
     rt.post(`${base}/init`, mw, run(async (req, res) => { const c = await ctx(req, res); if (c) res.json(await mpInit(c, Number((req.body || {}).size))); }));
-    rt.put(`${base}/part`, mw, run(async (req, res) => { res.json({ etag: await mpPart(req) }); }));
+    rt.put(`${base}/part`, mw, run(async (req, res) => { const t0 = Date.now(); try { res.json({ etag: await mpPart(req) }); } catch (e) { console.error("[team] part n=" + req.query.n + " failed after " + (Date.now() - t0) + "ms:", e.name, e.message); throw e; } }));
     rt.post(`${base}/complete`, mw, run(async (req, res) => { const c = await ctx(req, res); if (!c) return; const key = await mpComplete(c, req.body); await done(req, res, c, key); }));
     rt.post(`${base}/abort`, mw, run(async (req, res) => { await mpAbort((req.body || {}).key, (req.body || {}).uploadId); res.json({ ok: true }); }));
   }
@@ -361,22 +384,29 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     else await fs.promises.unlink(path.join(DIR, path.basename(n))).catch(() => {});
   };
   // دانلود: از S3 مستقیم استریم می‌شود (یا از دیسک برای فایل‌های قدیمی)
-  async function sendFile(res, t, kind) {
+  async function sendFile(res, t, kind, req) {
     const f = t && t[kind + "_file"];
     if (!f) return res.status(404).json({ error: "فایلی وجود ندارد." });
     const name = dlName(t, kind, f);
-    if (!f.includes("/")) return res.download(path.join(DIR, path.basename(f)), name);
+    res.set("Accept-Ranges", "bytes");
+    if (!f.includes("/")) return res.download(path.join(DIR, path.basename(f)), name); // express خودش Range را پشتیبانی می‌کند
+    // دانلود تکه‌تکه (Range): مرورگر هر بار یک بازه می‌خواهد؛ قطعی فقط همان بازه را از نو می‌گیرد
+    const rg = req && /^bytes=\d*-\d*$/.test(req.headers.range || "") && req.headers.range !== "bytes=-" ? req.headers.range : undefined;
     try {
-      const o = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: f }));
+      const o = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: f, ...(rg ? { Range: rg } : {}) }));
+      res.status(rg && o.ContentRange ? 206 : 200);
       res.set({
         "Content-Type": o.ContentType || "application/octet-stream",
         ...(o.ContentLength ? { "Content-Length": o.ContentLength } : {}),
+        ...(o.ContentRange ? { "Content-Range": o.ContentRange } : {}),
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(name)}`,
       });
+      res.on("close", () => { try { o.Body.destroy(); } catch {} });
       await pipeline(o.Body, res);
     } catch (e) {
       if (res.headersSent) return res.destroy();
       if (e.name === "NoSuchKey" || e.$metadata?.httpStatusCode === 404) return res.status(404).json({ error: "فایل در فضای ابری پیدا نشد." });
+      if (e.name === "InvalidRange" || e.$metadata?.httpStatusCode === 416) return res.status(416).json({ error: "بازه‌ی درخواستی نامعتبر است." });
       fail(res, e);
     }
   }
@@ -390,8 +420,10 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       inflight.set(p, (async () => {
         const o = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: f }));
         const part = p + ".part";
-        await pipeline(o.Body, fs.createWriteStream(part));
-        await fs.promises.rename(part, p);
+        try {
+          await pipeline(o.Body, fs.createWriteStream(part));
+          await fs.promises.rename(part, p);
+        } catch (e) { await fs.promises.unlink(part).catch(() => {}); throw e; }
       })().finally(() => inflight.delete(p)));
     }
     await inflight.get(p);
@@ -643,7 +675,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     try {
       const t = (await sb(`team_tasks?id=eq.${id}&select=*`))[0];
       if (!t || (t.assignee !== req.user.id)) return res.status(403).json({ error: "دسترسی ندارید." });
-      await sendFile(res, t, kind);
+      await sendFile(res, t, kind, req);
     } catch (e) { fail(res, e); }
   });
 
@@ -767,7 +799,7 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     if (!UUID_RE.test(id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
     try {
       const t = (await sb(`team_tasks?id=eq.${id}&select=*`))[0];
-      await sendFile(res, t, kind);
+      await sendFile(res, t, kind, req);
     } catch (e) { fail(res, e); }
   });
 
