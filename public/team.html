@@ -223,25 +223,55 @@ async function checkFile(f,ext){
   if(ext==='docx'){const tail=new TextDecoder('latin1').decode(await f.slice(Math.max(0,f.size-262144)).arrayBuffer());if(!tail.includes('word/document.xml'))throw new Error('این فایل یک سند Word معتبر نیست.')}
 }
 /* ---- آپلود با درصد، سرعت و زمان باقی‌مانده؛ قابل لغو ---- */
+/* ---- آپلود تکه‌تکه: هر تکه ۱۰ مگابایت، با تلاش مجدد خودکار؛ قطعی اینترنت کل آپلود را از صفر شروع نمی‌کند ---- */
+function chunkedUpload(base,f,o){
+  const xs=new Set(),W=2,TRIES=7;let cancelled=false,failed=false,key,uploadId;
+  const wait=ms=>new Promise(r=>setTimeout(r,ms)),cErr=()=>Object.assign(new Error('آپلود لغو شد.'),{cancel:1});
+  const call=async(m,u,b)=>{
+    let r;
+    try{r=await fetch(base+u,{method:m,headers:{Authorization:'Bearer '+await o.getToken(),...(b?{'Content-Type':'application/json'}:{})},body:b?JSON.stringify(b):undefined})}
+    catch{throw Object.assign(new Error('ارتباط با سرور برقرار نشد.'),{retry:1})}
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw Object.assign(new Error(d.error||'خطا در ارتباط با سرور'),{retry:r.status>=500||r.status===429});
+    return d};
+  const tryN=async(fn,n)=>{for(let i=0;;i++){
+    try{return await fn()}catch(e){
+      if(cancelled)throw cErr();
+      if(e.cancel||!e.retry||i>=n-1)throw e;
+      o.onRetry&&o.onRetry(i+1);await wait(Math.min(1000*2**i,15000));if(cancelled)throw cErr()}}};
+  const put=(i,blob,prog)=>new Promise(async(ok,no)=>{
+    const x=new XMLHttpRequest();xs.add(x);
+    const bad=m=>{xs.delete(x);no(Object.assign(new Error(m),{retry:1}))};
+    x.open('PUT',`${base}/part?key=${encodeURIComponent(key)}&uploadId=${encodeURIComponent(uploadId)}&n=${i+1}`);
+    x.setRequestHeader('Authorization','Bearer '+await o.getToken());x.setRequestHeader('Content-Type','application/octet-stream');
+    x.timeout=180000;x.upload.onprogress=e=>prog(e.loaded);
+    x.onload=()=>{xs.delete(x);let d={};try{d=JSON.parse(x.responseText)}catch{}
+      if(x.status<300&&d.etag)ok(d.etag);else no(Object.assign(new Error(d.error||'ارسال تکه ناموفق بود'),{retry:x.status>=500||x.status===429}))};
+    x.onerror=()=>bad('ارتباط قطع شد.');x.ontimeout=()=>bad('ارتباط خیلی کند است.');
+    x.onabort=()=>{xs.delete(x);no(cErr())};x.send(blob)});
+  const p=(async()=>{
+    const init=await tryN(()=>call('POST','/init',{size:f.size}),TRIES);key=init.key;uploadId=init.uploadId;
+    const ps=init.partSize,n=Math.ceil(f.size/ps),etags=new Array(n),got=new Array(n).fill(0);let next=0;
+    const upd=()=>o.onProgress&&o.onProgress(got.reduce((a,b)=>a+b,0),f.size);
+    const worker=async()=>{while(!failed&&next<n){
+      const i=next++,blob=f.slice(i*ps,Math.min(f.size,(i+1)*ps));
+      etags[i]=await tryN(()=>{got[i]=0;return put(i,blob,l=>{got[i]=l;upd()})},TRIES);got[i]=blob.size;upd()}};
+    try{await Promise.all(Array.from({length:Math.min(W,n)},()=>worker().catch(e=>{failed=true;xs.forEach(x=>x.abort());throw e})))}
+    catch(e){await call('POST','/abort',{key,uploadId}).catch(()=>{});throw e}
+    o.onSent&&o.onSent();
+    return call('POST','/complete',{key,uploadId,parts:etags.map((etag,i)=>({n:i+1,etag}))})
+  })();
+  p.abort=()=>{cancelled=true;failed=true;xs.forEach(x=>x.abort())};return p}
+const getTok=async()=>{try{const {data}=await window.supabaseClient.auth.getSession();if(data.session)token=data.session.access_token}catch{}return token};
 function startUpload(id,f,ui){
-  const x=new XMLHttpRequest(),t0=Date.now();let last=t0,lastB=0,sp=0;
-  const p=new Promise((ok,no)=>{
-    x.open('PUT',`/api/team/tasks/${id}/upload`);
-    x.setRequestHeader('Authorization','Bearer '+token);x.setRequestHeader('Content-Type','application/zip');
-    x.upload.onprogress=e=>{
-      if(!e.lengthComputable)return;
-      const n=Date.now(),dt=(n-last)/1000;
-      if(dt>.4){sp=sp?sp*.6+((e.loaded-lastB)/dt)*.4:(e.loaded-lastB)/dt;last=n;lastB=e.loaded}
-      ui(e.loaded,e.total,sp);
-    };
-    x.upload.onload=()=>ui(f.size,f.size,sp,true);
-    x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(new Error(d.error||'آپلود ناموفق بود'))};
-    x.onerror=()=>no(new Error('ارتباط قطع شد؛ دوباره تلاش کن.'));
-    x.onabort=()=>no(Object.assign(new Error('آپلود لغو شد.'),{cancel:1}));
-    x.send(f);
-  });
-  p.abort=()=>x.abort();return p;
-}
+  const t0=Date.now();let last=t0,lastB=0,sp=0,retryMsg=null;
+  const p=chunkedUpload(`/api/team/tasks/${id}/upload`,f,{getToken:getTok,
+    onProgress:(l,tot)=>{const n=Date.now(),dt=(n-last)/1000;
+      if(dt>.4){sp=sp?sp*.6+((l-lastB)/dt)*.4:Math.max(0,(l-lastB)/dt);last=n;lastB=l}
+      ui(l,tot,sp)},
+    onRetry:()=>{sp=0;last=Date.now()},
+    onSent:()=>ui(f.size,f.size,sp,true)});
+  return p}
 window.addEventListener('beforeunload',e=>{if(uploading){e.preventDefault();e.returnValue=''}});
 
 /* ---------- شروع ---------- */
