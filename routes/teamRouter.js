@@ -8,7 +8,7 @@ const { normalizeIranPhone } = require("../lib/phone");
 const os = require("os");
 const { pipeline } = require("stream/promises");
 const yauzl = require("yauzl");
-const { GetObjectCommand, DeleteObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { GetObjectCommand, DeleteObjectCommand, PutObjectCommand, CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const sharp = require("sharp");
 const banner = require("../lib/teamBanner");
 const { Upload } = require("@aws-sdk/lib-storage");
@@ -35,6 +35,8 @@ const MAX_ACTIVE_PER_USER = 3; // هر نفر هم‌زمان حداکثر ۳ ک
 const MAX_IN_PROGRESS = 1; // هم‌زمان فقط یک کار «در حال انجام»؛ بعد از تحویل (حتی تایید‌نشده) می‌تواند کار بعدی را بردارد، تا سقف MAX_ACTIVE_PER_USER
 const claimBusy = new Set(); // قفل کوتاه برای جلوگیری از دو درخواست هم‌زمانِ برداشتن
 const MAX_ZIP = 100 * 1024 * 1024; // ۱۰۰ مگابایت
+const PART_SIZE = 10 * 1024 * 1024; // اندازه‌ی هر تکه در آپلود تکه‌تکه (حداقل S3 = ۵ مگابایت)
+const MAX_PARTS = Math.ceil(MAX_ZIP / PART_SIZE) + 1;
 const CLAIM_HOURS = Number(process.env.TEAM_CLAIM_HOURS || 72);            // کار برداشته‌شده‌ی تحویل‌نشده بعد از این مدت خودکار آزاد می‌شود (۰ = خاموش)
 const AUTO_APPROVE_HOURS = Number(process.env.TEAM_AUTO_APPROVE_HOURS || 0); // تحویل‌های بررسی‌نشده بعد از این مدت خودکار تایید می‌شوند (۰ = خاموش)
 // ---- سیستم پاداش / جریمه ----
@@ -288,6 +290,66 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       await fs.promises.unlink(full).catch(() => {});
     }
   }
+  // ---------- آپلود تکه‌تکه (multipart مستقیم به S3) ----------
+  // مرورگر فایل را به تکه‌های ۱۰ مگابایتی می‌شکند؛ هر تکه جدا (و با تلاش مجدد خودکار) ارسال می‌شود.
+  // قطع شدن اینترنت فقط همان تکه را از نو می‌فرستد، نه کل فایل را. هیچ فایل موقتی روی دیسک سرور ساخته نمی‌شود.
+  const escRe = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const KEY_RE = new RegExp("^" + escRe(PREFIX) + "/(typist|cleaner|font|translator)/([0-9a-f-]{36})/(source|result|extra)-[0-9a-f-]{36}\\.(zip|docx)$", "i");
+  const userErr = (m, code = 400) => Object.assign(new Error(m), { user: true, code });
+  async function mpInit({ role, taskId, kind, ext }, size) {
+    if (!BUCKET) throw new Error("PARSPACK_BUCKET not set");
+    if (!(size > 0) || size > MAX_ZIP) throw userErr("حجم فایل نامعتبر است (حداکثر ۱۰۰ مگابایت).");
+    const key = `${PREFIX}/${role}/${taskId}/${kind}-${crypto.randomUUID()}.${ext}`;
+    const r = await s3.send(new CreateMultipartUploadCommand({ Bucket: BUCKET, Key: key, ContentType: MIME[ext] }));
+    return { key, uploadId: r.UploadId, partSize: PART_SIZE };
+  }
+  async function mpPart(req) {
+    const { key, uploadId } = req.query, n = parseInt(req.query.n, 10);
+    const m = KEY_RE.exec(String(key || ""));
+    if (!m || m[2].toLowerCase() !== String(req.params.id).toLowerCase() || !uploadId || !(n >= 1 && n <= MAX_PARTS)) throw userErr("درخواست نامعتبر است.");
+    const len = Number(req.headers["content-length"] || 0);
+    if (!len || len > PART_SIZE) throw userErr("اندازه‌ی تکه نامعتبر است.");
+    const chunks = []; let size = 0;
+    for await (const c of req) { size += c.length; if (size > PART_SIZE) throw userErr("اندازه‌ی تکه نامعتبر است."); chunks.push(c); }
+    if (size !== len) throw userErr("تکه ناقص رسید؛ دوباره تلاش کن.");
+    const body = Buffer.concat(chunks);
+    if (n === 1 && body.subarray(0, 4).toString("hex") !== "504b0304") throw userErr(m[4] === "docx" ? "فایل باید یک سند Word با پسوند docx باشد." : "فایل باید یک zip معتبر باشد.");
+    const r = await s3.send(new UploadPartCommand({ Bucket: BUCKET, Key: key, UploadId: uploadId, PartNumber: n, Body: body, ContentLength: body.length }));
+    return r.ETag;
+  }
+  async function mpAbort(key, uploadId) {
+    if (KEY_RE.test(String(key || "")) && uploadId) await s3.send(new AbortMultipartUploadCommand({ Bucket: BUCKET, Key: key, UploadId: uploadId })).catch(() => {});
+  }
+  async function mpComplete({ role, taskId, kind, ext }, b) {
+    const { key, uploadId } = b || {};
+    if (typeof key !== "string" || !uploadId || !key.startsWith(`${PREFIX}/${role}/${taskId}/${kind}-`) || !KEY_RE.test(key) || !key.endsWith("." + ext)) throw userErr("درخواست نامعتبر است.");
+    const parts = Array.isArray(b.parts) ? b.parts : [];
+    if (!parts.length || parts.length > MAX_PARTS || parts.some((p, i) => p.n !== i + 1 || typeof p.etag !== "string")) throw userErr("لیست تکه‌ها نامعتبر است.");
+    try {
+      await s3.send(new CompleteMultipartUploadCommand({ Bucket: BUCKET, Key: key, UploadId: uploadId, MultipartUpload: { Parts: parts.map((p) => ({ PartNumber: p.n, ETag: p.etag })) } }));
+    } catch (e) { await mpAbort(key, uploadId); throw userErr("آپلود کامل نشد؛ دوباره تلاش کن."); }
+    const bad = ext === "docx" ? "فایل باید یک سند Word با پسوند docx باشد." : "فایل باید یک zip معتبر باشد.";
+    const h = await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
+    if (!h.ContentLength || h.ContentLength > MAX_ZIP) { await rmFile(key); throw userErr("حجم فایل نامعتبر است (حداکثر ۱۰۰ مگابایت)."); }
+    if (ext === "docx") {
+      const n = Math.min(h.ContentLength, 262144);
+      const o = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key, Range: `bytes=${h.ContentLength - n}-${h.ContentLength - 1}` }));
+      const parts2 = []; for await (const c of o.Body) parts2.push(c);
+      const tail = Buffer.concat(parts2);
+      if (!tail.includes("word/document.xml")) { await rmFile(key); throw userErr(bad); }
+    }
+    return key;
+  }
+  // سه مسیر init / part / complete (+ abort) را روی هر روتر می‌بندد
+  // ctx(req,res) → {role,taskId,kind,ext} یا null (اگر خودش پاسخ خطا داده)؛ done(req,res,ctx,key) → کارهای بعد از آپلود
+  function chunkedRoutes(rt, base, mw, ctx, done) {
+    const run = (fn) => async (req, res) => { try { await fn(req, res); } catch (e) { e.user ? res.status(e.code || 400).json({ error: e.message }) : fail(res, e); } };
+    rt.post(`${base}/init`, mw, run(async (req, res) => { const c = await ctx(req, res); if (c) res.json(await mpInit(c, Number((req.body || {}).size))); }));
+    rt.put(`${base}/part`, mw, run(async (req, res) => { res.json({ etag: await mpPart(req) }); }));
+    rt.post(`${base}/complete`, mw, run(async (req, res) => { const c = await ctx(req, res); if (!c) return; const key = await mpComplete(c, req.body); await done(req, res, c, key); }));
+    rt.post(`${base}/abort`, mw, run(async (req, res) => { await mpAbort((req.body || {}).key, (req.body || {}).uploadId); res.json({ ok: true }); }));
+  }
+
   // فایل فقط وقتی پاک می‌شود که هیچ کار دیگری (مثلاً کار تایپیستی که فایل کلین/ترجمه را به ارث برده) به آن اشاره نکند
   // کلید شامل «/» یعنی در S3 است؛ بدون «/» یعنی فایل قدیمیِ روی دیسک.
   const rmFile = async (n) => {
@@ -546,6 +608,34 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
     } catch (e) { upErr(res, e); }
   });
 
+  // تحویل کار با آپلود تکه‌تکه (روش اصلی؛ مسیر قدیمی PUT بالا فقط برای سازگاری مانده)
+  chunkedRoutes(router, "/tasks/:id/upload", needMember,
+    async (req, res) => {
+      const id = req.params.id;
+      if (!UUID_RE.test(id)) { res.status(400).json({ error: "شناسه نامعتبر است." }); return null; }
+      const t = (await sb(`team_tasks?id=eq.${id}&assignee=eq.${req.user.id}&status=eq.claimed&select=role,result_file,first_claimed_at,first_submitted_at`))[0];
+      if (!t) { res.status(404).json({ error: "این کار در حالت تحویل نیست." }); return null; }
+      if (!t.first_submitted_at && t.first_claimed_at && Date.now() - new Date(t.first_claimed_at) > (DEADLINE_H + GRACE_H) * 36e5) {
+        await sweep();
+        res.status(410).json({ error: `مهلت ${DEADLINE_H + GRACE_H} ساعته‌ی این کار تمام شده؛ کار آزاد و جریمه ثبت شد.` }); return null;
+      }
+      req.task = t;
+      return { role: t.role, taskId: id, kind: "result", ext: ROLE_RULES[t.role].result };
+    },
+    async (req, res, c, name) => {
+      const t = req.task, id = c.taskId;
+      const rows = await patch(`team_tasks?id=eq.${id}&assignee=eq.${req.user.id}&status=eq.claimed`, {
+        status: "submitted", result_file: name, submitted_at: new Date().toISOString(), first_submitted_at: t.first_submitted_at || new Date().toISOString(),
+      });
+      if (!rows.length) { await rmFile(name); return res.status(409).json({ error: "وضعیت کار تغییر کرده است." }); }
+      await rmFile(t.result_file);
+      let auto = false;
+      if (req.member.auto_approve) {
+        try { auto = !!(await approveTask(id)).ok; } catch (e) { console.error("[team] auto-approve:", e.message); }
+      }
+      res.json({ ok: true, auto });
+    });
+
   router.get("/tasks/:id/download", needMember, async (req, res) => {
     const id = req.params.id;
     const kind = ["result", "extra"].includes(req.query.kind) ? req.query.kind : "source";
@@ -652,6 +742,24 @@ module.exports = function ({ getAuthContext, supabaseUrl, adminHeaders }) {
       res.json({ ok: true });
     } catch (e) { upErr(res, e); }
   });
+
+  // آپلود تکه‌تکه‌ی فایل ورودی (ادمین)
+  chunkedRoutes(admin, "/tasks/:id/source", (req, res, next) => next(),
+    async (req, res) => {
+      const id = req.params.id;
+      if (!UUID_RE.test(id)) { res.status(400).json({ error: "شناسه نامعتبر است." }); return null; }
+      const t = (await sb(`team_tasks?id=eq.${id}&select=role,status,source_file`))[0];
+      if (!t) { res.status(404).json({ error: "کار پیدا نشد." }); return null; }
+      if (!ROLE_RULES[t.role].source) { res.status(400).json({ error: "این نقش فایل ورودی ندارد." }); return null; }
+      req.task = t;
+      return { role: t.role, taskId: id, kind: "source", ext: "zip" };
+    },
+    async (req, res, c, name) => {
+      const t = req.task;
+      await patch(`team_tasks?id=eq.${c.taskId}`, { source_file: name, status: t.status === "draft" ? "open" : t.status });
+      await rmFile(t.source_file);
+      res.json({ ok: true });
+    });
 
   admin.get("/tasks/:id/download", async (req, res) => {
     const id = req.params.id;
