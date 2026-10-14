@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>پنل وبلاگ مانهواچی</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0b;--s1:#151515;--s2:#1f1f1f;--bd:#2c2c2c;--tx:#e8e8e8;--mu:#8c8c8c;--pr:#dc2626}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.9 Vazirmatn,Tahoma,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:7px 12px;width:100%}
+input:focus,select:focus,textarea:focus,.ed:focus{outline:2px solid #dc262666;outline-offset:1px}
+.btn{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:6px 14px;cursor:pointer;display:inline-block;white-space:nowrap}
+a.btn{color:var(--tx);text-decoration:none}.btn:hover{border-color:#555}.btn.p{background:var(--pr);border-color:var(--pr);color:#fff;font-weight:700}
+.wrap{max-width:860px;margin:0 auto;padding:16px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.grow{flex:1}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;margin:12px 0}
+.mu{color:var(--mu);font-size:13px}.err{color:#f87171}
+.top{position:sticky;top:0;z-index:30;background:#0b0b0bee;backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
+.tb{display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:6px 16px;max-width:860px;margin:0 auto}
+.tb button,.tb select,.tb label{width:auto;padding:2px 9px;border-radius:8px;border:1px solid var(--bd);background:var(--s2);cursor:pointer;line-height:1.7}
+.tb input[type=color]{width:28px;height:28px;padding:0;border:0;background:none;cursor:pointer}
+.tag{font-size:12px;border-radius:99px;padding:1px 10px;background:#333}.tag.published{background:#14532d}.tag.review{background:#713f12}.tag.archived{background:#444}
+table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid var(--bd);text-align:right}tr.r{cursor:pointer}tr.r:hover{background:var(--s2)}
+.title{font-size:28px;font-weight:700;border:0;background:none;padding:8px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid var(--bd);border-radius:99px;padding:2px 12px;cursor:pointer;background:var(--s2)}.chip.on{background:var(--pr);border-color:var(--pr);color:#fff}
+.cv{position:relative;border-radius:14px;overflow:hidden;background:var(--s2) center/cover;min-height:150px;margin:8px 0;display:flex;align-items:flex-end}
+.cv span{position:relative;padding:12px 16px;font-weight:700;font-size:20px}
+.cv[data-s=overlay]{min-height:240px}.cv[data-s=overlay]::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent,#000c)}.cv[data-s=overlay] span{z-index:1}
+.cv[data-s=full]{min-height:200px;align-items:flex-start}.cv[data-s=compact]{min-height:90px;width:60%}.cv[data-s=split]{width:50%;min-height:170px}.cv[data-s=none]{display:none}
+.blk{position:relative;margin:6px 0;padding:6px 10px;border-radius:12px;border:1px solid transparent}.blk:hover,.blk:focus-within{border-color:var(--bd);background:#ffffff05}
+.bh{display:flex;visibility:hidden;justify-content:space-between;font-size:12px;color:var(--mu)}.blk:hover .bh,.blk:focus-within .bh{visibility:visible}
+.bc button{background:none;border:0;color:var(--mu);cursor:pointer;padding:0 6px}.bc button:hover{color:#fff}
+.ed{min-height:1.9em;outline:0;padding:2px 4px;border-radius:6px;word-break:break-word}.ed:empty::before{content:attr(data-ph);color:#555}
+.blk[data-al=center] .ed{text-align:center}.blk[data-al=left] .ed{text-align:left}.blk[data-al=justify] .ed{text-align:justify}
+.blk[data-t=heading] .ed{font-weight:700;font-size:1.6rem}.blk[data-t=heading][data-level="3"] .ed{font-size:1.3rem}.blk[data-t=heading][data-level="4"] .ed{font-size:1.1rem}
+.blk[data-t=quote] .ed{border-right:4px solid var(--pr);padding-right:14px;color:#ccc;font-size:1.1rem}
+.blk[data-t=callout] .ed{border-radius:10px;padding:10px 14px;background:#1e3a5f55}.blk[data-t=callout][data-tone=warn] .ed{background:#78350f55}.blk[data-t=callout][data-tone=success] .ed{background:#14532d55}.blk[data-t=callout][data-tone=danger] .ed{background:#7f1d1d55}
+.blk code{background:#333;border-radius:4px;padding:0 5px;font-family:monospace}.blk a{color:#60a5fa}
+ul.ed,ol.ed{padding-right:28px}
+.blk img.pv{max-width:100%;border-radius:10px;display:block;margin:6px auto}.blk[data-width=sm] img.pv{max-width:30%}.blk[data-width=md] img.pv{max-width:60%}
+.blk[data-al=right] img.pv{margin-right:0}.blk[data-al=left] img.pv{margin-left:0}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-top:6px}
+.menu{position:absolute;z-index:40;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;box-shadow:0 10px 40px #000}
+.menu button{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:6px 12px;cursor:pointer}.menu button:hover{border-color:var(--pr)}
+.res{background:var(--s2);border-radius:10px;margin-top:4px}.res button{display:flex;gap:8px;align-items:center;width:100%;background:none;border:0;padding:4px 8px;cursor:pointer;text-align:right}.res button:hover{background:#333}.res img,.mc img{width:36px;height:50px;object-fit:cover;border-radius:4px}
+.mc{display:flex;gap:10px;align-items:center;margin-top:6px}
+.modal{position:fixed;inset:0;background:#000b;z-index:60;display:flex;align-items:center;justify-content:center}.mbox{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;width:min(760px,94vw);max-height:86vh;overflow:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px}.grid img{width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent}.grid img:hover{border-color:var(--pr)}
+.blk[data-t=image].noalt{border-color:#f87171}
+.sr{display:grid;gap:4px;margin-top:10px}.sr div{font-size:13px;line-height:1.7}.sr .b{color:#f87171}.sr .w{color:#fbbf24}.sr .g{color:#4ade80}
+.cnt{float:left;font-size:12px}.cnt.ok{color:#4ade80}.cnt.w{color:#fbbf24}
+#toast{position:fixed;bottom:16px;left:16px;background:#222;border:1px solid var(--bd);border-radius:10px;padding:8px 16px;z-index:99;display:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}.stat{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:8px 12px}.stat b{display:block;font-size:22px;line-height:1.5}.stat span{color:var(--mu);font-size:12px}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:12px}.dl h4{margin:0 0 4px;font-size:13px;color:var(--mu)}.dl a{display:flex;justify-content:space-between;gap:8px;color:var(--tx);text-decoration:none;font-size:13px;padding:2px 0}.dl a:hover{color:#fff}
+.banner{position:sticky;top:0;z-index:90;background:#7f1d1d;color:#fff;padding:8px 16px;text-align:center;font-size:14px}
+.ic{background:none;border:0;color:var(--mu);cursor:pointer;padding:0 6px;white-space:nowrap}.ic:hover{color:#fff}
+.tbl2 td{vertical-align:middle}.tbl2 input,.tbl2 select{padding:3px 8px}
+.chk{display:flex;gap:6px;align-items:center;width:auto}.chk input{width:auto}
+.cd{font-family:ui-monospace,monospace;direction:ltr;text-align:left;font-size:13px}
+.tbg td{padding:3px}.tbg input{min-width:80px}
+.fq{border:1px solid var(--bd);border-radius:10px;padding:8px;margin:6px 0}
+.hist{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}
+.kw{margin-top:10px;border-top:1px solid var(--bd);padding-top:8px}.kw div{font-size:13px;line-height:1.7}
+.tag.sch{background:#1e3a8a}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="toast"></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const app=$('#app');let me=null,cur=null,dirtyF=false,cats=[];
+const can=p=>me&&me.permissions.includes(p);
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.display='block';t.style.borderColor=bad?'#f87171':'#2c2c2c';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',bad?7000:3200)}
+async function api(m,p,body,form){
+  const h={'X-Blog-Panel':'1'};if(body&&!form)h['Content-Type']='application/json';
+  const r=await fetch('/panel/api'+p,{method:m,headers:h,credentials:'same-origin',body:form||(body?JSON.stringify(body):undefined)});
+  const j=await r.json().catch(()=>({}));if(!r.ok){
+    // نشست منقضی شد (۱۲ ساعت) یا حساب غیرفعال شد: به‌جای خطاهای پشت‌سرهم، برگرد به صفحه‌ی ورود
+    if(r.status===401&&p!=='/login'&&me){me=null;clearInterval(cur?.auto);cur=null;dirtyF=false;loginView('نشست شما منقضی شد؛ دوباره وارد شوید')}
+    const e=new Error(j.error||'خطا ('+r.status+')');e.status=r.status;throw e}return j}
+/* باید دقیقاً با normSlug سمت سرور یکی باشد */
+function slugify(s,auto){
+  let o=String(s||'').normalize('NFKC').trim().toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک')
+    .replace(/[\u06F0-\u06F9]/g,c=>String(c.charCodeAt(0)-0x06f0)).replace(/[\u0660-\u0669]/g,c=>String(c.charCodeAt(0)-0x0660))
+    .replace(/\u0640/g,'').replace(/[\s_]+/g,'-').replace(/[^\p{L}\p{N}-]/gu,'').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  if(auto&&o.length>70){const c=o.slice(0,70),i=c.lastIndexOf('-');o=i>=30?c.slice(0,i):c}
+  return o.slice(0,120).replace(/-+$/g,'')}
+const fmtD=d=>d?new Date(d).toLocaleDateString('fa-IR'):'—';
+const ST={draft:'پیش‌نویس',review:'در انتظار بررسی',published:'منتشرشده',archived:'بایگانی'};
+
+/* ---------- متن غنی: DOM <-> runs ---------- */
+const FN={vazir:'Vazirmatn',naskh:'Noto Naskh Arabic',kufi:'Noto Kufi Arabic',mono:'monospace'};
+const ZEM={sm:'0.85em',lg:'1.25em',xl:'1.5em','2xl':'2em'};
+const ZR={'x-small':'sm','small':'sm','0.85em':'sm','large':'lg','1.25em':'lg','x-large':'xl','1.5em':'xl','xx-large':'2xl','xxx-large':'2xl','2em':'2xl'};
+function hex(c){const m=/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(c||'');if(m){if(m[4]!==undefined&&+m[4]===0)return'';return'#'+[1,2,3].map(i=>(+m[i]).toString(16).padStart(2,'0')).join('')}return/^#[0-9a-f]{6}$/i.test(c||'')?c.toLowerCase():''}
+function toRuns(root){
+  const out=[];
+  (function w(n,st){
+    if(n.nodeType===3){const t=n.nodeValue.replace(/\u200b/g,'');if(t)out.push({t,...st});return}
+    if(n.nodeType!==1)return;const tg=n.nodeName;
+    if(tg==='BR'){out.push({t:'\n',...st});return}
+    const s={...st},y=n.style||{},td=y.textDecorationLine||y.textDecoration||'';
+    if(tg==='B'||tg==='STRONG'||y.fontWeight==='bold'||+y.fontWeight>=600)s.b=1;
+    if(tg==='I'||tg==='EM'||y.fontStyle==='italic')s.i=1;
+    if(tg==='U'||td.includes('underline'))s.u=1;
+    if(tg==='S'||tg==='STRIKE'||tg==='DEL'||td.includes('line-through'))s.s=1;
+    if(tg==='CODE')s.code=1;
+    if(tg==='A'&&n.getAttribute('href'))s.a={href:n.getAttribute('href')};
+    const c=hex(y.color);if(c)s.c=c;const h=hex(y.backgroundColor);if(h)s.h=h;
+    if(y.fontSize){const z=ZR[y.fontSize];if(z)s.z=z;else delete s.z}
+    const ff=(y.fontFamily||'').replace(/["']/g,'').split(',')[0].trim();for(const k in FN)if(FN[k]===ff)s.f=k;
+    if((tg==='DIV'||tg==='P')&&out.length&&!/\n$/.test(out[out.length-1].t))out.push({t:'\n'});
+    n.childNodes.forEach(ch=>w(ch,s));
+  })(root,{});
+  const m=[];for(const r of out){const l=m[m.length-1];if(l&&JSON.stringify({...l,t:0})===JSON.stringify({...r,t:0}))l.t+=r.t;else m.push({...r})}
+  while(m.length&&/^\n*$/.test(m[m.length-1].t))m.pop();
+  if(m.length)m[m.length-1].t=m[m.length-1].t.replace(/\n+$/,'');
+  return m;
+}
+function fromRuns(runs){return(runs||[]).map(r=>{
+  let h=esc(r.t).replace(/\n/g,'<br>');const st=[];
+  if(r.b)st.push('font-weight:bold');if(r.i)st.push('font-style:italic');
+  const td=[r.u&&'underline',r.s&&'line-through'].filter(Boolean).join(' ');if(td)st.push('text-decoration:'+td);
+  if(r.c)st.push('color:'+r.c);if(r.h)st.push('background-color:'+r.h);if(r.z)st.push('font-size:'+ZEM[r.z]);if(r.f)st.push('font-family:'+FN[r.f]);
+  if(st.length)h=`<span style="${st.join(';')}">${h}</span>`;if(r.code)h=`<code>${h}</code>`;if(r.a)h=`<a href="${esc(r.a.href)}">${h}</a>`;return h}).join('')}
+
+/* ---------- انتخاب متن و دستورات نوار ابزار ---------- */
+let sel=null;const edOf=n=>n&&(n.nodeType===3?n.parentNode:n).closest?.('.ed');
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(s.rangeCount&&edOf(s.anchorNode))sel=s.getRangeAt(0).cloneRange()});
+function restore(){if(!sel)return false;const e=edOf(sel.startContainer);if(!e||!e.isConnected)return false;e.focus();const s=getSelection();s.removeAllRanges();s.addRange(sel);return true}
+function cmd(c,v){if(!restore())return;document.execCommand('styleWithCSS',false,true);document.execCommand(c,false,v);dirty()}
+function normHref(u){u=u.trim();if(!u)return'';return/^(https?:\/\/|mailto:|\/(?!\/)|#)/i.test(u)?u:'https://'+u}
+function doLink(){if(!restore())return;const u=normHref(prompt('آدرس لینک (برای حذف لینک، خالی بگذارید):','https://')||'');if(u&&u!=='https://')cmd('createLink',u);else cmd('unlink')}
+function doCode(){if(!restore())return;const t=getSelection().toString();if(t)cmd('insertHTML','<code>'+esc(t)+'</code>')}
+function setAlign(a){const b=sel&&edOf(sel.startContainer)?.closest('.blk');if(b){b.dataset.al=a;const i=$('[data-k=al]',b);if(i)i.value=a;dirty()}}
+function dirty(){dirtyF=true;const s=$('#sv');
+  if(s)s.textContent=cur&&cur.status==='published'?'تغییرات ذخیره‌نشده (ذخیره‌ی خودکار برای مطلب منتشرشده خاموش است)':'تغییرات ذخیره‌نشده';
+  if($('#sr'))seoUpd()}
+const TB=`<button data-c="bold"><b>B</b></button><button data-c="italic"><i>I</i></button><button data-c="underline"><u>U</u></button><button data-c="strikeThrough"><s>S</s></button>
+<button data-f="link">🔗</button><button data-f="code">&lt;/&gt;</button>
+<label title="رنگ متن">A<input type="color" id="fc" value="#ff4d4d"></label><label title="هایلایت">🖍<input type="color" id="hc" value="#facc15"></label>
+<select id="fz"><option value="">اندازه</option><option value="2">کوچک</option><option value="3">معمولی</option><option value="4">بزرگ</option><option value="5">درشت</option><option value="6">خیلی درشت</option></select>
+<select id="ff"><option value="">فونت</option>${Object.entries({'وزیرمتن':'Vazirmatn','نسخ':'Noto Naskh Arabic','کوفی':'Noto Kufi Arabic','مونو':'monospace'}).map(([a,b])=>`<option value="${b}">${a}</option>`).join('')}</select>
+<button data-al="right">⇥</button><button data-al="center">≡</button><button data-al="left">⇤</button><button data-al="justify">☰</button>
+<button data-c="removeFormat">پاک‌سازی</button><button data-c="undo">↶</button><button data-c="redo">↷</button>`;
+
+/* ---------- بلوک‌ها ---------- */
+const NAMES={paragraph:'پاراگراف',heading:'عنوان',list:'لیست',quote:'نقل‌قول',callout:'کادر',image:'تصویر',button:'دکمه',manhwa_card:'کارت مانهوا',video:'ویدیو',divider:'جداکننده',code:'کد',table:'جدول',faq:'سؤال‌های متداول'};
+const MENU=[['paragraph','¶ پاراگراف'],['heading','H عنوان'],['list','• لیست'],['list:o','1. شماره‌دار'],['quote','❝ نقل‌قول'],['callout','ℹ کادر'],['image','🖼 تصویر'],['manhwa_card','📚 مانهوا'],['button','⏺ دکمه'],['video','▶ ویدیو'],['code','</> کد'],['table','▦ جدول'],['faq','؟ سؤال و جواب'],['divider','— جداکننده']];
+const LANGS=[['','بدون زبان'],['js','JavaScript'],['ts','TypeScript'],['html','HTML'],['css','CSS'],['json','JSON'],['python','Python'],['php','PHP'],['sql','SQL'],['bash','Bash'],['java','Java'],['kotlin','Kotlin'],['xml','XML'],['yaml','YAML']];
+const faqRow=it=>`<div class="fq"><input class="fq-q" placeholder="سؤال" value="${esc(it.q)}"><textarea class="fq-a" rows="2" placeholder="پاسخ" style="margin-top:4px">${esc(it.a)}</textarea><button class="ic" data-a="fq-">حذف این سؤال</button></div>`;
+const opts=(a,sel)=>a.map(([v,l])=>`<option value="${v}"${v==sel?' selected':''}>${l}</option>`).join('');
+function blk(t,d={}){
+  const el=document.createElement('div');el.className='blk';el.dataset.t=t;
+  el.dataset.al=d.al||(t==='image'||t==='button'?'center':'right');
+  const ed=(h,c)=>`<div class="ed ${c||''}" contenteditable="true" data-ph="بنویسید…">${h}</div>`;let b='';
+  if(t==='paragraph')b=ed(fromRuns(d.runs));
+  if(t==='heading')b=`<select data-k="level" style="width:auto">${opts([[2,'عنوان بزرگ'],[3,'عنوان متوسط'],[4,'عنوان کوچک']],d.level||2)}</select>`+ed(fromRuns(d.runs));
+  if(t==='list'){el.dataset.ord=d.ordered?'1':'';const tg=d.ordered?'ol':'ul';b=`<${tg} class="ed" contenteditable="true">${(d.items&&d.items.length?d.items:[[]]).map(i=>'<li>'+fromRuns(i)+'</li>').join('')}</${tg}>`}
+  if(t==='quote')b=ed(fromRuns(d.runs))+`<input data-k="cite" placeholder="منبع (اختیاری)" value="${esc(d.cite)}">`;
+  if(t==='callout')b=`<select data-k="tone" style="width:auto">${opts([['info','اطلاعات'],['warn','هشدار'],['success','موفقیت'],['danger','خطر']],d.tone)}</select>`+ed(fromRuns(d.runs));
+  if(t==='image')b=`<img class="pv" ${d.src?`src="${esc(d.src)}"`:'hidden'}><div class="row"><button class="btn" data-a="pick">انتخاب / آپلود تصویر</button><input data-k="src" placeholder="یا آدرس تصویر" value="${esc(d.src)}" style="flex:1"></div>
+    <div class="mini"><input data-k="alt" placeholder="متن جایگزین (alt)" value="${esc(d.alt)}"><input data-k="caption" placeholder="زیرنویس" value="${esc(d.caption)}"><select data-k="width">${opts([['sm','کوچک'],['md','متوسط'],['lg','بزرگ'],['full','تمام‌عرض']],d.width||'lg')}</select><select data-k="al">${opts([['right','راست'],['center','وسط'],['left','چپ']],el.dataset.al)}</select></div>`;
+  if(t==='button')b=`<div class="mini"><input data-k="text" placeholder="متن دکمه" value="${esc(d.text)}"><input data-k="href" dir="ltr" placeholder="لینک" value="${esc(d.href)}"><select data-k="style">${opts([['solid','توپر'],['outline','خطی']],d.style)}</select><select data-k="al">${opts([['right','راست'],['center','وسط'],['left','چپ']],el.dataset.al)}</select></div>`;
+  if(t==='manhwa_card')b=`<input data-k="slug" type="hidden" value="${esc(d.slug)}"><input data-s placeholder="جستجوی مانهوا (نام فارسی/انگلیسی)…"><div class="res"></div><div class="mc"></div><select data-k="style" style="width:auto;margin-top:6px">${opts([['card','کارت'],['banner','بنر']],d.style)}</select>`;
+  if(t==='video')b=`<input data-v placeholder="لینک یوتیوب یا آپارات" dir="ltr" value="${d.id?esc((d.provider==='aparat'?'https://www.aparat.com/v/':'https://youtu.be/')+d.id):''}"><input data-k="provider" type="hidden" value="${d.provider||'youtube'}"><input data-k="id" type="hidden" value="${esc(d.id)}"><div class="mu vs"></div>`;
+  if(t==='code')b=`<select data-k="lang" style="width:auto">${opts(LANGS,d.lang||'')}</select><textarea data-k="code" dir="ltr" rows="8" placeholder="کد را اینجا بنویسید…" style="font-family:monospace;margin-top:6px">${esc(d.code)}</textarea>`;
+  if(t==='table'){const rows=d.rows&&d.rows.length?d.rows:[['',''],['','']];b=`<div style="overflow-x:auto"><table class="tbg">${rows.map(r=>'<tr>'+r.map(c=>`<td><input value="${esc(c)}"></td>`).join('')+'</tr>').join('')}</table></div><div class="row" style="margin-top:6px"><button class="btn" data-a="tr+">＋ سطر</button><button class="btn" data-a="tc+">＋ ستون</button><button class="btn" data-a="tr-">− سطر</button><button class="btn" data-a="tc-">− ستون</button><label class="chk"><input type="checkbox" class="th-chk"${d.header===false?'':' checked'}> سطر اول عنوان باشد</label></div>`}
+  if(t==='faq')b=`<div class="fqs">${(d.items&&d.items.length?d.items:[{q:'',a:''}]).map(faqRow).join('')}</div><button class="btn" data-a="fq+" style="margin-top:6px">＋ سؤال جدید</button><div class="mu">برای گوگل به‌صورت «سؤال‌های متداول» علامت‌گذاری می‌شود.</div>`;
+  if(t==='divider')b='<hr style="border-color:#333">';
+  el.innerHTML=`<div class="bh"><span>${NAMES[t]}</span><span class="bc"><button data-a="up">↑</button><button data-a="dn">↓</button><button data-a="dup">⧉</button><button data-a="add">＋ افزودن بعد</button><button data-a="del">✕</button></span></div>`+b;
+  $$('[data-k]',el).forEach(i=>{mirror(el,i)});
+  if(t==='manhwa_card'&&d.slug)showManhwa(el,d.slug);
+  if(t==='video')vidInfo(el);
+  return el}
+function mirror(el,i){if(['level','tone','width','al','style'].includes(i.dataset.k)){el.dataset[i.dataset.k]=i.value}}
+function ser(el){
+  const t=el.dataset.t,d={};$$('[data-k]',el).forEach(i=>d[i.dataset.k]=i.value);
+  const e=$('.ed',el);
+  if(t==='list'){d.ordered=!!el.dataset.ord;d.items=$$('li',e).map(toRuns)}else if(e)d.runs=toRuns(e);
+  if(t==='table'){d.header=$('.th-chk',el).checked;d.rows=$$('tr',el).map(tr=>$$('input',tr).map(i=>i.value))}
+  if(t==='faq')d.items=$$('.fq',el).map(x=>({q:$('.fq-q',x).value,a:$('.fq-a',x).value}));
+  if(t!=='image'&&t!=='button')d.al=el.dataset.al;
+  return{type:t,data:d}}
+function readBlocks(){return $$('#bl>.blk').map(ser)}
+function addBlock(spec,after){
+  const[t,v]=spec.split(':');const el=blk(t,v==='o'?{ordered:true}:{});
+  const box=$('#bl');after?after.after(el):box.append(el);
+  const e=$('.ed',el);e&&e.focus();dirty();return el}
+function showMenu(anchor,after){
+  $('.menu')?.remove();const m=document.createElement('div');m.className='menu';
+  m.innerHTML=MENU.map(([k,l])=>`<button data-m="${k}">${l}</button>`).join('');
+  const r=anchor.getBoundingClientRect();m.style.top=(scrollY+r.bottom+4)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-330))+'px';
+  m.onclick=e=>{const k=e.target.dataset.m;if(k){addBlock(k,after);m.remove()}};document.body.append(m);
+  setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0)}
+
+async function upload(file){const f=new FormData();f.append('file',file);return api('POST','/media',null,f)}
+function pickMedia(cb){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="mbox"><div class="row"><b class="grow">کتابخانه رسانه</b><label class="btn p">آپلود تصویر جدید<input type="file" accept="image/*" hidden></label><button class="btn" data-x>بستن</button></div><div class="grid"><span class="mu">در حال بارگذاری…</span></div></div>`;
+  document.body.append(m);const close=()=>m.remove();
+  m.onclick=e=>{if(e.target===m||e.target.dataset.x!==undefined)close();if(e.target.dataset.u){cb(e.target.dataset.u);close()}};
+  $('input',m).onchange=async e=>{try{const r=await upload(e.target.files[0]);cb(r.url);close()}catch(x){toast(x.message,1)}};
+  api('GET','/media').then(l=>{$('.grid',m).innerHTML=l.length?l.map(i=>`<img src="${esc(i.url)}" data-u="${esc(i.url)}" loading="lazy">`).join(''):'<span class="mu">هنوز تصویری آپلود نشده.</span>'}).catch(x=>toast(x.message,1))}
+async function showManhwa(el,slug){
+  try{const[m]=await api('GET','/manhwas?slug='+encodeURIComponent(slug));$('.mc',el).innerHTML=m?`<img src="${esc(m.cover_image)}"><div><b>${esc(m.title_fa||m.title_en)}</b><div class="mu">${esc(m.title_en)}</div></div>`:'<span class="err">این مانهوا دیگر در سایت نیست</span>'}catch(e){}}
+function vidInfo(el){const id=$('[data-k=id]',el).value;$('.vs',el).textContent=id?'✔ ویدیو شناسایی شد: '+id:'لینک معتبر وارد کنید'}
+let srT;
+const bl=()=>$('#bl');
+function wireEditor(){
+  const box=bl();
+  box.addEventListener('click',e=>{
+    const a=e.target.dataset.a;if(!a)return;const b=e.target.closest('.blk');
+    if(a==='up'&&b.previousElementSibling)b.previousElementSibling.before(b);
+    if(a==='dn'&&b.nextElementSibling)b.nextElementSibling.after(b);
+    if(a==='dup'){const s=ser(b);b.after(blk(s.type,{...s.data,ordered:!!b.dataset.ord}))}
+    if(a==='del'){b.remove()}
+    if(a==='tr+'||a==='tr-'||a==='tc+'||a==='tc-'){const tb=$('table',b),rows=$$('tr',tb);
+      if(a==='tr+'&&rows.length<40){const n=rows[0]?rows[0].children.length:2;tb.insertAdjacentHTML('beforeend','<tr>'+'<td><input></td>'.repeat(n)+'</tr>')}
+      if(a==='tr-'&&rows.length>1)rows[rows.length-1].remove();
+      if(a==='tc+'&&rows[0]&&rows[0].children.length<8)rows.forEach(r=>r.insertAdjacentHTML('beforeend','<td><input></td>'));
+      if(a==='tc-'&&rows[0]&&rows[0].children.length>1)rows.forEach(r=>r.lastElementChild.remove())}
+    if(a==='fq+'&&$$('.fq',b).length<20)$('.fqs',b).insertAdjacentHTML('beforeend',faqRow({q:'',a:''}));
+    if(a==='fq-'){const f=e.target.closest('.fq');if(f&&$$('.fq',b).length>1)f.remove()}
+    if(a==='add'){e.stopPropagation();showMenu(e.target,b)}
+    if(a==='pick')pickMedia(u=>{$('[data-k=src]',b).value=u;const p=$('img.pv',b);p.src=u;p.hidden=false;dirty()});
+    dirty()});
+  box.addEventListener('input',e=>{
+    const i=e.target,b=i.closest('.blk');dirty();if(!b)return;
+    if(i.dataset.k)mirror(b,i);
+    if(i.dataset.k==='src'){const p=$('img.pv',b);p.src=i.value;p.hidden=!i.value}
+    if(i.dataset.v!==undefined){const u=i.value,y=/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/)([\w-]{11})/.exec(u),a=/aparat\.com\/v\/([\w-]+)/.exec(u);
+      $('[data-k=provider]',b).value=a?'aparat':'youtube';$('[data-k=id]',b).value=(a||y||['',''])[1];vidInfo(b)}
+    if(i.dataset.s!==undefined){clearTimeout(srT);srT=setTimeout(async()=>{const q=i.value.trim(),r=$('.res',b);if(!q){r.innerHTML='';return}
+      try{const l=await api('GET','/manhwas?q='+encodeURIComponent(q));r.innerHTML=l.map(m=>`<button data-sl="${esc(m.slug)}"><img src="${esc(m.cover_image)}"><span>${esc(m.title_fa||m.title_en)}<br><small class="mu">${esc(m.title_en)}</small></span></button>`).join('')||'<div class="mu" style="padding:6px">نتیجه‌ای نبود</div>'}catch(x){}},250)}});
+  box.addEventListener('change',e=>{const i=e.target,b=i.closest('.blk');if(b&&i.dataset.k)mirror(b,i);dirty()});
+  box.addEventListener('click',e=>{const s=e.target.closest('[data-sl]');if(!s)return;const b=s.closest('.blk');$('[data-k=slug]',b).value=s.dataset.sl;$('.res',b).innerHTML='';$('[data-s]',b).value='';showManhwa(b,s.dataset.sl);dirty()});
+  box.addEventListener('keydown',e=>{
+    const ed=e.target.closest?.('.ed');if(!ed)return;const b=ed.closest('.blk'),isList=b.dataset.t==='list';
+    if(e.key==='Enter'&&!isList){e.preventDefault();
+      const s=getSelection(),r=s.getRangeAt(0).cloneRange();r.selectNodeContents(ed);r.setStart(s.getRangeAt(0).endContainer,s.getRangeAt(0).endOffset);
+      if(!e.shiftKey&&r.toString()===''&&ed.textContent!==''){addBlock('paragraph',b)}else document.execCommand('insertLineBreak')}
+    if(e.key==='Backspace'&&!isList&&ed.textContent===''&&!ed.querySelector('br+br')&&box.children.length>1){e.preventDefault();const p=b.previousElementSibling||b.nextElementSibling;b.remove();$('.ed',p)?.focus();dirty()}});
+  box.addEventListener('paste',async e=>{
+    const ed=e.target.closest?.('.ed');if(!ed)return;const files=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));
+    e.preventDefault();
+    if(files.length){await dropImages(files,ed.closest('.blk'));return}
+    const lines=(e.clipboardData.getData('text/plain')||'').replace(/\r/g,'').split('\n');
+    lines.forEach((l,i)=>{if(i)document.execCommand('insertLineBreak');if(l)document.execCommand('insertText',false,l)});dirty()});
+  const root=$('#ed');root.addEventListener('dragover',e=>e.preventDefault());
+  root.addEventListener('drop',e=>{const f=[...e.dataTransfer.files].filter(x=>x.type.startsWith('image/'));if(f.length){e.preventDefault();dropImages(f,e.target.closest('.blk'))}});
+}
+async function dropImages(files,after){
+  for(const f of files){try{toast('در حال آپلود…');const r=await upload(f);const el=addBlock('image',after);$('[data-k=src]',el).value=r.url;const p=$('img.pv',el);p.src=r.url;p.hidden=false;after=el;toast('آپلود شد')}catch(x){toast(x.message,1)}}}
+
+/* ---------- چک‌لیست سئو (زنده) ---------- */
+let seoT;const seoUpd=()=>{clearTimeout(seoT);seoT=setTimeout(seoReport,350)};
+const len=s=>[...String(s||'').trim()].length;
+function counter(id,min,max){const i=$('#'+id),c=$('#'+id+'c');if(!i||!c)return;const n=len(i.value);c.textContent=n+' / '+max;c.className='cnt '+(n&&n>=min&&n<=max?'ok':n?'w':'')}
+function seoReport(){
+  const box=$('#sr');if(!box||!cur)return;const isP=cur.kind==='posts',bad=[],warn=[];
+  const title=$('#ti').value,st=$('#st').value,sd=$('#sd').value,ex=isP?$('#ex').value:'',sl=$('#sl').value;
+  counter('st',30,60);counter('sd',70,160);
+  const blocks=$$('#bl>.blk');let words=0,h2=0,lastLv=1,jump=false,firstH=true,noAlt=0,hasText=false,bodyText='',paras=[],hs=[];
+  for(const b of blocks){
+    const t=b.dataset.t;
+    if(['paragraph','list','quote','callout','heading'].includes(t)){const x=$$('.ed',b).map(e=>e.textContent).join(' ').trim();if(x){hasText=true;words+=x.split(/\s+/).filter(Boolean).length;bodyText+=' '+x;if(t==='paragraph')paras.push(x);if(t==='heading'&&+b.dataset.level<=3)hs.push(x)}}
+    if(t==='faq'||t==='table'){const x=$$('input:not([type=checkbox]),textarea',b).map(i=>i.value).join(' ').trim();if(x){hasText=true;words+=x.split(/\s+/).filter(Boolean).length;bodyText+=' '+x}}
+    if(t==='heading'&&$('.ed',b).textContent.trim()){const lv=+b.dataset.level||2;if(lv===2)h2++;if(firstH?lv>2:lv>lastLv+1)jump=true;firstH=false;lastLv=lv}
+    if(t==='image'){const has=$('[data-k=src]',b).value.trim(),alt=!$('[data-k=alt]',b).value.trim();b.classList.toggle('noalt',!!has&&alt);if(has&&alt)noAlt++}
+  }
+  if(!title.trim())bad.push('عنوان خالی است');
+  if(!sl.trim())bad.push('نشانک (آدرس) خالی است');
+  if(!hasText)bad.push('هنوز هیچ متنی ننوشته‌اید');
+  if(noAlt)bad.push(noAlt+' تصویر بدون متن جایگزین (alt) — کادر قرمز در ویرایشگر');
+  if(isP&&cur.cover&&$('#cs .on')?.dataset.v!=='none'&&!$('#ca').value.trim())bad.push('کاور بدون متن جایگزین (alt)');
+  if(isP&&!ex.trim()&&!sd.trim())bad.push('«خلاصه» یا «توضیح سئو» خالی است (توضیح متای گوگل)');
+  const tl=len(st||title);if(tl>60)warn.push('عنوان سئو بلند است ('+tl+' کاراکتر)؛ گوگل بعد از حدود ۶۰ کاراکتر می‌برد');
+  const dl=len(sd||ex);if(dl&&dl<70)warn.push('توضیح متا کوتاه است ('+dl+')؛ ۷۰ تا ۱۶۰ کاراکتر مناسب است');
+  if(dl>160)warn.push('توضیح متا بلند است ('+dl+')؛ گوگل بعد از حدود ۱۶۰ کاراکتر می‌برد');
+  if(sl.length>80)warn.push('آدرس طولانی است؛ آدرس کوتاه‌تر بهتر است');
+  if(hasText&&words<300)warn.push('متن کوتاه است ('+words+' کلمه)؛ مطلب کم‌محتوا سخت‌تر رتبه می‌گیرد');
+  if(words>=300&&!h2)warn.push('حداقل یک «عنوان بزرگ» (H2) برای ساختار مطلب اضافه کنید');
+  if(jump)warn.push('ترتیب عنوان‌ها رعایت نشده (مثلاً عنوان کوچک بدون عنوان بزرگ قبل از آن)');
+  box.innerHTML=(bad.length||warn.length)?bad.map(x=>'<div class="b">✕ '+esc(x)+'</div>').join('')+warn.map(x=>'<div class="w">⚠ '+esc(x)+'</div>').join(''):'<div class="g">✓ مشکلی در سئو دیده نشد</div>';
+  const wc=$('#wc');if(wc)wc.textContent=words+' کلمه · '+Math.max(1,Math.round(words/180))+' دقیقه مطالعه';
+  const fk=isP&&$('#fk')?$('#fk').value.trim():'';
+  if(fk){
+    const N=x=>String(x||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\u200c\u200f]/g,' ').replace(/\s+/g,' ').trim();
+    const k=N(fk),has=x=>N(x).includes(k),first=(paras[0]||'').split(/\s+/).slice(0,100).join(' ');
+    const cnt=N(bodyText).split(k).length-1,dens=words?cnt*k.split(' ').length/words*100:0,ks=slugify(fk);
+    const rows=[[has(title),'در عنوان آمده','در عنوان نیامده'],[has(sd||ex),'در توضیح متا/خلاصه آمده','در توضیح متا یا خلاصه نیامده'],[ks&&sl.includes(ks),'در آدرس (نشانک) آمده','در آدرس (نشانک) نیامده'],[has(first),'در ابتدای متن آمده','در صد کلمه‌ی اول متن نیامده'],[hs.some(has),'در یکی از عنوان‌ها آمده','در هیچ عنوانی نیامده']];
+    box.innerHTML+='<div class="kw"><b>کلمه‌ی کلیدی «'+esc(fk)+'»</b>'+rows.map(([ok,g,w])=>ok?'<div class="g">✓ '+g+'</div>':'<div class="w">⚠ '+w+'</div>').join('')+(dens>3?'<div class="w">⚠ تراکم زیاد است ('+dens.toFixed(1)+'٪)؛ ممکن است اسپم به‌نظر برسد</div>':cnt?'<div class="g">✓ تراکم مناسب است ('+cnt+' بار در متن)</div>':'<div class="w">⚠ در متن نیامده</div>')+'</div>'}
+  box.dataset.bad=bad.length}
+
+/* ---------- صفحه‌ها ---------- */
+function loginView(msg){
+  app.innerHTML=`<div class="wrap" style="max-width:380px;margin-top:12vh"><div class="card"><h2 style="margin-top:0">ورود به پنل وبلاگ</h2>
+  <input id="u" placeholder="نام کاربری" dir="ltr" autocomplete="username"><br><br><input id="p" type="password" placeholder="رمز عبور" dir="ltr" autocomplete="current-password"><p class="err">${esc(msg||'')}</p><button class="btn p" id="go" style="width:100%">ورود</button></div></div>`;
+  const go=async()=>{try{await api('POST','/login',{username:$('#u').value,password:$('#p').value});boot()}catch(e){loginView(e.message)}};
+  $('#go').onclick=go;$('#p').onkeydown=e=>e.key==='Enter'&&go()}
+const ROLE={admin:'مدیر',editor:'ویراستار',author:'نویسنده',support:'پشتیبان'};
+const fmtDT=d=>d?new Date(d).toLocaleString('fa-IR',{dateStyle:'medium',timeStyle:'short'}):'—';
+/* وضعیت نمایشی: «منتشرشده» با تاریخ آینده = زمان‌بندی‌شده */
+const isSched=p=>p&&p.status==='published'&&p.published_at&&new Date(p.published_at)>new Date();
+const stx=p=>isSched(p)?{cls:'sch',text:'زمان‌بندی‌شده: '+fmtDT(p.published_at)}:{cls:p.status,text:ST[p.status]||p.status};
+function openModal(inner){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="mbox">${inner}</div>`;m.onclick=e=>{if(e.target===m||e.target.dataset.x!==undefined)m.remove()};document.body.append(m);return m}
+const head=()=>`<div class="row"><h2 class="grow" style="margin:0">پنل وبلاگ</h2><span class="mu">${esc(me.display_name)} (${esc(ROLE[me.role]||me.role)})</span><button class="btn" id="pf">پروفایل من</button><a class="btn" href="/blog" target="_blank" rel="noopener">مشاهده‌ی وبلاگ</a><button class="btn" id="lo">خروج</button></div>`;
+const tabs=k=>`<div class="row card"><div class="chips"><span class="chip ${k==='posts'?'on':''}" data-k="posts">مقاله‌ها</span><span class="chip ${k==='pages'?'on':''}" data-k="pages">صفحه‌ها</span>${can('taxonomy.manage')?`<span class="chip ${k==='cats'?'on':''}" data-k="cats">دسته‌ها</span>`:''}${can('staff.manage')?`<span class="chip ${k==='staff'?'on':''}" data-k="staff">کارکنان</span>`:''}</div></div>`;
+function wireHead(){
+  $('#lo').onclick=async()=>{await api('POST','/logout');me=null;loginView()};
+  $('#pf').onclick=profileModal;
+  $$('.chip[data-k]').forEach(c=>c.onclick=()=>{lk=c.dataset.k;listView()})}
+let lk='posts',lf='',ls='updated',lpage=1;
+async function listView(){
+  dirtyF=false;const k=lk;
+  if(k==='cats')return catsView();if(k==='staff')return staffView();
+  app.innerHTML=`<div class="wrap">${head()}${tabs(k)}${k==='posts'?'<div class="card" id="dash"><span class="mu">در حال بارگذاری آمار…</span></div>':''}
+  <div class="row card"><select id="sf" style="width:auto"><option value="">همه‌ی وضعیت‌ها</option>${Object.entries({...ST,scheduled:'زمان‌بندی‌شده'}).map(([a,b])=>`<option value="${a}"${a===lf?' selected':''}>${b}</option>`).join('')}</select>
+  <select id="so" style="width:auto">${opts(k==='posts'?[['updated','آخرین تغییر'],['published','تاریخ انتشار'],['views','بیشترین بازدید'],['title','عنوان']]:[['updated','آخرین تغییر'],['title','عنوان']],ls)}</select>
+  <input id="q" placeholder="جستجوی عنوان…" style="width:200px"><span class="grow"></span><a class="btn p" href="#/new/${k}">＋ ${k==='posts'?'مقاله':'صفحه'}‌ی جدید</a></div>
+  <div class="card"><table><thead><tr><th>عنوان</th><th>وضعیت</th><th>${k==='posts'?'بازدید':''}</th><th>آخرین تغییر</th><th></th></tr></thead><tbody id="tb"><tr><td colspan="5" class="mu">در حال بارگذاری…</td></tr></tbody></table><div class="row" style="justify-content:center;margin-top:8px"><button class="btn" id="more" hidden>نمایش بیشتر</button></div></div></div>`;
+  wireHead();
+  if(k==='posts')api('GET','/dashboard').then(d=>{
+    const c=d.counts,st=[['published','منتشرشده'],['scheduled','زمان‌بندی‌شده'],['draft','پیش‌نویس'],['review','منتظر بررسی'],['archived','بایگانی']],fa=n=>(n||0).toLocaleString('fa-IR');
+    const lst=(t,a,f)=>a&&a.length?`<div><h4>${t}</h4>${a.map(x=>`<a href="#/edit/posts/${esc(x.id)}"><span>${esc(x.title)}</span><span class="mu">${f(x)}</span></a>`).join('')}</div>`:'';
+    $('#dash').innerHTML=`<div class="stats">${st.map(([a,b])=>`<div class="stat"><b>${fa(c[a])}</b><span>${b}</span></div>`).join('')}<div class="stat"><b>${fa(c.views)}</b><span>کل بازدید</span></div></div><div class="dl">${lst('پربازدیدترین‌ها',d.top,x=>fa(x.views)+' بازدید')}${lst('منتظر بررسی',d.review,()=>'')}${lst('زمان‌بندی‌شده‌ها',d.upcoming,x=>fmtDT(x.published_at))}</div>`}).catch(()=>{const d=$('#dash');d&&d.remove()});
+  const canDel=p=>can(k+'.write.all')||p.status==='draft';
+  const row=p=>{const x=stx(p);return `<tr class="r" data-id="${esc(p.id)}" data-t="${esc(p.title)}"><td>${p.featured?'⭐ ':''}${esc(p.title)}</td><td><span class="tag ${esc(x.cls)}">${esc(x.text)}</span></td><td class="mu">${k==='posts'?(p.views||0).toLocaleString('fa-IR'):''}</td><td class="mu">${fmtD(p.updated_at)}</td><td style="white-space:nowrap"><button class="ic" data-act="dup" title="تکثیر">⧉</button>${canDel(p)?'<button class="ic" data-act="del" title="حذف">✕</button>':''}</td></tr>`};
+  /* صفحه‌بندی: هر بار ۳۰ مورد */
+  const load=async(more)=>{try{lpage=more?lpage+1:1;const l=await api('GET',`/${k}?status=${lf}&sort=${ls}&q=${encodeURIComponent($('#q').value)}&page=${lpage}`);
+    const html=l.map(row).join('');
+    if(more)$('#tb').insertAdjacentHTML('beforeend',html);else $('#tb').innerHTML=html||'<tr><td colspan="5" class="mu">موردی نیست.</td></tr>';
+    $('#more').hidden=l.length<30}catch(e){toast(e.message,1)}};
+  $('#more').onclick=()=>load(true);
+  $('#sf').onchange=e=>{lf=e.target.value;load()};$('#so').onchange=e=>{ls=e.target.value;load()};let t;$('#q').oninput=()=>{clearTimeout(t);t=setTimeout(load,300)};
+  $('#tb').onclick=async e=>{
+    const r=e.target.closest('tr.r');if(!r)return;const act=e.target.dataset.act;
+    if(act==='dup'){try{const n=await api('POST',`/${k}/${r.dataset.id}/duplicate`);toast('نسخه‌ی پیش‌نویس ساخته شد');location.hash=`#/edit/${k}/${n.id}`}catch(x){toast(x.message,1)}return}
+    if(act==='del'){if(!confirm('«'+r.dataset.t+'» برای همیشه حذف شود؟\nآخرین نسخه‌ی آن در تاریخچه‌ی دیتابیس می‌ماند.'))return;try{await api('DELETE',`/${k}/${r.dataset.id}`);r.remove();toast('حذف شد')}catch(x){toast(x.message,1)}return}
+    location.hash=`#/edit/${k}/${r.dataset.id}`};
+  load()}
+
+async function catsView(){
+  app.innerHTML=`<div class="wrap">${head()}${tabs('cats')}<div class="card"><b>دسته‌ی جدید</b><div class="row"><input id="cn" placeholder="نام" style="flex:1"><input id="cdsc" placeholder="توضیح کوتاه (اختیاری؛ در صفحه‌ی دسته نمایش داده می‌شود)" style="flex:2"><button class="btn p" id="cadd">افزودن</button></div></div>
+  <div class="card"><table class="tbl2"><thead><tr><th>نام</th><th>نشانک (آدرس)</th><th>توضیح</th><th></th></tr></thead><tbody id="cb"><tr><td colspan="4" class="mu">در حال بارگذاری…</td></tr></tbody></table><p class="mu">اگر نشانکِ دسته را عوض کنید، آدرس قبلی خودکار به آدرس جدید ریدایرکت می‌شود. حذف دسته، مطلب‌ها را حذف نمی‌کند (فقط «بدون دسته» می‌شوند).</p></div></div>`;
+  wireHead();
+  const row=c=>`<tr data-id="${esc(c.id)}"><td><input data-f="name" value="${esc(c.name)}"></td><td><input data-f="slug" class="cd" value="${esc(c.slug)}"></td><td><input data-f="description" value="${esc(c.description||'')}"></td><td style="white-space:nowrap"><button class="ic" data-x="save">ذخیره</button><button class="ic" data-x="del">حذف</button></td></tr>`;
+  const load=async()=>{try{cats=await api('GET','/categories');$('#cb').innerHTML=cats.map(row).join('')||'<tr><td colspan="4" class="mu">هنوز دسته‌ای نیست.</td></tr>'}catch(e){toast(e.message,1)}};
+  $('#cadd').onclick=async()=>{const name=$('#cn').value.trim();if(!name)return;try{await api('POST','/categories',{name,description:$('#cdsc').value});$('#cn').value='';$('#cdsc').value='';toast('دسته ساخته شد');load()}catch(e){toast(e.message,1)}};
+  $('#cb').onclick=async e=>{const x=e.target.dataset.x,r=e.target.closest('tr');if(!x||!r)return;const id=r.dataset.id;
+    try{if(x==='save'){const b={};$$('[data-f]',r).forEach(i=>b[i.dataset.f]=i.value);await api('PUT','/categories/'+id,b);toast('ذخیره شد');load()}
+      if(x==='del'&&confirm('این دسته حذف شود؟'))
+      {await api('DELETE','/categories/'+id);toast('حذف شد');load()}}catch(er){toast(er.message,1)}};
+  load()}
+
+async function staffView(){
+  app.innerHTML=`<div class="wrap">${head()}${tabs('staff')}<div class="card"><b>کاربر جدید</b><div class="row"><input id="su" dir="ltr" placeholder="نام کاربری (انگلیسی)" style="width:170px"><input id="sn" placeholder="نام نمایشی" style="width:170px"><input id="sp" dir="ltr" type="password" placeholder="رمز (حداقل ۱۰ کاراکتر)" style="width:200px" autocomplete="new-password"><select id="sr2" style="width:auto">${opts(Object.entries(ROLE),'author')}</select><label class="chk"><input type="checkbox" id="spb"> مجوز انتشار مستقیم (نویسنده)</label><button class="btn p" id="sadd">ساخت</button></div></div>
+  <div class="card"><table class="tbl2"><thead><tr><th>نام</th><th>نام کاربری</th><th>نقش</th><th>انتشار مستقیم</th><th>فعال</th><th></th></tr></thead><tbody id="stb"><tr><td colspan="6" class="mu">در حال بارگذاری…</td></tr></tbody></table><p class="mu">نویسنده بدون «انتشار مستقیم» فقط می‌تواند مطلب را برای بررسی بفرستد. تغییر نقش، رمز یا غیرفعال‌کردن، نشست‌های فعلی آن کاربر را باطل می‌کند.</p></div></div>`;
+  wireHead();
+  const row=u=>`<tr data-id="${esc(u.id)}"><td><input data-f="display_name" value="${esc(u.display_name)}"></td><td class="cd">${esc(u.username)}</td><td><select data-f="role">${opts(Object.entries(ROLE),u.role)}</select></td><td><input type="checkbox" data-f="can_publish"${u.can_publish?' checked':''}></td><td><input type="checkbox" data-f="is_active"${u.is_active?' checked':''}></td><td style="white-space:nowrap"><button class="ic" data-x="save">ذخیره</button><button class="ic" data-x="pw">رمز جدید</button></td></tr>`;
+  const load=async()=>{try{const l=await api('GET','/staff');$('#stb').innerHTML=l.map(row).join('')}catch(e){toast(e.message,1)}};
+  $('#sadd').onclick=async()=>{try{await api('POST','/staff',{username:$('#su').value,display_name:$('#sn').value,password:$('#sp').value,role:$('#sr2').value,can_publish:$('#spb').checked});['su','sn','sp'].forEach(i=>$('#'+i).value='');toast('کاربر ساخته شد');load()}catch(e){toast(e.message,1)}};
+  $('#stb').onclick=async e=>{const x=e.target.dataset.x,r=e.target.closest('tr');if(!x||!r)return;const id=r.dataset.id;
+    try{if(x==='save'){const b={};$$('[data-f]',r).forEach(i=>b[i.dataset.f]=i.type==='checkbox'?i.checked:i.value);await api('PUT','/staff/'+id,b);toast('ذخیره شد');load()}
+      if(x==='pw'){const pw=prompt('رمز جدید (حداقل ۱۰ کاراکتر):');if(!pw)return;await api('PUT','/staff/'+id,{password:pw});toast('رمز عوض شد')}}catch(er){toast(er.message,1)}};
+  load()}
+
+function profileModal(){
+  const m=openModal(`<div class="row"><b class="grow">پروفایل من</b><button class="btn" data-x>بستن</button></div>
+  <p class="mu">این اطلاعات پایین مطالب شما و در صفحه‌ی نویسنده نمایش داده می‌شود.</p>
+  <span class="mu">نام نمایشی</span><input id="pn" value="${esc(me.display_name)}">
+  <span class="mu">معرفی کوتاه (تا ۵۰۰ کاراکتر)</span><textarea id="pb" rows="3">${esc(me.bio||'')}</textarea>
+  <span class="mu">عکس</span><div class="row"><input id="pav" dir="ltr" value="${esc(me.avatar_url||'')}" style="flex:1"><button class="btn" id="pavp">انتخاب / آپلود</button></div>
+  <span class="mu">آدرس عمومی صفحه‌ی نویسنده (انگلیسی یا فارسی، حداقل ۳ کاراکتر؛ خالی = بدون صفحه‌ی عمومی)</span><input id="ps" dir="ltr" value="${esc(me.public_slug||'')}" placeholder="مثلاً ali">
+  <p class="mu">نام کاربری ورود شما هیچ‌وقت عمومی نمی‌شود.</p><button class="btn p" id="psv">ذخیره</button>`);
+  $('#pavp',m).onclick=()=>pickMedia(u=>{$('#pav',m).value=u});
+  $('#psv',m).onclick=async()=>{try{const b={display_name:$('#pn',m).value,bio:$('#pb',m).value,avatar_url:$('#pav',m).value,public_slug:$('#ps',m).value};await api('PUT','/me',b);Object.assign(me,b);toast('ذخیره شد');m.remove()}catch(e){toast(e.message,1)}}}
+
+async function editorView(kind,id){
+  const isP=kind==='posts';let p={title:'',slug:'',excerpt:'',cover_url:'',cover_alt:'',cover_style:'full',category_id:null,tags:[],seo_title:'',seo_desc:'',status:'draft',content:[]};
+  try{if(id)p=await api('GET',`/${kind}/${id}`);if(isP&&!cats.length)cats=await api('GET','/categories')}catch(e){toast(e.message,1);return listView()}
+  cur={kind,id:id||null,status:p.status,published_at:p.published_at};dirtyF=false;let slugTouched=!!id;
+  const pub=can('posts.publish');
+  app.innerHTML=`<div class="top"><div class="row wrap" style="padding:8px 16px"><a class="btn" href="#/">← بازگشت</a><span class="tag ${stx(p).cls}" id="stt">${esc(stx(p).text)}</span><span class="mu" id="sv"></span><span class="mu" id="wc"></span><span class="grow"></span>
+   <a class="btn" id="b-view" target="_blank" rel="noopener" hidden>مشاهده</a><button class="btn" id="b-pv">پیش‌نمایش</button><button class="btn" id="b-hist">تاریخچه</button>
+   <button class="btn" id="b-draft" hidden>بازگشت به پیش‌نویس</button><button class="btn" id="b-rev" hidden>ارسال برای بررسی</button><button class="btn" id="b-pub" hidden>انتشار</button><button class="btn p" id="b-save">ذخیره (Ctrl+S)</button></div>
+   <div class="tb" id="tb2">${TB}</div></div>
+  <div class="wrap" id="ed"><input class="title" id="ti" placeholder="عنوان…" value="${esc(p.title)}">
+  ${isP?`<div class="card"><div class="row"><b class="grow">کاور</b><button class="btn" id="cvp">انتخاب / آپلود</button><button class="btn" id="cvx">حذف</button></div>
+   <div class="chips" id="cs">${[['full','تمام‌عرض'],['split','دو‌ستونه'],['overlay','روی تصویر'],['compact','فشرده'],['none','بدون کاور']].map(([v,l])=>`<span class="chip${v===p.cover_style?' on':''}" data-v="${v}">${l}</span>`).join('')}</div>
+   <div class="cv" id="cv" data-s="${p.cover_style}" style="${p.cover_url?`background-image:url('${esc(p.cover_url)}')`:''}"><span id="cvt">${esc(p.title)}</span></div><input id="ca" placeholder="متن جایگزین کاور (alt)" value="${esc(p.cover_alt)}"></div>`:''}
+  <div id="bl"></div><div class="row" style="margin:12px 0"><button class="btn p" id="addb">＋ افزودن بلوک</button><span class="mu">نکته: عکس را مستقیم Paste یا Drop کنید. Enter = بلوک جدید، Shift+Enter = خط بعد.</span></div>
+  <div class="card"><b>تنظیمات و سئو</b><div class="mini" style="grid-template-columns:1fr 1fr"><div><span class="mu">نشانک (آدرس)</span><input id="sl" dir="ltr" value="${esc(p.slug)}">${p.published_at?'<span class="mu">اگر آدرس را عوض کنید، آدرس قبلی خودکار به آدرس جدید ریدایرکت می‌شود.</span>':''}</div>
+  ${isP?`<div><span class="mu">دسته</span><div class="row"><select id="ct" style="flex:1"><option value="">بدون دسته</option>${cats.map(c=>`<option value="${c.id}"${c.id===p.category_id?' selected':''}>${esc(c.name)}</option>`).join('')}</select>${can('taxonomy.manage')?'<button class="btn" id="nc">＋</button>':''}</div></div>`:''}</div>
+  ${isP?`<span class="mu">خلاصه (برای کارت‌ها و گوگل)</span><textarea id="ex" rows="2">${esc(p.excerpt)}</textarea><span class="mu">تگ‌ها (با کاما جدا کنید)</span><input id="tg" value="${esc((p.tags||[]).join('، '))}"><div class="chips" id="tgs" style="margin:6px 0"></div>
+  <span class="mu">کلمه‌ی کلیدی اصلی (برای تحلیل سئو در چک‌لیست)</span><input id="fk" value="${esc(p.focus_keyword||'')}">
+  <div class="row" style="margin:8px 0">${can('posts.publish')||can('posts.write.all')?`<label class="chk"><input type="checkbox" id="ft"${p.featured?' checked':''}> مطلب ویژه (بالای صفحه‌ی وبلاگ)</label>`:''}<label class="chk"><input type="checkbox" id="ni"${p.noindex?' checked':''}> عدم نمایش در گوگل (noindex)</label></div>
+  <details><summary class="mu" style="cursor:pointer">تنظیمات پیشرفته</summary><span class="mu">آدرس canonical (فقط اگر این مطلب اول جای دیگری منتشر شده؛ با https://)</span><input id="cu" dir="ltr" value="${esc(p.canonical_url||'')}"></details>`:''}
+  <span class="mu">عنوان سئو (خالی = همان عنوان مقاله)</span><span class="cnt" id="stc"></span><input id="st" value="${esc(p.seo_title)}"><span class="mu">توضیح سئو (خالی = همان خلاصه)</span><span class="cnt" id="sdc"></span><textarea id="sd" rows="2">${esc(p.seo_desc)}</textarea></div>
+  ${pub?`<div class="card" id="schc"><b>زمان انتشار</b><div class="row"><span class="mu" id="pst"></span><span class="grow"></span><span id="schrow" class="row"><input type="datetime-local" id="pa" style="width:auto"><button class="btn" id="b-sch">زمان‌بندی انتشار</button></span></div></div>`:''}
+  <div class="card"><b>چک‌لیست سئو</b><div class="sr" id="sr"></div></div></div>`;
+  const box=bl();(p.content.length?p.content:[{type:'paragraph',data:{}}]).forEach(b=>box.append(blk(b.type,b.data)));
+  wireEditor();seoReport();
+  const syncBtns=()=>{const s=cur.status,sc=isSched(cur);$('#b-draft').hidden=!(pub&&s!=='draft')&&!(s==='review'&&cur.id);$('#b-rev').hidden=s!=='draft';$('#b-pub').hidden=!(pub&&(s!=='published'||sc));$('#b-pub').textContent=sc?'انتشار همین حالا':'انتشار';
+    const lv=s==='published'&&!sc;$('#b-view').hidden=!lv||!cur.id;$('#b-view').href=(isP?'/blog/':'/p/')+encodeURIComponent($('#sl').value);
+    if(pub){$('#schrow').hidden=s==='published'&&!sc;$('#pst').textContent=lv?'منتشرشده: '+fmtDT(cur.published_at):sc?'زمان‌بندی‌شده برای '+fmtDT(cur.published_at):'هنوز منتشر نشده'}};syncBtns();
+  $('#tb2').onmousedown=e=>{if(!['SELECT','INPUT'].includes(e.target.tagName)&&e.target.tagName!=='LABEL')e.preventDefault()};
+  $('#tb2').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.c)cmd(b.dataset.c);if(b.dataset.f==='link')doLink();if(b.dataset.f==='code')doCode();if(b.dataset.al)setAlign(b.dataset.al)};
+  $('#fc').onchange=e=>cmd('foreColor',e.target.value);$('#hc').onchange=e=>cmd('hiliteColor',e.target.value);
+  $('#fz').onchange=e=>{if(e.target.value)cmd('fontSize',e.target.value);e.target.value=''};$('#ff').onchange=e=>{if(e.target.value)cmd('fontName',e.target.value);e.target.value=''};
+  $('#addb').onclick=e=>{e.stopPropagation();showMenu(e.target)};
+  $('#ti').oninput=e=>{dirty();if(isP)$('#cvt').textContent=e.target.value;if(!slugTouched)$('#sl').value=slugify(e.target.value,true)};
+  $('#sl').oninput=()=>{slugTouched=true;dirty()};
+  $$('#ed>.card input,#ed>.card textarea,#ed>.card select').forEach(i=>i.addEventListener('input',dirty));
+  if(isP){
+    const setCover=u=>{$('#cv').style.backgroundImage=u?`url('${u}')`:'';cur.cover=u;dirty()};cur.cover=p.cover_url;
+    $('#cvp').onclick=()=>pickMedia(setCover);$('#cvx').onclick=()=>setCover('');
+    $('#cs').onclick=e=>{const v=e.target.dataset.v;if(!v)return;$$('#cs .chip').forEach(c=>c.classList.toggle('on',c===e.target));$('#cv').dataset.s=v;dirty()};
+    $('#nc')&&($('#nc').onclick=async()=>{const n=prompt('نام دسته‌ی جدید:');if(!n)return;try{const c=await api('POST','/categories',{name:n});cats.push(c);$('#ct').insertAdjacentHTML('beforeend',`<option value="${c.id}" selected>${esc(c.name)}</option>`)}catch(e){toast(e.message,1)}})}
+  async function save(silent){
+    const body={title:$('#ti').value,slug:$('#sl').value||slugify($('#ti').value,true),seo_title:$('#st').value,seo_desc:$('#sd').value,content:readBlocks()};
+    if(isP)Object.assign(body,{excerpt:$('#ex').value,cover_url:cur.cover||'',cover_alt:$('#ca').value,cover_style:$('#cs .on')?.dataset.v||'full',focus_keyword:$('#fk').value,canonical_url:$('#cu').value,noindex:$('#ni').checked,...($('#ft')?{featured:$('#ft').checked}:{}),category_id:$('#ct').value||null,tags:$('#tg').value.split(/[,،]/).map(s=>s.trim()).filter(Boolean)});
+    try{const r=cur.id?await api('PUT',`/${kind}/${cur.id}`,body):await api('POST',`/${kind}`,body);
+      if(!cur.id){cur.id=r.id;slugTouched=true;history.replaceState(null,'',`#/edit/${kind}/${r.id}`);lastHash=location.hash}
+      $('#sl').value=r.slug;dirtyF=false;$('#sv').textContent=silent?'ذخیره‌ی خودکار ✓':'ذخیره شد ✓';if(!silent)toast('ذخیره شد');return true}
+    catch(e){toast(e.message,1);return false}}
+  async function setStatus(s,at){if(!await save(true))return;try{const r=await api('POST',`/${kind}/${cur.id}/status`,{status:s,...(at?{publish_at:at}:{})});cur.status=r.status;cur.published_at=r.published_at;const x=stx(r);$('#stt').className='tag '+x.cls;$('#stt').textContent=x.text;syncBtns();toast(at?'انتشار زمان‌بندی شد':'وضعیت: '+x.text)}catch(e){toast(e.message,1)}}
+  $('#b-save').onclick=()=>save();$('#b-rev').onclick=()=>setStatus('review');$('#b-pub').onclick=()=>setStatus('published');$('#b-draft').onclick=()=>setStatus('draft');
+  if(pub)$('#b-sch').onclick=()=>{const v=$('#pa').value;if(!v)return toast('تاریخ و ساعت را انتخاب کنید',1);const d=new Date(v);if(!(d>new Date()))return toast('زمان باید در آینده باشد',1);setStatus('published',d.toISOString())};
+  /* پیش‌نمایش: پنجره‌ی خالی همان لحظه باز می‌شود تا مرورگر آن را مسدود نکند */
+  const prevLink=async()=>{if(!await save(true))return null;return location.origin+(await api('POST',`/${kind}/${cur.id}/preview-link`)).path};
+  $('#b-pv').onclick=async()=>{const w=window.open('','_blank');try{const u=await prevLink();if(!u){w&&w.close();return}if(w)w.location=u;try{await navigator.clipboard.writeText(u);toast('لینک پیش‌نمایش (۷ روزه) کپی شد؛ برای دیگران هم کار می‌کند')}catch(e){}}catch(e){w&&w.close();toast(e.message,1)}};
+  $('#b-hist').onclick=async()=>{if(!cur.id)return toast('ابتدا مطلب را یک‌بار ذخیره کنید',1);
+    const m=openModal('<div class="row"><b class="grow">تاریخچه‌ی نسخه‌ها</b><button class="btn" data-x>بستن</button></div><p class="mu">نسخه‌ی قبل از هر تغییر مهم (حداکثر ۲۰ نسخه) نگهداری می‌شود. بازگردانی، وضعیت فعلی را هم در تاریخچه نگه می‌دارد.</p><div id="hl"><span class="mu">در حال بارگذاری…</span></div>');
+    try{const l=await api('GET',`/${kind}/${cur.id}/revisions`);$('#hl',m).innerHTML=l.length?l.map(r=>`<div class="hist"><span class="grow">${esc(fmtDT(r.created_at))}${r.by?' — '+esc(r.by):''}<br><small class="mu">${esc(r.title)} · ${r.words} کلمه · ${r.blocks} بلوک</small></span><button class="btn" data-rv="${esc(r.id)}">بازگردانی</button></div>`).join(''):'<span class="mu">هنوز نسخه‌ای ذخیره نشده (بعد از اولین ویرایش‌های مهم اینجا پر می‌شود).</span>'}catch(e){$('#hl',m).textContent=e.message}
+    m.addEventListener('click',async e=>{const id=e.target.dataset.rv;if(!id||!confirm('محتوای این نسخه جایگزین مطلب فعلی شود؟'))return;try{await api('POST',`/${kind}/${cur.id}/revisions/${id}/restore`);m.remove();dirtyF=false;toast('نسخه بازگردانی شد');const k2=kind,i2=cur.id;clearInterval(cur.auto);editorView(k2,i2)}catch(x){toast(x.message,1)}})};
+  if(isP)api('GET','/tags').then(l=>{const box=$('#tgs');if(!box)return;box.innerHTML=l.slice(0,14).map(t=>`<span class="chip" data-tg="${esc(t.name)}">${esc(t.name)}</span>`).join('');box.onclick=e=>{const n=e.target.dataset.tg;if(!n)return;const cur2=$('#tg').value.split(/[,،]/).map(x=>x.trim()).filter(Boolean);if(!cur2.includes(n))cur2.push(n);$('#tg').value=cur2.join('، ');dirty()}}).catch(()=>{});
+  cur.save=save;cur.auto=setInterval(()=>{if(!cur||!document.getElementById('bl')){return}if(dirtyF&&cur.id&&cur.status!=='published')save(true)},45000);
+}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'&&cur?.save&&$('#bl')){e.preventDefault();cur.save()}});
+addEventListener('beforeunload',e=>{if(dirtyF){e.preventDefault();e.returnValue=''}});
+function route(){clearInterval(cur?.auto);cur=null;const h=location.hash.split('/');
+  if(h[1]==='new')editorView(h[2]==='pages'?'pages':'posts');else if(h[1]==='edit')editorView(h[2]==='pages'?'pages':'posts',h[3]);else listView()}
+let lastHash=location.hash;
+addEventListener('hashchange',()=>{
+  if(dirtyF&&!confirm('تغییرات ذخیره‌نشده از بین می‌رود. ادامه می‌دهید؟')){history.replaceState(null,'',lastHash);return}
+  lastHash=location.hash;dirtyF=false;route()});
+async function boot(){try{me=await api('GET','/me');route()}catch(e){loginView()}}
+boot();
+</script>
+</body>
+</html>
