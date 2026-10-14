@@ -30,7 +30,7 @@ const SITE_NAME = () => process.env.BLOG_SITE_NAME || "مانهواچی";
 const BLOG_NAME = () => process.env.BLOG_TITLE || "وبلاگ مانهواچی";
 const BLOG_DESC = () => process.env.BLOG_DESC || "مقاله‌ها، معرفی و بررسی مانهوا، مانگا و وب‌تون با ترجمه‌ی فارسی";
 // آدرس صفحه‌ی مانهوا در سایت؛ {slug} جایگزین می‌شود. اگر آدرس سایت شما فرق دارد با env عوضش کنید.
-const MANHWA_URL = () => process.env.BLOG_MANHWA_URL || "/manga/{slug}";
+const MANHWA_URL = () => process.env.BLOG_MANHWA_URL || "/comic/{slug}";
 const PER_PAGE = 12;
 const ASSET_DIR = path.join(__dirname, "public");
 
