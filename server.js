@@ -104,6 +104,8 @@ app.use(
           "https://www.google-analytics.com", // ارسال دیتای Google Analytics/gtag
           "https://region1.google-analytics.com",
         ],
+        // ویدیوهای داخل مطالب وبلاگ (بلوک «ویدیو»): بدون این خط iframe یوتیوب/آپارات بلاک می‌شود
+        frameSrc: ["'self'", "https://www.youtube-nocookie.com", "https://www.aparat.com"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
       },
@@ -131,6 +133,15 @@ if (process.env.LOCAL_DB === "1") {
   localdb.installFetch();
   localdb.mount(app, express);
 }
+
+// ---------- وبلاگ (SQLite مستقل: blog.sqlite؛ بدون وابستگی به Supabase/LOCAL_DB) ----------
+// پنل مدیریت در /panel ، صفحه‌های عمومی در /blog و /p/<slug>. باید قبل از express.json سراسری باشد
+// (پنل بدنه‌ی JSON بزرگ‌تر خودش را می‌خواند). نیاز: BLOG_SESSION_SECRET (حداقل ۳۲ کاراکتر).
+const { router: blogRouter } = require("./blog/blogRouter");
+app.use("/panel", blogRouter);
+app.use(require("./blog/blogMedia").publicRouter); // /blog-media/... (تصاویر وبلاگ)
+app.use(require("./blog/blogPublic").router); // /blog ، /blog/<slug> ، /p/<slug> ، RSS ، sitemap
+
 app.use(express.json({ limit: "50kb" }));
 
 // ---------- پنل ادمین (مدیریت مانهواها و چپترها بدون ویرایش دستی data.json) ----------
