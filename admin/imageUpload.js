@@ -3,8 +3,12 @@
 // آپلود عکس از پنل ادمین مستقیم به S3 (پارس‌پک) - بدون نیاز به آپلود دستی
 // و بدون نگرانی از اسم فایل یا حجمش. دو نوع تصویر پشتیبانی می‌شه:
 //
-// ۱. تصاویر صفحات یک چپتر (چندتایی) -> با همون قرارداد فعلی سایت که
-//    lib/chapterCache.js انتظارش رو داره: manhwas/<slug>/CH<num>/srcCH<num>/...
+// ۱. تصاویر صفحات یک چپتر (تک‌تک، هر صفحه یک درخواست جدا) -> مستقیم
+//    داخل پوشه‌ی خود چپتر: manhwas/<slug>/CH<num>/001.jpg ، 002.jpg ، ...
+//    (دیگه پوشه‌ی srcCH<num> وجود نداره.)
+//    هر صفحه کلید ثابت و قابل‌پیش‌بینی داره، پس آپلود دوباره‌ی همون صفحه
+//    (مثلاً بعد از قطع شدن اینترنت) فقط فایل قبلی رو جایگزین می‌کنه و
+//    هیچ مشکلی ایجاد نمی‌کنه (idempotent).
 // ۲. تصویر بندانگشتی/کاور یک چپتر (تکی) -> همون چیزی که manga.ejs مستقیم
 //    و با اسم ثابت صداش می‌زنه: manhwas/<slug>/chapterPictures/chapterpicture<num>.png
 //
@@ -26,7 +30,7 @@ const fsp = require("fs/promises");
 const path = require("path");
 const multer = require("multer");
 const sharp = require("sharp");
-const { PutObjectCommand } = require("@aws-sdk/client-s3");
+const { PutObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const { s3 } = require("../lib/chapterCache");
 
 const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
@@ -63,7 +67,7 @@ const diskUpload = multer({
 // این‌ها میان‌افزار خام multer هستن؛ برای خطای تمیز به‌صورت JSON (به‌جای
 // صفحه‌ی خطای پیش‌فرض Express)، تو adminRouter.js با wrapUpload صدا زده
 // می‌شن، نه مستقیم.
-const rawUploadPages = diskUpload.array("pages", 300);
+const rawUploadPage = diskUpload.single("page");
 const rawUploadCover = diskUpload.single("cover");
 
 // میان‌افزار multer رو طوری می‌پیچه که خطاهاش (حجم زیاد، فرمت غلط و...)
@@ -130,6 +134,18 @@ async function processCoverThumbnail(filePath) {
     .toBuffer();
 }
 
+// بررسی وجود یک فایل روی S3 (برای تأییدِ نهایی قبل از ثبت چپتر)
+async function objectExists(key) {
+  try {
+    await s3.send(new HeadObjectCommand({ Bucket: PARSPACK_BUCKET, Key: key }));
+    return true;
+  } catch (err) {
+    const status = err && err.$metadata && err.$metadata.httpStatusCode;
+    if (status === 404 || err.name === "NotFound" || err.name === "NoSuchKey") return false;
+    throw err;
+  }
+}
+
 async function putObject(key, buffer, contentType) {
   await s3.send(
     new PutObjectCommand({
@@ -143,7 +159,7 @@ async function putObject(key, buffer, contentType) {
 
 function pageKey(slug, chapterNum, index) {
   const padded = String(index + 1).padStart(3, "0");
-  return `manhwas/${slug}/CH${chapterNum}/srcCH${chapterNum}/${padded}.jpg`;
+  return `manhwas/${slug}/CH${chapterNum}/${padded}.jpg`;
 }
 
 function coverKey(slug, chapterNum) {
@@ -151,11 +167,12 @@ function coverKey(slug, chapterNum) {
 }
 
 module.exports = {
-  uploadPages: wrapUpload(rawUploadPages),
+  uploadPage: wrapUpload(rawUploadPage),
   uploadCover: wrapUpload(rawUploadCover),
   processPageImage,
   processCoverThumbnail,
   putObject,
+  objectExists,
   pageKey,
   coverKey,
   removeTempFile,

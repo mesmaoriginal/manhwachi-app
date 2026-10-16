@@ -10,11 +10,12 @@ const crypto = require("crypto");
 const { readData, updateData } = require("./dataStore");
 const { invalidateChapterCache, listChapterFoldersFromS3, listChapterImageKeys } = require("../lib/chapterCache");
 const {
-  uploadPages,
+  uploadPage,
   uploadCover,
   processPageImage,
   processCoverThumbnail,
   putObject,
+  objectExists,
   pageKey,
   coverKey,
   removeTempFile,
@@ -288,43 +289,90 @@ router.post("/api/manga/:slug/episodes", async (req, res) => {
   }
 });
 
-// ---------- API: آپلود مستقیم عکس‌های صفحات یک چپتر از پنل ادمین ----------
-// جایگزینِ کاملِ آپلود دستی رو S3: ادمین فقط عکس‌ها رو از گوشی/کامپیوترش
-// انتخاب می‌کنه، این endpoint اونا رو (به ترتیبی که فرستاده شدن) پردازش
-// می‌کنه (کوچیک/فشرده اگه لازم بود)، با اسم‌های استاندارد (001.jpg,
-// 002.jpg, ...) رو S3 آپلود می‌کنه، و خودش چپتر رو تو data.json ثبت یا
-// (اگه از قبل بود) لیست images‌ش رو به‌روزرسانی می‌کنه - دقیقاً مثل اینکه
-// از همون endpoint قدیمیِ افزودن چپتر استفاده شده باشه.
-router.post("/api/manga/:slug/episodes/upload", uploadPages, async (req, res) => {
-  const files = req.files || [];
+// ---------- API: آپلود مقاوم چپتر (صفحه‌به‌صفحه، مناسب اینترنت کند) ----------
+// به‌جای فرستادن همه‌ی عکس‌ها تو یک درخواست غول‌پیکر (که با یک قطعی کوتاه
+// کل آپلود از اول شروع می‌شد)، آپلود تو سه مرحله انجام می‌شه:
+//
+//   ۱. start    : شماره‌ی چپتر مشخص می‌شه (اگه خالی بود، بعدی).
+//   ۲. pages    : هر صفحه تو یک درخواست جدا (PUT) و با کلید ثابت
+//                 manhwas/<slug>/CH<num>/<001>.jpg آپلود می‌شه. اگه یک صفحه
+//                 قطع شد، فقط همون دوباره فرستاده می‌شه.
+//   ۳. finalize : سرور چک می‌کنه همه‌ی صفحات واقعاً رو S3 هستن و بعد
+//                 چپتر رو تو data.json ثبت می‌کنه. تا این مرحله data.json
+//                 دست نمی‌خوره، پس آپلودِ نیمه‌کاره هیچ‌وقت چپتر خراب
+//                 تو سایت نمی‌ذاره.
+
+router.post("/api/manga/:slug/episodes/upload/start", (req, res) => {
   try {
     const { slug } = req.params;
-    let { num, date, free } = req.body || {};
+    const m = readData()[slug];
+    if (!m) return res.status(404).json({ error: "مانهوا یافت نشد" });
 
-    if (!files.length) {
-      return res.status(400).json({ error: "هیچ تصویری ارسال نشده" });
-    }
-
-    const snapshot = readData();
-    const mSnapshot = snapshot[slug];
-    if (!mSnapshot) throw new Error("مانهوا یافت نشد");
-
+    let { num } = req.body || {};
     if (num === undefined || num === null || num === "") {
-      const episodesSnap = Array.isArray(mSnapshot.episodes) ? mSnapshot.episodes : [];
-      const max = episodesSnap.length ? Math.max(...episodesSnap.map((e) => Number(e.num))) : 0;
-      num = max + 1;
+      const eps = Array.isArray(m.episodes) ? m.episodes : [];
+      num = (eps.length ? Math.max(...eps.map((e) => Number(e.num))) : 0) + 1;
     }
     num = Number(num);
-    if (Number.isNaN(num)) throw new Error("شماره چپتر نامعتبر است");
+    if (!Number.isFinite(num) || num < 0) throw new Error("شماره چپتر نامعتبر است");
 
-    // پردازش و آپلود یکی‌یکی (نه موازی) تا فشار حافظه/CPU سرور روی
-    // چپترهای پرصفحه یک‌جا بالا نره.
-    const keys = [];
-    for (let i = 0; i < files.length; i++) {
-      const processed = await processPageImage(files[i].path);
-      const key = pageKey(slug, num, i);
-      await putObject(key, processed, "image/jpeg");
-      keys.push(key);
+    const exists = (m.episodes || []).some((e) => Number(e.num) === num);
+    res.json({ ok: true, num, exists });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.put("/api/manga/:slug/episodes/:num/pages/:index", uploadPage, async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const num = Number(req.params.num);
+    const index = Number(req.params.index);
+    if (!Number.isFinite(num)) return res.status(400).json({ error: "شماره چپتر نامعتبر است" });
+    if (!Number.isInteger(index) || index < 0 || index > 999) {
+      return res.status(400).json({ error: "شماره صفحه نامعتبر است" });
+    }
+    if (!req.file) return res.status(400).json({ error: "فایلی ارسال نشده" });
+    if (!readData()[slug]) return res.status(404).json({ error: "مانهوا یافت نشد" });
+
+    const processed = await processPageImage(req.file.path);
+    await putObject(pageKey(slug, num, index), processed, "image/jpeg");
+    res.json({ ok: true, index });
+  } catch (err) {
+    res.status(500).json({ error: "خطا در آپلود صفحه: " + err.message });
+  } finally {
+    if (req.file) await removeTempFile(req.file.path);
+  }
+});
+
+router.post("/api/manga/:slug/episodes/:num/finalize", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const num = Number(req.params.num);
+    const { date, free } = req.body || {};
+    const count = Number((req.body || {}).count);
+
+    if (!Number.isFinite(num)) return res.status(400).json({ error: "شماره چپتر نامعتبر است" });
+    if (!Number.isInteger(count) || count < 1 || count > 1000) {
+      return res.status(400).json({ error: "تعداد صفحات نامعتبر است" });
+    }
+    const mSnapshot = readData()[slug];
+    if (!mSnapshot) return res.status(404).json({ error: "مانهوا یافت نشد" });
+
+    const keys = Array.from({ length: count }, (_, i) => pageKey(slug, num, i));
+
+    // مطمئن می‌شیم همه‌ی صفحات واقعاً رو S3 نشسته‌ن (دسته‌های ۱۰تایی)
+    const missing = [];
+    for (let i = 0; i < keys.length; i += 10) {
+      const batch = keys.slice(i, i + 10);
+      const results = await Promise.all(batch.map((k) => objectExists(k)));
+      results.forEach((ok, j) => { if (!ok) missing.push(i + j); });
+    }
+    if (missing.length) {
+      return res.status(409).json({
+        error: `${missing.length} صفحه هنوز روی S3 نیست`,
+        missing,
+      });
     }
 
     const freeBool = free === undefined ? true : free === "true" || free === true;
@@ -342,18 +390,12 @@ router.post("/api/manga/:slug/episodes/upload", uploadPages, async (req, res) =>
         if (date) existing.date = date;
         existing.free = freeBool;
       } else {
-        m.episodes.push({
-          num,
-          date: date || todayJalaliString(),
-          free: freeBool,
-          images: keys,
-        });
+        m.episodes.push({ num, date: date || todayJalaliString(), free: freeBool, images: keys });
       }
       m.episodes.sort((a, b) => Number(b.num) - Number(a.num));
     });
 
     invalidateChapterCache(slug, num);
-
     res.json({ ok: true, num, imageCount: keys.length });
 
     // فقط برای چپتر جدید (نه جایگزینی عکس‌های چپتر قدیمی) پست تلگرام می‌ره
@@ -361,9 +403,7 @@ router.post("/api/manga/:slug/episodes/upload", uploadPages, async (req, res) =>
       notifyNewChapter(slug, readData()[slug] || mSnapshot, num, freeBool);
     }
   } catch (err) {
-    res.status(400).json({ error: "خطا در آپلود چپتر: " + err.message });
-  } finally {
-    await Promise.all(files.map((f) => removeTempFile(f.path)));
+    res.status(500).json({ error: "خطا در ثبت چپتر: " + err.message });
   }
 });
 
