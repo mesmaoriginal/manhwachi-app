@@ -109,6 +109,10 @@
             .panel-card, .panel-card--hero { transition: none !important; }
         }
 
+        .plans-grid{ display:grid; gap:1.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .plans-grid[data-count="1"]{ max-width:340px; margin-inline:auto; }
+        .plans-grid[data-count="2"]{ max-width:680px; margin-inline:auto; }
+        .plans-grid:empty{ display:none; }
         :focus-visible{
             outline: 2px solid var(--ember);
             outline-offset: 2px;
@@ -145,89 +149,17 @@
             <p class="text-zinc-400 text-sm sm:text-[15px] leading-relaxed">
                 با تهیه اشتراک VIP مانهواچی، بدون محدودیت و زودتر از همه به چپترهای جدید دسترسی داشته باشید.
             </p>
-            <div class="inline-flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-ember/10 border border-ember/40 text-ember text-[11px] font-bold">
+            <div id="promoChip" class="hidden inline-flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-ember/10 border border-ember/40 text-ember text-[11px] font-bold">
                 <span class="material-symbols-outlined text-sm">local_fire_department</span>
-                ۵۰٪ تخفیف ویژه روی پلن‌های ماهانه و سه‌ماهه
+                <span id="promoText"></span>
             </div>
         </div>
 
-        <!-- کارت‌های پلن اشتراک -->
-        <div class="grid md:grid-cols-3 gap-6 md:gap-5 md:items-stretch">
+        <!-- وضعیت بارگذاری / بسته بودن / خطا (قیمت‌ها از سرور می‌آیند: /api/vip/config) -->
+        <div id="plansState" class="hidden max-w-xl mx-auto panel-card rounded-2xl p-8 text-center"></div>
 
-            <!-- پلن هفتگی -->
-            <div class="panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1">
-                <div>
-                    <h3 class="text-base font-bold text-zinc-200 mb-1.5">اشتراک هفتگی</h3>
-                    <p class="text-xs text-zinc-500 mb-7">مناسب برای تست و مطالعه کوتاه‌مدت</p>
-                    <div class="mb-7">
-                        <span class="price-num text-3xl text-white">۲۵,۰۰۰</span>
-                        <span class="text-xs text-zinc-500 mr-1">تومان</span>
-                    </div>
-                    <ul class="space-y-3.5 text-xs text-zinc-300 mb-9">
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> دسترسی کامل به چپترهای VIP</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> بدون تبلیغات مزاحم</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> پشتیبانی سریع</li>
-                    </ul>
-                </div>
-                <button onclick="startPayment('weekly', this)" class="w-full py-3.5 bg-zinc-800/80 hover:bg-primary-red border border-white/10 font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2">
-                    <span>خرید پلن هفتگی</span>
-                </button>
-            </div>
-
-            <!-- پلن ماهانه (پیشنهادی) -->
-            <div class="panel-card--hero relative rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 md:scale-[1.04] md:my-1">
-                <span class="ticket-notch -right-[11px]"></span>
-                <span class="ticket-notch -left-[11px]"></span>
-
-                <div class="absolute -top-3.5 right-1/2 translate-x-1/2 bg-ember text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-950/50">
-                    محبوب‌ترین
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-white mb-1.5 mt-1">اشتراک ماهانه</h3>
-                    <p class="text-xs text-zinc-400 mb-7">صرفه‌جویی در هزینه مطالعه</p>
-                    <div class="mb-2 flex items-baseline gap-2 flex-wrap">
-                        <span class="price-num text-3xl text-white">۵۵,۰۰۰</span>
-                        <span class="text-xs text-zinc-500">تومان</span>
-                        <span class="text-xs text-zinc-600 line-through">۱۱۰,۰۰۰</span>
-                    </div>
-                    <div class="inline-flex items-center gap-1 mb-6 text-[10px] font-bold text-vip-gold bg-vip-gold/10 border border-vip-gold/30 px-2 py-0.5 rounded-md">
-                        ۵۰٪ تخفیف محدود
-                    </div>
-                    <ul class="space-y-3.5 text-xs text-zinc-300 mb-9">
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-ember text-base">check</span> دسترسی کامل به چپترهای VIP</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-ember text-base">check</span> سرور دانلود و مشاهده اختصاصی</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-ember text-base">check</span> نشان اختصاصی 👑 VIP در پروفایل</li>
-                    </ul>
-                </div>
-                <button onclick="startPayment('monthly', this)" class="w-full py-3.5 bg-gradient-to-r from-ember to-primary-red hover:brightness-110 font-bold rounded-xl text-sm transition-all shadow-lg shadow-red-950/50 active:scale-95 flex items-center justify-center gap-2">
-                    <span>خرید پلن ماهانه</span>
-                </button>
-            </div>
-
-            <!-- پلن سه ماهه -->
-            <div class="panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1">
-                <div>
-                    <h3 class="text-base font-bold text-zinc-200 mb-1.5">اشتراک سه‌ماهه</h3>
-                    <p class="text-xs text-zinc-500 mb-7">برای خوره مانهواها و خوانندگان حرفه‌ای</p>
-                    <div class="mb-2 flex items-baseline gap-2 flex-wrap">
-                        <span class="price-num text-3xl text-white">۱۵۰,۰۰۰</span>
-                        <span class="text-xs text-zinc-500">تومان</span>
-                        <span class="text-xs text-zinc-600 line-through">۳۰۰,۰۰۰</span>
-                    </div>
-                    <div class="inline-flex items-center gap-1 mb-6 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-md">
-                        بیشترین صرفه‌جویی
-                    </div>
-                    <ul class="space-y-3.5 text-xs text-zinc-300 mb-9">
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> تمامی امکانات پلن‌های قبلی</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400 text-base">check</span> بیشترین میزان تخفیف</li>
-                    </ul>
-                </div>
-                <button onclick="startPayment('quarterly', this)" class="w-full py-3.5 bg-zinc-800/80 hover:bg-primary-red border border-white/10 font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2">
-                    <span>خرید پلن سه‌ماهه</span>
-                </button>
-            </div>
-
-        </div>
+        <!-- کارت‌های پلن اشتراک (با JS از تنظیمات سرور ساخته می‌شود) -->
+        <div id="plansGrid" class="plans-grid md:items-stretch"></div>
 
         <p class="text-center text-[11px] text-zinc-600 mt-10 flex items-center justify-center gap-1.5">
             <span class="material-symbols-outlined text-sm">verified_user</span>
@@ -260,9 +192,124 @@
             return null;
         }
 
+        // ===== پلن‌ها از سرور (قیمت و باز/بسته بودن بخش عضویت از پنل /vip-admin تنظیم می‌شود) =====
+        const faDigits = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        const faMoney = n => faDigits(Number(n).toLocaleString('en-US'));
+
+        function mk(tag, cls, text) {
+            const n = document.createElement(tag);
+            if (cls) n.className = cls;
+            if (text != null) n.textContent = text;
+            return n;
+        }
+        function icon(name, cls) { return mk('span', 'material-symbols-outlined ' + (cls || ''), name); }
+
+        function buildPlanCard(plan) {
+            const hero = !!plan.hero;
+            const card = mk('div', (hero
+                ? 'panel-card--hero relative rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 md:scale-[1.04] md:my-1'
+                : 'panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1'));
+
+            if (hero) {
+                const nr = mk('span', 'ticket-notch -right-[11px]');
+                const nl = mk('span', 'ticket-notch -left-[11px]');
+                card.append(nr, nl);
+            }
+            if (plan.badge) {
+                card.appendChild(mk('div', 'absolute -top-3.5 right-1/2 translate-x-1/2 bg-ember text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-950/50', plan.badge));
+            }
+
+            const top = mk('div');
+            top.appendChild(mk('h3', hero ? 'text-base font-bold text-white mb-1.5 mt-1' : 'text-base font-bold text-zinc-200 mb-1.5', plan.title));
+            top.appendChild(mk('p', 'text-xs mb-7 ' + (hero ? 'text-zinc-400' : 'text-zinc-500'), plan.sub || ''));
+
+            const hasOld = plan.oldPrice && plan.oldPrice > plan.price;
+            const priceRow = mk('div', (hasOld || plan.chip ? 'mb-2' : 'mb-7') + ' flex items-baseline gap-2 flex-wrap');
+            priceRow.appendChild(mk('span', 'price-num text-3xl text-white', faMoney(plan.price)));
+            priceRow.appendChild(mk('span', 'text-xs text-zinc-500', 'تومان'));
+            if (hasOld) priceRow.appendChild(mk('span', 'text-xs text-zinc-600 line-through', faMoney(plan.oldPrice)));
+            top.appendChild(priceRow);
+
+            if (plan.chip) {
+                top.appendChild(mk('div', 'inline-flex items-center gap-1 mb-6 text-[10px] font-bold px-2 py-0.5 rounded-md ' + (hero
+                    ? 'text-vip-gold bg-vip-gold/10 border border-vip-gold/30'
+                    : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/30'), plan.chip));
+            }
+
+            const ul = mk('ul', 'space-y-3.5 text-xs text-zinc-300 mb-9');
+            (plan.features || []).forEach(f => {
+                const li = mk('li', 'flex items-center gap-2');
+                li.appendChild(icon('check', (hero ? 'text-ember' : 'text-green-400') + ' text-base'));
+                li.appendChild(document.createTextNode(' ' + f));
+                ul.appendChild(li);
+            });
+            top.appendChild(ul);
+            card.appendChild(top);
+
+            const btn = mk('button', hero
+                ? 'w-full py-3.5 bg-gradient-to-r from-ember to-primary-red hover:brightness-110 font-bold rounded-xl text-sm transition-all shadow-lg shadow-red-950/50 active:scale-95 flex items-center justify-center gap-2'
+                : 'w-full py-3.5 bg-zinc-800/80 hover:bg-primary-red border border-white/10 font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2');
+            btn.appendChild(mk('span', null, plan.buyLabel || ('خرید ' + plan.title)));
+            btn.addEventListener('click', () => startPayment(plan.key, btn));
+            card.appendChild(btn);
+            return card;
+        }
+
+        function showPlansState(iconName, title, text, withRetry) {
+            const box = document.getElementById('plansState');
+            box.textContent = '';
+            const ic = icon(iconName, 'text-5xl text-zinc-500 mb-3');
+            box.append(ic, mk('h2', 'text-lg font-bold text-white mb-2', title));
+            if (text) box.appendChild(mk('p', 'text-sm text-zinc-400 leading-relaxed', text));
+            if (withRetry) {
+                const b = mk('button', 'mt-5 px-6 py-2.5 bg-zinc-800 hover:bg-primary-red border border-white/10 rounded-xl text-sm font-bold transition-all', 'تلاش دوباره');
+                b.addEventListener('click', loadPlans);
+                box.appendChild(b);
+            }
+            box.classList.remove('hidden');
+        }
+
+        let __loadedOnce = false;
+        async function loadPlans() {
+            const grid = document.getElementById('plansGrid');
+            const state = document.getElementById('plansState');
+            const promo = document.getElementById('promoChip');
+            if (!__loadedOnce) { grid.textContent = ''; showPlansState('hourglass_top', 'در حال بارگذاری پلن‌ها...', '', false); }
+            try {
+                const res = await fetch('/api/vip/config', { cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const cfg = await res.json();
+                __loadedOnce = true;
+                grid.textContent = '';
+                state.classList.add('hidden');
+                promo.classList.add('hidden');
+
+                if (!cfg.enabled) {
+                    showPlansState('lock', 'فروش اشتراک فعلاً بسته است', cfg.closedMessage || '', false);
+                    return;
+                }
+                if (!cfg.plans || !cfg.plans.length) {
+                    showPlansState('inventory_2', 'فعلاً پلنی برای فروش موجود نیست', 'لطفاً بعداً دوباره سر بزنید.', false);
+                    return;
+                }
+                if (cfg.promo) {
+                    document.getElementById('promoText').textContent = cfg.promo;
+                    promo.classList.remove('hidden');
+                }
+                grid.dataset.count = String(cfg.plans.length);
+                cfg.plans.forEach(p => grid.appendChild(buildPlanCard(p)));
+            } catch (e) {
+                console.error(e);
+                grid.textContent = '';
+                promo.classList.add('hidden');
+                showPlansState('wifi_off', 'خطا در دریافت پلن‌ها', 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', true);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadPlans);
+
         // تابع شروع پرداخت
         // نکته امنیتی: دیگر amount/months از کلاینت فرستاده نمی‌شود،
-        // فقط "planKey" ارسال می‌شود و قیمت واقعی سمت سرور (edge function) تعیین می‌شود.
+        // فقط "planKey" ارسال می‌شود و قیمت واقعی سمت سرور (از تنظیمات پنل /vip-admin) تعیین می‌شود.
         const PENDING_KEY = 'vip_payment_started_at';
         const PENDING_WINDOW_MS = 30 * 60 * 1000;
         const faDate = d => new Date(d).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -318,6 +365,7 @@
                     try { localStorage.setItem(PENDING_KEY, String(Date.now())); } catch (e) {}
                     window.location.href = `https://gateway.zibal.ir/start/${result.trackId}`;
                 } else {
+                    if (result.code === 'VIP_CLOSED') { loadPlans(); }
                     throw new Error(result.message || "خطا در ایجاد درگاه پرداخت");
                 }
             } catch (err) {

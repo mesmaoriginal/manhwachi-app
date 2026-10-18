@@ -370,6 +370,17 @@
             .modal { padding: 20px; }
         }
 
+        /* Careers banner (بسته بودن کل ثبت‌نام / خطا) */
+        .careers-banner {
+            max-width: 720px; margin: 0 auto 28px; padding: 14px 18px; border-radius: 14px; text-align: center;
+            background: rgba(250, 84, 84, 0.08); border: 1px solid rgba(250, 84, 84, 0.35); color: #ff9b9b;
+            font-size: 14px; font-weight: 700; line-height: 1.8;
+        }
+        .careers-banner[hidden] { display: none; }
+        .careers-banner button {
+            margin-inline-start: 10px; background: #27272a; color: #fff; border: 0; border-radius: 8px;
+            padding: 4px 12px; font: inherit; font-size: 12px; cursor: pointer;
+        }
         /* Closed / full-capacity state */
         .card.closed {
             opacity: 0.6;
@@ -410,6 +421,8 @@
         <h1>به خانواده <span>مانهواچی</span> بپیوندید!</h1>
         <p>اگر عاشق دنیای مانهوا هستید، اینجا بهترین جا برای رشد و همکاری مشترکه.</p>
     </div>
+
+    <div class="careers-banner" id="careersBanner" hidden></div>
 
     <div class="cards-grid">
         <!-- کارت اول: تایپیست -->
@@ -524,23 +537,64 @@
 
 <script>
     // ============================================
-    // ⚙️ تنظیمات ظرفیت هر بخش
-    // برای بستن ثبت‌نام یک بخش، مقدار جلوش رو false کن.
-    // برای باز کردن دوباره، بذارش true.
+    // ⚙️ وضعیت باز/بسته بودن ثبت‌نام از سرور می‌آید (GET /api/careers/config)
+    // و از پنل /vip-admin (تب «ثبت‌نام همکاری») قابل تغییر است؛ دیگر نیازی به ویرایش این فایل نیست.
     // ============================================
-    const roleCapacity = {
-        'مترجم': false,
-        'کلینر': false,
-        'تایپیست': false,
-        'تیم ترجمه تلگرامی': false
-    };
-    // ============================================
+    let careersEnabled = false;   // کلید کلی بخش
+    let roleCapacity = {};        // { 'نقش': true/false }
+    let careersLoaded = false;
+
+    function setLoadingState() {
+        document.querySelectorAll('.card[data-role] .btn').forEach(btn => {
+            btn.classList.add('btn-disabled');
+            btn.disabled = true;
+            btn.innerHTML = 'در حال بررسی...';
+        });
+    }
+
+    function showBanner(text, withRetry) {
+        const el = document.getElementById('careersBanner');
+        el.textContent = text;
+        if (withRetry) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = 'تلاش دوباره';
+            b.addEventListener('click', loadCareersConfig);
+            el.appendChild(b);
+        }
+        el.hidden = false;
+    }
+
+    async function loadCareersConfig() {
+        const banner = document.getElementById('careersBanner');
+        if (!careersLoaded) setLoadingState();
+        try {
+            const res = await fetch('/api/careers/config', { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const cfg = await res.json();
+            careersEnabled = cfg.enabled !== false;
+            roleCapacity = cfg.roles || {};
+            careersLoaded = true;
+            banner.hidden = true;
+            applyRoleCapacity();
+            if (!careersEnabled) showBanner(cfg.closedMessage || 'ثبت‌نام همکاری فعلاً بسته است.', false);
+        } catch (e) {
+            console.error(e);
+            if (!careersLoaded) {
+                // بدون اطلاع از سرور، ثبت‌نام را باز نشان نمی‌دهیم
+                careersEnabled = false;
+                roleCapacity = {};
+                applyRoleCapacity();
+                showBanner('خطا در دریافت وضعیت ثبت‌نام. اتصال اینترنت را بررسی کنید.', true);
+            }
+        }
+    }
 
     // اعمال وضعیت بسته/باز بودن روی کارت‌ها
     function applyRoleCapacity() {
         document.querySelectorAll('.card[data-role]').forEach(card => {
             const role = card.getAttribute('data-role');
-            const isOpen = roleCapacity[role] !== false; // پیش‌فرض: باز
+            const isOpen = careersEnabled && roleCapacity[role] !== false; // نقش ناشناخته = تابع کلید کلی
 
             const btn = card.querySelector('.btn');
             const badge = card.querySelector('.badge');
@@ -572,12 +626,12 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', applyRoleCapacity);
+    document.addEventListener('DOMContentLoaded', loadCareersConfig);
 
     // مدیریت مودال
     function openModal(role) {
         // جلوگیری از باز شدن فرم برای بخش‌هایی که ظرفیتشون تکمیله
-        if (roleCapacity[role] === false) return;
+        if (!careersEnabled || roleCapacity[role] === false) return;
 
         document.getElementById('roleInput').value = role;
         document.getElementById('modalTitle').innerText = 'فرم درخواست: ' + role;
@@ -671,6 +725,7 @@
 
         if (error) {
             alert('خطایی رخ داد: ' + error.message);
+            if (error.code === 'CAREERS_CLOSED') { closeModal(); loadCareersConfig(); } // سرور گفته بخش بسته شده
         } else {
             alert('اطلاعات شما با موفقیت ثبت شد! به زودی با شما ارتباط می‌گیریم.');
             closeModal();

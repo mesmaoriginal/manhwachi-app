@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>پنل مدیریت - مانهواچی</title>
+<style>
+  :root{ --bg:#08080a; --card:#111114; --line:rgba(255,255,255,.09); --txt:#f4f4f5; --mut:#a1a1aa; --red:#dc2626; --ember:#ff3b30; --gold:#e8b64a; --ok:#34d399; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--txt); font-family: Vazirmatn, Tahoma, system-ui, sans-serif; line-height:1.7; }
+  .wrap{ max-width:880px; margin:0 auto; padding:20px 16px 120px; }
+  h1{ font-size:20px; margin:8px 0 4px; }
+  h2{ font-size:15px; margin:0 0 12px; color:#fff; }
+  .sub{ color:var(--mut); font-size:12px; margin-bottom:20px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
+  label{ display:block; font-size:12px; color:var(--mut); margin:10px 0 4px; }
+  input[type=text], input[type=password], input[type=number], textarea{
+    width:100%; background:#0a0a0c; color:var(--txt); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; font:inherit; font-size:14px; }
+  input:focus, textarea:focus{ outline:2px solid var(--ember); outline-offset:1px; }
+  textarea{ min-height:84px; resize:vertical; }
+  .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  @media (max-width:560px){ .row, .row3{ grid-template-columns:1fr; } }
+  .check{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--txt); margin:10px 0 0; cursor:pointer; }
+  .check input{ width:18px; height:18px; accent-color:var(--ember); }
+  button{ font:inherit; cursor:pointer; border:0; border-radius:10px; padding:10px 18px; font-weight:700; font-size:14px; color:#fff; background:var(--red); }
+  button.ghost{ background:#27272a; }
+  button:disabled{ opacity:.55; cursor:wait; }
+  .toggle{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .state{ font-weight:800; font-size:16px; }
+  .state.open{ color:var(--ok); } .state.closed{ color:var(--ember); }
+  .switch{ position:relative; width:58px; height:32px; flex:none; }
+  .switch input{ opacity:0; width:100%; height:100%; margin:0; position:absolute; inset:0; cursor:pointer; z-index:2; }
+  .switch span{ position:absolute; inset:0; background:#3f3f46; border-radius:99px; transition:.2s; }
+  .switch span::after{ content:""; position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:#fff; transition:.2s; }
+  .switch input:checked + span{ background:#059669; }
+  .switch input:checked + span::after{ right:30px; }
+  .plan-head{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:4px; }
+  .tag{ font-size:11px; padding:2px 8px; border-radius:99px; background:#27272a; color:var(--mut); direction:ltr; }
+  .bar{ position:fixed; inset:auto 0 0 0; background:rgba(8,8,10,.94); backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:12px 16px; }
+  .bar .in{ max-width:880px; margin:0 auto; display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; }
+  #msg{ font-size:13px; } #msg.err{ color:#f87171; } #msg.ok{ color:var(--ok); }
+  .hint{ font-size:11px; color:#71717a; margin-top:4px; }
+  .tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .tab{ background:#18181b; color:var(--mut); border:1px solid var(--line); padding:9px 16px; border-radius:10px; font-weight:700; }
+  .tab.active{ background:var(--red); color:#fff; border-color:transparent; }
+  .role-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+  .role-row:first-child{ border-top:0; }
+  .role-row .rs{ font-size:12px; margin-inline-start:8px; }
+  .role-row .rs.open{ color:var(--ok); } .role-row .rs.closed{ color:var(--ember); }
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>پنل مدیریت مانهواچی</h1>
+  <div class="sub">اشتراک VIP (قیمت پلن‌ها و باز/بسته بودن فروش) و ثبت‌نام همکاری. تغییرات هم‌زمان روی سایت و اپ اعمال می‌شود.</div>
+
+  <!-- ورود -->
+  <div id="login" class="card">
+    <h2>ورود به پنل</h2>
+    <label for="key">کلید مدیریت (VIP_ADMIN_KEY)</label>
+    <input id="key" type="password" autocomplete="current-password" dir="ltr" />
+    <div style="margin-top:12px"><button id="loginBtn">ورود</button></div>
+    <div id="loginMsg" class="hint"></div>
+  </div>
+
+  <!-- تنظیمات -->
+  <div id="panel" class="hidden">
+    <div class="tabs">
+      <button type="button" class="tab active" id="tabVip">اشتراک VIP</button>
+      <button type="button" class="tab" id="tabCareers">ثبت‌نام همکاری</button>
+    </div>
+    <div id="vipPane">
+    <div class="card">
+      <div class="toggle">
+        <div>
+          <h2 style="margin:0">وضعیت بخش عضویت</h2>
+          <div id="stateText" class="state open">باز است</div>
+        </div>
+        <label class="switch" style="margin:0" aria-label="باز/بسته بودن بخش عضویت">
+          <input type="checkbox" id="enabled" /><span></span>
+        </label>
+      </div>
+      <div class="hint">وقتی «بسته» باشد، پلن‌ها در سایت و اپ نمایش داده نمی‌شوند و خرید جدید روی سرور هم رد می‌شود. تایید پرداخت‌هایی که قبلاً انجام شده ادامه پیدا می‌کند.</div>
+      <label for="closedMessage">پیامی که در حالت «بسته» به کاربر نشان داده می‌شود</label>
+      <textarea id="closedMessage" maxlength="300"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>بنر تخفیف بالای پلن‌ها</h2>
+      <label class="check"><input type="checkbox" id="promoOn" /> نمایش داده شود</label>
+      <label for="promoText">متن بنر</label>
+      <input type="text" id="promoText" maxlength="120" />
+    </div>
+
+    <div id="plans"></div>
+    <button class="ghost" id="addPlan" type="button">+ افزودن پلن جدید</button>
+    </div>
+
+    <div id="careersPane" class="hidden">
+      <div class="card">
+        <div class="toggle">
+          <div>
+            <h2 style="margin:0">ثبت‌نام همکاری</h2>
+            <div id="cStateText" class="state open">باز است</div>
+          </div>
+          <label class="switch" style="margin:0" aria-label="باز/بسته بودن کل ثبت‌نام همکاری">
+            <input type="checkbox" id="cEnabled" /><span></span>
+          </label>
+        </div>
+        <div class="hint">این کلید کل بخش را می‌بندد؛ حتی اگر نقشی «باز» باشد، تا زمانی که این کلید بسته است ثبت‌نام قبول نمی‌شود.</div>
+        <label for="cMessage">پیام حالت «بسته» (وقتی کل بخش بسته است)</label>
+        <textarea id="cMessage" maxlength="300"></textarea>
+      </div>
+      <div class="card">
+        <h2>وضعیت هر نقش</h2>
+        <div class="hint" style="margin:-6px 0 8px">نقش «بسته» در سایت و اپ با برچسب «ظرفیت تکمیل شد» نمایش داده می‌شود.</div>
+        <div id="roles"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bar hidden" id="bar">
+  <div class="in">
+    <div id="msg"></div>
+    <div style="display:flex; gap:8px">
+      <button class="ghost" id="logout" type="button">خروج</button>
+      <button id="save" type="button">ذخیره تغییرات</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var KEY_STORE = 'vip_admin_key';
+  var cfg = null;          // آخرین تنظیمات دریافت‌شده از سرور
+  var $ = function (id) { return document.getElementById(id); };
+
+  // اعداد فارسی/عربی → لاتین، و حذف جداکننده‌ها
+  function toLatin(s) {
+    return String(s == null ? '' : s)
+      .replace(/[۰-۹]/g, function (d) { return String(d.charCodeAt(0) - 1776); })
+      .replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 1632); })
+      .replace(/[,٬\s]/g, '');
+  }
+  function el(tag, props, children) {
+    var n = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      if (k === 'class') n.className = props[k]; else if (k === 'text') n.textContent = props[k]; else n[k] = props[k];
+    });
+    (children || []).forEach(function (c) { n.appendChild(c); });
+    return n;
+  }
+  function say(text, kind) { var m = $('msg'); m.textContent = text || ''; m.className = kind || ''; }
+
+  var VIP_URL = '/api/vip-admin/config', CAREERS_URL = '/api/careers-admin/config';
+  var ccfg = null, activeTab = 'vip';
+
+  async function api(method, body, url) {
+    var res = await fetch(url || VIP_URL, {
+      method: method,
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'x-vip-admin-key': sessionStorage.getItem(KEY_STORE) || '' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    var data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok) { var err = new Error(data.message || ('خطا ' + res.status)); err.status = res.status; err.data = data; throw err; }
+    return data;
+  }
+
+  // ───────── فرم پلن ─────────
+  function field(label, input, hint) {
+    var wrap = el('div', null, [el('label', { text: label }), input]);
+    if (hint) wrap.appendChild(el('div', { class: 'hint', text: hint }));
+    return wrap;
+  }
+  function textInput(val, max, extra) {
+    var i = el('input', { type: 'text', value: val == null ? '' : val, maxLength: max || 120 });
+    if (extra) Object.keys(extra).forEach(function (k) { i[k] = extra[k]; });
+    return i;
+  }
+
+  function planCard(p, isNew) {
+    var card = el('div', { class: 'card' });
+    card._p = {};
+    var f = card._p;
+
+    f.key = textInput(p.key, 24, { dir: 'ltr', disabled: !isNew, placeholder: 'yearly' });
+    f.title = textInput(p.title, 60);
+    f.sub = textInput(p.sub, 120);
+    f.price = textInput(p.price, 12, { inputMode: 'numeric', dir: 'ltr' });
+    f.oldPrice = textInput(p.oldPrice || '', 12, { inputMode: 'numeric', dir: 'ltr', placeholder: 'اختیاری' });
+    f.chip = textInput(p.chip, 40);
+    f.badge = textInput(p.badge, 30);
+    f.buyLabel = textInput(p.buyLabel, 40);
+    f.days = textInput(p.days, 5, { inputMode: 'numeric', dir: 'ltr' });
+    f.months = textInput(p.months, 4, { inputMode: 'numeric', dir: 'ltr' });
+    f.features = el('textarea', { value: (p.features || []).join('\n') });
+    f.enabled = el('input', { type: 'checkbox', checked: !!p.enabled });
+    f.hero = el('input', { type: 'checkbox', checked: !!p.hero });
+
+    card.appendChild(el('div', { class: 'plan-head' }, [
+      el('h2', { text: p.title || 'پلن جدید', style: 'margin:0' }),
+      el('span', { class: 'tag', text: isNew ? 'جدید' : p.key })
+    ]));
+    var checks = el('div', { style: 'display:flex; gap:20px; flex-wrap:wrap' }, [
+      el('label', { class: 'check' }, [f.enabled, document.createTextNode('فعال (نمایش و قابل خرید)')]),
+      el('label', { class: 'check' }, [f.hero, document.createTextNode('کارت پیشنهادی (برجسته)')])
+    ]);
+    card.appendChild(checks);
+    card.appendChild(el('div', { class: 'row' }, [field('عنوان پلن', f.title), field('توضیح کوتاه', f.sub)]));
+    card.appendChild(el('div', { class: 'row' }, [
+      field('قیمت فروش (تومان)', f.price, 'مبلغ واقعی پرداخت. به زیبال به‌صورت ریال (×۱۰) ارسال می‌شود.'),
+      field('قیمت خط‌خورده / قبل از تخفیف (تومان)', f.oldPrice, 'فقط برای نمایش؛ خالی = نمایش داده نشود.')
+    ]));
+    card.appendChild(el('div', { class: 'row' }, [field('برچسب کنار قیمت (مثلاً «۵۰٪ تخفیف»)', f.chip), field('نشان بالای کارت (مثلاً «محبوب‌ترین»)', f.badge)]));
+    card.appendChild(field('ویژگی‌ها (هر خط یک ویژگی، حداکثر ۸)', f.features));
+    card.appendChild(el('div', { class: 'row3' }, [
+      field('متن دکمه‌ی خرید', f.buyLabel),
+      field('مدت (روز)', f.days),
+      field('مدت (ماه)', f.months)
+    ]));
+    if (isNew) card.appendChild(field('کلید پلن (انگلیسی، بعد از ذخیره قابل تغییر نیست)', f.key));
+    if (!isNew) card.appendChild(el('div', { class: 'hint', text: 'تغییر مدت فقط روی خریدهای جدید و پرداخت‌های هنوز تاییدنشده اثر دارد. پلن را نمی‌شود حذف کرد؛ غیرفعالش کنید.' }));
+    return card;
+  }
+
+  function readPlan(card) {
+    var f = card._p;
+    return {
+      key: f.key.value.trim(),
+      enabled: f.enabled.checked,
+      hero: f.hero.checked,
+      title: f.title.value,
+      sub: f.sub.value,
+      price: toLatin(f.price.value),
+      oldPrice: toLatin(f.oldPrice.value),
+      chip: f.chip.value,
+      badge: f.badge.value,
+      features: f.features.value.split('\n'),
+      buyLabel: f.buyLabel.value,
+      days: toLatin(f.days.value) || 0,
+      months: toLatin(f.months.value) || 0
+    };
+  }
+
+  function render(c) {
+    cfg = c;
+    $('enabled').checked = !!c.enabled;
+    $('closedMessage').value = c.closedMessage || '';
+    $('promoOn').checked = !!(c.promo && c.promo.enabled);
+    $('promoText').value = (c.promo && c.promo.text) || '';
+    var box = $('plans'); box.textContent = '';
+    c.plans.forEach(function (p) { box.appendChild(planCard(p, false)); });
+    syncState();
+  }
+
+  function syncState() {
+    var on = $('enabled').checked, s = $('stateText');
+    s.textContent = on ? 'باز است' : 'بسته است';
+    s.className = 'state ' + (on ? 'open' : 'closed');
+  }
+
+  function collect() {
+    return {
+      rev: cfg.rev,
+      enabled: $('enabled').checked,
+      closedMessage: $('closedMessage').value,
+      promo: { enabled: $('promoOn').checked, text: $('promoText').value },
+      plans: Array.prototype.map.call($('plans').children, readPlan)
+    };
+  }
+
+  // ───────── ثبت‌نام همکاری ─────────
+  function renderCareers(c) {
+    ccfg = c;
+    $('cEnabled').checked = !!c.enabled;
+    $('cMessage').value = c.closedMessage || '';
+    var box = $('roles'); box.textContent = '';
+    c.roles.forEach(function (r) {
+      var cb = el('input', { type: 'checkbox', checked: !!r.open });
+      var status = el('span', { class: 'rs ' + (r.open ? 'open' : 'closed'), text: r.open ? 'باز' : 'بسته' });
+      cb.addEventListener('change', function () { status.textContent = cb.checked ? 'باز' : 'بسته'; status.className = 'rs ' + (cb.checked ? 'open' : 'closed'); });
+      var sw = el('label', { class: 'switch', style: 'margin:0' }, [cb, el('span')]);
+      var row = el('div', { class: 'role-row' }, [
+        el('div', null, [document.createTextNode(r.key), status]),
+        sw
+      ]);
+      row._key = r.key; row._cb = cb;
+      box.appendChild(row);
+    });
+    syncCState();
+  }
+  function syncCState() {
+    var on = $('cEnabled').checked, s = $('cStateText');
+    s.textContent = on ? 'باز است' : 'بسته است';
+    s.className = 'state ' + (on ? 'open' : 'closed');
+  }
+  function collectCareers() {
+    return {
+      rev: ccfg.rev,
+      enabled: $('cEnabled').checked,
+      closedMessage: $('cMessage').value,
+      roles: Array.prototype.map.call($('roles').children, function (row) { return { key: row._key, open: row._cb.checked }; })
+    };
+  }
+  function setTab(t) {
+    activeTab = t;
+    $('vipPane').classList.toggle('hidden', t !== 'vip');
+    $('careersPane').classList.toggle('hidden', t !== 'careers');
+    $('tabVip').classList.toggle('active', t === 'vip');
+    $('tabCareers').classList.toggle('active', t === 'careers');
+    say('', '');
+  }
+
+  // ───────── رویدادها ─────────
+  async function enter() {
+    $('loginMsg').textContent = '';
+    try {
+      var c = await api('GET');
+      $('login').classList.add('hidden');
+      $('panel').classList.remove('hidden');
+      $('bar').classList.remove('hidden');
+      render(c);
+      try { renderCareers(await api('GET', null, CAREERS_URL)); }
+      catch (e2) { $('tabCareers').disabled = true; $('tabCareers').title = e2.message; }
+      say(c.updatedAt ? 'آخرین ذخیره: ' + new Date(c.updatedAt).toLocaleString('fa-IR') : '', '');
+    } catch (e) {
+      sessionStorage.removeItem(KEY_STORE);
+      $('login').classList.remove('hidden');
+      $('panel').classList.add('hidden');
+      $('bar').classList.add('hidden');
+      $('loginMsg').textContent = e.message;
+    }
+  }
+
+  $('loginBtn').addEventListener('click', function () {
+    sessionStorage.setItem(KEY_STORE, $('key').value);
+    enter();
+  });
+  $('key').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('loginBtn').click(); });
+  $('enabled').addEventListener('change', syncState);
+  $('cEnabled').addEventListener('change', syncCState);
+  $('tabVip').addEventListener('click', function () { setTab('vip'); });
+  $('tabCareers').addEventListener('click', function () { setTab('careers'); });
+
+  $('addPlan').addEventListener('click', function () {
+    var card = planCard({ key: '', enabled: true, hero: false, title: '', sub: '', price: '', oldPrice: '', chip: '', badge: '', features: [], buyLabel: '', days: 0, months: 1 }, true);
+    $('plans').appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  $('logout').addEventListener('click', function () {
+    sessionStorage.removeItem(KEY_STORE);
+    location.reload();
+  });
+
+  async function saveCareers() {
+    var btn = $('save');
+    var wasOpen = ccfg && ccfg.enabled, nowOpen = $('cEnabled').checked;
+    if (wasOpen && !nowOpen && !confirm('کل ثبت‌نام همکاری بسته می‌شود. ادامه می‌دهید؟')) return;
+    btn.disabled = true; say('در حال ذخیره...', '');
+    try {
+      renderCareers(await api('PUT', collectCareers(), CAREERS_URL));
+      say('ذخیره شد ✓ — همین الان روی سایت و اپ اعمال شد.', 'ok');
+    } catch (e) {
+      say(e.message, 'err');
+      if (e.status === 401) { sessionStorage.removeItem(KEY_STORE); location.reload(); }
+    } finally { btn.disabled = false; }
+  }
+
+  $('save').addEventListener('click', async function () {
+    if (activeTab === 'careers') return saveCareers();
+    var btn = $('save');
+    var wasOpen = cfg && cfg.enabled, nowOpen = $('enabled').checked;
+    if (wasOpen && !nowOpen && !confirm('بخش عضویت بسته می‌شود و کاربران دیگر نمی‌توانند اشتراک بخرند. ادامه می‌دهید؟')) return;
+    btn.disabled = true; say('در حال ذخیره...', '');
+    try {
+      var saved = await api('PUT', collect());
+      render(saved);
+      say('ذخیره شد ✓ — همین الان روی سایت و اپ اعمال شد.', 'ok');
+    } catch (e) {
+      say(e.message, 'err');
+      if (e.status === 401) { sessionStorage.removeItem(KEY_STORE); location.reload(); }
+    } finally { btn.disabled = false; }
+  });
+
+  if (sessionStorage.getItem(KEY_STORE)) enter();
+})();
+</script>
+</body>
+</html>
