@@ -123,6 +123,10 @@ app.use(compression());
 // آرگومان صدا زده می‌شد که به‌صورت ضمنی همون ۱۰۰kb پیش‌فرض خودِ Express رو
 // اعمال می‌کرد - این خط همون رفتار رو صریح و کمی سخت‌گیرانه‌تر می‌کنه، تا
 // معلوم باشه عمدیه، نه یک پیش‌فرض فراموش‌شده.
+// ---------- گارد ثبت‌نام همکاری: وقتی بخش/نقش از /vip-admin بسته شده، درخواست جدید ثبت نمی‌شود ----------
+// باید قبل از /rest/v1 (localdb) باشد؛ بدنه را خودش می‌خواند.
+app.post("/rest/v1/applications", require("./lib/careersConfig").applicationsGuard());
+
 // ---------- دیتابیس و احراز هویت محلی (جایگزین Supabase؛ داخل همین پروسه‌ی Node) ----------
 // با LOCAL_DB=1 فعال می‌شود: /rest/v1 و /auth/v1 روی همین سایت سرو می‌شوند و کدهای فعلی سرور
 // (fetch به SUPABASE_URL) بدون هیچ تغییری مستقیم و درون‌پردازشی به SQLite می‌رسند. باید قبل از express.json باشد.
@@ -147,6 +151,11 @@ app.use(express.json({ limit: "50kb" }));
 // ---------- پنل ادمین (مدیریت مانهواها و چپترها بدون ویرایش دستی data.json) ----------
 const { router: adminRouter } = require("./admin/adminRouter");
 app.use("/admin", adminRouter);
+
+// ---------- تنظیمات بخش عضویت (قیمت پلن‌ها + باز/بسته بودن) ----------
+// عمومی: GET /api/vip/config  |  مدیریت: /vip-admin (نیاز به متغیر محیطی VIP_ADMIN_KEY)
+app.use(require("./lib/vipConfig").createRouter());
+app.use(require("./lib/careersConfig").createRouter({ adminAuth: require("./lib/vipConfig").adminAuth })); // باز/بسته بودن ثبت‌نام همکاری
 
 // ---------- تنظیمات EJS برای صفحه‌ی مانهوا ----------
 app.set("view engine", "ejs");
@@ -357,11 +366,9 @@ const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT;
 const PURCHASE_CALLBACK_URL =
   process.env.PURCHASE_CALLBACK_URL || "https://manhwachi.ir/vip-verify.html";
 
-const PLAN_DEFS = {
-  weekly: { amount: 250000, days: 7 },
-  monthly: { amount: 550000, months: 1 },
-  quarterly: { amount: 1500000, months: 3 },
-};
+// قیمت/مدت/وضعیت پلن‌ها دیگه ثابت نیست: از lib/vipConfig.js (فایل data/vip-config.json) خونده می‌شه
+// و از پنل /vip-admin قابل تغییره. مبلغ زیبال (ریال) همیشه همین‌جا سمت سرور حساب می‌شه، نه از کلاینت.
+const vipConfig = require("./lib/vipConfig");
 
 function supabaseAdminHeaders(extra = {}) {
   return {
@@ -1006,6 +1013,12 @@ app.post("/purchase/request", async (req, res) => {
     );
     if (!ipLimit.allowed) return purchaseRateLimited(res, ipLimit);
 
+    // بخش عضویت از پنل /vip-admin بسته شده: خرید جدید قبول نمی‌شه
+    // (تایید پرداخت‌های قبلی در /purchase/verify همچنان کار می‌کنه)
+    if (!vipConfig.isOpen()) {
+      return res.status(403).json({ message: vipConfig.closedMessage(), code: "VIP_CLOSED" });
+    }
+
     const authHeader = req.headers.authorization || "";
     const accessToken = authHeader.startsWith("Bearer ")
       ? authHeader.slice(7)
@@ -1015,9 +1028,9 @@ app.post("/purchase/request", async (req, res) => {
     }
 
     const { planKey } = req.body || {};
-    const plan = PLAN_DEFS[planKey];
+    const plan = vipConfig.getPlan(planKey); // فقط پلن‌های «فعال»
     if (!plan) {
-      return res.status(400).json({ message: "پلن انتخابی نامعتبر است." });
+      return res.status(400).json({ message: "پلن انتخابی نامعتبر است یا فعلاً در دسترس نیست." });
     }
 
     const user = await getUserFromAccessToken(accessToken);
@@ -1166,7 +1179,7 @@ async function verifyAndCreditPayment(trackId) {
 
     try {
       const planKey = paymentRecord.plan_key;
-      const duration = PLAN_DEFS[planKey];
+      const duration = vipConfig.getPlan(planKey, { includeDisabled: true }); // پلن غیرفعال‌شده هم برای پرداخت‌های قدیمی معتبره
       if (!duration) throw new Error("پلن ثبت‌شده برای این تراکنش نامعتبر است.");
 
       const profRes = await fetch(
