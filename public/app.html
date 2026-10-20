@@ -26,12 +26,18 @@ a{color:inherit;text-decoration:none}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 
 /* header */
-header{height:64px;display:flex;align-items:center}
-header .wrap{display:flex;justify-content:space-between;align-items:center;width:100%}
-.brand{font-weight:900;font-size:1.25rem;display:flex;align-items:center;gap:10px}
-.brand i{width:34px;height:34px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-style:normal;font-size:1.1rem;color:#fff}
-.back{color:var(--muted);font-size:.9rem;transition:color .2s}
-.back:hover{color:#fff}
+header{position:sticky;top:0;z-index:50;width:100%;background:rgba(18,18,18,.85);border-bottom:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+header .bar{max-width:1280px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{height:32px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(220,38,38,.3));transition:transform .2s}
+.brand:hover img{transform:scale(1.05)}
+.brand span{font-family:'Montserrat',sans-serif;font-weight:700;font-size:1.25rem;letter-spacing:-.025em;color:#fff;direction:ltr}
+.brand span b{color:var(--red);font-weight:700}
+.back{height:40px;padding:0 14px;border-radius:16px;background:#1E1E1E;border:1px solid rgba(255,255,255,.1);display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:.85rem;font-weight:500;transition:color .2s,border-color .2s,transform .15s}
+.back svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.back:hover{color:var(--red);border-color:rgba(220,38,38,.4)}
+.back:active{transform:scale(.95)}
+@media(max-width:480px){.back span{display:none}.back{width:40px;padding:0;justify-content:center}.brand span{display:none}}
 
 /* hero */
 .hero{position:relative;padding:40px 0 90px}
@@ -126,10 +132,11 @@ h1 span{display:block;color:var(--red)}
 
 /* info */
 .facts{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:22px}
-.facts div{padding:22px;text-align:center}
+.facts div{padding:20px 12px;text-align:center}
 .facts div+div{border-right:1px solid var(--line)}
 .facts small{display:block;color:var(--muted);font-size:.82rem}
-.facts b{font-size:1.2rem;font-weight:700;direction:ltr;display:inline-block}
+.facts b{display:block;margin-top:2px;font-size:1.1rem;font-weight:700;direction:rtl;line-height:1.6}
+.facts b.ltr{direction:ltr}
 
 section{padding:80px 0 0}
 h2{font-size:1.7rem;font-weight:900;margin-bottom:24px}
@@ -142,7 +149,6 @@ h2{font-size:1.7rem;font-weight:900;margin-bottom:24px}
 .steps{counter-reset:s}
 .steps li{counter-increment:s;display:flex;gap:14px;margin-bottom:16px;color:#c9c9c9}
 .steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;font-weight:700;display:grid;place-items:center;font-size:.9rem}
-.note{margin-top:12px;font-size:.85rem;color:var(--muted)}
 
 footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:.85rem;text-align:center}
 
@@ -164,9 +170,15 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var
 <body>
 
 <header>
-  <div class="wrap">
-    <a class="brand" href="/"><i>م</i> مانهواچی</a>
-    <a class="back" href="/">بازگشت به سایت</a>
+  <div class="bar">
+    <a class="brand" href="/" aria-label="مانهواچی">
+      <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" onerror="this.remove()">
+      <span>Manhwa<b>Chi</b></span>
+    </a>
+    <a class="back" href="/" aria-label="بازگشت به سایت">
+      <span>بازگشت به سایت</span>
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
   </div>
 </header>
 
@@ -234,10 +246,10 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var
 
 <div class="wrap">
   <div class="facts">
-    <div><small>نسخه</small><b id="fVer">—</b></div>
+    <div><small>نسخه</small><b class="ltr" id="fVer">—</b></div>
     <div><small>تاریخ انتشار</small><b id="fDate">—</b></div>
     <div><small>حجم فایل</small><b id="fSize">—</b></div>
-    <div><small>پلتفرم</small><b>Android 8+</b></div>
+    <div><small>پلتفرم</small><b class="ltr">Android 8+</b></div>
   </div>
 
   <section>
@@ -253,7 +265,6 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var
           <li>فایل دانلودشده را باز کن و اگر پرسید، نصب از این منبع را اجازه بده.</li>
           <li>اپ را باز کن و با حساب سایت وارد شو.</li>
         </ol>
-        <p class="note" id="sha" hidden></p>
       </div>
     </div>
   </section>
@@ -279,7 +290,6 @@ function render(r) {
   const log = $('log'); log.textContent = '';
   (Array.isArray(r.changelog) ? r.changelog : String(r.changelog || '').split('\n')).filter(Boolean)
     .forEach(t => { const li = document.createElement('li'); li.textContent = t; log.appendChild(li); });
-  if (r.sha256) { const s = $('sha'); s.hidden = false; s.style.direction = 'ltr'; s.style.wordBreak = 'break-all'; s.textContent = 'SHA-256: ' + r.sha256; }
 }
 
 // مقدار پیش‌فرض تا وقتی جواب سرور برسد (یا اگر سرور جواب نداد)
