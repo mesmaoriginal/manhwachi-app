@@ -19,7 +19,7 @@ html.mhp-ios [data-mhp],html.mhp-ios .mhp-bar,html.mhp-ios .mhp-qr{display:none!
 @keyframes mhpQrIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
 /* ───────── ۱) دکمه‌ی هدر ───────── */
-.mhp-pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+.mhp-pill{position:relative;display:none;align-items:center;justify-content:center;gap:7px;
   height:40px;min-width:40px;padding:0 10px;border-radius:16px;white-space:nowrap;font-size:12px;font-weight:700;
   background:linear-gradient(135deg,#dc2626,#7f1111);border:1px solid rgba(255,120,120,.45);
   box-shadow:0 6px 18px -6px rgba(220,38,38,.9);transition:transform .15s}
@@ -27,8 +27,7 @@ html.mhp-ios [data-mhp],html.mhp-ios .mhp-bar,html.mhp-ios .mhp-qr{display:none!
 .mhp-pill svg{width:19px;height:19px;flex:none;animation:mhpBounce 2.2s ease-in-out infinite}
 .mhp-pill__t{display:none}
 .mhp-dot{position:absolute;top:5px;left:5px;width:8px;height:8px;border-radius:50%;background:#ffd54f;animation:mhpPing 1.8s infinite}
-@media(min-width:640px){.mhp-pill{padding:0 14px}.mhp-pill__t{display:inline}}
-@media(max-width:339px){.mhp-pill{display:none}}
+@media(min-width:768px){.mhp-pill{display:inline-flex;padding:0 14px}.mhp-pill__t{display:inline}}
 
 /* ───────── ۲) کارت داخل منوی کشویی ───────── */
 .mhp-drawer{position:relative;display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;
@@ -154,8 +153,8 @@ html.mhp-ios [data-mhp],html.mhp-ios .mhp-bar,html.mhp-ios .mhp-qr{display:none!
 .mhp-lc h2{margin:14px 0 8px;font-size:1.65rem;font-weight:900;line-height:1.4}
 .mhp-lc h2 em{font-style:normal;color:#ff4d4d;text-shadow:0 0 20px rgba(255,59,59,.7)}
 .mhp-lc p{margin:0 auto 18px;max-width:20em;font-size:13px;line-height:1.95;color:#d3bcbc}
-.mhp-lc__art{position:relative;height:150px;margin:6px 0 0;display:flex;justify-content:center;align-items:flex-end}
-.mhp-lc__art .mhp-phone{margin:0 0 -40px;align-self:auto;width:104px;height:170px;transform:rotate(-6deg)}
+.mhp-lc__art{position:relative;height:138px;margin:8px 0 6px;overflow:hidden;display:flex;justify-content:center;align-items:flex-end}
+.mhp-lc__art .mhp-phone{margin:0 0 -56px;align-self:auto;width:104px;height:170px}
 .mhp-lc__art .mhp-ic{position:absolute;top:2px;right:50%;margin-right:-96px;width:56px;height:56px;border-radius:17px;z-index:2;transform:rotate(8deg)}
 .mhp-lc__art i.sp{position:absolute;bottom:20px;width:7px;height:7px;border-radius:50%;background:#ffd54f;box-shadow:0 0 10px #ffd54f;opacity:0;animation:mhpSpark 3.2s ease-out infinite}
 .mhp-lc__art i.sp:nth-of-type(1){left:14%;animation-delay:0s}

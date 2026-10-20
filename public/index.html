@@ -305,6 +305,15 @@
             }
         }
 
+        /* اندازه‌ی استاندارد متن‌های منوی کشویی */
+        #mobileDrawer .drawer-item { font-size: 13.5px; padding: 11px 12px; gap: 11px; }
+        #mobileDrawer .drawer-item .text-sm { font-size: 13.5px; }
+        #mobileDrawer .drawer-item > div:first-child,
+        #mobileDrawer .drawer-item .w-9 { width: 34px; height: 34px; }
+        #mobileDrawer .drawer-item .material-symbols-outlined { font-size: 20px; }
+        #mobileDrawer a[href*="telegram"] { padding: 12px 14px; }
+        #mobileDrawer a[href*="telegram"] .text-sm { font-size: 13px; }
+        #mobileDrawer a[href*="telegram"] .material-symbols-outlined.text-2xl { font-size: 22px; }
     </style>
 </head>
 
@@ -626,8 +635,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-mhp="banner"></div>
-        <!-- Telegram Banner -->
+                        <!-- Telegram Banner -->
                         <section class="telegram-banner">
                             <div class="telegram-banner-link">
                                 <div class="telegram-icon">
@@ -672,41 +680,7 @@
                     </div>
                 </div>
             </section>
-                    <div class="library-section">
-
-                        <div class="main-container">
-                            
-                            <!-- افکت ذرات تار عنکبوت پس‌زمینه (توسط JS مدیریت می‌شود) -->
-                            <div id="cobweb-canvas"></div>
-
-                            <!-- بخش بالایی: عنکبوت بزرگ و آیکون -->
-                        
-                            
-
-                            <!-- بخش متنی اصلی -->
-                            <div class="text-section">
-                                <h2 class="main-title">وارد کتابخانه <span class="highlight">مانهواچی</span> شوید</h2>
-                                <p class="sub-title">دنیایی از ماجراجویی، <span class="highlight-red">هیجان</span> و داستان‌های فراموش‌نشدنی در انتظار شماست</p>
-                            </div>
-
-                            <!-- دکمه ورود نئونی -->
-                            <div class="button-section " onclick="window.location.href='/library-page.html'">
-                                <button class="enter-button">
-                                    <div class="btn-glow"></div>
-                                    <span class="btn-icon">
-                                        <svg viewBox="0 0 24 24"><path d="M21 4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 16H4V6h16v14zM6 8h12v2H6zm0 4h12v2H6zm0 4h8v2H6z"/></svg>
-                                    </span>
-                                    <span class="btn-text" >ورود به کتابخانه</span>
-                                    <span class="btn-arrow">
-                                        <svg viewBox="0 0 24 24"><path d="M13 18l-1.4-1.4 4.6-4.6-4.6-4.6L13 6l6 6zm-6 0l-1.4-1.4 4.6-4.6-4.6-4.6L7 6l6 6z"/></svg>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-
-                            
-
-                        </div>
+                    <div data-mhp="banner"></div>
                     
                     
                 </div>
