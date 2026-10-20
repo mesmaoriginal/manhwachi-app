@@ -9,7 +9,7 @@
 <link rel="icon" href="ManhwaChi/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#000; --surface:#161616; --surface2:#1f1f1f;
@@ -49,35 +49,74 @@ h1 span{display:block;color:var(--red)}
 .sub{color:var(--muted);font-size:.85rem}
 .sub b{color:var(--gold);font-weight:500}
 
-/* phone */
-.stage{position:relative;display:grid;place-items:center;min-height:560px}
-.phone{width:270px;height:550px;border-radius:42px;background:#0b0b0b;border:2px solid #333;padding:10px;transform:rotate(-6deg);box-shadow:0 40px 80px -20px rgba(220,38,38,.45),0 0 0 6px #111;animation:rise 1s cubic-bezier(.2,.8,.2,1) both}
+/* phone — هم‌سبک صفحه‌ی اصلی سایت */
+.stage{position:relative;display:grid;place-items:center;min-height:600px}
+.phone{width:284px;height:580px;border-radius:44px;background:#0b0b0b;border:2px solid #333;padding:9px;transform:rotate(-6deg);box-shadow:0 40px 80px -20px rgba(220,38,38,.45),0 0 0 6px #111;animation:rise 1s cubic-bezier(.2,.8,.2,1) both,sway 7s ease-in-out 1s infinite}
+@keyframes sway{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-9px) rotate(-4.5deg)}}
 @keyframes rise{from{opacity:0;transform:translateY(40px) rotate(-12deg)}to{opacity:1;transform:rotate(-6deg)}}
-.screen{height:100%;border-radius:32px;background:#050505;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.notch{width:84px;height:22px;background:#000;border-radius:0 0 14px 14px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:3}
-.screen{padding-top:22px}
-.shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2}
-.top{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 6px;font-weight:900;font-size:.95rem}
-.top em{font-style:normal;color:var(--red)}
-.dot{width:26px;height:26px;border-radius:50%;background:var(--surface2)}
-.chips{display:flex;gap:6px;padding:4px 14px 10px;font-size:.62rem}
-.chips span{padding:2px 10px;border-radius:999px;background:var(--surface2);color:#bbb}
-.chips span:first-child{background:var(--red);color:#fff}
-.featured{margin:0 14px;height:140px;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg,#7f1d1d,#DC2626 55%,#ff8a5c)}
-.featured::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent 60%)}
-.featured p{position:absolute;z-index:1;bottom:10px;right:12px;left:12px;font-size:.78rem;font-weight:700}
-.featured small{display:block;font-weight:400;color:#ddd;font-size:.62rem}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px}
-.grid i{aspect-ratio:3/4;border-radius:10px;display:block}
-.grid i:nth-child(1){background:linear-gradient(160deg,#312e81,#8b00e9)}
-.grid i:nth-child(2){background:linear-gradient(160deg,#134e4a,#00b19a)}
-.grid i:nth-child(3){background:linear-gradient(160deg,#831843,#fd337f)}
-.grid i:nth-child(4){background:linear-gradient(160deg,#365314,#9ab710)}
-.grid i:nth-child(5){background:linear-gradient(160deg,#451a03,#f59e0b)}
-.grid i:nth-child(6){background:linear-gradient(160deg,#1e3a8a,#38bdf8)}
-.nav{margin-top:auto;display:flex;justify-content:space-around;padding:12px;background:var(--surface);border-top:1px solid var(--line)}
-.nav i{width:20px;height:20px;border-radius:6px;background:#3a3a3a}
-.nav i:first-child{background:var(--red)}
+.screen{height:100%;border-radius:36px;background:#000;overflow:hidden;position:relative;isolation:isolate}
+.screen::before{content:"";position:absolute;inset:0;background:radial-gradient(260px 200px at 85% 0%,rgba(220,38,38,.22),transparent 70%);z-index:0;pointer-events:none}
+.shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:5}
+.cam{position:absolute;top:9px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#000;box-shadow:0 0 0 2px #151515;z-index:4}
+
+/* هدر (مثل هدر سایت: شیشه‌ای + دکمه‌های گرد) */
+.m-head{position:relative;z-index:3;height:62px;padding:22px 12px 0;display:flex;align-items:center;justify-content:space-between;background:rgba(18,18,18,.85);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)}
+.m-side{display:flex;align-items:center;gap:8px}
+.m-btn{width:26px;height:26px;border-radius:9px;background:#1E1E1E;border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;color:#fff}
+.m-btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-logo{font-family:'Montserrat',sans-serif;font-weight:800;font-size:.82rem;color:#fff;letter-spacing:-.2px;direction:ltr;text-shadow:0 0 10px rgba(220,38,38,.35)}
+.m-logo b{color:var(--red);font-weight:800}
+
+/* اسلایدر */
+.m-slider{position:relative;height:128px;overflow:hidden;background:linear-gradient(115deg,#12050a 0%,#4a0d18 55%,#14070c 100%)}
+.m-slider::before{content:"";position:absolute;inset:0;background:radial-gradient(150px 110px at 78% 55%,rgba(255,35,61,.38),transparent 70%),linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.1) 45%,rgba(0,0,0,.6))}
+.m-cover{position:absolute;right:16px;bottom:-14px;width:70px;height:98px;border-radius:9px;background:
+  radial-gradient(40px 34px at 60% 28%,rgba(255,255,255,.28),transparent 70%),
+  linear-gradient(160deg,#2b1263,#8b00e9 70%,#c34bff);
+  box-shadow:0 18px 26px rgba(0,0,0,.55),0 0 22px rgba(255,35,61,.28);transform:rotate(3deg);animation:bob 4.7s ease-in-out infinite}
+@keyframes bob{50%{transform:rotate(3deg) translateY(-5px)}}
+.m-copy{position:absolute;left:14px;bottom:26px;width:96px;text-align:right}
+.m-copy h4{font-size:1.02rem;font-weight:900;line-height:1.25;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.35),0 0 16px rgba(255,35,61,.8),0 0 34px rgba(255,35,61,.5)}
+.m-copy p{margin-top:4px;font-size:.55rem;color:rgba(255,255,255,.75);line-height:1.6}
+.m-dots{display:flex;flex-direction:row-reverse;justify-content:center;gap:5px;padding:9px 0 3px}
+.m-dots i{width:16px;height:4px;border-radius:99px;background:rgba(255,255,255,.28)}
+.m-dots i.on{width:28px;background:#fff;box-shadow:0 0 10px rgba(220,38,38,.65)}
+
+/* تیتر بخش‌ها */
+.m-title{display:flex;align-items:center;gap:6px;padding:8px 12px 7px;font-size:.74rem;font-weight:700;color:#fff}
+.m-title::before{content:"";width:3px;height:13px;border-radius:3px;background:var(--red);box-shadow:0 0 8px rgba(220,38,38,.7)}
+
+/* کارت مانهوا (مثل .comic-card سایت) */
+.m-row{display:flex;gap:8px;padding:0 12px 4px;overflow:hidden}
+.m-card{flex:0 0 104px;border-radius:14px;overflow:hidden;background:#0f0f0f;border:1px solid rgba(255,255,255,.07);box-shadow:0 8px 16px rgba(0,0,0,.45)}
+.m-pic{position:relative;height:92px;background:var(--c)}
+.m-pic::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#0f0f0f 0%,rgba(15,15,15,.15) 55%,rgba(0,0,0,.35) 100%)}
+.m-badge{position:absolute;top:6px;right:6px;z-index:2;padding:2px 7px;border-radius:30px;font-size:.5rem;font-weight:800;color:#fff;border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(8px)}
+.m-badge.vip{background:linear-gradient(135deg,#ff2a5f,#ff758c)}
+.m-badge.free{background:linear-gradient(135deg,#00b09b,#96c93d)}
+.m-ch{position:absolute;z-index:2;left:6px;right:6px;bottom:6px;display:flex;justify-content:space-between;align-items:center;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);color:#fff;font-size:.55rem;font-weight:700}
+.m-ch small{font-size:.48rem;font-weight:400;color:#cbd5e1}
+.m-info{padding:7px 8px 8px}
+.m-info h5{font-size:.62rem;font-weight:700;color:#f8fafc;line-height:1.5;height:2.4em;overflow:hidden}
+.m-meta{display:flex;justify-content:space-between;align-items:center;margin-top:5px;padding-top:4px;border-top:1px solid rgba(255,255,255,.05)}
+.m-meta span:first-child{font-size:.5rem;font-weight:600;color:#94a3b8;background:rgba(255,255,255,.05);padding:1px 6px;border-radius:5px}
+.m-meta span:last-child{font-size:.55rem;font-weight:700;color:#ffc107}
+
+/* لیست بهترین‌ها (مثل .lst_type2) */
+.m-rank{display:flex;align-items:center;gap:10px;padding:5px 14px}
+.m-rank em{font-style:normal;width:14px;text-align:center;font-size:.7rem;font-weight:700;color:#777}
+.m-rank:first-of-type em{color:var(--red)}
+.m-rank i{flex:none;width:36px;height:36px;border-radius:7px;background:var(--c)}
+.m-rank b{display:block;font-size:.64rem;font-weight:700;color:#fff;line-height:1.5}
+.m-rank small{font-size:.52rem;font-weight:600;color:var(--g)}
+
+/* نوار پایین شناور (مثل .bottom-nav سایت) */
+.m-nav{position:absolute;z-index:3;left:50%;bottom:11px;transform:translateX(-50%);width:80%;height:40px;border-radius:999px;background:rgba(0,0,0,.95);border:1px solid rgba(255,255,255,.9);display:flex;justify-content:space-around;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.6);backdrop-filter:blur(12px)}
+.m-nav div{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;color:#888;font-size:.44rem;font-weight:500}
+.m-nav div.on{color:var(--red)}
+.m-nav svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-nav div.on svg{fill:currentColor}
+.m-home-ind{position:absolute;z-index:4;left:50%;bottom:3px;width:70px;height:3px;margin-left:-35px;border-radius:3px;background:rgba(255,255,255,.35)}
 
 /* floating version card */
 .float{position:absolute;bottom:50px;right:-10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 18px;box-shadow:0 20px 40px -10px #000;animation:rise2 1s .5s both}
@@ -113,7 +152,7 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var
 @media(max-width:860px){
   .hero .wrap{grid-template-columns:1fr;text-align:center}
   .lead{margin:0 auto}.cta{justify-content:center}
-  .stage{min-height:520px}.float{right:6%}
+  .stage{min-height:600px}.float{right:6%}
   .facts{grid-template-columns:1fr 1fr}
   .facts div:nth-child(3){border-right:0}
   .facts div:nth-child(n+3){border-top:1px solid var(--line)}
@@ -151,12 +190,41 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var
       <div class="phone">
         <div class="screen">
           <img class="shot" id="shot" src="/images/app-screenshot.png" alt="" onerror="this.remove()">
-          <div class="notch"></div>
-          <div class="top"><span>مانهواچی<em>.</em></span><span class="dot"></span></div>
-          <div class="chips"><span>همه</span><span>فانتزی</span><span>درام</span><span>عاشقانه</span></div>
-          <div class="featured"><p>فصل جدید منتشر شد<small>ادامه بده از همان‌جا که بودی</small></p></div>
-          <div class="grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="nav"><i></i><i></i><i></i><i></i></div>
+          <div class="cam"></div>
+
+          <div class="m-head">
+            <div class="m-side">
+              <span class="m-btn"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+              <span class="m-logo">Manhwa<b>Chi</b></span>
+            </div>
+            <span class="m-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></span>
+          </div>
+
+          <div class="m-slider">
+            <div class="m-cover"></div>
+            <div class="m-copy"><h4>فصل جدید منتشر شد</h4><p>ادامه بده از همان‌جا که بودی</p></div>
+          </div>
+          <div class="m-dots"><i class="on"></i><i></i><i></i><i></i></div>
+
+          <div class="m-title">آخرین آپدیت‌ها</div>
+          <div class="m-row">
+            <div class="m-card"><div class="m-pic" style="--c:linear-gradient(160deg,#312e81,#8b00e9)"><span class="m-badge vip">اشتراکی</span><div class="m-ch">چپتر ۱۲۸<small>امروز</small></div></div><div class="m-info"><h5>سایه‌ی پادشاه شب</h5><div class="m-meta"><span>فانتزی</span><span>★ ۹.۱</span></div></div></div>
+            <div class="m-card"><div class="m-pic" style="--c:linear-gradient(160deg,#134e4a,#00b19a)"><span class="m-badge free">رایگان</span><div class="m-ch">چپتر ۴۵<small>دیروز</small></div></div><div class="m-info"><h5>نوشته‌های روی باران</h5><div class="m-meta"><span>درام</span><span>★ ۸.۶</span></div></div></div>
+            <div class="m-card"><div class="m-pic" style="--c:linear-gradient(160deg,#831843,#fd337f)"><span class="m-badge vip">اشتراکی</span><div class="m-ch">چپتر ۸۷<small>۲ روز پیش</small></div></div><div class="m-info"><h5>رز و شمشیر</h5><div class="m-meta"><span>عاشقانه</span><span>★ ۸.۸</span></div></div></div>
+          </div>
+
+          <div class="m-title">بهترین‌ها</div>
+          <div class="m-rank" style="--c:linear-gradient(160deg,#312e81,#8b00e9);--g:#8b00e9"><em>۱</em><i></i><div><b>سایه‌ی پادشاه شب</b><small>فانتزی</small></div></div>
+          <div class="m-rank" style="--c:linear-gradient(160deg,#365314,#9ab710);--g:#9ab710"><em>۲</em><i></i><div><b>مدرسه‌ی آخر خیابان</b><small>زندگی روزمره</small></div></div>
+          <div class="m-rank" style="--c:linear-gradient(160deg,#831843,#fd337f);--g:#fd337f"><em>۳</em><i></i><div><b>رز و شمشیر</b><small>عاشقانه</small></div></div>
+
+          <div class="m-nav">
+            <div class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>خانه</div>
+            <div><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10.5 9.5v5l4-2.5z"/></svg>ریلز</div>
+            <div><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>ژانرها</div>
+            <div><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>پروفایل</div>
+          </div>
+          <div class="m-home-ind"></div>
         </div>
       </div>
       <div class="float"><small>نسخه فعلی</small><strong id="vFloat">v1.0.0</strong></div>
