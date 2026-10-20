@@ -32,18 +32,33 @@
 
     <!-- Google Structured Data (Schema.org) for SEO Rich Snippets -->
     <% if (manhwa) { %>
+    <%
+      var _gl = (typeof genre_links !== 'undefined' && genre_links.length) ? genre_links : genres.map(function(g){ return { name: g, slug: null }; });
+      var _rd = (typeof release_date !== 'undefined' && release_date) ? String(release_date) : '';
+      var _validDate = /^(19|20)\d{2}(-\d{2}){0,2}$/.test(_rd); // تاریخ شمسی (۱۴۰۳/..) در اسکیما نامعتبر است
+      var _series = {
+        "@type": "ComicSeries",
+        "@id": canonical_url + "#series",
+        "name": title_fa || title_en,
+        "alternateName": (title_fa && title_en) ? title_en : undefined,
+        "description": raw_desc || seo_desc,
+        "image": full_cover_url,
+        "url": canonical_url,
+        "inLanguage": "fa",
+        "genre": _gl.map(function(g){ return g.name; }),
+        "datePublished": _validDate ? _rd : undefined
+      };
+      var _crumbs = {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "خانه", "item": "https://manhwachi.ir/" },
+          { "@type": "ListItem", "position": 2, "name": "آرشیو مانهوا", "item": "https://manhwachi.ir/library-page.html" },
+          { "@type": "ListItem", "position": 3, "name": title_fa || title_en, "item": canonical_url }
+        ]
+      };
+    %>
     <script type="application/ld+json">
-    <%- JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Book",
-      "name": title_en,
-      "alternateName": title_fa,
-      "description": raw_desc,
-      "image": full_cover_url,
-      "url": canonical_url,
-      "inLanguage": "fa",
-      "datePublished": (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : '')
-    }).replace(/</g, '\\u003c') %>
+    <%- JSON.stringify({ "@context": "https://schema.org", "@graph": [_series, _crumbs] }).replace(/</g, '\\u003c') %>
     </script>
     <% } %>
 
@@ -627,7 +642,7 @@
         <section class="relative w-full h-[520px] md:h-[620px] overflow-hidden lg:contents">
             <img id="dynamic-cover" class="w-full object-cover object-top scale-105 lg:static lg:col-start-9 lg:col-span-4 lg:row-start-1 lg:row-span-4 lg:h-auto lg:aspect-[3/4] lg:scale-100 lg:rounded-3xl lg:shadow-2xl lg:shadow-black/60 lg:sticky lg:top-24"
                  src="<%= cover_url %>"
-                 alt="<%= title_en %> cover"/>
+                 alt="<%= title_fa ? ('مانهوا ' + title_fa + ' - ' + title_en) : title_en %>"/>
 
             <div class="absolute inset-0 glass-scrim lg:hidden"></div>
 
@@ -635,8 +650,12 @@
                 <div id="mainname" style="width: 100%; direction: ltr;">
                     <div id="type" class="flex gap-2 mb-3 lg:flex-wrap" style="direction: ltr;">
                         <span class="px-4 py-1 bg-primary text-on-primary text-xs font-bold rounded-full"><%= origin %></span>
-                        <% genres.forEach(function(g) { %>
-                            <span class="px-4 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-full"><%= g %></span>
+                        <% (typeof genre_links !== 'undefined' && genre_links.length ? genre_links : genres.map(function(g){ return { name: g, slug: null }; })).forEach(function(g) { %>
+                            <% if (g.slug) { %>
+                            <a href="/genre/<%= encodeURIComponent(g.slug) %>" class="px-4 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-full hover:bg-primary/40 transition-colors"><%= g.name %></a>
+                            <% } else { %>
+                            <span class="px-4 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-full"><%= g.name %></span>
+                            <% } %>
                         <% }); %>
                     </div>
                     <h1 id="manhwaTitle"
@@ -644,6 +663,9 @@
                         style="direction: ltr; font-family: Montserrat, sans-serif;">
                         <%= title_en %>
                     </h1>
+                    <% if (title_fa && title_fa !== title_en) { %>
+                    <p id="faSubtitle" dir="rtl" class="mt-2 text-base lg:text-lg text-on-surface-variant" style="text-align:left;font-family:Vazirmatn,sans-serif;"><%= title_fa %></p>
+                    <% } %>
                 </div>
                 <div class="flex items-center gap-4 mt-4 lg:mt-6 text-sm lg:text-base">
                     <div class="flex items-center gap-1">
@@ -1934,6 +1956,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (titleElement) {
             titleElement.addEventListener("click", () => {
                 isPersian = !isPersian;
+                const _fs = document.getElementById("faSubtitle"); if (_fs) _fs.hidden = isPersian;
                 if (isPersian) {
                     titleElement.textContent = persianTitle || englishTitle;
                     titleElement.style.fontFamily = "Vazirmatn, sans-serif";
