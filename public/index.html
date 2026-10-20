@@ -308,8 +308,7 @@
         /* اندازه‌ی استاندارد متن‌های منوی کشویی */
         #mobileDrawer .drawer-item { font-size: 13.5px; padding: 11px 12px; gap: 11px; }
         #mobileDrawer .drawer-item .text-sm { font-size: 13.5px; }
-        #mobileDrawer .drawer-item > div:first-child,
-        #mobileDrawer .drawer-item .w-9 { width: 34px; height: 34px; }
+        #mobileDrawer .drawer-item .w-9 { width: 34px; height: 34px; flex-shrink: 0; }
         #mobileDrawer .drawer-item .material-symbols-outlined { font-size: 20px; }
         #mobileDrawer a[href*="telegram"] { padding: 12px 14px; }
         #mobileDrawer a[href*="telegram"] .text-sm { font-size: 13px; }
@@ -457,7 +456,6 @@
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">person</span>
             </button>
 
-            <span data-mhp="pill"></span>
             <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">search</span>
             </a>
