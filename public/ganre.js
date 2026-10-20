@@ -239,7 +239,7 @@
             const icon = genreIcons[englishGenre] || "category";
 
             return `
-            <a href="genre-page.html?genre=${encodeURIComponent(g)}" class="genre-card">
+            <a href="/genre/${encodeURIComponent(englishGenre.toLowerCase().replace(/\s+/g, '-'))}" class="genre-card">
                 <span class="genre-icon-badge">
                     <span class="material-symbols-outlined">${icon}</span>
                 </span>
