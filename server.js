@@ -166,6 +166,9 @@ app.set("views", path.join(__dirname, "views"));
 // ---------- بخش ۱: نمایش سایت ----------
 // maxAge اضافه شد تا مرورگر فایل‌های استاتیک (CSS/JS/فونت/عکس) رو کش کنه
 // و مجبور نباشه هر بار دوباره از سرور دانلودشون کنه.
+// سئو: صفحه اصلی با لیست‌های سمت‌سرور + /genres و /genre/:slug + sitemap-manhwa.xml (باید قبل از express.static باشد)
+app.use(require("./routes/seoRouter")());
+
 app.use("/.well-known", express.static("public/.well-known", { dotfiles: "allow" }));
 app.use(express.static("public", { maxAge: "7d", etag: true }));
 
@@ -298,8 +301,11 @@ function renderMangaPage(req, res, slugRaw) {
       ? `خواندن مانهوا ${title_fa} (${title_en}) با ترجمه اختصاصی | مانهواچی`
       : `${title_en} | مانهواچی`;
 
-    const raw_desc = stripTags(manhwa.description || "");
-    const seo_desc = raw_desc.substring(0, 160) + "...";
+    const raw_desc = stripTags(manhwa.description || "").replace(/\s+/g, " ").trim();
+    // توضیح کوتاه بدون بریدن وسط کلمه؛ اگر توضیحی ثبت نشده، متن پیش‌فرض (نه «...» خالی)
+    const seo_desc = raw_desc
+      ? (raw_desc.length > 155 ? raw_desc.slice(0, 155).replace(/\s+\S*$/, "") + "…" : raw_desc)
+      : `خواندن آنلاین ${type} ${title_fa || title_en} با ترجمه فارسی و جدیدترین چپترها در مانهواچی.`;
 
     const cover_url = `/manhwas/${encodeURIComponent(slug)}/${manhwa.cover_image || ""}`;
     const full_cover_url = `https://manhwachi.ir${cover_url}`;
@@ -313,8 +319,11 @@ function renderMangaPage(req, res, slugRaw) {
 
     const has_locked = episodes.some((ep) => !ep.free);
 
+    const { genreInfo } = require("./routes/seoRouter");
+    const genre_links = genres.map(genreInfo);
+
     vars = {
-      manhwa, slug, title_en, title_fa, origin, type,
+      manhwa, slug, title_en, title_fa, origin, type, genre_links,
       seo_title, seo_desc, raw_desc,
       cover_url, full_cover_url, canonical_url,
       score, scans_by, episodes, genres, has_locked, release_date,
@@ -341,7 +350,8 @@ function renderMangaPage(req, res, slugRaw) {
     };
   }
 
-  res.render("manga", vars);
+  // مانهوای ناموجود باید 404 واقعی بدهد (نه 200) تا گوگل صفحه‌ی خالی ایندکس نکند
+  res.status(manhwa ? 200 : 404).render("manga", vars);
 }
 
 app.get("/comic/:slug", (req, res) => {
@@ -349,7 +359,10 @@ app.get("/comic/:slug", (req, res) => {
 });
 
 app.get("/manga.php", (req, res) => {
-  renderMangaPage(req, res, req.query.slug);
+  // آدرس قدیمی PHP → ریدایرکت دائمی به آدرس اصلی
+  const s = (req.query.slug || "").toString().trim();
+  if (s && getData()[s]) return res.redirect(301, `/comic/${encodeURIComponent(s)}`);
+  renderMangaPage(req, res, s);
 });
 
 // ---------- بخش ۳: خرید VIP (مستقیم، بدون pg_net) ----------
