@@ -1,8 +1,14 @@
 {
   "latestVersionCode": 2,
-  "minVersionCode": 2,
+  "minVersionCode": 1,
   "versionName": "1.1",
-  "downloadUrl": "https://manhwachi.ir/downloads/manhwachi-1.1.apk",
-  "sha256": "PUT_APK_SHA256_HERE",
-  "changelog": "• بهبود امنیت\n• رفع باگ‌ها"
+  "downloadUrl": "/downloads/manhwachi-1.1.apk",
+  "sha256": "5c88978a887cf57e94c85eb1e9a00d83d8f579e3c1347dfee7dae5d6bec25963",
+  "releasedAt": "2026-10-20",
+  "sizeMB": 11.2,
+  "changelog": [
+    "انتشار اولین نسخه‌ی اپلیکیشن",
+    "خواندن فصل‌ها با ترجمه فارسی و کیفیت بالا",
+    "ادامه‌ی مطالعه از آخرین صفحه‌ای که خواندی"
+  ]
 }

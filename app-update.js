@@ -2,6 +2,7 @@
 //   const appUpdate = require('./app-update');
 //   app.use(appUpdate.requireMinAppVersion);          // قبل از بقیه‌ی روت‌های /api و /purchase
 //   app.get('/api/app/update', appUpdate.updateEndpoint);
+//   app.get('/api/app/latest', appUpdate.latestEndpoint);   // برای صفحه‌ی دانلود (عمومی)
 //
 // انتشار نسخه‌ی جدید = ویرایش app-release.json (بدون ری‌استارت سرور):
 //   latestVersionCode / minVersionCode را بالا ببر → همه‌ی نسخه‌های قدیمی همان لحظه قفل می‌شوند.
@@ -44,6 +45,23 @@ function updateEndpoint(req, res) {
   res.json({ payload, sig });
 }
 
+// ---- endpoint عمومی برای صفحه‌ی دانلود وب (بدون امضا؛ فقط اطلاعات نمایشی) ----
+// فیلدهای اختیاری app-release.json: releasedAt (مثلاً "2026-10-20")، sizeMB
+function latestEndpoint(req, res) {
+  let rel;
+  try { rel = readRelease(); } catch { return res.status(500).json({ error: 'release config' }); }
+  res.set('Cache-Control', 'no-cache');
+  res.json({
+    versionName: rel.versionName,
+    versionCode: rel.latestVersionCode,
+    downloadUrl: rel.downloadUrl,
+    sha256: rel.sha256,
+    changelog: rel.changelog,
+    date: rel.releasedAt,
+    sizeMB: rel.sizeMB,
+  });
+}
+
 // ---- قفل سمت سرور: نسخه‌ی قدیمی اپ به API دسترسی ندارد ----
 // فقط درخواست‌هایی که هدر X-App-Platform: android دارند چک می‌شوند (سایت/مرورگر دست نمی‌خورد).
 function requireMinAppVersion(req, res, next) {
@@ -61,4 +79,4 @@ function requireMinAppVersion(req, res, next) {
   next();
 }
 
-module.exports = { updateEndpoint, requireMinAppVersion };
+module.exports = { updateEndpoint, latestEndpoint, requireMinAppVersion };
