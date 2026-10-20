@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دانلود اپلیکیشن مانهواچی | Manhwachi</title>
+<meta name="description" content="اپلیکیشن اندروید مانهواچی؛ مانهوا و مانگا با ترجمه فارسی، همیشه توی جیبت.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="ManhwaChi/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000; --surface:#161616; --surface2:#1f1f1f;
+  --red:#DC2626; --red-soft:rgba(220,38,38,.18);
+  --gold:#FFD54F;
+  --text:#e2e2e2; --muted:#8C8C8C; --line:#2a2a2a;
+  --font:'Vazirmatn','Vazir',Tahoma,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.8;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* header */
+header{height:64px;display:flex;align-items:center}
+header .wrap{display:flex;justify-content:space-between;align-items:center;width:100%}
+.brand{font-weight:900;font-size:1.25rem;display:flex;align-items:center;gap:10px}
+.brand i{width:34px;height:34px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-style:normal;font-size:1.1rem;color:#fff}
+.back{color:var(--muted);font-size:.9rem;transition:color .2s}
+.back:hover{color:#fff}
+
+/* hero */
+.hero{position:relative;padding:40px 0 90px}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(520px 420px at 25% 45%,rgba(220,38,38,.28),transparent 70%);pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.ver-pill{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 16px;font-size:.9rem;color:var(--muted)}
+.ver-pill b{background:var(--red);color:#fff;border-radius:999px;padding:1px 12px;font-weight:700;direction:ltr}
+h1{font-size:clamp(2.2rem,5.2vw,3.9rem);font-weight:900;line-height:1.3;margin:20px 0 14px;letter-spacing:-.5px}
+h1 span{display:block;color:var(--red)}
+.lead{color:#b8b8b8;font-size:1.1rem;max-width:30em}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-weight:700;font-size:1.05rem;padding:14px 28px;border-radius:14px;border:0;cursor:pointer;font-family:inherit;box-shadow:0 10px 30px -8px rgba(220,38,38,.7);transition:transform .15s,background .2s}
+.btn:hover{background:#ef3434;transform:translateY(-2px)}
+.btn svg{width:22px;height:22px}
+.sub{color:var(--muted);font-size:.85rem}
+.sub b{color:var(--gold);font-weight:500}
+
+/* phone */
+.stage{position:relative;display:grid;place-items:center;min-height:560px}
+.phone{width:270px;height:550px;border-radius:42px;background:#0b0b0b;border:2px solid #333;padding:10px;transform:rotate(-6deg);box-shadow:0 40px 80px -20px rgba(220,38,38,.45),0 0 0 6px #111;animation:rise 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(40px) rotate(-12deg)}to{opacity:1;transform:rotate(-6deg)}}
+.screen{height:100%;border-radius:32px;background:#050505;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.notch{width:84px;height:22px;background:#000;border-radius:0 0 14px 14px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:3}
+.screen{padding-top:22px}
+.shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2}
+.top{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 6px;font-weight:900;font-size:.95rem}
+.top em{font-style:normal;color:var(--red)}
+.dot{width:26px;height:26px;border-radius:50%;background:var(--surface2)}
+.chips{display:flex;gap:6px;padding:4px 14px 10px;font-size:.62rem}
+.chips span{padding:2px 10px;border-radius:999px;background:var(--surface2);color:#bbb}
+.chips span:first-child{background:var(--red);color:#fff}
+.featured{margin:0 14px;height:140px;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg,#7f1d1d,#DC2626 55%,#ff8a5c)}
+.featured::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent 60%)}
+.featured p{position:absolute;z-index:1;bottom:10px;right:12px;left:12px;font-size:.78rem;font-weight:700}
+.featured small{display:block;font-weight:400;color:#ddd;font-size:.62rem}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px}
+.grid i{aspect-ratio:3/4;border-radius:10px;display:block}
+.grid i:nth-child(1){background:linear-gradient(160deg,#312e81,#8b00e9)}
+.grid i:nth-child(2){background:linear-gradient(160deg,#134e4a,#00b19a)}
+.grid i:nth-child(3){background:linear-gradient(160deg,#831843,#fd337f)}
+.grid i:nth-child(4){background:linear-gradient(160deg,#365314,#9ab710)}
+.grid i:nth-child(5){background:linear-gradient(160deg,#451a03,#f59e0b)}
+.grid i:nth-child(6){background:linear-gradient(160deg,#1e3a8a,#38bdf8)}
+.nav{margin-top:auto;display:flex;justify-content:space-around;padding:12px;background:var(--surface);border-top:1px solid var(--line)}
+.nav i{width:20px;height:20px;border-radius:6px;background:#3a3a3a}
+.nav i:first-child{background:var(--red)}
+
+/* floating version card */
+.float{position:absolute;bottom:50px;right:-10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 18px;box-shadow:0 20px 40px -10px #000;animation:rise2 1s .5s both}
+@keyframes rise2{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.float small{color:var(--muted);font-size:.72rem;display:block}
+.float strong{font-size:1.5rem;color:var(--gold);direction:ltr;display:block;text-align:right;line-height:1.3}
+
+/* info */
+.facts{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:22px}
+.facts div{padding:22px;text-align:center}
+.facts div+div{border-right:1px solid var(--line)}
+.facts small{display:block;color:var(--muted);font-size:.82rem}
+.facts b{font-size:1.2rem;font-weight:700;direction:ltr;display:inline-block}
+
+section{padding:80px 0 0}
+h2{font-size:1.7rem;font-weight:900;margin-bottom:24px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:28px}
+.card h3{font-size:1.1rem;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.card h3 em{font-style:normal;font-size:.8rem;background:var(--red-soft);color:#ff6b6b;border-radius:999px;padding:0 12px;direction:ltr}
+.log li{position:relative;padding-right:22px;color:#c9c9c9;margin-bottom:8px}
+.log li::before{content:"";position:absolute;right:0;top:.85em;width:8px;height:8px;border-radius:50%;background:var(--red)}
+.steps{counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:14px;margin-bottom:16px;color:#c9c9c9}
+.steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;font-weight:700;display:grid;place-items:center;font-size:.9rem}
+.note{margin-top:12px;font-size:.85rem;color:var(--muted)}
+
+footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:.85rem;text-align:center}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface2);border:1px solid var(--line);padding:12px 22px;border-radius:14px;transition:transform .3s;z-index:9}
+.toast.on{transform:translateX(-50%)}
+
+@media(max-width:860px){
+  .hero .wrap{grid-template-columns:1fr;text-align:center}
+  .lead{margin:0 auto}.cta{justify-content:center}
+  .stage{min-height:520px}.float{right:6%}
+  .facts{grid-template-columns:1fr 1fr}
+  .facts div:nth-child(3){border-right:0}
+  .facts div:nth-child(n+3){border-top:1px solid var(--line)}
+  .two{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/"><i>م</i> مانهواچی</a>
+    <a class="back" href="/">بازگشت به سایت</a>
+  </div>
+</header>
+
+<main>
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="ver-pill">آخرین نسخه <b id="vName">1.0.0</b></div>
+      <h1>مانهوا و مانگا،<span>همیشه توی جیبت</span></h1>
+      <p class="lead">اپلیکیشن اندروید مانهواچی را نصب کن و فصل‌های جدید را با ترجمه فارسی، سریع‌تر و راحت‌تر بخوان.</p>
+      <div class="cta">
+        <a class="btn" id="dl" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>
+          دانلود برای اندروید
+        </a>
+        <span class="sub">حجم <b id="vSize">—</b> · اندروید ۸ به بالا</span>
+      </div>
+    </div>
+
+    <div class="stage" aria-hidden="true">
+      <div class="phone">
+        <div class="screen">
+          <img class="shot" id="shot" src="/images/app-screenshot.png" alt="" onerror="this.remove()">
+          <div class="notch"></div>
+          <div class="top"><span>مانهواچی<em>.</em></span><span class="dot"></span></div>
+          <div class="chips"><span>همه</span><span>فانتزی</span><span>درام</span><span>عاشقانه</span></div>
+          <div class="featured"><p>فصل جدید منتشر شد<small>ادامه بده از همان‌جا که بودی</small></p></div>
+          <div class="grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="nav"><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="float"><small>نسخه فعلی</small><strong id="vFloat">v1.0.0</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="facts">
+    <div><small>نسخه</small><b id="fVer">—</b></div>
+    <div><small>تاریخ انتشار</small><b id="fDate">—</b></div>
+    <div><small>حجم فایل</small><b id="fSize">—</b></div>
+    <div><small>پلتفرم</small><b>Android 8+</b></div>
+  </div>
+
+  <section>
+    <div class="two">
+      <div class="card">
+        <h3>تازه‌های این نسخه <em id="cVer">v1.0.0</em></h3>
+        <ul class="log" id="log"></ul>
+      </div>
+      <div class="card">
+        <h3>نصب در سه قدم</h3>
+        <ol class="steps">
+          <li>فایل APK را با دکمه‌ی دانلود بگیر.</li>
+          <li>فایل دانلودشده را باز کن و اگر پرسید، نصب از این منبع را اجازه بده.</li>
+          <li>اپ را باز کن و با حساب سایت وارد شو.</li>
+        </ol>
+        <p class="note" id="sha" hidden></p>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>© مانهواچی · نسخه‌های قدیمی‌تر پس از انتشار نسخه‌ی جدید نیاز به به‌روزرسانی دارند.</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const fa = n => Number(n).toLocaleString('fa-IR');
+const $ = id => document.getElementById(id);
+
+function render(r) {
+  const v = r.versionName;
+  $('vName').textContent = v;
+  $('vFloat').textContent = 'v' + v;
+  $('fVer').textContent = v;
+  $('cVer').textContent = 'v' + v;
+  if (r.sizeMB) { const t = fa(r.sizeMB) + ' مگابایت'; $('vSize').textContent = t; $('fSize').textContent = t; }
+  if (r.date) $('fDate').textContent = new Date(r.date).toLocaleDateString('fa-IR', {year:'numeric',month:'long',day:'numeric'});
+  $('dl').href = r.downloadUrl;
+  const log = $('log'); log.textContent = '';
+  (Array.isArray(r.changelog) ? r.changelog : String(r.changelog || '').split('\n')).filter(Boolean)
+    .forEach(t => { const li = document.createElement('li'); li.textContent = t; log.appendChild(li); });
+  if (r.sha256) { const s = $('sha'); s.hidden = false; s.style.direction = 'ltr'; s.style.wordBreak = 'break-all'; s.textContent = 'SHA-256: ' + r.sha256; }
+}
+
+// مقدار پیش‌فرض تا وقتی جواب سرور برسد (یا اگر سرور جواب نداد)
+render({ versionName: '—', downloadUrl: '#', changelog: [] });
+
+// آخرین نسخه مستقیم از app-release.json (از طریق /api/app/latest)
+fetch('/api/app/latest', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw 0; return r.json(); })
+  .then(render)
+  .catch(() => { $('vName').textContent = 'نامشخص'; });
+
+$('dl').setAttribute('download', '');
+$('dl').addEventListener('click', () => {
+  const t = $('toast'); t.textContent = 'دانلود نسخه‌ی ' + $('vName').textContent + ' شروع شد';
+  t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2800);
+});
+</script>
+</body>
+</html>
