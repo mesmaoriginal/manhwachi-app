@@ -153,6 +153,10 @@ app.use(express.json({ limit: "50kb" }));
 // انتشار نسخه‌ی جدید = فقط ویرایش app-release.json (بدون ری‌استارت).
 const appUpdate = require("./app-update");
 app.use(appUpdate.requireMinAppVersion);
+// آمار کاربران فعال اپ (بدون SDK؛ فقط با هدرهای خود اپ). مشاهده: GET /api/app/stats با هدر X-Stats-Key
+const appStats = require("./app-stats");
+app.use(appStats.track);
+app.get("/api/app/stats", appStats.statsEndpoint);
 app.get("/api/app/update", appUpdate.updateEndpoint); // امضاشده؛ برای خود اپ
 app.get("/api/app/latest", appUpdate.latestEndpoint); // عمومی؛ برای صفحه‌ی دانلود
 app.get("/app", (req, res) => res.sendFile(path.join(__dirname, "public", "app.html")));
