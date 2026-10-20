@@ -673,7 +673,7 @@
                         <% }); %>
                     </div>
                     <h1 id="manhwaTitle"
-                        class="text-3xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight cursor-pointer max-w-[70%] lg:max-w-full"
+                        class="text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight cursor-pointer max-w-[70%] lg:max-w-full"
                         style="direction: ltr; font-family: Montserrat, sans-serif;">
                         <%= title_en %>
                     </h1>
@@ -2509,11 +2509,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function updateBookmarkButtonUI() {
                 if (isBookmarked) {
-                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-2xl text-black" style="font-variation-settings: 'FILL' 1;">bookmark</span>`;
-                    bookmarkBtn.className = "w-14 h-14 bg-primary border-2 border-primary rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-lg shadow-primary/50";
+                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-2xl text-white" style="font-variation-settings: 'FILL' 1;">bookmark</span>`;
+                    bookmarkBtn.className = "w-12 h-12 bg-primary border border-primary rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-lg shadow-primary/50";
                 } else {
-                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-3xl text-primary">bookmark_add</span>`;
-                    bookmarkBtn.className = "w-14 h-14 border-2 border-primary text-primary bg-transparent rounded-2xl flex items-center justify-center active:scale-95 transition-all hover:bg-primary/10";
+                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-2xl text-primary">bookmark_add</span>`;
+                    bookmarkBtn.className = "w-12 h-12 border border-primary/70 text-primary bg-transparent rounded-xl flex items-center justify-center active:scale-95 transition-all hover:bg-primary/10";
                 }
             }
             updateBookmarkButtonUI();
