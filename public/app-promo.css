@@ -1,0 +1,172 @@
+/* ManhwaChi — کادرهای نصب اپ (استایل مشترک همه‌ی جاها) */
+[data-mhp]{display:contents}
+html.mhp-ios [data-mhp],html.mhp-ios .mhp-bar,html.mhp-ios .mhp-qr{display:none!important}
+
+.mhp,.mhp *{box-sizing:border-box}
+.mhp{font-family:'Vazirmatn','vazir',Tahoma,sans-serif;direction:rtl;color:#fff;text-decoration:none}
+.mhp a{color:inherit;text-decoration:none}
+
+/* درخشش متحرک روی دکمه‌ها */
+.mhp-shine{position:relative;overflow:hidden}
+.mhp-shine::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);
+  transform:translateX(-130%);animation:mhpShine 3.6s ease-in-out infinite}
+@keyframes mhpShine{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+@keyframes mhpBounce{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}
+@keyframes mhpFloat{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-8px) rotate(-6deg)}}
+@keyframes mhpPing{0%{box-shadow:0 0 0 0 rgba(255,213,79,.75)}80%,100%{box-shadow:0 0 0 8px rgba(255,213,79,0)}}
+@keyframes mhpIn{from{opacity:0;transform:translate(-50%,40px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes mhpQrIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* ───────── ۱) دکمه‌ی هدر ───────── */
+.mhp-pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:40px;min-width:40px;padding:0 10px;border-radius:16px;white-space:nowrap;font-size:12px;font-weight:700;
+  background:linear-gradient(135deg,#dc2626,#7f1111);border:1px solid rgba(255,120,120,.45);
+  box-shadow:0 6px 18px -6px rgba(220,38,38,.9);transition:transform .15s}
+.mhp-pill:active{transform:scale(.94)}
+.mhp-pill svg{width:19px;height:19px;flex:none;animation:mhpBounce 2.2s ease-in-out infinite}
+.mhp-pill__t{display:none}
+.mhp-dot{position:absolute;top:5px;left:5px;width:8px;height:8px;border-radius:50%;background:#ffd54f;animation:mhpPing 1.8s infinite}
+@media(min-width:640px){.mhp-pill{padding:0 14px}.mhp-pill__t{display:inline}}
+@media(max-width:339px){.mhp-pill{display:none}}
+
+/* ───────── ۲) کارت داخل منوی کشویی ───────── */
+.mhp-drawer{position:relative;display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;
+  border-radius:20px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(150px 100px at 92% 0%,rgba(255,59,59,.5),transparent 70%),
+             linear-gradient(135deg,#3d0a0a,#160404 60%,#0b0b0b);
+  border:1px solid rgba(220,38,38,.6);
+  box-shadow:0 14px 30px -12px rgba(220,38,38,.6),inset 0 1px 0 rgba(255,255,255,.08);
+  transition:transform .2s}
+.mhp-drawer:hover{transform:translateY(-2px) scale(1.01)}
+.mhp-drawer:active{transform:scale(.98)}
+.mhp-ic{width:46px;height:46px;border-radius:14px;object-fit:cover;flex:none;background:#dc2626;box-shadow:0 6px 18px rgba(220,38,38,.6)}
+.mhp-tx{flex:1;min-width:0;line-height:1.55}
+.mhp-tx b{display:block;font-size:14px;font-weight:800}
+.mhp-tx span{display:block;font-size:11.5px;color:#d9b4b4}
+.mhp-chip{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;padding:2px 10px;margin-bottom:3px;
+  border-radius:99px;background:rgba(220,38,38,.22);border:1px solid rgba(255,90,90,.4);color:#ff9a9a}
+.mhp-go{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#dc2626;
+  box-shadow:0 6px 16px -4px rgba(220,38,38,.9)}
+.mhp-go svg{width:21px;height:21px;animation:mhpBounce 2.2s ease-in-out infinite}
+
+/* ───────── ۳) بنر بزرگ داخل صفحه ───────── */
+.mhp-wrap{max-width:80rem;margin:24px auto;padding:0 20px}
+.mhp-banner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  min-height:170px;padding:22px 22px 22px 14px;border-radius:28px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(420px 260px at 88% 8%,rgba(255,59,59,.38),transparent 70%),
+             radial-gradient(300px 220px at 0% 100%,rgba(139,0,233,.3),transparent 70%),
+             linear-gradient(120deg,#2e0808,#0d0303 60%,#09090b);
+  border:1px solid rgba(220,38,38,.5);box-shadow:0 24px 50px -20px rgba(220,38,38,.65);
+  transition:transform .25s}
+.mhp-banner:hover{transform:translateY(-3px)}
+.mhp-banner__body{flex:1;min-width:0;position:relative;z-index:2}
+.mhp-banner h3{margin:8px 0 6px;font-size:clamp(1.15rem,4.4vw,1.75rem);font-weight:900;line-height:1.5}
+.mhp-banner h3 em{font-style:normal;color:#ff4d4d;text-shadow:0 0 18px rgba(255,59,59,.65)}
+.mhp-banner p{margin:0 0 14px;font-size:12.5px;color:#cdb6b6;line-height:1.9;max-width:28em}
+.mhp-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:14px;background:#dc2626;
+  font-weight:800;font-size:13.5px;box-shadow:0 10px 26px -8px rgba(220,38,38,.95)}
+.mhp-btn svg{width:18px;height:18px;animation:mhpBounce 2.2s ease-in-out infinite}
+
+/* گوشی ساختگی (تماماً CSS) */
+.mhp-phone{flex:none;align-self:flex-end;width:96px;height:156px;margin-bottom:-46px;border-radius:22px;padding:4px;
+  background:#0b0b0b;border:2px solid #3a3a3a;transform:rotate(-8deg);animation:mhpFloat 5s ease-in-out infinite;
+  box-shadow:0 18px 30px -8px rgba(0,0,0,.75),0 0 0 3px #111,0 0 34px rgba(220,38,38,.4)}
+.mhp-phone__s{height:100%;border-radius:18px;overflow:hidden;padding:10px 7px;display:flex;flex-direction:column;gap:6px;
+  background:radial-gradient(90px 70px at 90% 0,rgba(220,38,38,.4),transparent 70%),#000}
+.mhp-ph-h{height:7px;width:52%;border-radius:4px;background:rgba(255,255,255,.75)}
+.mhp-ph-sl{height:44px;border-radius:9px;background:linear-gradient(115deg,#5a0f1d,#8b00e9)}
+.mhp-ph-row{display:flex;gap:4px}
+.mhp-ph-row b{flex:1;height:36px;border-radius:6px;background:linear-gradient(160deg,#2b1263,#c34bff)}
+.mhp-ph-row b:nth-child(2){background:linear-gradient(160deg,#611018,#ff5a5a)}
+.mhp-ph-row b:nth-child(3){background:linear-gradient(160deg,#0b4f46,#3ddc97)}
+
+.mhp-banner__qr{display:none;flex:none;text-align:center}
+.mhp-banner__qr img{display:block;width:96px;height:96px;padding:5px;border-radius:14px;background:#fff;margin:0 auto 6px}
+.mhp-banner__qr small{font-size:11px;color:#cdb6b6}
+@media(min-width:768px){
+  .mhp-banner{padding:26px 34px;min-height:190px}
+  .mhp-banner__qr{display:block}
+  .mhp-phone{width:108px;height:176px}
+}
+
+/* ───────── ۴) نوار باریک (زیر مانهوا / بالای نظرات) ───────── */
+.mhp-strip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(110deg,#2c0808,#0e0404 60%,#0a0a0a);border:1px solid rgba(220,38,38,.5);
+  box-shadow:0 14px 30px -14px rgba(220,38,38,.6);transition:transform .2s}
+.mhp-strip:hover{transform:translateY(-2px)}
+.mhp-strip .mhp-btn{padding:8px 18px;font-size:12.5px;border-radius:12px;flex:none}
+.mhp-strip .mhp-btn svg{display:none}
+
+/* ───────── ۵) لینک داخل فوتر ───────── */
+.mhp-footwrap{display:flex;justify-content:center;margin:0 0 26px;padding:0 20px}
+.mhp-foot{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:700;
+  background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.45);transition:background .2s,transform .2s}
+.mhp-foot:hover{background:rgba(220,38,38,.28);transform:translateY(-2px)}
+.mhp-foot svg{width:18px;height:18px;color:#ff5a5a;flex:none}
+
+/* ───────── ۶) نوار شناور موبایل ───────── */
+.mhp-bar{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:90;
+  width:min(92%,440px);display:flex;align-items:center;gap:10px;padding:9px 12px 9px 8px;border-radius:18px;
+  background:linear-gradient(115deg,#3a0808,#120303 55%,#0a0a0a);border:1px solid rgba(220,38,38,.6);
+  box-shadow:0 12px 34px rgba(0,0,0,.6),0 0 24px rgba(220,38,38,.25);backdrop-filter:blur(12px);
+  transform:translate(-50%,0);opacity:0;visibility:hidden;pointer-events:none;
+  transition:bottom .35s cubic-bezier(.4,0,.2,1),opacity .3s,visibility .3s}
+.mhp-bar.is-on{opacity:1;visibility:visible;pointer-events:auto;animation:mhpIn .55s cubic-bezier(.2,.8,.2,1) both}
+.mhp-bar.no-nav,.mhp-bar.nav-gone{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.mhp-bar .mhp-ic{width:42px;height:42px;border-radius:12px}
+.mhp-bar__btn{flex:none;background:#dc2626;font-weight:800;font-size:13px;padding:8px 20px;border-radius:999px;
+  box-shadow:0 6px 16px -4px rgba(220,38,38,.85)}
+.mhp-x{background:none;border:0;color:#8c8c8c;cursor:pointer;font-size:22px;line-height:1;padding:4px 6px;font-family:inherit}
+.mhp-x:hover{color:#fff}
+@media(min-width:768px){.mhp-bar{display:none!important}}
+
+/* ───────── ۷) QR دسکتاپ ───────── */
+.mhp-qr{position:fixed;right:20px;bottom:20px;z-index:90;width:152px;padding:14px 12px 12px;text-align:center;
+  border-radius:20px;background:#161616;border:1px solid #2a2a2a;
+  box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 26px rgba(220,38,38,.18);animation:mhpQrIn .6s cubic-bezier(.2,.8,.2,1) both}
+.mhp-qr .mhp-x{position:absolute;top:2px;left:4px}
+.mhp-qr img{display:block;width:118px;height:118px;margin:0 auto 10px;border-radius:12px;background:#fff}
+.mhp-qr b{display:block;font-size:13.5px}
+.mhp-qr span{display:block;color:#8c8c8c;font-size:11.5px}
+@media(max-width:767.98px){.mhp-qr{display:none!important}}
+
+@media(prefers-reduced-motion:reduce){
+  .mhp *,.mhp,.mhp-shine::after{animation:none!important;transition:none!important}
+}
+
+/* ───────── ۸) کادر «اولین نسخه‌ی اپ منتشر شد» (اول ورود به سایت) ───────── */
+@keyframes mhpFade{from{opacity:0}to{opacity:1}}
+@keyframes mhpPop{from{opacity:0;transform:translateY(30px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes mhpSpark{0%{transform:translateY(0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translateY(-190px) scale(1);opacity:0}}
+.mhp-launch{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:18px;
+  background:rgba(0,0,0,.78);backdrop-filter:blur(8px);animation:mhpFade .35s both}
+.mhp-launch.is-out{opacity:0;transition:opacity .25s}
+.mhp-lc{position:relative;width:min(100%,400px);padding:26px 22px 20px;border-radius:30px;overflow:hidden;isolation:isolate;text-align:center;
+  background:radial-gradient(320px 220px at 50% -10%,rgba(255,59,59,.55),transparent 70%),
+             radial-gradient(260px 200px at 100% 100%,rgba(139,0,233,.35),transparent 70%),
+             linear-gradient(160deg,#2f0909,#0e0404 60%,#09090b);
+  border:1px solid rgba(255,90,90,.55);box-shadow:0 30px 80px -20px rgba(220,38,38,.75),inset 0 1px 0 rgba(255,255,255,.1);
+  animation:mhpPop .55s cubic-bezier(.2,.8,.2,1) both}
+.mhp-lc .mhp-x{position:absolute;top:8px;left:10px;z-index:3;font-size:26px}
+.mhp-lc__badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:99px;font-size:12px;font-weight:800;
+  color:#ffd54f;background:rgba(255,213,79,.12);border:1px solid rgba(255,213,79,.45)}
+.mhp-lc h2{margin:14px 0 8px;font-size:1.65rem;font-weight:900;line-height:1.4}
+.mhp-lc h2 em{font-style:normal;color:#ff4d4d;text-shadow:0 0 20px rgba(255,59,59,.7)}
+.mhp-lc p{margin:0 auto 18px;max-width:20em;font-size:13px;line-height:1.95;color:#d3bcbc}
+.mhp-lc__art{position:relative;height:150px;margin:6px 0 0;display:flex;justify-content:center;align-items:flex-end}
+.mhp-lc__art .mhp-phone{margin:0 0 -40px;align-self:auto;width:104px;height:170px;transform:rotate(-6deg)}
+.mhp-lc__art .mhp-ic{position:absolute;top:2px;right:50%;margin-right:-96px;width:56px;height:56px;border-radius:17px;z-index:2;transform:rotate(8deg)}
+.mhp-lc__art i.sp{position:absolute;bottom:20px;width:7px;height:7px;border-radius:50%;background:#ffd54f;box-shadow:0 0 10px #ffd54f;opacity:0;animation:mhpSpark 3.2s ease-out infinite}
+.mhp-lc__art i.sp:nth-of-type(1){left:14%;animation-delay:0s}
+.mhp-lc__art i.sp:nth-of-type(2){left:28%;animation-delay:.7s;background:#ff5a5a;box-shadow:0 0 10px #ff5a5a}
+.mhp-lc__art i.sp:nth-of-type(3){left:70%;animation-delay:1.3s}
+.mhp-lc__art i.sp:nth-of-type(4){left:84%;animation-delay:.4s;background:#c34bff;box-shadow:0 0 10px #c34bff}
+.mhp-lc__art i.sp:nth-of-type(5){left:50%;animation-delay:2s;background:#ff5a5a;box-shadow:0 0 10px #ff5a5a}
+.mhp-lc .mhp-btn{width:100%;justify-content:center;padding:13px 22px;font-size:15px;border-radius:16px}
+.mhp-lc__later{display:block;width:100%;margin-top:10px;padding:8px;background:none;border:0;color:#9a8a8a;font:inherit;font-size:12.5px;cursor:pointer}
+.mhp-lc__later:hover{color:#fff}
+.mhp-lc__qr{display:none;margin:0 0 14px}
+.mhp-lc__qr img{width:92px;height:92px;padding:5px;border-radius:14px;background:#fff}
+.mhp-lc__qr small{display:block;margin-top:4px;font-size:11px;color:#b9a3a3}
+@media(min-width:768px){.mhp-lc__qr{display:block}}
