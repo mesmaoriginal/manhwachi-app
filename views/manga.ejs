@@ -315,6 +315,188 @@
         #mobileDrawer a[href*="telegram"] { padding: 12px 14px; }
         #mobileDrawer a[href*="telegram"] .text-sm { font-size: 13px; }
         #mobileDrawer a[href*="telegram"] .material-symbols-outlined.text-2xl { font-size: 22px; }
+
+        /* =====================================================================
+           Desktop redesign (>= 1024px) — mobile / tablet layout is untouched
+           ===================================================================== */
+        .desktop-backdrop { display: none; }
+
+        @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes backdropDrift {
+            from { transform: scale(1.15) translate3d(0, 0, 0); }
+            to   { transform: scale(1.26) translate3d(-1.5%, 1.8%, 0); }
+        }
+
+        @media (min-width: 1024px) {
+            main.manhwa-main { position: relative; isolation: isolate; }
+
+            /* --- blurred cover backdrop that fades out toward the bottom --- */
+            .desktop-backdrop {
+                display: block;
+                position: absolute;
+                z-index: -1;
+                top: -64px; left: 0; right: 0;
+                height: 920px;
+                overflow: hidden;
+                pointer-events: none;
+                -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.85) 38%, rgba(0,0,0,.35) 72%, transparent 100%);
+                        mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.85) 38%, rgba(0,0,0,.35) 72%, transparent 100%);
+                animation: backdropIn 1.4s ease-out both;
+            }
+            .desktop-backdrop img {
+                width: 100%; height: 100%;
+                object-fit: cover;
+                object-position: center 22%;
+                filter: blur(14px) saturate(1.25) brightness(.9);
+                opacity: .34;
+                transform: scale(1.15);
+                animation: backdropDrift 40s ease-in-out infinite alternate;
+                will-change: transform;
+            }
+            .desktop-backdrop::after {
+                content: "";
+                position: absolute; inset: 0;
+                background:
+                    radial-gradient(ellipse 55% 50% at 22% 26%, rgba(220,38,38,.24), transparent 70%),
+                    radial-gradient(ellipse 80% 70% at 50% 0%, transparent 45%, rgba(0,0,0,.55) 100%),
+                    linear-gradient(to right, rgba(0,0,0,.6), transparent 20%, transparent 80%, rgba(0,0,0,.6));
+            }
+
+            /* --- cover --- */
+            main #dynamic-cover {
+                border: 1px solid rgba(255,255,255,.14);
+                box-shadow: 0 30px 70px -20px rgba(0,0,0,.85), 0 0 80px -15px rgba(220,38,38,.45);
+                transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
+            }
+            main #dynamic-cover:hover {
+                transform: translateY(-6px) scale(1.015);
+                box-shadow: 0 40px 90px -20px rgba(0,0,0,.9), 0 0 110px -10px rgba(220,38,38,.6);
+            }
+
+            /* --- title block --- */
+            main #manhwaTitle { letter-spacing: -.02em; line-height: 1.1; }
+            main .hero-info { position: relative; border-bottom-color: transparent; padding-bottom: 30px; }
+            main .hero-info::after {
+                content: "";
+                position: absolute; bottom: 0; right: 0; left: 0; height: 1px;
+                background: linear-gradient(to left, rgba(220,38,38,.75), rgba(255,255,255,.1) 45%, transparent);
+            }
+            main #type > * {
+                padding: 7px 18px;
+                font-size: 12.5px;
+                border: 1px solid rgba(255,255,255,.1);
+                transition: background-color .25s ease, border-color .25s ease, transform .25s ease;
+            }
+            main #type > span:first-child { border-color: rgba(255,255,255,.22); box-shadow: 0 0 22px rgba(220,38,38,.5); }
+            main #type > a:hover { border-color: rgba(220,38,38,.6); transform: translateY(-2px); }
+            main .hero-info > div:last-child { gap: 12px; flex-wrap: wrap; }
+            main .hero-info > div:last-child > * {
+                padding: 6px 14px;
+                border-radius: 999px;
+                background: rgba(255,255,255,.06);
+                border: 1px solid rgba(255,255,255,.09);
+                -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            }
+
+            /* --- description as a glass card --- */
+            main .manhwa-card {
+                padding: 22px 28px 20px;
+                background: rgba(16,12,12,.6);
+                -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 24px;
+                box-shadow: 0 24px 60px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.05);
+            }
+            main #dynamic-description { color: #d9cccc; font-size: 16px; line-height: 2; }
+            main .description-text { max-height: 160px; }
+            main .description-text.expanded { max-height: 2000px; }
+            main #descriptionFade { background-image: linear-gradient(to top, rgba(18,13,13,.96), transparent); }
+
+            /* --- action buttons --- */
+            main #readBtn {
+                position: relative; overflow: hidden;
+                height: 56px; font-size: 17px; border-radius: 16px;
+                background-image: linear-gradient(135deg, #ef4444 0%, #dc2626 45%, #991b1b 100%);
+                box-shadow: 0 10px 30px -8px rgba(220,38,38,.65), inset 0 1px 0 rgba(255,255,255,.25);
+                transition: transform .25s ease, box-shadow .25s ease;
+            }
+            main #readBtn::after {
+                content: ""; position: absolute; top: 0; bottom: 0; left: -80%; width: 55%;
+                background: linear-gradient(100deg, transparent, rgba(255,255,255,.3), transparent);
+                transform: skewX(-20deg);
+                transition: left .8s ease;
+                pointer-events: none;
+            }
+            main #readBtn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(220,38,38,.85), inset 0 1px 0 rgba(255,255,255,.3); }
+            main #readBtn:hover::after { left: 135%; }
+            main #readBtn:active { transform: scale(.97); }
+            main #bookmarkBtn, main #shareBtn {
+                width: 56px; height: 56px; border-radius: 16px;
+                -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+            }
+            main #shareBtn { background-color: rgba(220,38,38,.06); transition: background-color .25s ease, transform .2s ease; }
+            main #shareBtn:hover { background-color: rgba(220,38,38,.2); }
+
+            /* --- stat cards --- */
+            main .stat-card {
+                position: relative; overflow: hidden;
+                background-image: linear-gradient(145deg, rgba(34,26,26,.78), rgba(14,12,12,.78));
+                -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+                border: 1px solid rgba(255,255,255,.08);
+                transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+            }
+            main .stat-card::before {
+                content: ""; position: absolute; top: 0; right: 0; width: 64px; height: 2px;
+                background: linear-gradient(to left, #dc2626, transparent);
+            }
+            main .stat-card:hover {
+                transform: translateY(-3px);
+                border-color: rgba(220,38,38,.4);
+                box-shadow: 0 14px 34px -14px rgba(220,38,38,.5);
+            }
+
+            /* --- sections --- */
+            main .telegram-banner { padding: 0 32px; }
+            main .section-title { font-size: 22px; position: relative; padding-right: 16px; }
+            main .section-title::before {
+                content: ""; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+                width: 4px; height: 26px; border-radius: 4px;
+                background: linear-gradient(to bottom, #ef4444, #7f1d1d);
+                box-shadow: 0 0 14px rgba(220,38,38,.7);
+            }
+            main #sortBtn {
+                padding: 8px 16px; border-radius: 999px;
+                background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+                transition: background-color .25s ease, border-color .25s ease;
+            }
+            main #sortBtn:hover { background: rgba(220,38,38,.15); border-color: rgba(220,38,38,.45); }
+
+            /* --- episode cards --- */
+            main .episode-card {
+                position: relative; overflow: hidden;
+                background-image: linear-gradient(145deg, rgba(30,25,25,.85), rgba(16,14,14,.85));
+                border: 1px solid rgba(255,255,255,.06);
+                transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease, background-image .3s ease;
+            }
+            main .episode-card::before {
+                content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 3px;
+                background: linear-gradient(to bottom, #ef4444, #7f1d1d);
+                opacity: 0; transition: opacity .3s ease;
+            }
+            main .episode-card:hover {
+                transform: translateY(-4px);
+                background-image: linear-gradient(145deg, rgba(44,32,32,.92), rgba(24,19,19,.92));
+                border-color: rgba(220,38,38,.4);
+                box-shadow: 0 16px 36px -16px rgba(220,38,38,.5);
+            }
+            main .episode-card:hover::before { opacity: 1; }
+            main .episode-card .chapter-cover-img { transition: transform .5s ease; }
+            main .episode-card:hover .chapter-cover-img { transform: scale(1.1); }
+        }
+
+        @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+            .desktop-backdrop, .desktop-backdrop img { animation: none; }
+        }
     </style>
     <link rel="stylesheet" href="/app-promo.css?v=1">
 </head>
@@ -645,7 +827,12 @@
         </div>
     </aside>
 
-    <main class="pb-20">
+    <main class="pb-20 manhwa-main">
+        <!-- Desktop-only: blurred, fading cover backdrop (hidden on mobile via CSS) -->
+        <div class="desktop-backdrop" aria-hidden="true">
+            <img src="<%= cover_url %>" alt="" decoding="async" referrerpolicy="no-referrer" />
+        </div>
+
         <!-- Hero + Info Wrapper: on tablet/desktop this becomes a 2-column grid (cover left, info right).
              Note: page is dir="rtl", so in a CSS grid, column line 1 is on the RIGHT and the last line is on the LEFT.
              The info block explicitly takes columns 1-8 (right side) and the cover explicitly takes columns 9-12 (left side),
@@ -660,7 +847,7 @@
 
             <div class="absolute inset-0 glass-scrim lg:hidden"></div>
 
-            <div class="absolute bottom-0 left-0 right-0 px-5 pb-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-1 lg:px-0 lg:pb-6 lg:pt-1 lg:border-b lg:border-white/10">
+            <div class="hero-info absolute bottom-0 left-0 right-0 px-5 pb-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-1 lg:px-0 lg:pb-6 lg:pt-1 lg:border-b lg:border-white/10">
                 <div id="mainname" style="width: 100%; direction: ltr;">
                     <div id="type" class="flex gap-2 mb-3 lg:flex-wrap" style="direction: ltr;">
                         <span class="px-3.5 py-1 bg-primary text-on-primary text-xs font-medium rounded-full"><%= origin %></span>
@@ -694,7 +881,7 @@
 
         <!-- Action buttons -->
         <section class="px-5 -mt-6 relative z-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-3 lg:px-0 lg:mt-2">
-            <div class="flex gap-3 lg:max-w-md">
+            <div class="flex gap-3 lg:max-w-lg">
                 <button id="readBtn" class="flex-1 bg-primary text-on-primary h-12 rounded-xl font-medium text-base flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-primary/25">
                     <span>شروع خواندن</span>
                 </button>
@@ -715,18 +902,18 @@
 
         <!-- Stats (type / translated chapters) -->
         <section class="px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-4 lg:px-0 lg:mt-2">
-            <div class="grid grid-cols-2 gap-4 mb-5 lg:max-w-md">
-                <div class="bg-surface-elevated rounded-2xl p-4 border border-white/5">
+            <div class="grid grid-cols-2 gap-4 mb-5 lg:grid-cols-none lg:grid-flow-col lg:auto-cols-fr lg:max-w-2xl">
+                <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5">
                     <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">collections_bookmark</span>نوع</div>
                     <div id="dynamic-type-label" class="text-base font-semibold text-white"><%= type %></div>
                 </div>
-                <div class="bg-surface-elevated rounded-2xl p-4 border border-white/5">
+                <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5">
                     <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">format_list_numbered</span>چپترهای ترجمه شده</div>
                     <div id="dynamic-chapters-count" class="text-base font-semibold text-white"><%= episodes.length %></div>
                 </div>
                 <% var _releaseDate = (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : ''); %>
                 <% if (_releaseDate) { %>
-                <div class="bg-surface-elevated rounded-2xl p-4 border border-white/5 col-span-2">
+                <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5 col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">calendar_month</span>تاریخ پخش</div>
                     <div id="dynamic-release-date" class="text-base font-semibold text-white"><%= _releaseDate %></div>
                 </div>
@@ -773,7 +960,7 @@
         <!-- Episodes List Section -->
         <section class="mt-10 px-5 lg:max-w-7xl lg:mx-auto lg:px-8">
             <div class="flex justify-between items-center mb-5">
-                <h3 class="text-xl font-semibold">قسمت‌ها</h3>
+                <h3 class="section-title text-xl font-semibold">قسمت‌ها</h3>
                 <button id="sortBtn" class="text-white flex items-center gap-1 text-sm font-medium transition-colors ">جدیدترین اول <span class="material-symbols-outlined">swap_vert</span></button>
             </div>
 
@@ -860,7 +1047,7 @@
         <!-- Similar Manhwas Section -->
         <section id="similarSection" class="mt-12 px-5 lg:max-w-7xl lg:mx-auto lg:px-8 hidden">
             <div class="flex items-center justify-between mb-5">
-                <h3 class="text-xl font-semibold flex items-center gap-2">
+                <h3 class="section-title text-xl font-semibold flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">auto_awesome</span>
                     مانهواهای مشابه
                 </h3>
@@ -877,7 +1064,7 @@
         <!-- Comments Section -->
         <section id="commentsAnchor" class="mt-12 px-5 lg:max-w-4xl lg:mx-auto lg:px-8">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold">نظرات <span id="commentCount" class="text-on-surface-variant text-lg font-normal">(۰)</span></h3>
+                <h3 class="section-title text-xl font-semibold">نظرات <span id="commentCount" class="text-on-surface-variant text-lg font-normal">(۰)</span></h3>
                 <span class="text-sm text-text-muted">جدیدترین</span>
             </div>
             
