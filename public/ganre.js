@@ -155,6 +155,10 @@
         }
     }
 
+    function formatNum(n) {
+        try { return Number(n).toLocaleString('fa-IR'); } catch (e) { return String(n); }
+    }
+
     // لود کردن مانهواهای یک ژانر خاص با فیلتر زبان فارسی
     async function loadGenreRow(genreInEnglish, containerId) {
         const container = document.getElementById(containerId);
@@ -224,6 +228,12 @@
 
         const genres = [...genresSet].sort();
 
+        // تعداد آثار هر ژانر (فقط در دسکتاپ نمایش داده می‌شه)
+        const genreCounts = {};
+        allItems.forEach(m => {
+            if (Array.isArray(m.genres)) m.genres.forEach(g => { genreCounts[g] = (genreCounts[g] || 0) + 1; });
+        });
+
         if (genres.length === 0) {
             container.innerHTML = `
                 <div class="empty-row-state col-span-full">
@@ -244,6 +254,8 @@
                     <span class="material-symbols-outlined">${icon}</span>
                 </span>
                 <span class="genre-name">${g}</span>
+                <span class="genre-count">${formatNum(genreCounts[g] || 0)} اثر</span>
+                <span class="material-symbols-outlined genre-arrow">arrow_back</span>
             </a>
             `;
         }).join("");

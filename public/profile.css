@@ -722,3 +722,310 @@
 @media (prefers-reduced-motion: reduce) {
     .profile * { transition: none !important; animation: none !important; }
 }
+
+/* ==========================================================================
+   DESKTOP ONLY (>=1024px) — پروفایل (نسخه‌ی جمع‌وجور)  |  موبایل/تبلت دست‌نخورده
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  .profile { max-width: 1520px; padding: 24px clamp(20px, 2.5vw, 48px) 60px; }
+
+  .profile #mainProfileContent {
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 16px; align-items: stretch;
+  }
+  .profile .split { display: contents; }
+
+  .profile .hero             { grid-column: 1 / 9;  grid-row: 1; margin: 0; }
+  .profile .vip-card         { grid-column: 9 / 13; grid-row: 1; }
+  .profile .stats            { grid-column: 1 / -1; grid-row: 2; margin: 0; }
+  .profile .stack            { grid-column: 9 / 13; grid-row: 3 / 5; align-self: start;
+                               position: sticky; top: 80px; gap: 16px; }
+  .profile #bookmarksSection { grid-column: 1 / 9;  grid-row: 3; margin: 0; }
+  .profile #historySection   { grid-column: 1 / 9;  grid-row: 4; margin: 0; }
+  .profile #commentsSection  { grid-column: 1 / -1; grid-row: 5; margin: 0; }
+
+  /* ---------- هدر ---------- */
+  .profile .hero { border-radius: 26px; display: flex; }
+  .profile .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+    -webkit-mask-image: linear-gradient(to left, #000, transparent 70%);
+            mask-image: linear-gradient(to left, #000, transparent 70%);
+  }
+  .profile .hero__inner { width: 100%; align-items: center; padding: 28px 36px; gap: 28px; z-index: 1; }
+  .profile .avatar { width: 120px; height: 120px; }
+  .profile .avatar__btn { width: 34px; height: 34px; }
+  .profile .hero__info { gap: 10px; }
+  .profile .hero__name { font-size: 26px; }
+
+  /* ---------- کارت اشتراک ---------- */
+  .profile .vip-card {
+    display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
+    padding: 24px; border-radius: 26px;
+    background:
+      radial-gradient(110% 80% at 100% 0%, rgba(220,38,38,.28), transparent 60%),
+      linear-gradient(180deg, var(--s1), #0b0b0e);
+  }
+  .profile .vip-card__icon { width: 52px; height: 52px; }
+  .profile .vip-countdown__number { font-size: 42px; line-height: 1; }
+
+  /* ---------- دسترسی سریع ---------- */
+  .profile .stats { gap: 16px; }
+  .profile .stat {
+    position: relative; padding: 16px 22px; gap: 16px; border-radius: 22px;
+    background: linear-gradient(135deg, var(--s2), var(--s1));
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .profile .stat::after {
+    content: "‹"; margin-inline-start: auto; font-size: 26px; line-height: 1;
+    color: var(--mute); transition: transform .25s ease, color .25s ease;
+  }
+  .profile .stat:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.5); }
+  .profile .stat:hover::after { color: var(--red-hot); transform: translateX(-5px); }
+  .profile .stat__icon { width: 46px; height: 46px; border-radius: 16px; }
+  .profile .stat__icon .material-symbols-outlined { font-size: 24px; }
+
+  /* ---------- پنل‌ها ---------- */
+  .profile .panel { border-radius: 24px; padding: 22px; background: linear-gradient(180deg, var(--s1), #0c0c0f); }
+  .profile .fold { padding: 0; }
+  .profile .sec-head { margin-bottom: 18px; }
+
+  /* ---------- قفسه‌ها و دیدگاه‌ها ---------- */
+  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 14px; }
+  .profile .shelf-item { border-radius: 16px; }
+  .profile .comments { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+}
+
+/* ==========================================================================
+   DESKTOP POLISH (>=1024px) — پروفایل | موبایل/تبلت دست‌نخورده
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .profile { max-width: 1560px; }
+
+  .profile .hero { min-height: 210px; }
+  .profile .hero::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 45%, rgba(220,38,38,.12));
+  }
+  .profile .hero__inner { padding: 36px 48px; gap: 36px; }
+  .profile .avatar { width: 140px; height: 140px; }
+  .profile .hero__name { font-size: 32px; }
+
+  .profile .sec-head__title { font-size: 18px; font-weight: 800; }
+  .profile .panel { transition: border-color .3s ease, box-shadow .3s ease; }
+  .profile .panel:hover { border-color: var(--line2); box-shadow: 0 18px 36px -20px rgba(0,0,0,.9); }
+
+  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
+  .profile .shelf-item {
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 24px -14px rgba(0,0,0,.9);
+    transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease;
+  }
+  .profile .shelf-item:hover {
+    transform: translateY(-6px); border-color: rgba(239,68,68,.55);
+    box-shadow: 0 22px 38px -12px rgba(220,38,38,.35);
+  }
+  .profile .shelf-item img { transition: transform .7s cubic-bezier(.16,1,.3,1); }
+  .profile .shelf-item:hover img { transform: scale(1.07); }
+
+  .profile .bubble { transition: transform .25s ease, border-color .25s ease; }
+  .profile .bubble:hover { transform: translateY(-3px); border-color: var(--line2); }
+}
+
+/* ==========================================================================
+   DESKTOP PREMIUM (>=1024px) — پروفایل، هم‌سبک اسلایدر صفحه‌ی اصلی
+   فقط دسکتاپ؛ موبایل/تبلت دست‌نخورده. این بلاک باید آخر فایل بماند.
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  .profile { max-width: 1600px; padding-top: 32px; padding-bottom: 80px; }
+  .profile #mainProfileContent { gap: 22px; }
+  .profile .stack { top: 96px; gap: 22px; }
+
+  /* ---------- هدر (سینمایی مثل اسلایدر) ---------- */
+  .profile .hero {
+    min-height: 310px;
+    border-radius: 28px;
+    border-color: transparent;
+    background: linear-gradient(135deg, #1a0a0c 0%, #0e0e11 55%, #09090b 100%);
+    box-shadow: 0 30px 70px -22px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.07);
+  }
+  .profile .hero__glow {
+    background:
+      radial-gradient(70% 130% at 100% 0%, rgba(220,38,38,.42), transparent 60%),
+      radial-gradient(60% 100% at 0% 115%, rgba(127,29,29,.45), transparent 62%);
+    animation: profileAura 6s ease-in-out infinite alternate;
+  }
+  @keyframes profileAura { from { opacity: .75; } to { opacity: 1; } }
+
+  .profile .hero__inner { padding: 48px 60px; gap: 48px; }
+  .profile .hero__inner::after {
+    content: ""; position: absolute; bottom: 0; inset-inline: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(239,68,68,.7), transparent);
+    opacity: .6;
+  }
+  .profile .hero__info { gap: 14px; }
+  .profile .hero__name {
+    font-size: 42px; font-weight: 900; letter-spacing: -.01em;
+    text-shadow: 0 0 34px rgba(239,68,68,.35);
+  }
+
+  .profile .avatar { width: 176px; height: 176px; }
+  .profile .avatar::before {
+    inset: -6px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 0 46px rgba(239,68,68,.45);
+  }
+  .profile .avatar__frame { border-width: 6px; background: #0d0d10; }
+  .profile .avatar__fallback { font-size: 88px; }
+  .profile .avatar__btn { width: 42px; height: 42px; border-width: 4px; bottom: 2px; }
+  .profile .avatar__btn .material-symbols-outlined { font-size: 20px; }
+
+  .profile .vip-pill { padding: 6px 14px 6px 16px; font-size: 12.5px; box-shadow: 0 0 22px rgba(52,211,153,.18); }
+
+  .profile .chips { gap: 10px; }
+  .profile .chip {
+    padding: 9px 18px; font-size: 13px; color: #d4d4d8;
+    background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .profile .meta { font-size: 13.5px; }
+  .profile .id-pill { padding: 7px 16px; font-size: 13px; background: rgba(0,0,0,.45); }
+
+  /* ---------- کارت اشتراک ---------- */
+  .profile .vip-card {
+    padding: 32px; gap: 20px; border-radius: 28px;
+    border-color: rgba(251,191,36,.3);
+    background:
+      radial-gradient(90% 70% at 100% 0%, rgba(251,191,36,.2), transparent 60%),
+      radial-gradient(80% 60% at 0% 100%, rgba(220,38,38,.22), transparent 60%),
+      linear-gradient(180deg, #17120b, #0b0b0e);
+    box-shadow: 0 30px 70px -26px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .profile .vip-card::before {
+    content: ""; position: absolute; top: 0; inset-inline: 32px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(251,191,36,.8), transparent);
+  }
+  .profile .vip-card__icon {
+    width: 64px; height: 64px; border-radius: 20px;
+    background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.28);
+    box-shadow: 0 0 30px rgba(251,191,36,.15);
+  }
+  .profile .vip-card__title { font-size: 21px; font-weight: 900; }
+  .profile .vip-card__sub { font-size: 13px; }
+  .profile .vip-card__status { font-size: 13.5px; }
+  .profile .vip-countdown__number { font-size: 68px; font-weight: 900; }
+  .profile .vip-countdown__label { font-size: 13.5px; }
+  .profile .vip-countdown__track { height: 10px; }
+  .profile .vip-card > a {
+    padding-block: 15px; border-radius: 16px; font-size: 14px;
+    box-shadow: 0 14px 30px -10px rgba(220,38,38,.6);
+  }
+
+  /* ---------- دسترسی سریع ---------- */
+  .profile .stats { gap: 22px; }
+  .profile .stat {
+    padding: 22px 28px; gap: 18px; border-radius: 24px;
+    background: linear-gradient(135deg, #17171b, #0e0e11);
+    box-shadow: 0 18px 40px -26px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .profile .stat__icon { width: 58px; height: 58px; border-radius: 18px; }
+  .profile .stat__icon .material-symbols-outlined { font-size: 28px; }
+  .profile .stat__text b { font-size: 15.5px; }
+  .profile .stat__text small { font-size: 12.5px; }
+  .profile .stat:nth-child(1):hover { border-color: rgba(239,68,68,.55);  box-shadow: 0 20px 40px -16px rgba(220,38,38,.4); }
+  .profile .stat:nth-child(2):hover { border-color: rgba(251,191,36,.55); box-shadow: 0 20px 40px -16px rgba(251,191,36,.3); }
+  .profile .stat:nth-child(3):hover { border-color: rgba(52,211,153,.55); box-shadow: 0 20px 40px -16px rgba(52,211,153,.3); }
+
+  /* ---------- پنل‌ها ---------- */
+  .profile .panel {
+    padding: 30px; border-radius: 28px;
+    background: linear-gradient(180deg, #131317 0%, #0b0b0e 100%);
+    box-shadow: 0 24px 50px -28px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .profile .sec-head {
+    gap: 14px; margin-bottom: 24px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .profile .sec-head__icon {
+    width: 46px; height: 46px; border-radius: 15px;
+    background: linear-gradient(135deg, rgba(220,38,38,.28), rgba(220,38,38,.08));
+    border: 1px solid rgba(239,68,68,.25);
+  }
+  .profile .sec-head__icon .material-symbols-outlined { font-size: 23px; }
+  .profile .sec-head__title { font-size: 20px; font-weight: 900; }
+
+  .profile .fold__summary { padding: 24px 30px; border-radius: 28px; }
+  .profile .fold__text b { font-size: 17px; font-weight: 800; }
+  .profile .fold__text small { font-size: 12.5px; }
+  .profile .fold__body { padding: 24px 30px 30px; }
+
+  /* ---------- فرم‌ها ---------- */
+  .profile .form { gap: 20px; }
+  .profile .field label { font-size: 13px; }
+  .profile .input { height: 52px; border-radius: 16px; font-size: 14.5px; background: rgba(0,0,0,.45); }
+  .profile .btn { height: 52px; border-radius: 16px; font-size: 13.5px; }
+  .profile .btn--primary { box-shadow: 0 14px 30px -10px rgba(220,38,38,.6); }
+
+  /* ---------- قفسه‌ها ---------- */
+  .profile .note {
+    padding: 12px 16px; border-radius: 14px; font-size: 12.5px;
+    background: rgba(255,255,255,.03); border: 1px solid var(--line);
+  }
+  .profile .link-btn {
+    padding: 9px 18px; border-radius: 999px; font-size: 12.5px;
+    border: 1px solid var(--line2); background: rgba(255,255,255,.03);
+    transition: color .2s ease, background .2s ease, border-color .2s ease;
+  }
+  .profile .link-btn:hover { background: rgba(220,38,38,.12); border-color: rgba(239,68,68,.5); }
+
+  .profile .shelf-search { max-width: 300px; height: 44px; padding: 0 18px; border-radius: 999px; background: rgba(0,0,0,.45); }
+  .profile .shelf-search--block { max-width: none; margin-bottom: 22px; }
+  .profile .shelf-search:focus-within { border-color: var(--red); box-shadow: 0 0 0 4px rgba(220,38,38,.14); }
+
+  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 22px; }
+  .profile .shelf-item {
+    border-radius: 20px; border-color: rgba(255,255,255,.08);
+    box-shadow: 0 16px 30px -16px rgba(0,0,0,.95);
+  }
+  .profile .shelf-item:hover {
+    transform: translateY(-8px); border-color: rgba(239,68,68,.6);
+    box-shadow: 0 26px 44px -14px rgba(220,38,38,.4), 0 0 0 1px rgba(239,68,68,.25);
+  }
+  .profile .shelf-item > div {
+    padding: 56px 14px 14px;
+    background: linear-gradient(to top, rgba(0,0,0,.96) 0%, rgba(0,0,0,.6) 50%, transparent 100%);
+  }
+  .profile .shelf-item > div p:first-child { font-size: 13px; font-weight: 800; }
+  .profile .shelf-item > div p + p { font-size: 11px; margin-top: 2px; }
+  .profile .shelf-item__remove { width: 34px; height: 34px; top: 10px; inset-inline-start: 10px; border-radius: 11px; }
+
+  /* ---------- دیدگاه‌ها ---------- */
+  .profile .comments { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 18px; }
+  .profile .bubble {
+    padding: 22px 26px; padding-inline-start: 30px; border-radius: 22px;
+    background: linear-gradient(160deg, #1a1a1f, #121215);
+  }
+  .profile .bubble::before { inset-block: 20px; width: 4px; }
+  .profile .bubble p { font-size: 13.5px !important; }
+  .profile .bubble:hover { border-color: rgba(239,68,68,.35); box-shadow: 0 18px 34px -20px rgba(0,0,0,.95); }
+
+  .profile .empty-panel { padding: 56px 24px; border-radius: 22px; font-size: 14px; background: rgba(255,255,255,.02); }
+
+  /* ---------- toast (نوار پایین موبایل در دسکتاپ نیست) ---------- */
+  .profile .toast-container { bottom: 32px; }
+  .profile .toast { padding: 14px 20px; font-size: 13.5px; border-radius: 16px; }
+}
+
+/* ==========================================================================
+   DESKTOP FIX (>=1024px) — رفع تداخل ستون تنظیمات/امنیت با باکس‌های دیگر
+   ستون تنظیمات حالا تا انتهای صفحه امتداد دارد و ردیف‌ها با ارتفاعش بزرگ می‌شوند.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .profile .stack            { grid-row: 3 / 6; }
+  .profile #commentsSection  { grid-column: 1 / 9; grid-row: 5; }
+  .profile .comments         { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .profile { padding-bottom: 160px; }
+  .profile #mainProfileContent { padding-bottom: 40px; }
+}

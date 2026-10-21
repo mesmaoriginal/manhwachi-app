@@ -2683,3 +2683,364 @@ text-align: right;   /* راست‌چین */
     align-items: center;
     gap: 2px;
 }
+/* ==========================================================================
+   DESKTOP ONLY (>=1024px) — خانه (نسخه‌ی جمع‌وجور)  |  موبایل/تبلت دست‌نخورده
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  /* ---------- هدر ---------- */
+  header.sticky > .max-w-7xl {
+    max-width: 1680px;
+    padding-inline: clamp(20px, 2.5vw, 48px);
+  }
+  header.sticky > .max-w-7xl > nav {
+    gap: 2px; padding: 4px; border-radius: 999px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  }
+  header.sticky > .max-w-7xl > nav a.nav-link {
+    padding: 7px 16px; border-radius: 999px; font-size: 13px;
+    transition: background .2s ease, color .2s ease;
+  }
+  header.sticky > .max-w-7xl > nav a.nav-link:hover { background: rgba(255,255,255,.09); }
+  header.sticky a[href="/search.html"] {
+    width: auto; min-width: 210px; padding-inline: 14px 20px; gap: 8px;
+    justify-content: flex-start; border-radius: 999px;
+  }
+  header.sticky a[href="/search.html"]::after {
+    content: "جستجوی مانهوا…"; font-size: 12.5px; font-weight: 500; color: #8c8c8c;
+  }
+
+  #app .max-w-7xl { max-width: 1680px; padding-inline: clamp(20px, 2.5vw, 48px); }
+
+  /* ---------- گرید صفحه ---------- */
+  .home-page {
+    max-width: 1680px;
+    padding-inline: clamp(20px, 2.5vw, 48px);
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px; align-content: start;
+  }
+  .home-page > * { grid-column: 1 / -1; }
+  .home-page > .telegram-banner,
+  .home-page > .instagram-banner { grid-column: auto; order: 90; }
+  .home-page > [data-mhp] { order: 99; }
+
+  /* ---------- اسلایدر ---------- */
+  .home-page .slider {
+    height: clamp(380px, 27vw, 500px);
+    border-radius: 24px;
+    box-shadow: 0 28px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.07);
+  }
+
+  /* ---------- عنوان بخش‌ها ---------- */
+  .home-page .title { border-top: 0; margin: 34px 0 12px; }
+  .home-page .title a {
+    width: 100%; height: auto; overflow: visible; justify-content: space-between;
+    padding: 0 16px 0 0; font-size: 1.25rem; font-weight: 800;
+  }
+  .home-page .title a::before {
+    content: ""; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    width: 4px; height: 20px; border-radius: 4px;
+    background: linear-gradient(180deg, #ef4444, #7f1d1d);
+  }
+  .home-page .title a::after {
+    content: "مشاهده همه ‹";
+    position: static; width: auto; height: auto; background: none;
+    padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
+    font-size: .8rem; font-weight: 600; color: #cbd5e1;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .home-page .title a:hover::after { background: #dc2626; border-color: #dc2626; color: #fff; }
+
+  /* ---------- آخرین آپدیت‌ها: بنتو ---------- */
+  .lst_type1 { border-bottom: 0; }
+  #todaysList {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: clamp(185px, 13.5vw, 240px);
+    gap: 14px; overflow: visible; padding: 6px 0 16px;
+  }
+  #todaysList li { flex: none; min-width: 0; min-height: 0; }
+  #todaysList li:last-child { margin: 0; }
+  #todaysList li:first-child { grid-column: span 2; grid-row: span 2; }
+  #todaysList .comic-card { height: 100%; border-radius: 20px; background: #0b0b0d; }
+  #todaysList .comic-card:hover { transform: translateY(-4px); }
+  #todaysList .comic-pic { position: absolute; inset: 0; height: 100%; }
+  #todaysList .comic-pic::after {
+    background: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.05) 100%);
+  }
+  #todaysList .badge-access { top: 10px; right: 10px; font-size: 10px; padding: 4px 10px; }
+  #todaysList .badge-chapter-box { left: 10px; right: 10px; bottom: 10px; padding: 5px 10px; border-radius: 10px; }
+  #todaysList .comic-info {
+    position: absolute; left: 0; right: 0; bottom: 42px; z-index: 3;
+    padding: 0 14px; background: transparent; gap: 6px;
+  }
+  #todaysList .comic-title { height: auto; font-size: 13.5px; text-shadow: 0 2px 10px rgba(0,0,0,.9); }
+  #todaysList .comic-meta { border-top: 0; padding-top: 0; }
+  #todaysList .comic-genre { background: rgba(255,255,255,.14); color: #fff; }
+  #todaysList li:first-child .comic-info { bottom: 52px; padding: 0 20px; gap: 8px; }
+  #todaysList li:first-child .comic-title { font-size: 21px; line-height: 1.45; }
+  #todaysList li:first-child .badge-chapter-box { left: 18px; right: 18px; bottom: 16px; padding: 8px 14px; }
+  #todaysList li:first-child .badge-chapter-num { font-size: 13px; }
+  #todaysList li:first-child .badge-access { top: 16px; right: 16px; font-size: 11px; }
+
+  /* ---------- بهترین‌ها ---------- */
+  .toprated_list { border-bottom: 0; margin: 0; }
+  #topRatedList {
+    display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    grid-template-rows: repeat(4, 84px); gap: 12px; padding: 6px 0 16px;
+  }
+  #topRatedList > li { min-width: 0; min-height: 0; }
+  #topRatedList > li:first-child { grid-column: 1; grid-row: 1 / 5; }
+  #topRatedList > li:not(:first-child) { grid-column: 2; }
+  #topRatedList > li > a {
+    position: relative; display: block; height: 100%; overflow: hidden;
+    border-radius: 20px; background: #101012; border: 1px solid rgba(255,255,255,.07);
+    transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease, background .3s ease;
+  }
+  #topRatedList > li > a:hover { border-color: rgba(220,38,38,.55); box-shadow: 0 10px 24px rgba(220,38,38,.18); }
+  #topRatedList > li:not(:first-child) > a:hover { transform: translateX(-4px); background: #17090b; }
+  #topRatedList .row { height: 100%; gap: 0; }
+
+  #topRatedList > li:not(:first-child) .row { padding: 0 14px 0 14px; }
+  #topRatedList > li:not(:first-child) .num {
+    width: 52px; height: auto; font-size: 1.8rem; font-weight: 800;
+    color: transparent; -webkit-text-stroke: 1.2px rgba(255,255,255,.3);
+  }
+  #topRatedList > li:not(:first-child) .pic { width: 54px; height: 68px; margin: 0; border-radius: 10px; overflow: hidden; }
+  #topRatedList > li:not(:first-child) .pic img { width: 100%; height: 100%; object-fit: cover; }
+  #topRatedList > li:not(:first-child) .info { padding: 0 16px; }
+  #topRatedList > li:not(:first-child) .subj .ellipsis { height: auto; font-size: 15px; font-weight: 700; line-height: 1.7; }
+  #topRatedList > li:not(:first-child) .genre { font-size: 11.5px; margin-top: 2px; }
+
+  #topRatedList > li:first-child > a::before {
+    content: "برترین مانهوا"; position: absolute; top: 14px; left: 14px; z-index: 4;
+    padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, #ef4444, #991b1b);
+  }
+  #topRatedList > li:first-child .row { display: block; position: relative; }
+  #topRatedList > li:first-child .pic { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; border-radius: 0; }
+  #topRatedList > li:first-child .pic img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+  #topRatedList > li:first-child > a:hover .pic img { transform: scale(1.05); }
+  #topRatedList > li:first-child .pic::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.96) 0%, rgba(0,0,0,.3) 50%, rgba(0,0,0,.1) 100%);
+  }
+  #topRatedList > li:first-child .num {
+    position: absolute; top: 12px; right: 14px; z-index: 4; width: 42px; height: 42px;
+    border-radius: 14px; background: rgba(0,0,0,.6);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #topRatedList > li:first-child .info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; padding: 20px; }
+  #topRatedList > li:first-child .subj .ellipsis { height: auto; font-size: 21px; line-height: 1.45; text-shadow: 0 2px 12px rgba(0,0,0,.9); }
+  #topRatedList > li:first-child .genre { font-size: 12.5px; color: #d4d4d8; margin-top: 4px; }
+
+  /* ---------- بنر همکاری ---------- */
+  .mw-banner-wrapper { border-bottom: 0; margin: 34px 0 14px; }
+  .mw-banner-container {
+    aspect-ratio: auto; height: clamp(260px, 21vw, 380px);
+    background-size: cover; border-radius: 24px;
+    box-shadow: 0 22px 50px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.07);
+  }
+  .mw-banner-content { padding: 0 4%; }
+  .mw-banner-title { font-size: clamp(1.8rem, 2.4vw, 3rem); margin-bottom: 10px; }
+  .mw-banner-subtitle { font-size: clamp(.9rem, 1.1vw, 1.2rem); }
+  .mw-btn-glow { padding: 10px 24px; font-size: .95rem; gap: 8px; }
+  .mw-btn-icon { width: 16px; height: 16px; }
+
+  /* ---------- تلگرام + اینستاگرام ---------- */
+  .telegram-banner, .instagram-banner { padding: 0; margin: 14px 0 6px; }
+  .telegram-banner-link, .instagram-banner-link {
+    max-width: none; min-height: 100px; border-radius: 22px; padding: 20px 26px; gap: 20px;
+  }
+  .telegram-title, .instagram-title { font-size: 1.05rem; }
+  .telegram-subtitle, .instagram-subtitle { font-size: .9rem; }
+  .telegram-icon img, .instagram-icon img { width: 52px; height: 52px; }
+  .telegram-btn, .instagram-btn { padding: 9px 20px; font-size: .9rem; }
+}
+
+/* ==========================================================================
+   DESKTOP POLISH (>=1024px) — خانه | موبایل/تبلت دست‌نخورده
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .home-page .dots { padding-block: 12px; }
+
+  /* عنوان بخش‌ها */
+  .home-page .title { margin: 40px 0 16px; }
+  .home-page .title a { font-size: 1.45rem; padding-right: 18px; }
+  .home-page .title a::before { width: 5px; height: 26px; box-shadow: 0 0 14px rgba(239,68,68,.5); }
+
+  /* کارت‌های آخرین آپدیت‌ها */
+  #todaysList .comic-card {
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 14px 28px -14px rgba(0,0,0,.9);
+    transition: transform .4s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease;
+  }
+  #todaysList .comic-card:hover {
+    transform: translateY(-6px); border-color: rgba(239,68,68,.6);
+    box-shadow: 0 26px 44px -12px rgba(220,38,38,.38);
+  }
+  #todaysList .comic-pic img { transition: transform .8s cubic-bezier(.16,1,.3,1); }
+  #todaysList .comic-card:hover .comic-pic img { transform: scale(1.07); }
+
+  /* لیست بهترین‌ها */
+  #topRatedList > li > a { box-shadow: 0 10px 22px -14px rgba(0,0,0,.9); }
+  #topRatedList > li:not(:first-child) > a:hover .num { -webkit-text-stroke-color: #ef4444; }
+  #topRatedList > li:not(:first-child) > a:hover .pic { transform: scale(1.06); }
+  #topRatedList > li:not(:first-child) .pic { transition: transform .3s ease; }
+}
+
+/* ==========================================================================
+   DESKTOP PREMIUM (>=1024px) — خانه | موبایل/تبلت دست‌نخورده
+   این بلاک باید آخر فایل بماند.
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  /* ---------- اسکرول‌بار و انتخاب متن (کل سایت در دسکتاپ) ---------- */
+  html { scrollbar-width: thin; scrollbar-color: #3f3f46 #0a0a0c; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #0a0a0c; }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3f3f46, #27272a);
+    border-radius: 999px; border: 2px solid #0a0a0c;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #ef4444, #7f1d1d); }
+  ::selection { background: rgba(220,38,38,.55); color: #fff; }
+
+  /* ---------- هدر: خط نورانی پایین ---------- */
+  header.sticky::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(239,68,68,.55), transparent);
+  }
+  header.sticky > .max-w-7xl { height: 72px; }
+  header.sticky > .max-w-7xl > nav {
+    background: rgba(255,255,255,.05);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  header.sticky > .max-w-7xl > nav a.nav-link:hover { background: rgba(220,38,38,.18); color: #fff; }
+
+  /* ---------- اسلایدر ---------- */
+  .home-page { padding-top: 22px; }
+  .home-page .slider {
+    height: clamp(420px, 30vw, 560px);
+    border-radius: 30px;
+    box-shadow:
+      0 40px 80px -28px rgba(0,0,0,.9),
+      0 0 70px -30px rgba(220,38,38,.45),
+      0 0 0 1px rgba(255,255,255,.08);
+  }
+  .home-page .slider::after {
+    content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.1),
+      inset 0 -140px 120px -80px rgba(0,0,0,.7);
+  }
+  .home-page .slider-nav {
+    width: 56px; height: 56px; opacity: .85;
+    background: rgba(10,10,12,.55); border-color: rgba(255,255,255,.2);
+    box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  }
+  .home-page .slider-nav-prev { left: 30px; }
+  .home-page .slider-nav-next { right: 30px; }
+
+  .home-page .dots {
+    justify-self: center; width: fit-content; margin: 16px auto 0;
+    padding: 10px 20px; gap: 10px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 999px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .home-page .dot { width: 30px; height: 6px; background: rgba(255,255,255,.22); }
+  .home-page .dot:hover { background: rgba(255,255,255,.5); }
+  .home-page .dot.is-active {
+    width: 56px; background: linear-gradient(90deg, #fff, #fca5a5);
+    box-shadow: 0 0 18px rgba(239,68,68,.7);
+  }
+
+  /* ---------- عنوان بخش‌ها ---------- */
+  .home-page .title {
+    margin: 48px 0 20px; padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .home-page .title a { font-size: 1.6rem; font-weight: 900; padding-right: 20px; }
+  .home-page .title a::before {
+    width: 5px; height: 30px;
+    background: linear-gradient(180deg, #f87171, #991b1b);
+    box-shadow: 0 0 18px rgba(239,68,68,.6);
+  }
+  .home-page .title a::after { padding: 7px 18px; font-size: .85rem; background: rgba(255,255,255,.04); }
+
+  /* ---------- کارت‌های آخرین آپدیت‌ها ---------- */
+  #todaysList { gap: 18px; }
+  #todaysList .comic-card {
+    border-radius: 24px; border-color: rgba(255,255,255,.09);
+    box-shadow: 0 18px 36px -16px rgba(0,0,0,.95);
+  }
+  #todaysList .comic-card::after {
+    content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+    border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  #todaysList li:first-child .comic-card {
+    border-color: rgba(239,68,68,.32);
+    box-shadow: 0 34px 64px -26px rgba(220,38,38,.5), 0 0 0 1px rgba(239,68,68,.12);
+  }
+  #todaysList .comic-card:hover { transform: translateY(-8px); }
+  #todaysList .comic-pic::after {
+    background: linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.55) 38%, rgba(0,0,0,.05) 100%);
+  }
+  #todaysList .badge-access { border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,.45); }
+  #todaysList .badge-chapter-box {
+    background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2);
+    border-radius: 12px;
+  }
+  #todaysList .comic-meta { justify-content: flex-start; gap: 8px; }
+  #todaysList .comic-genre { border-radius: 999px; padding: 3px 10px; font-size: 10.5px; backdrop-filter: blur(6px); }
+  #todaysList .comic-score {
+    margin-inline-start: auto; padding: 3px 10px; border-radius: 999px;
+    background: rgba(251,191,36,.14); border: 1px solid rgba(251,191,36,.28);
+  }
+
+  /* ---------- بهترین‌ها ---------- */
+  #topRatedList { gap: 14px; grid-template-rows: repeat(4, 90px); }
+  #topRatedList > li > a {
+    border-radius: 22px; border-color: rgba(255,255,255,.08);
+    background: linear-gradient(135deg, #16161a, #0d0d10);
+    box-shadow: 0 14px 28px -18px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  #topRatedList > li:first-child > a {
+    border-color: rgba(239,68,68,.3);
+    box-shadow: 0 30px 60px -26px rgba(220,38,38,.45), 0 0 0 1px rgba(239,68,68,.1);
+  }
+  #topRatedList > li:not(:first-child) > a:hover {
+    background: linear-gradient(135deg, #1d0c0f, #100a0b);
+    box-shadow: 0 16px 32px -16px rgba(220,38,38,.35), inset -3px 0 0 #ef4444;
+  }
+  #topRatedList > li:not(:first-child) .subj .ellipsis { font-size: 15.5px; }
+  #topRatedList > li:not(:first-child) .pic { border-radius: 12px; box-shadow: 0 8px 18px -8px rgba(0,0,0,.9); }
+  #topRatedList > li:first-child .num span { color: #fbbf24; font-weight: 900; font-size: 1.15rem; text-shadow: 0 0 14px rgba(251,191,36,.6); }
+  #topRatedList > li:first-child > a::before { box-shadow: 0 8px 22px rgba(220,38,38,.5); }
+  #topRatedList > li:first-child .subj .ellipsis { font-size: 24px; }
+
+  /* ---------- بنرها ---------- */
+  .mw-banner-container { border-radius: 30px; transition: transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s ease; }
+  .mw-banner-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 34px 70px -24px rgba(220,38,38,.4), 0 0 0 1px rgba(255,255,255,.1);
+  }
+  .telegram-banner-link, .instagram-banner-link {
+    min-height: 116px; border-radius: 26px; padding: 22px 30px;
+    transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
+  }
+  .telegram-banner-link:hover  { transform: translateY(-4px); box-shadow: 0 22px 44px -14px rgba(34,158,217,.5); }
+  .instagram-banner-link:hover { transform: translateY(-4px); box-shadow: 0 22px 44px -14px rgba(220,39,67,.5); }
+  .telegram-btn, .instagram-btn { border-radius: 999px; box-shadow: 0 8px 20px -8px rgba(0,0,0,.45); }
+
+  /* ---------- درباره + فوتر ---------- */
+  footer.w-full { position: relative; background: linear-gradient(180deg, #050506, #000); }
+  footer.w-full::before {
+    content: ""; position: absolute; top: -1px; left: 0; right: 0; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(239,68,68,.45), transparent);
+  }
+}
