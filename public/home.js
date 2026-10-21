@@ -342,6 +342,20 @@ window.addEventListener("resize", onResize);
 window.addEventListener("keydown", handleKeyboard);
 window.addEventListener("pagehide", () => cancelAnimationFrame(rafId));
 
+// وقتی با دکمه‌ی بک برمی‌گردیم، مرورگر صفحه را از bfcache برمی‌گرداند:
+// DOMContentLoaded دوباره اجرا نمی‌شود ولی pagehide حلقه‌ی انیمیشن را
+// کشته بود، برای همین اسلایدر فریز می‌شد. اینجا حلقه را دوباره روشن می‌کنیم.
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return;
+  if (!slider || !track) return;
+
+  cancelAnimationFrame(rafId);
+  isDragging = false;
+  slider.classList.remove("is-dragging");
+  onResize();
+  rafId = requestAnimationFrame(animate);
+});
+
 // اولین لود زمان لود ابتدایی سند
 document.addEventListener("DOMContentLoaded", () => {
   window.initHome();
