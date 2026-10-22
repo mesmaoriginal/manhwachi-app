@@ -93,6 +93,30 @@ try {
   assetVer = String(Math.floor(require("fs").statSync(path.join(ASSET_DIR, "blog.css")).mtimeMs / 1000));
 } catch { /* در تست */ }
 
+// آیکون‌های SVG درون‌خطی (بدون وابستگی به فونت/CDN؛ هم‌سبک آیکون‌های سایت)
+const svg = (d, extra = "") => `<svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"${extra}>${d}</svg>`;
+const ICON = {
+  home: svg('<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),
+  grid: svg('<rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/>'),
+  blog: svg('<path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12.5a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5z"/><path d="M14.5 3.5V8H19"/><path d="M9 12.5h6M9 16h6"/>'),
+  search: svg('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>'),
+  send: svg('<path d="M21.5 3 10.5 14"/><path d="M21.5 3 14.5 21l-4-7-7-4z"/>'),
+  insta: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" fill="currentColor"/>'),
+  rss: svg('<path d="M4.5 11a8.5 8.5 0 0 1 8.5 8.5"/><path d="M4.5 4.5a15 15 0 0 1 15 15"/><circle cx="5.5" cy="18.5" r="1.2" fill="currentColor"/>'),
+  arrow: svg('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>', ' width="16" height="16"'),
+  clock: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', ' width="14" height="14"'),
+};
+const LOGO_SRC = "/ManhwaChi/LOGO-main-white.webp";
+const TG_URL = "https://telegram.me/Manhwachiofficial";
+const IG_URL = "https://www.instagram.com/ManhwaChiOfficial";
+const FONTS_HREF = "https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Montserrat:wght@700&display=swap";
+
+const brandHtml = (cls = "brand") =>
+  `<a class="${cls}" href="/" aria-label="${esc(SITE_NAME())}"><img src="${LOGO_SRC}" alt="" width="34" height="34" decoding="async"><span class="bn">Manhwa<b>Chi</b></span></a>`;
+
+const searchForm = (q = "", cls = "sf") =>
+  `<form class="${cls}" action="/blog/search" method="get" role="search">${ICON.search}<input type="search" name="q" value="${esc(q)}" placeholder="جستجو در وبلاگ…" maxlength="60" aria-label="جستجو در وبلاگ" enterkeyhint="search"><button type="submit" class="sr">جستجو</button></form>`;
+
 function layout({ title, desc, canonical, image, ogType = "website", noindex = false, ld = [], body, prev, next, bodyClass = "" }) {
   const fullTitle = title === BLOG_NAME() ? title : `${title} | ${BLOG_NAME()}`;
   const img = abs(image);
@@ -100,13 +124,16 @@ function layout({ title, desc, canonical, image, ogType = "website", noindex = f
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(clip(desc || BLOG_DESC(), 200))}">
 ${noindex ? '<meta name="robots" content="noindex,follow">' : '<meta name="robots" content="index,follow,max-image-preview:large">'}
 ${canonical ? `<link rel="canonical" href="${esc(canonical)}">` : ""}
 ${prev ? `<link rel="prev" href="${esc(prev)}">` : ""}${next ? `<link rel="next" href="${esc(next)}">` : ""}
 <link rel="alternate" type="application/rss+xml" title="${esc(BLOG_NAME())}" href="${SITE()}/blog/rss.xml">
+<link rel="icon" href="/ManhwaChi/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png">
 <meta property="og:locale" content="fa_IR">
 <meta property="og:site_name" content="${esc(SITE_NAME())}">
 <meta property="og:type" content="${esc(ogType)}">
@@ -115,19 +142,38 @@ ${prev ? `<link rel="prev" href="${esc(prev)}">` : ""}${next ? `<link rel="next"
 ${canonical ? `<meta property="og:url" content="${esc(canonical)}">` : ""}
 ${img ? `<meta property="og:image" content="${esc(img)}">` : ""}
 <meta name="twitter:card" content="${img ? "summary_large_image" : "summary"}">
-<meta name="theme-color" content="#0b0b0b">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="${FONTS_HREF}">
 <link rel="stylesheet" href="/blog-assets/blog.css?v=${assetVer}">
 ${ld.map(jsonLd).join("\n")}
 </head>
 <body class="${bodyClass}">
 <div class="progress" id="rp" aria-hidden="true"></div>
 <header class="hd"><div class="in">
-  <a class="logo" href="/">${esc(SITE_NAME())}</a>
-  <nav aria-label="منوی وبلاگ"><a href="/blog">وبلاگ</a><a href="/blog/rss.xml">RSS</a></nav>
-  <form class="sf" action="/blog/search" method="get" role="search"><input type="search" name="q" placeholder="جستجو در وبلاگ…" maxlength="60" aria-label="جستجو"><button type="submit">جستجو</button></form>
+  ${brandHtml()}<span class="bl-tag">وبلاگ</span>
+  <nav class="dn" aria-label="منوی اصلی"><a href="/">خانه</a><a href="/library-page.html">آرشیو مانهوا</a><a href="/blog" class="on" aria-current="page">وبلاگ</a><a class="tg" href="${TG_URL}" target="_blank" rel="noopener">تلگرام</a></nav>
+  ${searchForm("", "sf")}
+  <a class="ib sbtn" href="/blog/search" aria-label="جستجو">${ICON.search}</a>
 </div></header>
 <main class="main">${body}</main>
-<footer class="ft"><div class="in"><span>© ${esc(SITE_NAME())}</span><span><a href="/blog">وبلاگ</a> · <a href="/blog/rss.xml">RSS</a> · <a href="/blog/sitemap.xml">نقشه‌ی سایت</a></span></div></footer>
+<footer class="ft">
+  <div class="in ft-in">
+    <div class="ft-brand">${brandHtml("brand")}<p>${esc(BLOG_DESC())}</p></div>
+    <div class="ft-col"><b>دسترسی سریع</b><a href="/">خانه</a><a href="/library-page.html">آرشیو مانهوا</a><a href="/blog">وبلاگ</a></div>
+    <div class="ft-col"><b>وبلاگ</b><a href="/blog/rss.xml">خوراک RSS</a><a href="/blog/sitemap.xml">نقشه‌ی سایت</a><a href="/blog/search">جستجو</a></div>
+    <div class="ft-col"><b>ما را دنبال کنید</b><div class="soc"><a class="s-tg" href="${TG_URL}" target="_blank" rel="noopener" aria-label="تلگرام">${ICON.send}<span>تلگرام</span></a><a class="s-ig" href="${IG_URL}" target="_blank" rel="noopener" aria-label="اینستاگرام">${ICON.insta}<span>اینستاگرام</span></a></div></div>
+  </div>
+  <div class="in ft-bot"><span>© ${esc(SITE_NAME())} — تمامی حقوق محفوظ است</span></div>
+</footer>
+<nav class="bnav" id="bnav" aria-label="ناوبری سریع">
+  <a href="/">${ICON.home}<span>خانه</span></a>
+  <a href="/library-page.html">${ICON.grid}<span>آرشیو</span></a>
+  <a href="/blog" class="on" aria-current="page">${ICON.blog}<span>وبلاگ</span></a>
+  <a href="/blog/search">${ICON.search}<span>جستجو</span></a>
+</nav>
 <script src="/blog-assets/blog.js?v=${assetVer}" defer></script>
 </body>
 </html>`;
@@ -143,7 +189,7 @@ function send(res, html, { status = 200, cacheable = true } = {}) {
 }
 
 function notFound(res, status = 404) {
-  const body = `<div class="wrap narrow center"><h1>${status === 410 ? "این مطلب حذف شده است" : "صفحه پیدا نشد"}</h1><p class="mu">آدرس را بررسی کنید یا از جستجو استفاده کنید.</p><p><a class="btn btn-s" href="/blog">بازگشت به وبلاگ</a></p></div>`;
+  const body = `<div class="wrap narrow center nf"><div class="nf-code" aria-hidden="true">${status === 410 ? "۴۱۰" : "۴۰۴"}</div><h1>${status === 410 ? "این مطلب حذف شده است" : "صفحه پیدا نشد"}</h1><p class="mu">آدرس را بررسی کنید یا از جستجو استفاده کنید.</p>${searchForm("", "sf sf-big")}<p><a class="btn btn-s" href="/blog">بازگشت به وبلاگ</a></p></div>`;
   send(res, layout({ title: status === 410 ? "حذف‌شده" : "صفحه پیدا نشد", noindex: true, body }), { status, cacheable: false });
 }
 
@@ -154,24 +200,24 @@ function metaLine(p, authors, cats) {
   const mins = R.readingMinutes(p.word_count);
   const parts = [];
   if (c) parts.push(`<a class="cat" href="/blog/category/${encodeURIComponent(c.slug)}">${esc(c.name)}</a>`);
-  if (a) parts.push(a.public_slug ? `<a href="/blog/author/${encodeURIComponent(a.public_slug)}">${esc(a.display_name)}</a>` : `<span>${esc(a.display_name)}</span>`);
-  if (p.published_at) parts.push(`<time datetime="${esc(p.published_at)}">${esc(fmtDate(p.published_at))}</time>`);
-  if (p.word_count) parts.push(`<span>${mins} دقیقه مطالعه</span>`);
-  return parts.join('<i aria-hidden="true">·</i>');
+  if (a) parts.push(`<span class="mi m-au">${a.public_slug ? `<a href="/blog/author/${encodeURIComponent(a.public_slug)}">${esc(a.display_name)}</a>` : esc(a.display_name)}</span>`);
+  if (p.published_at) parts.push(`<time class="mi m-dt" datetime="${esc(p.published_at)}">${esc(fmtDate(p.published_at))}</time>`);
+  if (p.word_count) parts.push(`<span class="mi m-rt">${ICON.clock}${mins} دقیقه مطالعه</span>`);
+  return parts.join("");
 }
 
 function card(p, authors, cats, { big = false } = {}) {
   const url = `/blog/${encodeURIComponent(p.slug)}`;
   const img = p.cover_url
     ? `<a class="pc-img" href="${esc(url)}" tabindex="-1" aria-hidden="true"><img src="${esc(p.cover_url)}" alt="" loading="${big ? "eager" : "lazy"}" decoding="async"></a>`
-    : "";
-  return `<article class="pc${big ? " pc-big" : ""}">${img}<div class="pc-b"><div class="meta">${metaLine(p, authors, cats)}</div><h2><a href="${esc(url)}">${esc(p.title)}</a></h2>${p.excerpt ? `<p>${esc(clip(p.excerpt, big ? 220 : 140))}</p>` : ""}</div></article>`;
+    : `<a class="pc-img pc-ph" href="${esc(url)}" tabindex="-1" aria-hidden="true"><img class="ph-logo" src="${LOGO_SRC}" alt="" loading="lazy" decoding="async"></a>`;
+  return `<article class="pc${big ? " pc-big" : ""}${p.cover_url ? "" : " pc-noimg"}">${img}<div class="pc-b"><div class="meta">${metaLine(p, authors, cats)}</div><h2><a href="${esc(url)}">${esc(p.title)}</a></h2>${p.excerpt ? `<p class="ex">${esc(clip(p.excerpt, big ? 220 : 140))}</p>` : ""}<span class="more" aria-hidden="true">ادامه‌ی مطلب ${ICON.arrow}</span></div></article>`;
 }
 
 function pager(base, page, hasNext) {
   if (page <= 1 && !hasNext) return "";
   const u = (n) => (n <= 1 ? base : base + (base.includes("?") ? "&" : "?") + "page=" + n);
-  return `<nav class="pager" aria-label="صفحه‌بندی">${page > 1 ? `<a class="btn" rel="prev" href="${esc(u(page - 1))}">→ صفحه‌ی قبل</a>` : "<span></span>"}<span class="mu">صفحه‌ی ${page}</span>${hasNext ? `<a class="btn" rel="next" href="${esc(u(page + 1))}">صفحه‌ی بعد ←</a>` : "<span></span>"}</nav>`;
+  return `<nav class="pager" aria-label="صفحه‌بندی">${page > 1 ? `<a class="btn" rel="prev" href="${esc(u(page - 1))}">→ صفحه‌ی قبل</a>` : "<span></span>"}<span class="pg-n">صفحه‌ی ${page}</span>${hasNext ? `<a class="btn" rel="next" href="${esc(u(page + 1))}">صفحه‌ی بعد ←</a>` : "<span></span>"}</nav>`;
 }
 
 const LIST_COLS = "id,slug,title,excerpt,cover_url,category_id,tags,author_id,published_at,word_count,featured";
@@ -184,14 +230,14 @@ async function listPosts(extra, page) {
   return { rows: rows.slice(0, PER_PAGE), hasNext: rows.length > PER_PAGE };
 }
 
-function listPage({ h1, intro, rows, authors, cats, base, page, hasNext, featured, empty }) {
+function listPage({ h1, intro, eyebrow, rows, authors, cats, base, page, hasNext, featured, empty }) {
   const grid = rows.length
     ? `<div class="grid">${rows.map((p) => card(p, authors, cats)).join("")}</div>`
-    : `<p class="mu center">${esc(empty || "هنوز مطلبی منتشر نشده است.")}</p>`;
+    : `<div class="empty"><p>${esc(empty || "هنوز مطلبی منتشر نشده است.")}</p></div>`;
   const chips = cats.length
     ? `<nav class="chips" aria-label="دسته‌ها"><a class="chip${base === "/blog" ? " on" : ""}" href="/blog">همه</a>${cats.map((c) => `<a class="chip${base === "/blog/category/" + encodeURIComponent(c.slug) ? " on" : ""}" href="/blog/category/${encodeURIComponent(c.slug)}">${esc(c.name)}</a>`).join("")}</nav>`
     : "";
-  return `<div class="wrap"><header class="ph"><h1>${esc(h1)}</h1>${intro ? `<p class="mu">${esc(intro)}</p>` : ""}</header>${chips}${featured || ""}${grid}${pager(base, page, hasNext)}</div>`;
+  return `<div class="wrap"><header class="ph ph-list">${eyebrow ? `<span class="eyebrow">${esc(eyebrow)}</span>` : ""}<h1>${esc(h1)}</h1>${intro ? `<p class="intro">${esc(intro)}</p>` : ""}</header>${chips}${featured || ""}${grid}${pager(base, page, hasNext)}</div>`;
 }
 
 // ---------- فهرست اصلی ----------
@@ -210,7 +256,7 @@ router.get("/blog", async (req, res, next) => {
       }
     }
     const canonical = SITE() + "/blog" + (page > 1 ? "?page=" + page : "");
-    const body = listPage({ h1: BLOG_NAME(), intro: BLOG_DESC(), rows: list, authors, cats, base: "/blog", page, hasNext, featured });
+    const body = listPage({ h1: BLOG_NAME(), intro: BLOG_DESC(), eyebrow: "مقاله‌ها، معرفی‌ها و بررسی‌ها", rows: list, authors, cats, base: "/blog", page, hasNext, featured });
     const ld = [{ "@context": "https://schema.org", "@type": "Blog", name: BLOG_NAME(), url: SITE() + "/blog", inLanguage: "fa" }];
     send(res, layout({ title: BLOG_NAME(), desc: BLOG_DESC(), canonical, body, ld, prev: page > 1 ? SITE() + "/blog" + (page > 2 ? "?page=" + (page - 1) : "") : "", next: hasNext ? SITE() + "/blog?page=" + (page + 1) : "" }));
   } catch (e) {
@@ -304,8 +350,8 @@ router.get("/blog/search", async (req, res, next) => {
       const t = `*${q}*`;
       rows = (await sb(`blog_posts?select=${LIST_COLS}&${liveFilter()}&or=${enc(`(title.ilike.${t},excerpt.ilike.${t},search_text.ilike.${t})`)}&order=published_at.desc&limit=20`)) || [];
     }
-    const body = `<div class="wrap"><header class="ph"><h1>جستجو${q ? `: ${esc(q)}` : ""}</h1></header>${
-      q.length < 2 ? '<p class="mu">حداقل دو حرف وارد کنید.</p>' : rows.length ? `<div class="grid">${rows.map((p) => card(p, authors, cats)).join("")}</div>` : '<p class="mu">نتیجه‌ای پیدا نشد؛ عبارت دیگری را امتحان کنید.</p>'
+    const body = `<div class="wrap"><header class="ph ph-list"><span class="eyebrow">جستجو</span><h1>${q ? `نتیجه‌ی «${esc(q)}»` : "جستجو در وبلاگ"}</h1>${searchForm(q, "sf sf-big")}</header>${
+      q.length < 2 ? '<div class="empty"><p>حداقل دو حرف وارد کنید.</p></div>' : rows.length ? `<div class="grid">${rows.map((p) => card(p, authors, cats)).join("")}</div>` : '<div class="empty"><p>نتیجه‌ای پیدا نشد؛ عبارت دیگری را امتحان کنید.</p></div>'
     }</div>`;
     send(res, layout({ title: q ? `جستجو: ${q}` : "جستجو", noindex: true, body }), { cacheable: false });
   } catch (e) {
@@ -329,7 +375,7 @@ router.get("/blog/category/:slug", async (req, res, next) => {
     const { rows, hasNext } = await listPosts(`category_id=eq.${enc(cat.id)}`, page);
     if (page > 1 && !rows.length) return notFound(res);
     const base = `/blog/category/${encodeURIComponent(cat.slug)}`;
-    const body = listPage({ h1: cat.name, intro: cat.description, rows, authors, cats, base, page, hasNext, empty: "هنوز مطلبی در این دسته منتشر نشده است." });
+    const body = listPage({ h1: cat.name, intro: cat.description, eyebrow: "دسته‌بندی", rows, authors, cats, base, page, hasNext, empty: "هنوز مطلبی در این دسته منتشر نشده است." });
     const ld = [{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "وبلاگ", item: SITE() + "/blog" }, { "@type": "ListItem", position: 2, name: cat.name, item: SITE() + base }] }];
     send(res, layout({ title: cat.name, desc: cat.description || `مطالب دسته‌ی ${cat.name}`, canonical: SITE() + base + (page > 1 ? "?page=" + page : ""), body, ld, noindex: !rows.length }));
   } catch (e) {
@@ -345,7 +391,7 @@ router.get("/blog/tag/:tag", async (req, res, next) => {
     const { rows, hasNext } = await listPosts(`tags=cs.${arrLit(tag)}`, page);
     if (!rows.length) return notFound(res); // تگ خالی: ۴۰۴ (جلوگیری از صفحه‌ی بی‌محتوا در گوگل)
     const base = `/blog/tag/${encodeURIComponent(tag)}`;
-    const body = listPage({ h1: `برچسب: ${tag}`, rows, authors, cats, base, page, hasNext });
+    const body = listPage({ h1: `#${tag}`, eyebrow: "برچسب", rows, authors, cats, base, page, hasNext });
     send(res, layout({ title: `برچسب ${tag}`, desc: `مطالب برچسب ${tag}`, canonical: SITE() + base + (page > 1 ? "?page=" + page : ""), body }));
   } catch (e) {
     next(e);
@@ -361,8 +407,8 @@ router.get("/blog/author/:slug", async (req, res, next) => {
     const cats = await getCategories();
     const { rows, hasNext } = await listPosts(`author_id=eq.${enc(a.id)}`, page);
     const base = `/blog/author/${encodeURIComponent(a.public_slug)}`;
-    const head = `<header class="ph author-h">${a.avatar_url ? `<img class="av" src="${esc(a.avatar_url)}" alt="${esc(a.display_name)}" width="72" height="72">` : ""}<div><h1>${esc(a.display_name)}</h1>${a.bio ? `<p class="mu">${esc(a.bio)}</p>` : ""}</div></header>`;
-    const body = `<div class="wrap">${head}${rows.length ? `<div class="grid">${rows.map((p) => card(p, authors, cats)).join("")}</div>` : '<p class="mu">هنوز مطلبی منتشر نشده است.</p>'}${pager(base, page, hasNext)}</div>`;
+    const head = `<header class="ph ph-list author-h">${a.avatar_url ? `<img class="av" src="${esc(a.avatar_url)}" alt="${esc(a.display_name)}" width="72" height="72">` : ""}<div><h1>${esc(a.display_name)}</h1>${a.bio ? `<p class="mu">${esc(a.bio)}</p>` : ""}</div></header>`;
+    const body = `<div class="wrap">${head}${rows.length ? `<div class="grid">${rows.map((p) => card(p, authors, cats)).join("")}</div>` : '<div class="empty"><p>هنوز مطلبی منتشر نشده است.</p></div>'}${pager(base, page, hasNext)}</div>`;
     const ld = [{ "@context": "https://schema.org", "@type": "Person", name: a.display_name, url: SITE() + base, ...(a.avatar_url ? { image: abs(a.avatar_url) } : {}) }];
     send(res, layout({ title: a.display_name, desc: a.bio || `مطالب ${a.display_name}`, canonical: SITE() + base + (page > 1 ? "?page=" + page : ""), body, ld, noindex: !rows.length }));
   } catch (e) {
@@ -405,7 +451,7 @@ if (viewTimer.unref) viewTimer.unref();
 const SHARE = (url, title) => {
   const u = encodeURIComponent(url);
   const t = encodeURIComponent(title);
-  return `<div class="share"><span class="mu">اشتراک‌گذاری:</span><a href="https://t.me/share/url?url=${u}&amp;text=${t}" target="_blank" rel="noopener noreferrer">تلگرام</a><a href="https://wa.me/?text=${t}%20${u}" target="_blank" rel="noopener noreferrer">واتساپ</a><a href="https://twitter.com/intent/tweet?url=${u}&amp;text=${t}" target="_blank" rel="noopener noreferrer">ایکس</a><button type="button" data-copy-url="${esc(url)}">کپی لینک</button></div>`;
+  return `<div class="share"><span class="sh-l">اشتراک‌گذاری</span><a class="sh-tg" href="https://t.me/share/url?url=${u}&amp;text=${t}" target="_blank" rel="noopener noreferrer">تلگرام</a><a class="sh-wa" href="https://wa.me/?text=${t}%20${u}" target="_blank" rel="noopener noreferrer">واتساپ</a><a class="sh-x" href="https://twitter.com/intent/tweet?url=${u}&amp;text=${t}" target="_blank" rel="noopener noreferrer">ایکس</a><button type="button" data-copy-url="${esc(url)}">کپی لینک</button></div>`;
 };
 
 async function related(post) {
@@ -445,11 +491,11 @@ async function renderPost(req, res, p, { preview = false } = {}) {
   const crumbs = [`<a href="/">${esc(SITE_NAME())}</a>`, `<a href="/blog">وبلاگ</a>`];
   if (cat) crumbs.push(`<a href="/blog/category/${encodeURIComponent(cat.slug)}">${esc(cat.name)}</a>`);
   const tocHtml = toc.length >= 3
-    ? `<nav class="toc" aria-label="فهرست مطالب"><b>فهرست مطالب</b><ol>${toc.map((t) => `<li class="l${t.level}"><a href="#${esc(t.id)}">${esc(t.text)}</a></li>`).join("")}</ol></nav>`
+    ? `<details class="toc" open><summary>فهرست مطالب</summary><ol>${toc.map((t) => `<li class="l${t.level}"><a href="#${esc(t.id)}">${esc(t.text)}</a></li>`).join("")}</ol></details>`
     : "";
   const tags = (p.tags || []).length ? `<div class="tags">${p.tags.map((t) => `<a href="/blog/tag/${encodeURIComponent(t)}">#${esc(t)}</a>`).join("")}</div>` : "";
   const authorBox = author
-    ? `<aside class="abox">${author.avatar_url ? `<img class="av" src="${esc(author.avatar_url)}" alt="" width="56" height="56" loading="lazy">` : ""}<div><b>${author.public_slug ? `<a href="/blog/author/${encodeURIComponent(author.public_slug)}">${esc(author.display_name)}</a>` : esc(author.display_name)}</b>${author.bio ? `<p class="mu">${esc(author.bio)}</p>` : ""}</div></aside>`
+    ? `<aside class="abox">${author.avatar_url ? `<img class="av" src="${esc(author.avatar_url)}" alt="" width="56" height="56" loading="lazy">` : ""}<div><small class="mu">نویسنده</small><b>${author.public_slug ? `<a href="/blog/author/${encodeURIComponent(author.public_slug)}">${esc(author.display_name)}</a>` : esc(author.display_name)}</b>${author.bio ? `<p class="mu">${esc(author.bio)}</p>` : ""}</div></aside>`
     : "";
 
   let relHtml = "";
@@ -462,19 +508,26 @@ async function renderPost(req, res, p, { preview = false } = {}) {
       sb(`blog_posts?select=slug,title&${liveFilter()}&published_at=gt.${enc(p.published_at)}&order=published_at.asc&limit=1`).catch(() => []),
     ]);
     if ((pv && pv[0]) || (nx && nx[0])) {
-      navHtml = `<nav class="pn">${nx && nx[0] ? `<a rel="next" href="/blog/${encodeURIComponent(nx[0].slug)}"><small>مطلب بعدی</small>${esc(nx[0].title)}</a>` : "<span></span>"}${pv && pv[0] ? `<a rel="prev" href="/blog/${encodeURIComponent(pv[0].slug)}"><small>مطلب قبلی</small>${esc(pv[0].title)}</a>` : "<span></span>"}</nav>`;
+      navHtml = `<nav class="pn">${nx && nx[0] ? `<a rel="next" href="/blog/${encodeURIComponent(nx[0].slug)}"><small>→ مطلب بعدی</small>${esc(nx[0].title)}</a>` : "<span></span>"}${pv && pv[0] ? `<a rel="prev" href="/blog/${encodeURIComponent(pv[0].slug)}"><small>مطلب قبلی ←</small>${esc(pv[0].title)}</a>` : "<span></span>"}</nav>`;
     }
   }
 
+  const head = `<header class="ph ph-post"><h1>${esc(p.title)}</h1><div class="meta">${metaLine(p, authors, cats)}${p.updated_at && p.published_at && new Date(p.updated_at) - new Date(p.published_at) > 86400000 ? `<span class="mi m-up">به‌روزرسانی: ${esc(fmtDate(p.updated_at))}</span>` : ""}</div>${p.excerpt ? `<p class="lead">${esc(p.excerpt)}</p>` : ""}</header>`;
+  // چیدمان بالای مقاله بر اساس نوع کاور
+  let top = head;
+  if (showCover) {
+    if (p.cover_style === "overlay") top = `<section class="hero-ov">${cover}${head}</section>`;
+    else if (p.cover_style === "split") top = `<section class="hero-sp">${head}${cover}</section>`;
+    else if (p.cover_style === "compact") top = head + cover;
+    else top = cover + head;
+  }
+
   const body = `${preview ? '<div class="pvbar">پیش‌نمایش پیش‌نویس — این صفحه در گوگل ایندکس نمی‌شود</div>' : ""}
-<article class="wrap post" data-readroot>
+<article class="wrap post${tocHtml ? " post-toc" : ""}${showCover ? " cvs-" + esc(p.cover_style) : ""}" data-readroot>
 <nav class="crumbs" aria-label="مسیر">${crumbs.join("<i>‹</i>")}</nav>
-${p.cover_style === "overlay" || p.cover_style === "full" || p.cover_style === "split" ? cover : ""}
-<header class="ph"><h1>${esc(p.title)}</h1><div class="meta">${metaLine(p, authors, cats)}${p.updated_at && p.published_at && new Date(p.updated_at) - new Date(p.published_at) > 86400000 ? `<i aria-hidden="true">·</i><span>به‌روزرسانی: ${esc(fmtDate(p.updated_at))}</span>` : ""}</div>${p.excerpt ? `<p class="lead">${esc(p.excerpt)}</p>` : ""}</header>
-${p.cover_style === "compact" ? cover : ""}
-${tocHtml}
-<div class="content">${html}</div>
-${tags}${SHARE(url, p.title)}${authorBox}${navHtml}${relHtml}
+${top}
+<div class="pbody">${tocHtml}<div class="pmain"><div class="content">${html}</div>${tags}${SHARE(url, p.title)}${authorBox}</div></div>
+${navHtml}${relHtml}
 </article>`;
 
   const ld = [
@@ -566,7 +619,7 @@ router.get("/blog/:slug", async (req, res, next) => {
 function renderPage(res, p, { preview = false } = {}) {
   const { html } = R.renderBlocks(p.content, { manhwa: manhwaLookup, hasCover: true });
   const url = `${SITE()}/p/${encodeURIComponent(p.slug)}`;
-  const body = `${preview ? '<div class="pvbar">پیش‌نمایش پیش‌نویس — این صفحه در گوگل ایندکس نمی‌شود</div>' : ""}<article class="wrap post"><header class="ph"><h1>${esc(p.title)}</h1></header><div class="content">${html}</div></article>`;
+  const body = `${preview ? '<div class="pvbar">پیش‌نمایش پیش‌نویس — این صفحه در گوگل ایندکس نمی‌شود</div>' : ""}<article class="wrap post"><header class="ph ph-post"><h1>${esc(p.title)}</h1></header><div class="content">${html}</div></article>`;
   send(res, layout({ title: p.seo_title || p.title, desc: p.seo_desc || clip(R.plainText(p.content), 155), canonical: url, noindex: preview, body, bodyClass: "is-post" }), { cacheable: !preview });
 }
 
