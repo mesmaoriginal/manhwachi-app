@@ -116,10 +116,22 @@
         <textarea id="cMessage" maxlength="300"></textarea>
       </div>
       <div class="card">
-        <h2>وضعیت هر نقش</h2>
-        <div class="hint" style="margin:-6px 0 8px">نقش «بسته» در سایت و اپ با برچسب «ظرفیت تکمیل شد» نمایش داده می‌شود.</div>
-        <div id="roles"></div>
+        <h2>کارت‌های همکاری</h2>
+        <div class="hint" style="margin:-6px 0 0">نقش «بسته» با برچسب «ظرفیت تکمیل شد» نمایش داده می‌شود. کارت‌های جدید فقط در سایت دیده می‌شوند (اپ اندروید فعلی نقش‌های قبلی را نشان می‌دهد). کارت را نمی‌شود حذف کرد؛ «نمایش در سایت» را خاموش کنید.</div>
       </div>
+      <div id="roles"></div>
+      <button class="ghost" id="addRole" type="button">+ افزودن کارت جدید</button>
+      <datalist id="iconList">
+        <option value="fa-solid fa-laptop-code"></option><option value="fa-solid fa-language"></option>
+        <option value="fa-solid fa-eraser"></option><option value="fa-solid fa-rocket"></option>
+        <option value="fa-solid fa-pen-nib"></option><option value="fa-solid fa-palette"></option>
+        <option value="fa-solid fa-paintbrush"></option><option value="fa-solid fa-code"></option>
+        <option value="fa-solid fa-camera"></option><option value="fa-solid fa-video"></option>
+        <option value="fa-solid fa-headset"></option><option value="fa-solid fa-bullhorn"></option>
+        <option value="fa-solid fa-magnifying-glass"></option><option value="fa-solid fa-spell-check"></option>
+        <option value="fa-solid fa-user-shield"></option><option value="fa-solid fa-handshake"></option>
+        <option value="fa-solid fa-star"></option><option value="fa-solid fa-user"></option>
+      </datalist>
     </div>
   </div>
 </div>
@@ -277,23 +289,63 @@
   }
 
   // ───────── ثبت‌نام همکاری ─────────
+  function roleCard(r, isNew) {
+    var card = el('div', { class: 'card' });
+    var f = card._r = {};
+    f.key = textInput(r.key, 60, { disabled: !isNew, placeholder: 'مثلاً: گرافیست' });
+    f.title = textInput(r.title, 60);
+    f.badge = textInput(r.badge, 40);
+    f.icon = textInput(r.icon, 60, { dir: 'ltr', placeholder: 'fa-solid fa-pen-nib' });
+    f.icon.setAttribute('list', 'iconList');
+    f.salary = textInput(r.salary, 80, { placeholder: 'اختیاری؛ مثلاً: حقوق: ۱۵ هزار تومن به ازای هر چپتر' });
+    f.desc = el('textarea', { value: r.desc || '', maxLength: 400 });
+    f.open = el('input', { type: 'checkbox', checked: !!r.open });
+    f.visible = el('input', { type: 'checkbox', checked: r.visible !== false });
+
+    var status = el('span', { class: 'rs ' + (r.open ? 'open' : 'closed'), text: r.open ? 'باز' : 'بسته' });
+    f.open.addEventListener('change', function () {
+      status.textContent = f.open.checked ? 'باز' : 'بسته';
+      status.className = 'rs ' + (f.open.checked ? 'open' : 'closed');
+    });
+
+    card.appendChild(el('div', { class: 'plan-head' }, [
+      el('h2', { text: r.title || r.key || 'کارت جدید', style: 'margin:0' }),
+      el('span', { class: 'tag', text: isNew ? 'جدید' : r.key })
+    ]));
+    card.appendChild(el('div', { class: 'toggle', style: 'margin:6px 0 2px' }, [
+      el('div', null, [document.createTextNode('ثبت‌نام این نقش:'), status]),
+      el('label', { class: 'switch', style: 'margin:0', 'aria-label': 'باز/بسته بودن این نقش' }, [f.open, el('span')])
+    ]));
+    card.appendChild(el('label', { class: 'check' }, [f.visible, document.createTextNode('نمایش در سایت')]));
+    if (isNew) card.appendChild(field('نام نقش (در درخواست‌ها با همین نام ثبت می‌شود؛ بعد از ذخیره قابل تغییر نیست)', f.key));
+    card.appendChild(el('div', { class: 'row' }, [field('عنوان روی کارت', f.title, 'خالی = همان نام نقش'), field('برچسب بالای عنوان', f.badge, 'مثلاً «آموزش رایگان»')]));
+    card.appendChild(field('توضیح', f.desc));
+    card.appendChild(el('div', { class: 'row' }, [
+      field('آیکون (Font Awesome)', f.icon, 'از لیست انتخاب کنید یا کلاس را بنویسید؛ آیکون‌ها در fontawesome.com/search (نسخه‌ی Free، 6.4)'),
+      field('سطر حقوق', f.salary)
+    ]));
+    if (!isNew) card.appendChild(el('div', { class: 'hint', text: 'نام نقش (' + r.key + ') ثابت است چون در درخواست‌های ثبت‌شده استفاده می‌شود.' }));
+    return card;
+  }
+  function readRole(card) {
+    var f = card._r;
+    return {
+      key: f.key.value.trim(),
+      open: f.open.checked,
+      visible: f.visible.checked,
+      title: f.title.value,
+      badge: f.badge.value,
+      icon: f.icon.value,
+      desc: f.desc.value,
+      salary: f.salary.value
+    };
+  }
   function renderCareers(c) {
     ccfg = c;
     $('cEnabled').checked = !!c.enabled;
     $('cMessage').value = c.closedMessage || '';
     var box = $('roles'); box.textContent = '';
-    c.roles.forEach(function (r) {
-      var cb = el('input', { type: 'checkbox', checked: !!r.open });
-      var status = el('span', { class: 'rs ' + (r.open ? 'open' : 'closed'), text: r.open ? 'باز' : 'بسته' });
-      cb.addEventListener('change', function () { status.textContent = cb.checked ? 'باز' : 'بسته'; status.className = 'rs ' + (cb.checked ? 'open' : 'closed'); });
-      var sw = el('label', { class: 'switch', style: 'margin:0' }, [cb, el('span')]);
-      var row = el('div', { class: 'role-row' }, [
-        el('div', null, [document.createTextNode(r.key), status]),
-        sw
-      ]);
-      row._key = r.key; row._cb = cb;
-      box.appendChild(row);
-    });
+    c.roles.forEach(function (r) { box.appendChild(roleCard(r, false)); });
     syncCState();
   }
   function syncCState() {
@@ -306,7 +358,7 @@
       rev: ccfg.rev,
       enabled: $('cEnabled').checked,
       closedMessage: $('cMessage').value,
-      roles: Array.prototype.map.call($('roles').children, function (row) { return { key: row._key, open: row._cb.checked }; })
+      roles: Array.prototype.map.call($('roles').children, readRole)
     };
   }
   function setTab(t) {
@@ -352,6 +404,12 @@
   $('addPlan').addEventListener('click', function () {
     var card = planCard({ key: '', enabled: true, hero: false, title: '', sub: '', price: '', oldPrice: '', chip: '', badge: '', features: [], buyLabel: '', days: 0, months: 1 }, true);
     $('plans').appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  $('addRole').addEventListener('click', function () {
+    var card = roleCard({ key: '', open: true, visible: true, title: '', badge: '', icon: 'fa-solid fa-user', desc: '', salary: '' }, true);
+    $('roles').appendChild(card);
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 

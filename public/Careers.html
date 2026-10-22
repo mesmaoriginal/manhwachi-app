@@ -381,6 +381,10 @@
             margin-inline-start: 10px; background: #27272a; color: #fff; border: 0; border-radius: 8px;
             padding: 4px 12px; font: inherit; font-size: 12px; cursor: pointer;
         }
+        .card p { white-space: pre-line; }
+        .card p.card-salary { color: #ff7575; font-weight: 700; margin-top: -15px; }
+        .card p.card-salary.alone { margin-top: 0; }
+        .grid-note { grid-column: 1 / -1; color: var(--text-muted); padding: 30px 10px; }
         /* Closed / full-capacity state */
         .card.closed {
             opacity: 0.6;
@@ -424,73 +428,7 @@
 
     <div class="careers-banner" id="careersBanner" hidden></div>
 
-    <div class="cards-grid">
-        <!-- کارت اول: تایپیست -->
-        <div class="card" data-role="تایپیست">
-            <div>
-                <div class="card-icon-wrapper">
-                    <i class="fa-solid fa-laptop-code"></i>
-                </div>
-                <span class="badge">آموزش رایگان</span>
-                <h3>تایپیست (ادیتور)</h3>
-                <p>فرقی نمی‌کنه حرفه‌ای هستی یا کاملاً مبتدی؛ خیلی راحت می‌تونی بیای تو تیم ما. صفر تا صد ادیت و ادیتور شدن رو خودمون بهت یاد می‌دیم!</p>
-                <p style="color:#ff7575; font-weight:700; margin-top:-15px;">حقوق: ۲۰ تا ۲۵ هزار تومن به ازای هر چپتر</p>
-            </div>
-            <button class="btn" onclick="openModal('تایپیست')">
-                ثبت درخواست
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-        </div>
-
-        <!-- کارت دوم: مترجم -->
-        <div class="card" data-role="مترجم">
-            <div>
-                <div class="card-icon-wrapper">
-                    <i class="fa-solid fa-language"></i>
-                </div>
-                <span class="badge">نیازمند تسلط به زبان</span>
-                <h3>مترجم</h3>
-                <p>اگه به انگلیسی مسلطی و عاشق مانهوایی، بیا مترجم تیم ما شو و متن‌ها رو روون و بی‌نقص به فارسی ترحمه کن.</p>
-                <p style="color:#ff7575; font-weight:700; margin-top:-15px;">حقوق: ۱۵ هزار تومن به ازای هر چپتر</p>
-            </div>
-            <button class="btn" onclick="openModal('مترجم')">
-                ثبت درخواست
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-        </div>
-
-        <!-- کارت سوم: کلینر -->
-        <div class="card" data-role="کلینر">
-            <div>
-                <div class="card-icon-wrapper">
-                    <i class="fa-solid fa-eraser"></i>
-                </div>
-                <span class="badge">آموزش رایگان</span>
-                <h3>کلینر</h3>
-                <p>کار شما پاک‌سازی و آماده‌سازی صفحات خام مانهواست؛ حذف متن اصلی و تمیزکاری تصاویر قبل از تایپ. اگر بهش علاقه داری، جای تو همینجاست.</p>
-            </div>
-            <button class="btn" onclick="openModal('کلینر')">
-                ثبت درخواست
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-        </div>
-
-        <!-- کارت چهارم: کانال تلگرام -->
-        <div class="card" data-role="تیم ترجمه تلگرامی">
-            <div>
-                <div class="card-icon-wrapper">
-                    <i class="fa-solid fa-rocket"></i>
-                </div>
-                <span class="badge">همکاری با کانال‌ها</span>
-                <h3>تیم‌های ترجمه تلگرام</h3>
-                <p>اگر کانال تلگرام دارید مانهوا های  ترجمه‌شده خودتون رو توی مانهواچی با نام و لینک مستقیم کانال خودتون قرار می‌دیم تا دیده‌ بشن و ممبرهای کانالتون چند برابر بشه.</p>
-            </div>
-            <button class="btn" onclick="openModal('تیم ترجمه تلگرامی')">
-                ثبت درخواست
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-        </div>
-    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
 
     <div class="footer-note">
         <i class="fa-solid fa-circle-info"></i>
@@ -543,12 +481,74 @@
     let careersEnabled = false;   // کلید کلی بخش
     let roleCapacity = {};        // { 'نقش': true/false }
     let careersLoaded = false;
+    let cards = [];               // کارت‌ها از سرور می‌آیند (ساخت/ویرایش از /vip-admin)
+
+    function gridNote(text) {
+        const grid = document.getElementById('cardsGrid');
+        grid.textContent = '';
+        const n = document.createElement('div');
+        n.className = 'grid-note';
+        n.textContent = text;
+        grid.appendChild(n);
+    }
 
     function setLoadingState() {
-        document.querySelectorAll('.card[data-role] .btn').forEach(btn => {
-            btn.classList.add('btn-disabled');
-            btn.disabled = true;
-            btn.innerHTML = 'در حال بررسی...';
+        gridNote('در حال بررسی...');
+    }
+
+    // ساخت کارت‌ها (همه‌ی متن‌ها با textContent؛ بدون innerHTML از ورودی ادمین)
+    function renderCards() {
+        const grid = document.getElementById('cardsGrid');
+        grid.textContent = '';
+        if (!cards.length) {
+            if (careersLoaded) gridNote('فعلاً نقشی برای همکاری ثبت نشده است.');
+            return;
+        }
+        cards.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.setAttribute('data-role', c.key);
+
+            const top = document.createElement('div');
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'card-icon-wrapper';
+            const icon = document.createElement('i');
+            icon.className = /^fa-(solid|regular|brands) fa-[a-z0-9-]+$/.test(c.icon || '') ? c.icon : 'fa-solid fa-user';
+            iconWrap.appendChild(icon);
+            top.appendChild(iconWrap);
+
+            if (c.badge) {
+                const badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.textContent = c.badge;
+                top.appendChild(badge);
+            }
+
+            const h3 = document.createElement('h3');
+            h3.textContent = c.title || c.key;
+            top.appendChild(h3);
+
+            if (c.desc) {
+                const p = document.createElement('p');
+                p.textContent = c.desc;
+                top.appendChild(p);
+            }
+            if (c.salary) {
+                const sp = document.createElement('p');
+                sp.className = 'card-salary' + (c.desc ? '' : ' alone');
+                sp.textContent = c.salary;
+                top.appendChild(sp);
+            }
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn';
+            btn.addEventListener('click', () => openModal(c.key));
+
+            card.appendChild(top);
+            card.appendChild(btn);
+            grid.appendChild(card);
         });
     }
 
@@ -574,8 +574,10 @@
             const cfg = await res.json();
             careersEnabled = cfg.enabled !== false;
             roleCapacity = cfg.roles || {};
+            cards = Array.isArray(cfg.cards) ? cfg.cards : [];
             careersLoaded = true;
             banner.hidden = true;
+            renderCards();
             applyRoleCapacity();
             if (!careersEnabled) showBanner(cfg.closedMessage || 'ثبت‌نام همکاری فعلاً بسته است.', false);
         } catch (e) {
@@ -584,6 +586,8 @@
                 // بدون اطلاع از سرور، ثبت‌نام را باز نشان نمی‌دهیم
                 careersEnabled = false;
                 roleCapacity = {};
+                cards = [];
+                gridNote('');
                 applyRoleCapacity();
                 showBanner('خطا در دریافت وضعیت ثبت‌نام. اتصال اینترنت را بررسی کنید.', true);
             }
