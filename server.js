@@ -499,6 +499,16 @@ app.use(
     adminHeaders: supabaseAdminHeaders,
   })
 );
+// ---------- چرخونه‌ی هالووین (یک چرخش برای هر کاربر؛ جایزه سمت سرور) ----------
+const halloween = require("./lib/halloweenWheel")({
+  getAuthContext,
+  supabaseUrl: SUPABASE_URL,
+  adminHeaders: supabaseAdminHeaders,
+  invalidateAuthCache: invalidateAuthCacheForUser,
+  rateLimit: checkAndRecordPurchaseRequest,
+  getPlan: (k) => vipConfig.getPlan(k),
+});
+app.use("/api/halloween", halloween.router);
 app.use("/api/team", require("./routes/teamRouter")({ getAuthContext, supabaseUrl: SUPABASE_URL, adminHeaders: supabaseAdminHeaders }));
 // کپی میانگین/تعداد رأی (از ۵) داخل data.json؛ نیاز به ratings_sync.sql و متغیر DATA_JSON_PATH
 if (process.env.DATA_JSON_PATH) {
@@ -1057,13 +1067,14 @@ app.post("/purchase/request", async (req, res) => {
     );
     if (!userLimit.allowed) return purchaseRateLimited(res, userLimit);
 
+    const hw = halloween.quote(user.id, plan); // قیمت بعد از کد تخفیف هالووین (اگه داشته باشه)
     const orderId = require("crypto").randomUUID();
     const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         merchant: ZIBAL_MERCHANT,
-        amount: plan.amount,
+        amount: hw.amount,
         callbackUrl: PURCHASE_CALLBACK_URL,
         description: `اشتراک VIP مانهواچی - پلن ${planKey}`,
         orderId,
@@ -1085,7 +1096,7 @@ app.post("/purchase/request", async (req, res) => {
         {
           user_id: user.id,
           plan_key: planKey,
-          amount: plan.amount,
+          amount: hw.amount,
           status: "pending",
           track_id: String(zibalData.trackId),
         },
@@ -1095,6 +1106,7 @@ app.post("/purchase/request", async (req, res) => {
       throw new Error("ثبت تراکنش در پایگاه داده ناموفق بود: " + (await insertRes.text()));
     }
 
+    if (hw.discounted) halloween.reserve(user.id, String(zibalData.trackId));
     res.json({ trackId: zibalData.trackId });
   } catch (err) {
     res.status(400).json({ message: err.message || "خطا در ایجاد درگاه پرداخت." });
@@ -1279,6 +1291,7 @@ async function verifyAndCreditPayment(trackId) {
       // درخواست بعدیِ چپتر قفل، بدون صبر برای انقضای AUTH_CACHE_TTL_MS،
       // وضعیت تازه رو ببینه.
       invalidateAuthCacheForUser(paymentRecord.user_id);
+      halloween.onPaid(trackId); // کد تخفیف هالووین فقط بعد از پرداخت موفق مصرف می‌شود
 
       return { httpStatus: 200, body: { status: 100, message: "اشتراک VIP با موفقیت فعال شد." } };
     } catch (creditErr) {
