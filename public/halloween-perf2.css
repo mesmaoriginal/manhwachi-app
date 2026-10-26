@@ -1,0 +1,36 @@
+/* ManhwaChi — Halloween PERF 2 (بعد از halloween-perf.css لود کن).
+   هدف: صفر انیمیشن دائمی روی صفحه. فقط تزئین ثابت + واکنش به hover/کلیک. حذف این فایل = برگشت. */
+
+/* 1) همه‌ی انیمیشن‌های بی‌پایانِ محیطی خاموش (آسمان، ستاره، مه، ابر، شفق، هاله، روح، جرقه، چراغ پنجره، عنکبوت) */
+.hw-sky::before,.hw-moon::before,.hw-stars,.hw-fog,.hw-cloud,.hw-spk,.hw-embers i,
+.hwg,.hwg svg,.hw-win,.hw-spider,.hw-spider svg,
+html.hw header.sticky::after,html.hw footer::after,
+html.hw header .text-red-600{animation:none!important}
+
+/* 2) ابر و مه و شفق و جرقه اصلاً رندر نشن (لایه‌ی تمام‌صفحه‌ی بلورشده = گران‌ترین چیز) */
+.hw-cloud,.hw-fog,.hw-sky::before,.hw-spk,.hw-embers,.hwg{display:none!important}
+
+/* 3) ستاره‌ها ثابت: box-shadow با ۱۱۰ سایه + انیمیشن opacity یعنی هر فریم دوباره رنگ‌آمیزی */
+.hw-stars{animation:none!important;will-change:auto!important}
+
+/* 4) کدوچی: انیمیشن‌های دائمی (نفس، کلاه، پلک، هاله، شعله، بال‌های پروانه‌ای) فقط روی hover/درگ/حرف‌زدن */
+.hw-mascot svg,.k-wrap,.k-aura,.k-inner,.k-hat,.k-tw,.hw-hat,.hw-lid,.k-eye,.k6-halo,.k6-ff,.k6-ff i{animation:none!important}
+.hw-mascot:hover .k-wrap{animation:kBreath 3.4s ease-in-out infinite!important}
+.hw-mascot.k-hold .k-wrap{animation:kHang .9s ease-in-out infinite alternate!important}
+
+/* 5) hover کارت‌ها سبک: فقط transform، بدون سایه‌ی چندلایه و بدون transition روی box-shadow */
+html.hw .comic-card,html.hw .poster-card,html.hw .card-ui,html.hw .genre-card{transition:transform .18s ease!important}
+html.hw .comic-card:hover,html.hw .poster-card:hover,html.hw .card-ui:hover,html.hw .genre-card:hover{
+  box-shadow:none!important;transform:translateY(-3px)!important}
+html.hw .genre-card:hover .gi-glow,html.hw .genre-card:hover .gi-float,
+html.hw .genre-card:hover .gi-svg{animation:none!important}
+
+/* 6) لایه‌ی ثابتِ پس‌زمینه: یه بار راستر شه و کلاً به کامپوزیتور سپرده بشه */
+.hw-sky,.hw-scene{transform:translateZ(0);contain:strict}
+.hw-scene::after{display:none}
+
+/* 7) رندر تنبل برای بخش‌های طولانی صفحه (فهرست‌های پایین‌تر از فولد تا نزدیک نشن رندر نمی‌شن) */
+html.hw main section,html.hw #app > section{content-visibility:auto;contain-intrinsic-size:auto 600px}
+
+/* 8) وقتی تب مخفیه یا کاربر سریع اسکرول می‌کنه، pointer-events محیطی هم قطع (کمک به اسکرول نرم) */
+html.hw.hw-scrolling .hw-mascot,html.hw.hw-scrolling .hw-sky,html.hw.hw-scrolling .hw-scene{pointer-events:none!important}
