@@ -1,0 +1,101 @@
+/* ManhwaChi — Halloween PERF layer.
+   بعد از halloween.css لود کن. هیچ‌چیزِ فایل‌های قبلی رو تغییر نمی‌ده؛ حذفش = برگشت به حالت قبل. */
+
+/* ============ 1) بزرگ‌ترین قاتل‌ها: backdrop-filter / mix-blend-mode ============ */
+html.hw header.sticky{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(23,13,43,.97)!important}
+html.hw .badge-chapter-box{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(23,13,43,.88)!important}
+.hw-mascot .hw-say{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.hw-lantern{mix-blend-mode:normal!important}
+.hw-flash{mix-blend-mode:normal!important}
+
+/* ============ 2) filter روی عناصر زیاد / عناصر متحرک ============ */
+/* هر آیکون یه drop-shadow داشت -> text-shadow ارزون */
+html.hw .hw-ico,html.hw .hw-ico.hw-s{filter:none!important;text-shadow:0 0 6px rgba(255,138,43,.45)}
+html.hw .hw-svg{filter:none}
+/* روی همه‌ی پوسترها filter بود (و موقع hover انیمیت می‌شد) */
+html.hw .comic-pic img,html.hw .comic-card:hover .comic-pic img{filter:none!important}
+html.hw .poster-card:hover,html.hw .card-ui:hover{animation:none!important}
+/* کدوچی: فیلتر سنگین دور المانی که ۱۰ تا انیمیشن داخلش داره -> هر فریم دوباره بلور می‌شد */
+.k-wrap{filter:none!important}
+.hw-mascot svg{filter:none}
+.hwg svg{filter:none!important}
+.hw-win{filter:none!important}
+header.sticky::after{filter:none!important}
+.hw-spider svg{filter:none}
+.hw-wheel-svg{filter:none}
+.hw-sky::before,.hw-cloud{filter:none!important}   /* گرادیان‌ها خودشون نرمن، بلور لازم نیست */
+
+/* ============ 3) لایه‌های ثابت یه بار راستر بشن، فقط جابه‌جا بشن ============ */
+.hw-sky,.hw-scene{contain:strict}
+.hw-moon,.hw-fog,.hw-cloud,.hw-sky::before,.hw-embers i,.hw-witch,.hw-lantern,.hw-mascot,.hwg,.hw-bat{will-change:transform}
+.hw-stars,.hw-spk{will-change:opacity}
+
+/* ============ 4) انیمیشن‌های ۲۴/۷ روی چیزای جزئی ============ */
+html.hw .sec-head__icon .hw-ico,html.hw .stat__icon .hw-ico,html.hw #app .row-accent,html.hw .row-accent{animation:none!important}
+
+/* ============ 5) موقع اسکرول همه‌ی انیمیشن‌های محیطی متوقف (JS کلاس hw-scrolling رو می‌ذاره) ============ */
+html.hw.hw-scrolling .hw-sky,html.hw.hw-scrolling .hw-sky *,
+html.hw.hw-scrolling .hw-sky::before,html.hw.hw-scrolling .hw-moon::before,
+html.hw.hw-scrolling .hw-scene,html.hw.hw-scrolling .hw-scene *,
+html.hw.hw-scrolling .hw-mascot *,html.hw.hw-scrolling .k-wrap,
+html.hw.hw-scrolling .hw-spider,html.hw.hw-scrolling .hwg,html.hw.hw-scrolling .hwg svg,
+html.hw.hw-scrolling header.sticky::after,html.hw.hw-scrolling footer::after,
+html.hw.hw-scrolling .hw-wheel-rot,html.hw.hw-scrolling .hw-wheel-btn::after{animation-play-state:paused!important}
+
+/* ============ 6) حالت LITE (دستگاه ضعیف / انتخاب دستی): فقط تزئینات ثابت می‌مونن ============ */
+html.hw-lite .hw-cloud,html.hw-lite .hw-shoot,html.hw-lite .hw-fog,html.hw-lite .hw-embers,
+html.hw-lite .hw-lantern,html.hw-lite .hw-peek,html.hw-lite .hw-flash,html.hw-lite .hw-spk,
+html.hw-lite .k6-ff,html.hw-lite .k6-halo,html.hw-lite footer::after{display:none!important}
+html.hw-lite .hw-sky::before,html.hw-lite .hw-moon::before{animation:none!important;display:none}
+html.hw-lite .hw-moon,html.hw-lite .hw-stars,html.hw-lite .hw-win,html.hw-lite .hw-spider,
+html.hw-lite header.sticky::after,html.hw-lite .hw-wheel-rot,html.hw-lite .hw-wheel-btn::after,
+html.hw-lite .k-aura,html.hw-lite .k-inner,html.hw-lite .k-tw,html.hw-lite .k-hat,html.hw-lite .hwg svg{animation:none!important}
+/* مهم: moon باکس‌شدو خیلی بزرگ داره؛ در lite کوچیک‌ترش می‌کنیم */
+html.hw-lite .hw-moon{box-shadow:inset -9px -7px 16px rgba(190,120,50,.45),0 0 22px 4px rgba(255,226,160,.5)!important}
+html.hw-lite .hw-stars{box-shadow:none!important}
+html.hw-lite .hw-scene::after{display:none}
+html.hw-lite .hw-ico{text-shadow:none}
+html.hw-lite .comic-card:hover{box-shadow:0 10px 18px -10px rgba(255,138,43,.5)!important}
+
+/* =====================================================================
+   QUIET layer — «اذیت‌کننده نباشه»: جلوه‌های چشمک‌زن/تکون‌دهنده‌ی بی‌فایده حذف یا آروم شدن.
+   (حالت پرشور قبلی: ?loud=1 یا hwLoud(true) از کنسول)
+   ===================================================================== */
+
+/* لوگوی هدر دائم چشمک می‌زد (opacity flicker) -> فقط درخشش ثابت */
+html.hw header .text-red-600{animation:none!important}
+/* ماه بالا-پایین نره، پرچم‌های هدر تاب نخورن، مه فوتر ثابت */
+.hw-moon{animation:none!important}
+html.hw header.sticky::after,html.hw footer::after{animation:none!important}
+/* چرخ هدر فقط روی hover بچرخه */
+.hw-wheel-rot{animation:none!important}
+.hw-wheel-btn:hover .hw-wheel-rot{animation:hwWheelSpin 1.4s linear infinite!important}
+/* hover کارت‌ها: بدون کج‌شدن و پرش زیاد (مخصوصاً وقتی موس از روی لیست رد میشه) */
+html.hw .poster-card:hover,html.hw .card-ui:hover,html.hw .comic-card:hover,html.hw .genre-card:hover{
+  transform:translateY(-4px) scale(1.012)!important}
+html.hw .comic-card:hover{box-shadow:0 14px 26px -14px rgba(255,138,43,.45),0 0 0 1px rgba(255,138,43,.25)!important}
+/* نور دنبال‌کننده‌ی موس فقط در حالت loud (افکت‌های کلیکیِ خودِ کدوچی دست‌نخورده‌ان) */
+html:not(.hw-loud) .hw-lantern{display:none!important}
+/* روح‌ها کم‌رنگ‌تر و دورتر از محتوا (کلیک اتفاقی روی محتوا رو نگیرن) */
+html:not(.hw-loud) .hwg{opacity:0;animation-name:hwRise;filter:none}
+html:not(.hw-loud) .hwg svg{opacity:.55}
+/* کدوچی کمی شفاف‌تر تا روی محتوا سنگین نباشه؛ روی hover/درگ کامل */
+html:not(.hw-loud) .hw-mascot{opacity:.93}
+html:not(.hw-loud) .hw-mascot:hover,html:not(.hw-loud) .hw-mascot.k-hold{opacity:1}
+
+/* =====================================================================
+   صفحه‌ی مانهوا (manga.ejs) — مخصوص html.hw؛ بدون تم هالووین ظاهر صفحه عوض نمی‌شه
+   ===================================================================== */
+/* بک‌دراپ تار: انیمیشن ۴۰ثانیه‌ای حذف (زیر ۵ تا backdrop-filter بود => هر فریم دوباره بلور می‌شد) */
+html.hw .desktop-backdrop,html.hw .desktop-backdrop img{animation:none!important;will-change:auto!important}
+html.hw .desktop-backdrop img{transform:scale(1.15)}
+/* شیشه‌های بلورشده -> پس‌زمینه‌ی تقریباً مات هم‌رنگ تم */
+html.hw main .manhwa-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(24,15,42,.88)!important}
+html.hw main .stat-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  background-image:linear-gradient(145deg,rgba(40,27,70,.94),rgba(20,12,36,.94))!important}
+html.hw main #bookmarkBtn,html.hw main #shareBtn,
+html.hw main .hero-info > div:last-child > *,html.hw .telegram-icon{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* لکه‌ی blur(120px) روی کارت توضیحات -> گرادیان شعاعی (همون ظاهر، تقریباً بدون هزینه) */
+html.hw .manhwa-card::before{filter:none!important;opacity:1!important;width:560px!important;height:560px!important;top:-300px!important;
+  background:radial-gradient(circle,rgba(255,138,43,.20),rgba(167,139,250,.07) 45%,transparent 70%)!important}
+html.hw .new-badge,html.hw [class*="newBadge"]{animation:none!important}

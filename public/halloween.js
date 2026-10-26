@@ -122,7 +122,14 @@
     /* icons */
     if (on()) scan();
     let q = 0;
-    new MutationObserver(() => { if (q || !on()) return; q = requestAnimationFrame(() => { q = 0; scan(); }); }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    const HW_NOISE = '.hw-pop,.hw-say,.hw-count,.hw-mascot,.hw-sky,.hw-scene,.hw-bat,.hwg,.hw-witch,.hw-peek,.hw-flash,.hw-lantern,.k-chip,.k-float,.k-orb,.k6-p,.k6-c,.k6-hud,.k6-panel,.k-dark,.k-lost,.k-parade,.k-spider';
+    const hwNoisy = window.__hwNoisy = (n) => { const e = n.nodeType === 1 ? n : n.parentElement; return !!(e && e.closest && e.closest(HW_NOISE)); };
+    new MutationObserver((recs) => {
+      if (q || !on()) return;
+      /* PERF: ignore the theme's own DOM churn (sparkles, bubbles, bats...) so scan() doesn't re-run for each one */
+      if (recs.every((r) => hwNoisy(r.target) && Array.prototype.every.call(r.addedNodes, hwNoisy))) return;
+      q = requestAnimationFrame(() => { q = 0; scan(); });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
 
     /* mascot */
     const m = el('div', 'hw-mascot', PUMPKIN + '<div class="hw-say"></div>');
@@ -150,7 +157,7 @@
     const MILE = { 1: 'اولین روحت! 👻 بقیه دارن از ترس می‌لرزن', 5: 'پنج‌تا روح؟! دارم از تو می‌ترسم 😳', 15: 'تو دیگه شکارچی روحی! 🏹 ارواح اسمت رو تو لیست سیاه نوشتن', 30: 'روح‌ها دارن اسباب‌کشی می‌کنن، از دستت فرار می‌کنن 😱', 60: 'استاد بزرگ هالووین 👑🎃 کلاهم رو برمی‌دارم... یعنی اگه می‌تونستم' };
 
     /* ghosts */
-    if (!calm) for (let i = 0; i < (innerWidth < 768 ? 2 : 4); i++) {
+    if (!calm) for (let i = 0; i < (innerWidth < 768 ? 1 : (window.HW_LOUD ? 4 : 2)); i++) {
       const g = el('div', 'hwg', GHOST);
       g.style.left = (8 + i * 26 + rnd(-4, 4)) + '%'; g.style.setProperty('--d', rnd(28, 42) + 's'); g.style.setProperty('--w', (i * 7) + 's'); g.style.width = rnd(26, 40) + 'px';
       g.addEventListener('animationiteration', (e) => { if (e.animationName === 'hwRise') g.classList.remove('gone'); });
@@ -171,7 +178,7 @@
     /* bats */
     const flyBat = () => {
       if (!on() || document.hidden || calm) return;
-      const n = 1 + ((Math.random() * 3) | 0), ltr = Math.random() < .5;
+      const n = window.HW_LOUD ? 1 + ((Math.random() * 3) | 0) : 1, ltr = Math.random() < .5;
       for (let i = 0; i < n; i++) setTimeout(() => {
         const b = el('div', 'hw-bat', BAT); b.style.top = rnd(14, 58) + 'vh'; b.style.width = rnd(34, 56) + 'px';
         if (!ltr) b.firstChild.style.transform = 'scaleX(-1)';
@@ -179,13 +186,13 @@
         b.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${to}px)` }], { duration: rnd(8000, 13000), easing: 'linear' }).onfinish = () => b.remove();
       }, i * 700);
     };
-    setTimeout(flyBat, 5000); (function loop() { setTimeout(() => { flyBat(); loop(); }, rnd(14000, 26000)); })();
+    if (window.HW_LOUD) setTimeout(flyBat, 5000); (function loop() { setTimeout(() => { flyBat(); loop(); }, window.HW_LOUD ? rnd(14000, 26000) : rnd(90000, 160000)); })();
 
     /* sparkle trail (mouse only) */
-    if (fine && !calm) {
+    if (fine && !calm && window.HW_LOUD) {
       let last = 0;
       addEventListener('pointermove', (e) => {
-        if (!on() || e.pointerType !== 'mouse') return; const t = performance.now(); if (t - last < 70) return; last = t;
+        if (!on() || e.pointerType !== 'mouse') return; const t = performance.now(); if (t - last < 120) return; last = t;
         const s = el('span', 'hw-pop', Math.random() < .2 ? '🍬' : '✨'); s.style.left = e.clientX + 'px'; s.style.top = e.clientY + 'px'; s.style.fontSize = rnd(10, 15) + 'px';
         s.animate([{ transform: 'translate(-50%,-50%) scale(1)', opacity: .9 }, { transform: `translate(calc(-50% + ${rnd(-14, 14)}px),calc(-50% + 26px)) scale(.3)`, opacity: 0 }], { duration: 750, easing: 'ease-out' }).onfinish = () => s.remove();
       }, { passive: true });
@@ -193,14 +200,15 @@
 
     /* eyes follow the pointer */
     addEventListener('pointermove', (e) => {
+      const _t = performance.now(); if (_t - (window.__hwPm1 || 0) < 50) return; window.__hwPm1 = _t;
       const r = m.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 200);
       m.style.setProperty('--ex', (dx / d * 4 * k).toFixed(1) + 'px'); m.style.setProperty('--ey', (dy / d * 4 * k).toFixed(1) + 'px');
     }, { passive: true });
 
     /* greet once per session, then chat now and then */
-    let seen = false; try { seen = sessionStorage.getItem('hw-hi') === '1'; sessionStorage.setItem('hw-hi', '1'); } catch (e) {}
+    let seen = false; try { seen = localStorage.getItem('hw-hi') === '1'; localStorage.setItem('hw-hi', '1'); } catch (e) {}
     if (!seen && on()) setTimeout(() => speak(pick(['سلام! هالووینت مبارک 🎃 من کدوچی‌ام، کدوی شب‌های مانهوا', 'بوووو! 👻 شوخی کردم، خوش اومدی 🧡', 'اووه، مهمون! بفرما، چراغ‌ها رو روشن نگه داشتم 🕯️'])), 1600);
-    setInterval(() => { if (on() && !document.hidden && Math.random() < .6) speak(); }, 50000);
+    if (window.HW_LOUD) setInterval(() => { if (on() && !document.hidden && Math.random() < .6) speak(); }, 50000);
   }
   if (document.body) build(); else addEventListener('DOMContentLoaded', build);
 })();
@@ -354,7 +362,7 @@
     }
 
     /* lantern glow */
-    if (fine && !calm) {
+    if (fine && !calm && window.HW_LOUD) {
       const l = mk('div', 'hw-lantern'); let px = 0, py = 0, q = 0;
       addEventListener('pointermove', (ev) => {
         if (ev.pointerType !== 'mouse') return; px = ev.clientX; py = ev.clientY; l.classList.add('on');
@@ -367,11 +375,12 @@
 
     /* scheduled magic */
     let first = true; try { first = sessionStorage.getItem('hw-swarm') !== '1'; sessionStorage.setItem('hw-swarm', '1'); } catch (er) {}
-    if (first) setTimeout(swarm, 2600);
-    if (days === 0) setTimeout(() => rain(40), 2000);
-    setTimeout(flyWitch, days === 0 ? 3500 : 9000); every(flyWitch, 35000, 60000);
-    setTimeout(peek, 7000); every(peek, 12000, 25000);
-    every(flash, 45000, 90000);
+    const L = !!window.HW_LOUD;
+    if (first && L) setTimeout(swarm, 2600);
+    if (days === 0 && L) setTimeout(() => rain(40), 2000);
+    setTimeout(flyWitch, L ? (days === 0 ? 3500 : 9000) : 45000); every(flyWitch, L ? 35000 : 240000, L ? 60000 : 420000);
+    if (L) setTimeout(peek, 7000); every(peek, L ? 12000 : 200000, L ? 25000 : 360000);
+    if (L) every(flash, 45000, 90000);
   }
   if (document.body) init(); else addEventListener('DOMContentLoaded', init);
 })();
@@ -491,7 +500,7 @@
   let q = 0;
   const start = () => {
     run();
-    new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; run(); }); }).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver((recs) => { if (q) return; const nz = window.__hwNoisy; if (nz && recs.every((r) => nz(r.target) && Array.prototype.every.call(r.addedNodes, nz))) return; q = requestAnimationFrame(() => { q = 0; run(); }); }).observe(document.body, { childList: true, subtree: true });
   };
   if (document.body) start(); else addEventListener('DOMContentLoaded', start);
 })();
@@ -798,6 +807,7 @@ ${star4(58, 6, .8, '#ffd27a', 0)}${star4(67, -14, .6, '#fff3c4', .8)}${star4(54,
     /* ----- eyes follow the pointer ----- */
     addEventListener('pointermove', (e) => {
       lastAct = Date.now(); if (sleeping) wake();
+      const _t = performance.now(); if (_t - (window.__hwPm2 || 0) < 50) return; window.__hwPm2 = _t;
       const r = m.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * .5), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 170);
       m.style.setProperty('--kx', (dx / d * 3.4 * k).toFixed(2) + 'px'); m.style.setProperty('--ky', (dy / d * 3.2 * k).toFixed(2) + 'px');
     }, { passive: true });
@@ -997,7 +1007,7 @@ ${star4(58, 6, .8, '#ffd27a', 0)}${star4(67, -14, .6, '#fff3c4', .8)}${star4(54,
           else if (a === 'tap') mcls('k-tap', 1700);
         }
         idleLoop();
-      }, rnd(7000, 15000));
+      }, window.HW_LOUD ? rnd(7000, 15000) : rnd(30000, 60000));
     })();
 
     /* ----- reactions to the rest of the page ----- */
@@ -1021,7 +1031,7 @@ ${star4(58, 6, .8, '#ffd27a', 0)}${star4(67, -14, .6, '#fff3c4', .8)}${star4(54,
         speak('🎉 تبریک! ' + (p ? p.textContent : ''), 7000); burstM(['🎉', '✨', '🍬', '💎', '🎃'], 22); sfx.fanfare();
       }).observe(win, { attributes: true, attributeFilter: ['class'] });
       setTimeout(() => { if (!sb.disabled) { setMood('wink', 1800); speak(pick(WHEEL), 5200); } }, 4500);
-    } else if (COUNT) setTimeout(() => { if (Math.random() < .5) speak(COUNT, 4200); }, 9000);
+    } else if (COUNT) setTimeout(() => { if (Math.random() < (window.HW_LOUD ? .5 : .2)) speak(COUNT, 4200); }, 9000);
 
     setTimeout(() => { mcls('k-wave', 1900); }, 1800);
     place(); flipCheck();

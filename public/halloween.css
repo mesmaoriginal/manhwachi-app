@@ -707,3 +707,10 @@ html:not(.hw) .k-chip,html:not(.hw) .k-dark,html:not(.hw) .k-lost,html:not(.hw) 
 @keyframes hwCloud{from{transform:translateX(-45vw) scale(var(--s,1))}to{transform:translateX(115vw) scale(var(--s,1))}}
 @keyframes hwShoot{0%{opacity:0;transform:translate(-60px,-32px) rotate(28deg)}15%{opacity:1}100%{opacity:0;transform:translate(280px,148px) rotate(28deg)}}
 @media (prefers-reduced-motion:reduce){.hw-sky::before,.hw-moon::before,.hw-spk,.hw-cloud,.hw-shoot{animation:none!important}.hw-cloud,.hw-shoot{display:none}}
+
+
+/* ===== v9: کدو و دکمه‌هاش همیشه بالاتر از bottom-nav (که z-index:999 داره) ===== */
+.hw-mascot,.hw-toggle,.hw-count,.k-chip{z-index:1001}
+.k-hold{z-index:1002}
+.k6-panel{z-index:1003}
+.k-orb,.k-float,.k6-p,.k6-c,.k6-hud,.hw-pop{z-index:1010}

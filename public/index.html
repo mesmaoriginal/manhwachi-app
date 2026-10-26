@@ -75,49 +75,54 @@
 
   gtag('config', 'G-18XD50KTY3');
 </script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script id="tailwind-config">
-        tailwind.config = {
+    <!-- Tailwind: اول فایل کامپایل‌شده‌ی خودِ سایت (/css/tailwind.css). اگه هنوز ساخته نشده، CDN بدون بلاک کردن صفحه لود می‌شه -->
+    <script>
+        window.__twConfig = {
             darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#DC2626",
-                        "on-primary": "#ffff",
-                        surface: "#000000",
-                        "surface-elevated": "#161616",
-                        "surface-container": "#1f1f1f",
-                        "on-surface": "#e2e2e2",
-                        "on-surface-variant": "#cbb8b8",
-                        "text-muted": "#8C8C8C",
-                    }
-                }
-            }
-        }
+            theme: { extend: { colors: {
+                primary: "#DC2626", "on-primary": "#ffff", surface: "#000000",
+                "surface-elevated": "#161616", "surface-container": "#1f1f1f",
+                "on-surface": "#e2e2e2", "on-surface-variant": "#cbb8b8", "text-muted": "#8C8C8C"
+            } } }
+        };
+        window.__loadTwCdn = function () {
+            if (window.__twLoading) return; window.__twLoading = true;
+            window.tailwind = { config: window.__twConfig };
+            var s = document.createElement('script');
+            s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+            s.onload = function () {
+                try { window.tailwind.config = window.__twConfig; document.body.appendChild(document.createElement('i')).remove(); } catch (e) {}
+            };
+            document.head.appendChild(s);
+        };
     </script>
+    <link rel="stylesheet" href="/css/tailwind.css?v=1" onerror="window.__loadTwCdn()">
+    <!-- استایل‌های خودِ سایت (قبل از هر منبع خارجی) -->
+    <link rel="stylesheet" href="home.css?v=13">
+    <link rel="stylesheet" href="/halloween.css?v=4">
+    <link rel="stylesheet" href="/halloween-perf.css?v=1">   <!-- جدید، بعد از halloween.css -->
 
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <!-- فونت‌ها و آیکون‌ها: غیربلاک‌کننده (media=print + onload) تا کندیِ CDN رندر صفحه رو نگه نداره -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap">
+    </noscript>
+    <style>
+        /* تا فونت آیکون لود نشده، اسم آیکون (مثل verified) به‌صورت متن نمایش داده نشه */
+        .material-symbols-outlined:not(.hw-ico){ width:1em; overflow:hidden; }
+    </style>
 
-    <!-- Google Fonts & Local Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
-    
     <!-- Supabase (برای رندر اولیه لازم نیست، defer شد) -->
     <script src="/js/vendor/supabase.min.js" defer></script>
     <script src="js/supabase.js" defer></script>
-    <!-- استایل‌های ثابت هوم و اپلیکیشن -->
-    <link rel="stylesheet" href="home.css?v=13">
-    <!-- پیام دانلود اپ فعلاً غیرفعاله: <link rel="stylesheet" href="/app-promo.css?v=1"> -->
-    <!-- آخر <head>، بعد از home.css -->
-    <link rel="stylesheet" href="/halloween.css">
-
-    <script src="/halloween.js" defer></script>
-    
+   <script src="/halloween-perf.js"></script>               <!-- جدید، قبل از halloween.js، بدون defer -->
+    <script src="/halloween.js?v=5" defer></script>
     <style>
         * { 
             margin: 0; 
@@ -971,7 +976,7 @@
                     <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-5xl">👑</div>
                     <h2 class="text-xl font-extrabold text-white mb-2">اشتراک VIP شما فعال است</h2>
                     <p class="text-sm text-zinc-300 leading-relaxed mb-1">همین حالا به همه‌ی چپترهای VIP دسترسی دارید.</p>
-                    ${dateStr ? `<p class="text-xs text-emerald-300 mb-5">تا <b>${dateStr}</b>${daysLeft ? ' (حدود ' + daysLeft.toLocaleString('fa-IR') + ' روز)' : ''}</p>` : '<div class="mb-5"></div>'}
+                    ${dateStr ? `<p class="text-xs text-emerald-300 mb-5">تا <b>${dateStr}</b></p>` : '<div class="mb-5"></div>'}
                     <button id="vipNoticeClose" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors">عالیه، شروع می‌کنم</button>
                 </div>`;
             document.body.appendChild(wrap);
@@ -1008,8 +1013,8 @@
             if (userNavContainer) {
                 userNavContainer.innerHTML = isVip 
                     ? `<button onclick="loadPageByName('profile')" title="حساب کاربری" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all shadow-[0_0_12px_rgba(16,185,129,0.2)]">
-                        <span aria-hidden="true" translate="no" class="material-symbols-outlined text-base">verified</span>
-                        <span>اشتراک فعال${vipDaysLeft ? ' • ' + vipDaysLeft.toLocaleString('fa-IR') + ' روز' : ''}</span>
+                        <span aria-hidden="true" translate="no" class="material-symbols-outlined text-base">workspace_premium</span>
+                        <span>اشتراک فعال</span>
                     </button>`
                     : `<a href="/vip.html" title="خرید اشتراک VIP" class="relative group overflow-hidden px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-bold text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_22px_rgba(220,38,38,0.7)] hover:scale-[1.03] active:scale-95 transition-all border border-red-500/40">
                         <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></span>
@@ -1024,12 +1029,12 @@
                     <div onclick="${isVip ? "loadPageByName('profile');" : "window.location.href='/vip.html';"} closeDrawer();" class="drawer-item flex items-center justify-between p-3.5 rounded-2xl ${isVip ? 'bg-emerald-950/30 border-emerald-500/30' : 'bg-gradient-to-r from-red-950/40 to-zinc-900 border-red-500/30'} border text-white font-medium hover:scale-[1.01] transition-all cursor-pointer">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-xl ${isVip ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-600/20 text-red-400'} flex items-center justify-center">
-                                <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">${isVip ? 'verified' : 'workspace_premium'}</span>
+                                <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">workspace_premium</span>
                             </div>
                             <span class="text-sm font-bold">${isVip ? 'حساب کاربری شما' : 'خرید اشتراک ویژه'}</span>
                         </div>
                         ${isVip 
-                            ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/30">فعال${vipDaysLeft ? ' • ' + vipDaysLeft.toLocaleString('fa-IR') + ' روز' : ''}</span>` 
+                            ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/30">فعال</span>` 
                             : '<span class="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold shadow-md shadow-red-900/50">ارتقا</span>'}
                     </div>
                 `;

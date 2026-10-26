@@ -4,11 +4,43 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>خرید اشتراک ویژه VIP - مانهواچی</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind: اول فایل کامپایل‌شده‌ی خودِ سایت (/css/tailwind.css). اگه هنوز ساخته نشده، CDN بدون بلاک کردن صفحه لود می‌شه -->
+    <script>
+        window.__twConfig = {
+            darkMode: "class",
+            theme: { extend: {
+                colors: { "void-black": "#050505", "panel-ink": "#0c0c0d", "primary-red": "#8b0000", "ember": "#ff3b30", "vip-gold": "#e8b64a" },
+                fontFamily: { vazir: ["Vazirmatn", "system-ui", "sans-serif"] }
+            } }
+        };
+        window.__loadTwCdn = function () {
+            if (window.__twLoading) return; window.__twLoading = true;
+            window.tailwind = { config: window.__twConfig };
+            var s = document.createElement('script');
+            s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+            s.onload = function () {
+                try { window.tailwind.config = window.__twConfig; document.body.appendChild(document.createElement('i')).remove(); } catch (e) {}
+            };
+            document.head.appendChild(s);
+        };
+    </script>
+    <link rel="stylesheet" href="/css/tailwind.css?v=1" onerror="window.__loadTwCdn()">
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
-    <link rel="stylesheet" href="/halloween.css?v=3" />
+    <link rel="stylesheet" href="/halloween.css?v=4">
+    <!-- فونت‌ها و آیکون‌ها: غیربلاک‌کننده (media=print + onload) تا کندیِ CDN رندر صفحه رو نگه نداره -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap">
+    </noscript>
+    <style>
+        /* تا فونت آیکون لود نشده، اسم آیکون (مثل verified) به‌صورت متن نمایش داده نشه */
+        .material-symbols-outlined:not(.hw-ico){ width:1em; overflow:hidden; }
+    </style>
     <script src="/halloween.js?v=3" defer></script>
     <script>
         tailwind.config = {
@@ -70,6 +102,7 @@
 
         /* کارت پیشنهادی با قاب دو لایه و بریدگی بلیت */
         .panel-card--hero{
+            background: linear-gradient(180deg, #160a0b, #060607);
             border: 2px solid var(--ember);
             box-shadow: 0 0 0 1px rgba(255,59,48,.15), 0 25px 60px -20px rgba(139,0,0,.55);
         }
@@ -129,6 +162,9 @@
         html.hw .to-primary-red{ --tw-gradient-to:#ff6a3d var(--tw-gradient-to-position)!important; }
         html.hw .hover\:bg-primary-red:hover{ background-color:#ff8a2b!important; color:#2a1200!important; }
         html.hw button.from-ember{ color:#2a1200!important; border-radius:999px!important; }
+        html.hw .panel-card--hero{ background:linear-gradient(160deg,#2d1b5a,#170d2c); }
+        html.hw .ticket-notch{ background:#150b29; }
+        html.hw #loginRequiredModal button.from-red-600{ color:#2a1200!important; --tw-gradient-to:#ff6a3d var(--tw-gradient-to-position)!important; border-radius:999px; }
         .hw-deal{ display:inline-flex; align-items:center; gap:4px; margin-bottom:10px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800; color:#2a1200; background:linear-gradient(135deg,#ffd27a,#ff8a2b); box-shadow:0 0 16px rgba(255,138,43,.55); animation:hwDeal 1.8s ease-in-out infinite; }
         @keyframes hwDeal{ 50%{ box-shadow:0 0 26px rgba(255,138,43,.95); transform:scale(1.04); } }
         .hw-new{ color:#ffd27a!important; text-shadow:0 0 14px rgba(255,138,43,.6); }
@@ -457,13 +493,12 @@
                 if (active) {
                     window.__vipActive = true; window.__vipUntil = until;
                     try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
-                    const days = until ? Math.max(1, Math.ceil((until - Date.now()) / 86400000)) : null;
                     box.className = 'max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/40';
                     box.innerHTML = `
-                        <span class="material-symbols-outlined text-3xl text-emerald-400 shrink-0">verified</span>
+                        <span class="material-symbols-outlined text-3xl text-emerald-400 shrink-0">workspace_premium</span>
                         <div class="min-w-0">
-                            <p class="font-bold text-emerald-300 text-sm mb-1">اشتراک VIP شما فعال است ✓</p>
-                            <p class="text-xs text-zinc-300 leading-relaxed">${until ? `تا <b>${faDate(until)}</b> (حدود ${days.toLocaleString('fa-IR')} روز دیگر) به همه‌ی چپترها دسترسی دارید.` : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
+                            <p class="font-bold text-emerald-300 text-sm mb-1">اشتراک VIP شما فعال است</p>
+                            <p class="text-xs text-zinc-300 leading-relaxed">${until ? `تا <b>${faDate(until)}</b> به همه‌ی چپترها دسترسی دارید.` : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
                             <a href="/" class="inline-block mt-2 text-xs font-bold text-emerald-400 hover:text-emerald-300">شروع خواندن ←</a>
                         </div>`;
                 } else if (recentlyPaid) {
