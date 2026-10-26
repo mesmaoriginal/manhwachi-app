@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#09090b" />
+<meta name="theme-color" content="#120a1f" />
 <title>جستجوی مانهواچی | ManhwaChi</title>
 <meta name="description" content="جستجو در مانهوا، مانگا و مانها با ترجمه فارسی در مانهواچی." />
 <meta name="robots" content="noindex, follow" />
@@ -70,6 +70,26 @@ mark{background:none;color:#f87171;font-weight:800}
 .empty{text-align:center;padding:64px 16px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:14px;background:var(--red);color:#fff;font-weight:700;font-size:.9rem;transition:.15s}
 .btn:hover{background:#b91c1c}
+</style>
+<!-- Halloween theme (same files as the main page) -->
+<link rel="stylesheet" href="/halloween.css?v=3" />
+<script src="/halloween.js?v=3" defer></script>
+<style>
+/* Halloween overrides for the search page's own colours */
+html.hw{--bg:#120a1f;--panel:rgba(30,18,56,.72);--panel2:#2a1a4a;--line:rgba(255,190,120,.16);--muted:#b9a8dc;--red:#ff8a2b;--gold:#ffd27a}
+html.hw .search-box,html.hw .icon-btn,html.hw .seg,html.hw #sort{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+html.hw .search-box:focus-within{box-shadow:0 0 0 4px rgba(255,138,43,.18),0 0 24px -6px rgba(255,138,43,.5)}
+html.hw .search-box input::placeholder{color:#8f7db8}
+html.hw .seg button[aria-pressed=true],html.hw .btn{background:linear-gradient(135deg,#ffb04a,#ff6a3d);color:#2a1200}
+html.hw .btn:hover{background:linear-gradient(135deg,#ffc069,#ff7a4d)}
+html.hw .chip:hover{border-color:rgba(255,138,43,.55)}
+html.hw .chip[aria-pressed=true]{background:rgba(255,138,43,.18);border-color:#ff8a2b;color:#fff}
+html.hw #sort option{background:#1a1030;color:#ececf0}
+html.hw .cover{background:#1a1030}
+html.hw .cover .ph{color:#4a3a78}
+html.hw .card:hover .cover{border-color:#ff8a2b;box-shadow:0 12px 30px -12px rgba(255,138,43,.6),0 0 0 1px rgba(167,139,250,.25)}
+html.hw .card:hover h3,html.hw mark{color:#ffc069}
+html.hw #clear:hover,html.hw .icon-btn:hover{background:rgba(255,138,43,.14);color:#ffc069}
 </style>
 </head>
 <body>

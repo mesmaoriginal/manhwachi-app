@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="stylesheet" href="/halloween.css?v=3" />
+    <script src="/halloween.js?v=3" defer></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -113,6 +115,24 @@
         .plans-grid[data-count="1"]{ max-width:340px; margin-inline:auto; }
         .plans-grid[data-count="2"]{ max-width:680px; margin-inline:auto; }
         .plans-grid:empty{ display:none; }
+        /* ===== تم هالووین (فقط وقتی html.hw فعاله؛ با دکمه‌ی ✕ خاموش می‌شه) ===== */
+        html.hw{ --void:#120a1f; --panel:#1d1236; --line:rgba(255,190,120,.2); --blood:#6d4bb8; --ember:#ff8a2b; --gold:#ffd27a; }
+        html.hw body{ background:radial-gradient(80% 45% at 50% 0,rgba(167,139,250,.3),transparent 70%),radial-gradient(60% 40% at 50% 100%,rgba(255,138,43,.16),transparent 70%),#120a1f; }
+        html.hw body::before{ background-image:radial-gradient(rgba(167,139,250,.4) 1px,transparent 1.3px); }
+        html.hw header{ background:rgba(26,16,48,.88)!important; border-color:rgba(255,190,120,.25)!important; }
+        html.hw .panel-card{ background:linear-gradient(160deg,#241848,#170d2c); border-color:rgba(255,190,120,.18); border-radius:26px; }
+        html.hw .panel-card:hover{ border-color:rgba(255,138,43,.7); box-shadow:0 18px 36px -16px rgba(255,138,43,.5); }
+        html.hw .panel-card--hero{ border-radius:26px; box-shadow:0 0 0 1px rgba(255,138,43,.25),0 0 40px rgba(255,138,43,.3),0 25px 60px -20px rgba(167,139,250,.5); }
+        html.hw .bg-ember{ background-color:#ff8a2b!important; color:#2a1200!important; }
+        html.hw .text-ember{ color:#ff8a2b!important; }
+        html.hw .from-ember{ --tw-gradient-from:#ffb04a var(--tw-gradient-from-position)!important; --tw-gradient-to:rgb(255 138 43/0) var(--tw-gradient-to-position)!important; --tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)!important; }
+        html.hw .to-primary-red{ --tw-gradient-to:#ff6a3d var(--tw-gradient-to-position)!important; }
+        html.hw .hover\:bg-primary-red:hover{ background-color:#ff8a2b!important; color:#2a1200!important; }
+        html.hw button.from-ember{ color:#2a1200!important; border-radius:999px!important; }
+        .hw-deal{ display:inline-flex; align-items:center; gap:4px; margin-bottom:10px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800; color:#2a1200; background:linear-gradient(135deg,#ffd27a,#ff8a2b); box-shadow:0 0 16px rgba(255,138,43,.55); animation:hwDeal 1.8s ease-in-out infinite; }
+        @keyframes hwDeal{ 50%{ box-shadow:0 0 26px rgba(255,138,43,.95); transform:scale(1.04); } }
+        .hw-new{ color:#ffd27a!important; text-shadow:0 0 14px rgba(255,138,43,.6); }
+        #hwBanner a{ display:inline-block; margin-top:8px; padding:8px 18px; border-radius:999px; background:linear-gradient(135deg,#ffb04a,#ff6a3d); color:#2a1200; font-weight:800; font-size:12px; text-decoration:none; }
         :focus-visible{
             outline: 2px solid var(--ember);
             outline-offset: 2px;
@@ -154,6 +174,8 @@
                 <span id="promoText"></span>
             </div>
         </div>
+
+        <div id="hwBanner" class="hidden max-w-xl mx-auto mb-8 rounded-2xl p-4 text-right flex items-start gap-3" style="background:linear-gradient(135deg,rgba(255,138,43,.16),rgba(167,139,250,.16));border:1.5px dashed rgba(255,190,120,.55)"></div>
 
         <!-- وضعیت بارگذاری / بسته بودن / خطا (قیمت‌ها از سرور می‌آیند: /api/vip/config) -->
         <div id="plansState" class="hidden max-w-xl mx-auto panel-card rounded-2xl p-8 text-center"></div>
@@ -210,6 +232,7 @@
                 ? 'panel-card--hero relative rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 md:scale-[1.04] md:my-1'
                 : 'panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1'));
 
+            card.dataset.key = plan.key;
             if (hero) {
                 const nr = mk('span', 'ticket-notch -right-[11px]');
                 const nl = mk('span', 'ticket-notch -left-[11px]');
@@ -269,6 +292,43 @@
             box.classList.remove('hidden');
         }
 
+        // ===== تخفیف چرخونه‌ی هالووین: قیمت تخفیف‌خورده از خود سرور می‌آید (همان قیمتی که در درگاه کسر می‌شود) =====
+        async function applyHalloween(keys) {
+            const banner = document.getElementById('hwBanner');
+            if (!banner) return;
+            banner.classList.add('hidden');
+            try {
+                const client = getSupabaseInstance();
+                const { data: { session } } = client ? await client.auth.getSession() : { data: {} };
+                const r = await fetch('/api/halloween/coupon?keys=' + encodeURIComponent(keys.join(',')), {
+                    cache: 'no-store', headers: session ? { Authorization: 'Bearer ' + session.access_token } : {}
+                });
+                if (!r.ok) return;
+                const d = await r.json();
+                const planName = { monthly: 'ماهانه', quarterly: 'سه‌ماهه' };
+                if (d.coupon && Object.keys(d.items).length) {
+                    document.querySelectorAll('#plansGrid [data-key]').forEach(card => {
+                        const amount = d.items[card.dataset.key];
+                        if (!amount) return;
+                        const num = card.querySelector('.price-num');
+                        if (!num) return;
+                        const old = num.textContent;
+                        num.textContent = faMoney(Math.round(amount / 10));
+                        num.classList.add('hw-new');
+                        const oldEl = mk('span', 'text-xs text-zinc-500 line-through', old);
+                        num.parentNode.appendChild(oldEl);
+                        const tag = mk('div', 'hw-deal', '🎃 تخفیف چرخونه ' + faDigits(d.coupon.percent) + '٪');
+                        num.parentNode.parentNode.insertBefore(tag, num.parentNode);
+                    });
+                    banner.innerHTML = '<span class="text-3xl shrink-0">🎃</span><div class="min-w-0"><p class="font-bold text-sm mb-1" style="color:#ffd27a">کد تخفیف چرخونه‌ی هالووین فعاله!</p><p class="text-xs text-zinc-200 leading-relaxed">' + faDigits(d.coupon.percent) + '٪ تخفیف روی اشتراک ' + planName[d.coupon.plan] + ' — قیمت‌ها پایین‌تر با تخفیف نمایش داده شده و موقع پرداخت خودکار اعمال می‌شود. اعتبار تا ' + faDate(d.coupon.expires) + '.</p></div>';
+                    banner.classList.remove('hidden');
+                } else if (d.open && !d.spun) {
+                    banner.innerHTML = '<span class="text-3xl shrink-0">🎡</span><div class="min-w-0"><p class="font-bold text-sm mb-1" style="color:#ffd27a">چرخونه‌ی هالووین منتظرته!</p><p class="text-xs text-zinc-200 leading-relaxed">یک‌بار بچرخون و تخفیف یا روز اشتراک رایگان ببر.</p><a href="/halloween-wheel.html">برو بچرخون</a></div>';
+                    banner.classList.remove('hidden');
+                }
+            } catch (e) { console.error(e); }
+        }
+
         let __loadedOnce = false;
         async function loadPlans() {
             const grid = document.getElementById('plansGrid');
@@ -298,6 +358,7 @@
                 }
                 grid.dataset.count = String(cfg.plans.length);
                 cfg.plans.forEach(p => grid.appendChild(buildPlanCard(p)));
+                applyHalloween(cfg.plans.map(p => p.key));
             } catch (e) {
                 console.error(e);
                 grid.textContent = '';

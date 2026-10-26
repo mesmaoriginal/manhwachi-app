@@ -112,8 +112,12 @@
     <script src="js/supabase.js" defer></script>
     <!-- استایل‌های ثابت هوم و اپلیکیشن -->
     <link rel="stylesheet" href="home.css?v=13">
-    <link rel="stylesheet" href="/app-promo.css?v=1">
+    <!-- پیام دانلود اپ فعلاً غیرفعاله: <link rel="stylesheet" href="/app-promo.css?v=1"> -->
+    <!-- آخر <head>، بعد از home.css -->
+    <link rel="stylesheet" href="/halloween.css">
 
+    <script src="/halloween.js" defer></script>
+    
     <style>
         * { 
             margin: 0; 
@@ -455,6 +459,10 @@
             <button type="button" data-page="profile" onclick="loadPage(this)" aria-label="پروفایل" class="hidden md:flex w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">person</span>
             </button>
+
+            <a href="/halloween-wheel.html" class="hw-wheel-btn" aria-label="گردونه‌ی هالووین" title="گردونه‌ی شانس هالووین">
+                <svg viewBox="0 0 24 24" class="hw-wheel-svg" aria-hidden="true"><g class="hw-wheel-rot"><path d="M12 12L12.00 2.80A9.2 9.2 0 0 1 18.51 5.49Z" fill="#ff8a2b" fill-opacity=".92"/><path d="M12 12L18.51 5.49A9.2 9.2 0 0 1 21.20 12.00Z" fill="#a78bfa" fill-opacity=".92"/><path d="M12 12L21.20 12.00A9.2 9.2 0 0 1 18.51 18.51Z" fill="#ffd27a" fill-opacity=".92"/><path d="M12 12L18.51 18.51A9.2 9.2 0 0 1 12.00 21.20Z" fill="#86efac" fill-opacity=".92"/><path d="M12 12L12.00 21.20A9.2 9.2 0 0 1 5.49 18.51Z" fill="#ff8a2b" fill-opacity=".92"/><path d="M12 12L5.49 18.51A9.2 9.2 0 0 1 2.80 12.00Z" fill="#a78bfa" fill-opacity=".92"/><path d="M12 12L2.80 12.00A9.2 9.2 0 0 1 5.49 5.49Z" fill="#ffd27a" fill-opacity=".92"/><path d="M12 12L5.49 5.49A9.2 9.2 0 0 1 12.00 2.80Z" fill="#86efac" fill-opacity=".92"/><circle cx="12" cy="12" r="9.2" fill="none" stroke="#2a1200" stroke-opacity=".55" stroke-width=".7"/><path d="M12 12V2.8M12 12L18.5 5.5M12 12H21.2M12 12L18.5 18.5M12 12V21.2M12 12L5.5 18.5M12 12H2.8M12 12L5.5 5.5" stroke="#2a1200" stroke-opacity=".45" stroke-width=".6"/></g><circle cx="12" cy="12" r="2.3" fill="#1a1030" stroke="#ffd27a" stroke-width="1"/><path d="M12 5.2 9.9 1.2h4.2z" fill="#fff7ea" stroke="#2a1200" stroke-width=".6" stroke-linejoin="round"/></svg>
+            </a>
 
             <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">search</span>
@@ -2804,7 +2812,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 </template>
-<script src="/app-promo.js?v=1" defer></script>
+<!-- پیام دانلود اپ فعلاً غیرفعاله: <script src="/app-promo.js?v=1" defer></script> -->
 </body>
 
 </html>

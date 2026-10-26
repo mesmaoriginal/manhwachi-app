@@ -413,6 +413,21 @@
             box-shadow: none;
         }
     </style>
+    <!-- Halloween theme (same files as the main page) -->
+    <link rel="stylesheet" href="/halloween.css?v=3">
+    <script src="/halloween.js?v=3" defer></script>
+    <style>
+        /* Halloween overrides for this page's own colours */
+        html.hw{--primary-color:#ff8a2b;--primary-hover:#ffb04a;--primary-glow:rgba(255,138,43,.35);--bg-color:#120a1f;--card-bg:rgba(30,18,56,.75);--card-border:rgba(255,190,120,.18);--input-bg:#1a1030;--text-muted:#b9a8dc}
+        html.hw .header .badge-top{background:rgba(255,138,43,.12);border-color:rgba(255,138,43,.4)}
+        html.hw .header h1 span{background-image:linear-gradient(135deg,#ffd27a,#ff8a2b)}
+        html.hw .card:hover{border-color:rgba(255,138,43,.6)}
+        html.hw .badge{background:rgba(255,138,43,.14);color:#ffc069}
+        html.hw .card p.card-salary{color:#ffc069}
+        html.hw .form-group input:focus,html.hw .form-group textarea:focus,html.hw .form-group input.input-error{box-shadow:0 0 0 3px rgba(255,138,43,.18)}
+        html.hw .radio-btn input:checked + label{background:rgba(255,138,43,.14)}
+        html.hw .submit-btn{background:linear-gradient(135deg,#ffb04a,#ff6a3d);color:#2a1200}
+    </style>
 </head>
 <body>
 

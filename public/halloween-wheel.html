@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>چرخونه‌ی هالووین | مانهواچی</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/ManhwaChi/favicon.ico">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800&display=swap">
+<link rel="stylesheet" href="/halloween.css?v=6">
+<script src="/halloween.js?v=6" defer></script>
+<script src="/js/vendor/supabase.min.js" defer></script>
+<script src="/js/supabase.js" defer></script>
+<style>
+:root{--night:#120a1f;--o:#ff8a2b;--g:#ffd27a;--p:#a78bfa;--m:#86efac;--ink:#fff7ea}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;font-family:Vazirmatn,system-ui,sans-serif;letter-spacing:0;color:var(--ink);background:radial-gradient(75% 40% at 50% 0,rgba(167,139,250,.34),transparent 72%),radial-gradient(60% 40% at 50% 100%,rgba(255,138,43,.22),transparent 70%),var(--night);padding:0 16px 100px;overflow-x:hidden;overflow-x:clip;max-width:100%}
+h1{font-family:Lalezar,Vazirmatn,sans-serif;font-weight:400;letter-spacing:.5px;text-align:center;font-size:clamp(30px,8.5vw,50px);font-weight:900;line-height:1.35;margin:8px 0 2px;color:var(--g);text-shadow:0 0 30px rgba(255,138,43,.7),0 3px 0 #7a3a0a}
+h1 span{display:inline-block;animation:bob 2.6s ease-in-out infinite}h1 span:last-child{animation-delay:-1.3s}
+@keyframes bob{50%{transform:translateY(-6px) rotate(6deg)}}
+.sub{font-family:Lalezar,Vazirmatn,sans-serif;font-weight:400;text-align:center;color:#ffe9b0;font-size:17px;font-weight:800;line-height:1.7;margin-bottom:18px}
+.sub span{font-family:Vazirmatn,sans-serif;display:block;color:#d9c9f5;font-size:13.5px;font-weight:500;margin-top:2px}
+.sub b{color:var(--o);font-weight:900}
+.pk-eye{transform-box:fill-box;transform-origin:center;animation:pkBlink 4.6s infinite}
+@keyframes pkBlink{0%,92%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.08)}}
+.pk-hat{transform-box:fill-box;transform-origin:50% 100%;animation:pkHat 3.4s ease-in-out infinite}
+@keyframes pkHat{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+.pk-tw{transform-box:fill-box;transform-origin:center;animation:pkTw 2s ease-in-out infinite}
+@keyframes pkTw{0%,100%{transform:scale(.4);opacity:.4}50%{transform:scale(1.2);opacity:1}}
+.pk-ar{transform-box:fill-box;transform-origin:0 100%;animation:pkWave 2.4s ease-in-out infinite}
+@keyframes pkWave{0%,70%,100%{transform:rotate(0)}80%{transform:rotate(-22deg)}90%{transform:rotate(8deg)}}
+.hub:disabled .pk-eye,.hub:disabled .pk-hat,.hub:disabled .pk-tw,.hub:disabled .pk-ar{animation:none}
+.pk-glow{animation:pkGlow 1.8s ease-in-out infinite alternate}
+.hub:disabled .pk-glow{animation:none}
+@keyframes pkGlow{from{opacity:.65}to{opacity:1}}
+.prizes h2{letter-spacing:0}
+.prizes small{display:block;text-align:center;color:#c9b8ee;font-size:12px;margin:-4px 0 8px}
+.clock{position:relative;max-width:470px;margin:0 auto 26px;padding:14px 14px 15px;border-radius:24px;background:linear-gradient(160deg,#2f1d57,#170d2c);border:2px dashed rgba(255,190,120,.4);text-align:center;box-shadow:0 14px 34px -14px rgba(255,138,43,.6)}
+.clock::before,.clock::after{content:"";position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:var(--night);transform:translateY(-50%)}.clock::before{right:-12px}.clock::after{left:-12px}
+.clock small{color:#d9c9f5;font-size:12.5px}
+.clock b.big{display:block;font-size:clamp(28px,7.5vw,38px);color:var(--o);font-weight:900;text-shadow:0 0 18px rgba(255,138,43,.6)}
+.units{display:flex;gap:8px;justify-content:center;margin-top:8px;direction:ltr}
+.units div{min-width:60px;padding:7px 4px;border-radius:14px;background:rgba(0,0,0,.34);border:1px solid rgba(167,139,250,.25);font-size:11px;color:#c9b8ee}
+.units i{display:block;font-style:normal;font-size:23px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.clock.hot b.big{animation:hot 1.2s ease-in-out infinite}@keyframes hot{50%{color:#ff5b3a;text-shadow:0 0 26px #ff3b30}}
+.stage{position:relative;width:min(88vw,440px);aspect-ratio:1;margin:0 auto}
+.rays{position:absolute;inset:-42%;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,190,120,.16) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 22%,transparent 62%);mask:radial-gradient(circle,#000 22%,transparent 62%);animation:rot 40s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.stage::before{content:"";position:absolute;inset:-8%;border-radius:50%;background:radial-gradient(circle,rgba(255,138,43,.42),transparent 66%);animation:pulse 3s ease-in-out infinite}
+.stage.go::before{animation-duration:.7s;background:radial-gradient(circle,rgba(255,210,122,.65),transparent 66%)}
+@keyframes pulse{50%{opacity:.55;transform:scale(.95)}}
+#wheel{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6));transition:transform 6.2s cubic-bezier(.12,.72,.08,1)}
+.ptr{position:absolute;top:-4.5%;left:50%;width:14%;transform:translateX(-50%);z-index:3;filter:drop-shadow(0 5px 7px rgba(0,0,0,.65));transform-origin:50% 25%}
+.ptr.tick{animation:tick .12s}@keyframes tick{50%{transform:translateX(-50%) rotate(-16deg)}}
+.hub{position:absolute;left:50%;top:50%;width:40%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:2;border:0;background:none;cursor:pointer;padding:0;filter:drop-shadow(0 6px 12px rgba(0,0,0,.6)) drop-shadow(0 0 14px rgba(255,138,43,.55));transition:transform .2s}
+.hub:not(:disabled){animation:beat 1.6s ease-in-out infinite}@keyframes beat{50%{transform:translate(-50%,-50%) scale(1.08)}}
+.hub:active:not(:disabled){animation:none;transform:translate(-50%,-50%) scale(.92)}
+.hub:disabled{filter:grayscale(.8) brightness(.75);cursor:not-allowed}
+.hub:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:50%}
+.hub svg{width:100%;display:block}
+.bulb{animation:chase 1.2s steps(1) infinite;animation-delay:calc(var(--i)*-.1s)}
+@keyframes chase{0%{fill:#fff3c4}50%{fill:#a0651d}}
+.go .bulb{animation-duration:.35s}
+.candle{position:absolute;bottom:2%;width:9%;pointer-events:none}.candle.l{right:100%;margin-right:2%}.candle.r{left:100%;margin-left:2%}
+.flame{transform-origin:50% 100%;animation:flick .5s ease-in-out infinite alternate}@keyframes flick{from{transform:scale(1,.9) skewX(-4deg)}to{transform:scale(.9,1.08) skewX(4deg)}}
+@media(max-width:620px){.candle{display:none}}
+.note{max-width:470px;margin:28px auto 0;text-align:center;font-size:14px;line-height:1.95;color:#e7dcfb}
+.note .btn{display:inline-block;margin-top:10px;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#ffb04a,#ff6a3d);color:#2a1200;font-weight:800;text-decoration:none;box-shadow:0 10px 22px -8px rgba(255,138,43,.85)}
+.prizes{max-width:470px;margin:26px auto 0;padding:16px;border-radius:24px;background:rgba(29,18,54,.72);border:1px solid rgba(255,190,120,.22)}
+.prizes h2{font-family:Lalezar,Vazirmatn,sans-serif;font-weight:400;font-size:19px;color:var(--g);margin-bottom:8px;text-align:center}
+.prizes li{list-style:none;display:flex;gap:9px;align-items:center;padding:7px 2px;font-size:13.5px;border-bottom:1px solid rgba(255,255,255,.06)}
+.prizes li:last-child{border:0}.prizes li.rare{color:var(--m);font-weight:700}
+.prizes li::before{content:"🎃"}.prizes li.rare::before{content:"💎"}
+.flash{position:fixed;inset:0;z-index:290;background:#fff;opacity:0;pointer-events:none}
+.win{position:fixed;inset:0;z-index:300;display:none;place-items:center;padding:20px;background:rgba(10,5,20,.84);backdrop-filter:blur(8px)}
+.win.on{display:grid}
+.win>div{position:relative;overflow:hidden;width:min(100%,370px);padding:30px 22px 22px;border-radius:30px;text-align:center;background:linear-gradient(160deg,#33205f,#160d2a);border:2px solid var(--o);box-shadow:0 0 70px rgba(255,138,43,.5);animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.4) rotate(-8deg);opacity:0}}
+.win>div::before{content:"";position:absolute;left:50%;top:-40px;width:420px;height:420px;margin-left:-210px;background:repeating-conic-gradient(rgba(255,210,122,.2) 0 8deg,transparent 8deg 24deg);-webkit-mask:radial-gradient(circle,#000,transparent 68%);mask:radial-gradient(circle,#000,transparent 68%);animation:rot 18s linear infinite}
+.win>div>*{position:relative}
+.win .em{font-size:68px;filter:drop-shadow(0 0 20px rgba(255,138,43,.8));animation:bob 2s ease-in-out infinite}
+.win h3{font-size:14px;color:#d9c9f5;margin:4px 0}
+.win strong{font-family:Lalezar,Vazirmatn,sans-serif;font-weight:400;display:block;font-size:25px;color:var(--g);line-height:1.5;margin-bottom:8px;text-shadow:0 0 18px rgba(255,138,43,.6)}
+.win p{font-size:13px;color:#e7dcfb;line-height:1.95;margin-bottom:16px}
+.win .btn{display:block;padding:13px;border-radius:15px;background:linear-gradient(135deg,#ffb04a,#ff6a3d);color:#2a1200;text-decoration:none;font:800 15px Vazirmatn,sans-serif}
+.win .x{margin-top:10px;background:none;color:#c9b8ee;border:0;font:600 13px Vazirmatn,sans-serif;cursor:pointer}
+@media (prefers-reduced-motion:reduce){#wheel{transition-duration:.01s}.rays,.stage::before,.bulb,h1 span,.hub,.flame,.pk-eye,.pk-hat,.pk-tw,.pk-ar{animation:none!important}}
+
+/* ===== mobile fix: no sideways scroll ===== */
+html{overflow-x:hidden;max-width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.stagebox{margin:0 -16px;padding:0 16px;overflow-x:clip;overflow-y:visible}
+img,svg{max-width:100%}
+/* ===== header like the rest of the site ===== */
+header.sticky{position:sticky;top:0;z-index:50;margin:0 -16px 14px;padding-top:env(safe-area-inset-top);background:rgba(18,18,18,.85);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.1)}
+.hd{max-width:1280px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;min-width:0}
+.brand img{height:32px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(255,138,43,.45))}
+.brand span{font:800 20px/1 Montserrat,Vazirmatn,sans-serif;color:#fff;white-space:nowrap}
+.brand b{color:var(--o);font-weight:800}
+.hd-act{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ibtn{width:40px;height:40px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;background:#1e1e1e;border:1px solid rgba(255,255,255,.1);transition:.2s}
+.ibtn:hover{color:var(--o);border-color:rgba(255,138,43,.5)}
+.ibtn:active,.vipb:active{transform:scale(.95)}
+.vipb{height:40px;padding:0 16px;border-radius:999px;display:flex;align-items:center;font-size:13px;font-weight:800;color:#2a1200;text-decoration:none;white-space:nowrap;background:linear-gradient(135deg,#ffb04a,#ff6a3d);box-shadow:0 8px 18px -8px rgba(255,138,43,.8)}
+@media(max-width:420px){.hd{padding:0 14px}.brand span{font-size:17px}.brand img{height:28px}.vipb{padding:0 12px;font-size:12px}}
+@media(max-width:340px){.vipb{display:none}}
+</style>
+</head>
+<body>
+<header class="sticky">
+  <div class="hd">
+    <a class="brand" href="/" aria-label="مانهواچی">
+      <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" width="32" height="32">
+      <span>Manhwa<b>Chi</b></span>
+    </a>
+    <div class="hd-act">
+      <a class="vipb" href="/vip.html">👑 اشتراک VIP</a>
+      <a class="ibtn" href="/" aria-label="بازگشت به صفحه اصلی"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </div>
+</header>
+<h1><span>🦇</span> چرخونه‌ی هالووین <span>🎃</span></h1>
+<p class="sub">یک چرخش، یک جایزه‌ی جادویی ✨<span>فقط <b>یک‌بار</b> می‌تونی شانستو امتحان کنی؛ پس با دل‌وجرئت بچرخون!</span></p>
+
+<section class="clock" id="clock" aria-live="polite">
+  <small>🕯️ تا پایان شب هالووین</small>
+  <b class="big" id="hrs">—</b>
+  <div class="units"><div><i id="u-d">۰</i>روز</div><div><i id="u-h">۰</i>ساعت</div><div><i id="u-m">۰</i>دقیقه</div><div><i id="u-s">۰</i>ثانیه</div></div>
+</section>
+
+<div class="stagebox">
+<div class="stage" id="stage">
+  <div class="rays"></div>
+  <svg class="candle l" viewBox="0 0 20 60"><g class="flame"><path d="M10 2c4 6 5 9 5 12a5 5 0 0 1-10 0c0-3 1-6 5-12z" fill="#ff8a2b"/><path d="M10 9c2 3 2.600 4.500 2.600 6a2.600 2.600 0 0 1-5.200 0c0-1.500.6-3 2.600-6z" fill="#ffe29a"/></g><rect x="4" y="22" width="12" height="36" rx="2" fill="#f4e7d0"/><path d="M4 28q3 6 6 0t6 0v-6H4z" fill="#fff8ea"/></svg>
+  <svg class="candle r" viewBox="0 0 20 60"><g class="flame" style="animation-delay:-.25s"><path d="M10 2c4 6 5 9 5 12a5 5 0 0 1-10 0c0-3 1-6 5-12z" fill="#ff8a2b"/><path d="M10 9c2 3 2.600 4.500 2.600 6a2.600 2.600 0 0 1-5.200 0c0-1.500.6-3 2.600-6z" fill="#ffe29a"/></g><rect x="4" y="22" width="12" height="36" rx="2" fill="#f4e7d0"/><path d="M4 28q3 6 6 0t6 0v-6H4z" fill="#fff8ea"/></svg>
+  <svg class="ptr" id="ptr" viewBox="0 0 40 54"><defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#ffb04a"/><stop offset="1" stop-color="#d9480f"/></linearGradient><radialGradient id="pgem" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#d9ffe6"/><stop offset=".5" stop-color="#4ade80"/><stop offset="1" stop-color="#0f7a3a"/></radialGradient></defs><path d="M20 52 3 19a18 18 0 1 1 34 0z" fill="url(#pg)" stroke="#fff3c4" stroke-width="2.500" stroke-linejoin="round"/><path d="M20 46 8 21" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="20" cy="18" r="8" fill="#2b1b45" stroke="#ffe29a" stroke-width="1.400"/><circle cx="20" cy="18" r="4.600" fill="url(#pgem)"/><circle cx="18.400" cy="16.400" r="1.300" fill="#fff" opacity=".85"/></svg>
+  <svg id="wheel" viewBox="-114 -114 228 228" aria-label="چرخ شانس"></svg>
+  <button class="hub" id="spin" type="button" disabled aria-label="بچرخون">
+    <svg viewBox="-24 -20 148 148" overflow="visible" aria-hidden="true">
+      <defs>
+        <radialGradient id="pkA" cx=".36" cy=".26" r=".95"><stop offset="0" stop-color="#ffe3a8"/><stop offset=".42" stop-color="#ffa03a"/><stop offset="1" stop-color="#e2540d"/></radialGradient>
+        <radialGradient id="pkB" cx=".35" cy=".3" r=".95"><stop offset="0" stop-color="#ffb457"/><stop offset=".6" stop-color="#f26f14"/><stop offset="1" stop-color="#b8400a"/></radialGradient>
+        <radialGradient id="pkIris" cx=".38" cy=".3" r=".85"><stop offset="0" stop-color="#8e5ce6"/><stop offset=".55" stop-color="#3a2270"/><stop offset="1" stop-color="#150a28"/></radialGradient>
+        <radialGradient id="pkBlush" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff4f78" stop-opacity=".9"/><stop offset="1" stop-color="#ff6b8a" stop-opacity="0"/></radialGradient>
+        <linearGradient id="pkHat" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a98bff"/><stop offset="1" stop-color="#4a2c96"/></linearGradient>
+        <linearGradient id="pkGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffeaa8"/><stop offset=".55" stop-color="#ffc233"/><stop offset="1" stop-color="#c77d0a"/></linearGradient>
+        <linearGradient id="pkRib" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d3fd1"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#6d3fd1"/></linearGradient>
+        <radialGradient id="pkAura" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb347" stop-opacity=".6"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle cx="50" cy="52" r="68" fill="url(#pkAura)"/>
+      <ellipse cx="50" cy="98" rx="36" ry="4.5" fill="rgba(0,0,0,.35)"/>
+      <g class="pk-arm pk-al"><path d="M14 70Q2 70 -2 60" stroke="#c2410c" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M14 70Q2 70 -2 60" stroke="#ff9a3c" stroke-width="3.6" stroke-linecap="round" fill="none"/><circle cx="-3" cy="58" r="5" fill="#ffa03a" stroke="#c2410c" stroke-width="1.3"/></g>
+      <g class="pk-arm pk-ar"><path d="M86 70Q98 70 102 60" stroke="#c2410c" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M86 70Q98 70 102 60" stroke="#ff9a3c" stroke-width="3.6" stroke-linecap="round" fill="none"/><circle cx="103" cy="58" r="5" fill="#ffa03a" stroke="#c2410c" stroke-width="1.3"/></g>
+      <ellipse cx="38" cy="98" rx="12" ry="6" fill="#3b2470" stroke="#a78bfa" stroke-opacity=".6"/><ellipse cx="62" cy="98" rx="12" ry="6" fill="#3b2470" stroke="#a78bfa" stroke-opacity=".6"/>
+      <ellipse cx="21" cy="58" rx="20" ry="31" fill="url(#pkB)" stroke="#8f3206" stroke-opacity=".5" stroke-width="1.4"/>
+      <ellipse cx="79" cy="58" rx="20" ry="31" fill="url(#pkB)" stroke="#8f3206" stroke-opacity=".5" stroke-width="1.4"/>
+      <ellipse cx="50" cy="57" rx="31" ry="37" fill="url(#pkA)" stroke="#a73a08" stroke-opacity=".6" stroke-width="1.6"/>
+      <path d="M36 23C26 43 26 72 37 92M64 23C74 43 74 72 63 92M50 21C48 45 48 71 50 94M12 36C5 50 7 71 16 85M88 36C95 50 93 71 84 85" stroke="#a73a08" stroke-opacity=".28" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M30 36C33 31 38 28 43 27" stroke="#fff" stroke-opacity=".55" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+      <g class="pk-hat"><g transform="rotate(9 52 22)">
+        <ellipse cx="52" cy="22" rx="33" ry="7" fill="#3a2279" stroke="#1b0e33" stroke-width="1.3"/>
+        <path d="M30 21C37 8 42-4 45-16C47-25 55-30 66-28C59-22 59-14 61-5C63 6 68 14 74 21Z" fill="url(#pkHat)" stroke="#2a1560" stroke-width="1.3" stroke-linejoin="round"/>
+        <path d="M30 21C37 8 42-4 45-16C48-8 50 8 50 21Z" fill="#fff" opacity=".13"/>
+        <path d="M31 15Q52 23 73 15L75 21Q52 29 29 21Z" fill="#ff8a2b" stroke="#b8400a" stroke-width=".9"/>
+        <rect x="46" y="14.500" width="11" height="11" rx="2" fill="url(#pkGold)" stroke="#a45a06" stroke-width="1" transform="rotate(-6 51 20)"/><rect x="49" y="17.500" width="5" height="5" fill="#7a56d6" transform="rotate(-6 51 20)"/>
+        <g class="pk-tw"><path d="M44-4 45.500-.5 49 1 45.500 2.500 44 6 42.500 2.500 39 1 42.500-.5Z" fill="#ffe29a"/></g>
+        <g class="pk-tw" style="animation-delay:-.9s"><path d="M56 6 57-.5 60 .5 57 2 56 5 55 2 52 .5 55-.5Z" fill="#fff3c4"/></g>
+      </g></g>
+      <g class="pk-eye"><ellipse cx="37" cy="52" rx="10.5" ry="12" fill="#fffaf0" stroke="#2b1b45" stroke-width="2.2"/><ellipse cx="37.500" cy="53.500" rx="7.800" ry="9.400" fill="url(#pkIris)"/><circle cx="40.500" cy="49" r="3.500" fill="#fff"/><circle cx="34" cy="57.500" r="1.700" fill="#fff" opacity=".9"/></g>
+      <g class="pk-eye" style="animation-delay:.05s"><ellipse cx="63" cy="52" rx="10.5" ry="12" fill="#fffaf0" stroke="#2b1b45" stroke-width="2.2"/><ellipse cx="62.500" cy="53.500" rx="7.800" ry="9.400" fill="url(#pkIris)"/><circle cx="65.500" cy="49" r="3.500" fill="#fff"/><circle cx="59" cy="57.500" r="1.700" fill="#fff" opacity=".9"/></g>
+      <ellipse cx="22" cy="66" rx="8.500" ry="5.500" fill="url(#pkBlush)"/><ellipse cx="78" cy="66" rx="8.500" ry="5.500" fill="url(#pkBlush)"/>
+      <path d="M41 66Q50 80 59 66Q50 69 41 66Z" fill="#2b1b45" stroke="#2b1b45" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M44 68.500q6 2.400 12 0" stroke="#fff" stroke-width="2.600" stroke-linecap="round" fill="none"/>
+      <ellipse cx="50" cy="73" rx="4.200" ry="2.400" fill="#ff6b81"/>
+      <g class="pk-rib"><path d="M12 84 5 90 12 96Z M88 84 95 90 88 96Z" fill="#4c2a9e" stroke="#2a1560" stroke-width="1"/><rect x="10" y="80" width="80" height="19" rx="9.500" fill="url(#pkRib)" stroke="#ffe29a" stroke-width="1.800"/><path d="M16 83.500H84" stroke="#fff" stroke-opacity=".3" stroke-width="2" stroke-linecap="round"/>
+      <text id="hubtxt" x="50" y="94" text-anchor="middle" font-family="Lalezar,Vazirmatn,sans-serif" font-weight="400" font-size="15" fill="#fff" style="paint-order:stroke;stroke:#1a0b2e;stroke-width:2.2px;stroke-linejoin:round">بچرخون!</text></g>
+    </svg>
+  </button>
+</div>
+</div>
+
+<div class="note" id="note">دارم چراغ‌ها رو روشن می‌کنم… 🕯️</div>
+<section class="prizes"><h2>🎁 گنجینه‌ی جایزه‌ها</h2><small>هر کدوم از این‌ها می‌تونه مال تو بشه</small><ul id="plist"></ul></section>
+
+<div class="flash" id="flash"></div>
+<div class="win" id="win" role="dialog" aria-modal="true"><div>
+  <div class="em" id="w-em">🎁</div><h3>🎉 تبریک! جایزه‌ی هالووینت آماده‌ست</h3><strong id="w-p"></strong><p id="w-d"></p>
+  <a class="btn" id="w-go" href="/vip.html">صفحه‌ی اشتراک</a><button class="x" id="w-x" type="button">بستن</button>
+</div></div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id), fa = (n) => Number(n).toLocaleString('fa-IR'), calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const COL = [['#3b2470', '#8b6cf0'], ['#c2410c', '#ffb04a'], ['#2b1a5c', '#7a58d6'], ['#b83a08', '#ff8a2b'], ['#34206b', '#9a7cf5']], RARE = ['#0f7a3a', '#86efac'], NS = 'http://www.w3.org/2000/svg';
+  let st = null, spinning = false, offset = 0;
+  const DEV = (() => { try { let d = localStorage.getItem('hw-dev'); if (!d) { d = crypto.randomUUID(); localStorage.setItem('hw-dev', d); } return d; } catch (e) { return ''; } })();
+  const spunHere = () => { try { return localStorage.getItem('hw-spun') === '1'; } catch (e) { return false; } };
+  const markSpun = () => { try { localStorage.setItem('hw-spun', '1'); } catch (e) {} };
+
+  function tick() {
+    if (!st) return;
+    const left = Math.max(0, st.end - (Date.now() + offset)), s = Math.floor(left / 1000);
+    $('hrs').textContent = left ? fa(Math.floor(s / 3600)) + ' ساعت' : 'هالووین تموم شد 👻';
+    $('u-d').textContent = fa(Math.floor(s / 86400)); $('u-h').textContent = fa(Math.floor(s % 86400 / 3600));
+    $('u-m').textContent = fa(Math.floor(s % 3600 / 60)); $('u-s').textContent = fa(s % 60);
+    $('clock').classList.toggle('hot', left > 0 && s < 86400);
+    if (!left && st.open) { st.open = false; render(true); }
+  }
+  setInterval(tick, 1000);
+
+  function mk(tag, a, txt) { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (txt) e.textContent = txt; return e; }
+  function wrapTo(t, max) { const L = []; let c = ''; t.split(' ').forEach((x) => { if ((c + ' ' + x).trim().length > max && c) { L.push(c); c = x; } else c = (c + ' ' + x).trim(); }); L.push(c); return L; }
+  function fitLabel(t, chord) { let fs = 11, L; for (; fs >= 7.5; fs -= .5) { L = wrapTo(t, Math.max(4, Math.floor(chord / (fs * .52)))); if (L.length <= 3 && L.every((l) => l.length * fs * .52 <= chord * 1.05)) break; } return { L, fs }; }
+  function draw(prizes) {
+    const svg = $('wheel'), n = prizes.length, a = 360 / n; svg.innerHTML = '';
+    const defs = mk('defs', {}); svg.appendChild(defs);
+    const lin = (id, stops, x2, y2) => { const l = mk('linearGradient', { id, x1: 0, y1: 0, x2: x2, y2: y2 }); stops.forEach(([o, c]) => l.appendChild(mk('stop', { offset: o, 'stop-color': c }))); defs.appendChild(l); };
+    lin('rim', [['0', '#fff3c4'], ['.35', '#d9962a'], ['.7', '#ffe29a'], ['1', '#a0651d']], 1, 1);
+    const gloss = mk('radialGradient', { id: 'gloss', cx: '.35', cy: '.22', r: '.9' }); [['0', 'rgba(255,255,255,.28)'], ['.45', 'rgba(255,255,255,.04)'], ['1', 'rgba(0,0,0,.28)']].forEach(([o, c]) => gloss.appendChild(mk('stop', { offset: o, 'stop-color': c }))); defs.appendChild(gloss);
+    svg.appendChild(mk('circle', { r: 113, fill: 'url(#rim)' }));
+    svg.appendChild(mk('circle', { r: 106, fill: '#1c0f36', stroke: '#8a5a14', 'stroke-width': 1 }));
+    const g = mk('g', {}); svg.appendChild(g);
+    const P = [['#2b1a5c', '#8b6cf0'], ['#b83a08', '#ffb04a'], ['#3b2470', '#a78bfa'], ['#c2410c', '#ff8a2b']];
+    prizes.forEach((p, i) => {
+      const c = p.rare ? ['#0b5d2c', '#86efac'] : P[i % P.length], id = 'sl' + i, mid = i * a;
+      const rg = mk('radialGradient', { id, gradientUnits: 'userSpaceOnUse', cx: 0, cy: 0, r: 100 }); [['.15', c[0]], ['.75', c[1]], ['1', c[0]]].forEach(([o, col]) => rg.appendChild(mk('stop', { offset: o, 'stop-color': col }))); defs.appendChild(rg);
+      const s = (mid - 90 - a / 2) * Math.PI / 180, e = (mid - 90 + a / 2) * Math.PI / 180, R = 101;
+      g.appendChild(mk('path', { d: `M0 0L${R * Math.cos(s)} ${R * Math.sin(s)}A${R} ${R} 0 ${a > 180 ? 1 : 0} 1 ${R * Math.cos(e)} ${R * Math.sin(e)}Z`, fill: `url(#${id})`, stroke: '#ffe29a', 'stroke-width': 1.2, 'stroke-opacity': .85 }));
+      g.appendChild(mk('circle', { cx: R * Math.cos(s) * .975, cy: R * Math.sin(s) * .975, r: 2.4, fill: '#fff3c4', stroke: '#a0651d', 'stroke-width': .8 }));
+      const chord = 2 * 64 * Math.sin(a * Math.PI / 360) * .86, { L: lines, fs } = fitLabel(p.label, chord);
+      const t = mk('text', { transform: `rotate(${mid}) translate(0 -72)`, 'text-anchor': 'middle', fill: p.rare ? '#eafff1' : '#fff', 'font-size': fs, 'font-weight': 400, 'font-family': 'Lalezar,Vazirmatn,sans-serif', style: `paint-order:stroke;stroke:#1a0b2e;stroke-width:${(fs * .16).toFixed(2)}px;stroke-linejoin:round` });
+      lines.forEach((l, k) => t.appendChild(mk('tspan', { x: 0, dy: k ? fs * 1.3 : -(lines.length - 1) * fs * .65 + fs * .35 }, l)));
+      g.appendChild(t);
+      g.appendChild(mk('text', { transform: `rotate(${mid}) translate(0 -97)`, 'text-anchor': 'middle', 'font-size': 11, style: 'filter:drop-shadow(0 0 3px rgba(0,0,0,.6))' }, p.rare ? '💎' : p.kind === 'days' ? '🎟️' : '🏷️'));
+    });
+    svg.appendChild(mk('circle', { r: 101, fill: 'url(#gloss)', 'pointer-events': 'none' }));
+    svg.appendChild(mk('circle', { r: 52, fill: 'none', stroke: '#ffe29a', 'stroke-opacity': .45, 'stroke-width': 1, 'stroke-dasharray': '2 4' }));
+    svg.appendChild(mk('circle', { r: 41, fill: '#1c0f36', stroke: '#ffe29a', 'stroke-width': 2.4 }));
+    svg.appendChild(mk('circle', { r: 37, fill: 'none', stroke: '#a0651d', 'stroke-width': 1 }));
+    for (let i = 0; i < 24; i++) { const r = i * 15 * Math.PI / 180; svg.appendChild(mk('circle', { class: 'bulb', style: `--i:${i}`, cx: 109.5 * Math.sin(r), cy: -109.5 * Math.cos(r), r: 2.5, fill: '#fff3c4' })); }
+    svg.style.transition = 'none'; svg.style.transform = 'rotate(0deg)';
+  }
+
+  const PLAN = { monthly: 'ماهانه', quarterly: 'سه‌ماهه' };
+  function resultText(sp) {
+    if (sp.coupon) return `کد تخفیف ${fa(sp.coupon.percent)}٪ برای اشتراک ${PLAN[sp.coupon.plan]} روی حسابت فعال شد. تو صفحه‌ی اشتراک قیمت تخفیف‌خورده رو می‌بینی و موقع پرداخت خودکار اعمال می‌شه (تا ${new Date(sp.coupon.expires).toLocaleDateString('fa-IR')}).`;
+    return sp.pending ? 'جایزه‌ات ثبت شد و تا چند دقیقه‌ی دیگه روی اشتراکت اضافه می‌شه ✨' : 'جایزه‌ت همین الان روی اشتراکت اعمال شد. لذت ببر! 🎃';
+  }
+  function render(keep) {
+    const b = $('spin'), n = $('note'), ht = $('hubtxt');
+    $('plist').innerHTML = st.prizes.map((p) => `<li class="${p.rare ? 'rare' : ''}">${p.label}</li>`).join('');
+    ht.textContent = 'بچرخون!'; b.disabled = true;
+    if (!st.open) n.innerHTML = 'شب هالووین تموم شد و چرخونه خوابید 🦇<br>سال دیگه، همین موقع، دوباره می‌بینیمت!';
+    else if (!st.loggedIn) n.innerHTML = 'برای چرخوندن اول وارد حسابت شو 🔑<br>بعدش کدوی وسط منتظرته!<br><a class="btn" href="/?action=login">ورود / ثبت‌نام</a>';
+    else if (st.spin) { markSpun(); ht.textContent = '✔'; n.innerHTML = `🎉 برنده شدی: <b style="color:var(--g)">${st.spin.prize.label}</b><br>${resultText(st.spin)}<br><a class="btn" href="/vip.html">${st.spin.coupon ? 'خرید با تخفیف' : 'صفحه‌ی اشتراک'}</a>`; }
+    else if (st.blocked) n.innerHTML = '🚫 این حساب از چرخونه کنار گذاشته شده، چون از دستگاهی استفاده شده که قبلاً با حساب دیگه‌ای چرخونده بود.';
+    else if (st.deviceUsed || spunHere()) n.innerHTML = '🔒 از این دستگاه قبلاً چرخونده شده.<br>هر نفر فقط یک‌بار و با یک حساب می‌تونه بچرخونه؛ تلاش با حساب دیگه، اون حساب رو هم از چرخونه حذف می‌کنه.';
+    else { b.disabled = false; n.innerHTML = st.isVip ? 'تو عضو VIP هستی 👑<br>جایزه‌های ویژه‌ی اشتراکی‌ها هم روی چرخه؛ روی کدوی وسط بزن!' : 'روی کدوی وسط بزن و شانستو امتحان کن! 🎃'; }
+    if (!keep) draw(st.prizes);
+  }
+
+  async function token() { const c = window.supabaseClient || window.supabase; if (!c || !c.auth) return null; const { data } = await c.auth.getSession(); return data && data.session ? data.session.access_token : null; }
+  async function api(path, opt) { const t = await token(), h = {}; if (t) h.Authorization = 'Bearer ' + t; if (DEV) h['X-HW-Dev'] = DEV; const r = await fetch('/api/halloween/' + path, { ...opt, headers: h }); return { ok: r.ok, status: r.status, body: await r.json().catch(() => ({})) }; }
+  async function load() { const r = await api('me'); st = r.body; offset = st.now - Date.now(); render(); tick(); }
+
+  function ticker(ms) { const t0 = performance.now(), p = $('ptr'); (function f() { if (performance.now() - t0 < ms) { p.classList.remove('tick'); void p.offsetWidth; p.classList.add('tick'); setTimeout(f, 100 + (performance.now() - t0) / 20); } })(); }
+  function celebrate() {
+    if (!calm) $('flash').animate([{ opacity: 0 }, { opacity: .7, offset: .1 }, { opacity: 0, offset: .25 }, { opacity: .35, offset: .35 }, { opacity: 0 }], { duration: 800 });
+    const E = ['🍬', '🎃', '🦇', '✨', '👻', '🍭', '🕯️']; if (calm) return;
+    for (let i = 0; i < 44; i++) { const s = document.createElement('span'); s.className = 'hw-pop'; s.textContent = E[i % E.length]; s.style.cssText = `left:${Math.random() * 100}vw;top:-30px;font-size:${16 + Math.random() * 20}px;z-index:310`; document.body.appendChild(s); s.animate([{ transform: 'translateY(0) rotate(0)' }, { transform: `translateY(${innerHeight + 60}px) rotate(${Math.random() * 600 - 300}deg)` }], { duration: 2200 + Math.random() * 2200, delay: i * 55, fill: 'both' }).onfinish = () => s.remove(); }
+  }
+  function showWin(sp) { $('w-em').textContent = sp.prize.rare ? '💎' : sp.coupon ? '🏷️' : '🎟️'; $('w-p').textContent = sp.prize.label; $('w-d').textContent = resultText(sp); $('w-go').textContent = sp.coupon ? 'خرید با تخفیف' : 'صفحه‌ی اشتراک'; $('win').classList.add('on'); celebrate(); }
+  $('w-x').onclick = () => $('win').classList.remove('on');
+
+  $('spin').onclick = async () => {
+    if (spinning || !st || st.spin) return; spinning = true; $('spin').disabled = true;
+    const r = await api('spin', { method: 'POST' });
+    if (r.status === 409 && r.body.spin) { st.spin = r.body.spin; spinning = false; return render(true); }
+    if (!r.ok) { spinning = false; if (r.body.blocked) { st.blocked = true; return render(true); } $('spin').disabled = false; $('note').innerHTML = '<span style="color:#ffb3c7">' + (r.body.error || 'یه مشکلی پیش اومد؛ چند لحظه‌ی دیگه دوباره امتحان کن.') + '</span>'; return; }
+    markSpun();
+    const n = st.prizes.length, a = 360 / n, target = 360 * 7 + (360 - r.body.index * a) + (Math.random() - .5) * a * .6, w = $('wheel');
+    $('stage').classList.add('go'); void w.getBoundingClientRect(); w.style.transition = ''; w.style.transform = `rotate(${target}deg)`; ticker(5800);
+    setTimeout(() => { $('stage').classList.remove('go'); st.spin = r.body.spin; spinning = false; showWin(st.spin); render(true); }, calm ? 100 : 6400);
+  };
+  addEventListener('DOMContentLoaded', () => setTimeout(load, 250));
+})();
+</script>
+</body>
+</html>

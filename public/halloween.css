@@ -1,0 +1,709 @@
+/* ManhwaChi — Halloween v3 (combined): v2 base + night village/witch/spiders/lantern + genres page. Single file, load after home.css / profile.css / ganre.css. */
+/* ManhwaChi — Halloween v2 (cute + magical). Load AFTER home.css / profile.css / ganre.css. Scoped to html.hw. */
+html.hw{--hw-o:#ff8a2b;--hw-o2:#ffc069;--hw-p:#a78bfa;--hw-m:#86efac;--hw-pink:#ffb3c7;
+  --primary:#ff8a2b;--neon-red:#ff8a2b;--neon-glow-red:rgba(255,138,43,.35);--red-soft:rgba(255,138,43,.16);--primary-gold:#ffc069}
+html.hw .profile{--red:#ff8a2b;--red-hot:#ffa24d;--red-deep:#6d4bb8;--gold:#ffd27a;--green:#86efac;--s0:#120a1f;--s1:#1a1030;--s2:#221640;--s3:#2c1d52;--line:rgba(255,190,120,.12);--line2:rgba(255,190,120,.22)}
+
+html.hw body{background:radial-gradient(90% 50% at 90% -5%,rgba(167,139,250,.22),transparent 65%),radial-gradient(70% 40% at 0% 100%,rgba(255,138,43,.12),transparent 65%),#120a1f!important}
+html.hw ::selection{background:var(--hw-o);color:#2a1200}
+html.hw ::-webkit-scrollbar-thumb{background:linear-gradient(#ff8a2b,#a78bfa);border-radius:8px}
+html.hw :focus-visible{outline:2px solid var(--hw-o2);outline-offset:2px}
+
+/* ===== Halloween icons (emoji swapped in by JS) ===== */
+html.hw .hw-ico{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif!important;
+  font-variation-settings:normal!important;font-feature-settings:normal!important;font-style:normal!important;font-weight:400!important;
+  display:inline-block;filter:drop-shadow(0 0 6px rgba(255,138,43,.45));transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+html.hw a:hover .hw-ico,html.hw button:hover .hw-ico,html.hw .stat:hover .hw-ico,html.hw summary:hover .hw-ico{animation:hwWobble .6s ease}
+html.hw .hw-ico.hw-s{font-family:inherit!important;display:inline-flex;align-items:center;justify-content:center;width:1em;height:1em;vertical-align:middle;filter:drop-shadow(0 0 5px rgba(255,138,43,.4))}
+.hw-svg{display:block;width:1em;height:1em;overflow:visible}
+html.hw .avatar__fallback.hw-ico{font-size:56px;filter:drop-shadow(0 0 14px rgba(167,139,250,.6))}
+html.hw .sec-head__icon .hw-ico,html.hw .stat__icon .hw-ico{animation:hwBob 3.2s ease-in-out infinite}
+
+/* ===== Tailwind reds -> pumpkin ===== */
+html.hw .text-primary,html.hw .text-red-500,html.hw .text-red-400,html.hw .text-red-600{color:var(--hw-o)!important}
+html.hw .bg-primary,html.hw .bg-red-600,html.hw .bg-red-500{background-color:var(--hw-o)!important;color:#2a1200!important}
+html.hw .border-primary,html.hw .border-red-600{border-color:var(--hw-o)!important}
+html.hw .from-red-600,html.hw .from-red-500{--tw-gradient-from:#ff8a2b var(--tw-gradient-from-position)!important;--tw-gradient-to:rgb(255 138 43/0) var(--tw-gradient-to-position)!important;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)!important}
+html.hw .to-red-700,html.hw .to-red-600{--tw-gradient-to:#a78bfa var(--tw-gradient-to-position)!important}
+html.hw .shadow-red-950\/50{--tw-shadow-color:rgba(167,139,250,.35)!important}
+
+/* ===== header: 3-color pennants ===== */
+html.hw header.sticky,html.hw #header{background:rgba(26,16,48,.88)!important;border-bottom:1px solid rgba(255,190,120,.2)!important}
+html.hw header.sticky::after{content:"";position:absolute;top:100%;left:0;right:0;height:14px;pointer-events:none;
+  background:conic-gradient(from 135deg at 16.67% 0,#ff8a2b 0 90deg,transparent 0),conic-gradient(from 135deg at 50% 0,#a78bfa 0 90deg,transparent 0),conic-gradient(from 135deg at 83.33% 0,#86efac 0 90deg,transparent 0);
+  background-size:84px 14px;background-repeat:repeat-x;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));transform-origin:top;animation:hwSway 5s ease-in-out infinite}
+html.hw header a:hover{color:var(--hw-o2)!important}
+html.hw #mobileDrawer{background:linear-gradient(180deg,#1d1236,#140b26)!important;border-left:1px solid rgba(255,190,120,.25)!important}
+html.hw footer{background:linear-gradient(180deg,#120a1f,#1d1236)!important;border-top:2px dashed rgba(255,190,120,.3)!important}
+html.hw .bottom-nav{background:rgba(29,18,54,.92)!important;border:1px solid rgba(255,190,120,.25)!important;border-radius:26px;box-shadow:0 10px 30px -10px rgba(167,139,250,.5)}
+html.hw .bottom-nav a:hover,html.hw .bottom-nav .active{color:var(--hw-o2)!important}
+
+/* ===== section titles: glowing pumpkin ===== */
+html.hw #app .row-accent,html.hw .row-accent{width:22px!important;height:18px!important;border-radius:50% 50% 46% 46%!important;
+  background:radial-gradient(circle at 35% 30%,#ffc069,#ff8a2b 60%,#e8590c)!important;box-shadow:0 0 12px rgba(255,138,43,.6)!important;position:relative;margin-top:6px;animation:hwBob 3s ease-in-out infinite}
+html.hw .row-accent::after{content:"";position:absolute;top:-6px;left:50%;width:5px;height:8px;background:#4ade80;border-radius:3px 3px 0 0;transform:translateX(-50%) rotate(10deg)}
+html.hw .hero__name,html.hw .sec-head__title,html.hw h1,html.hw h2{text-shadow:0 0 18px rgba(255,138,43,.3)}
+
+/* ===== cards: squishy + lantern glow ===== */
+html.hw .poster-card,html.hw .card-ui,html.hw .genre-card,html.hw .shelf-item,html.hw .stat{transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .3s!important}
+html.hw .poster-card:hover,html.hw .card-ui:hover{transform:translateY(-6px) rotate(-1.2deg) scale(1.02)!important;border-color:rgba(255,190,120,.7)!important;box-shadow:0 16px 30px -12px rgba(255,138,43,.5),0 0 26px rgba(255,138,43,.25)!important;animation:hwFlicker 1.4s ease-in-out infinite}
+html.hw .poster-card:active,html.hw .genre-card:active,html.hw .btn:active{transform:scale(.94)!important}
+html.hw .poster-card::after{background:var(--hw-o)!important;color:#2a1200!important}
+html.hw .poster-card:first-child .poster-rank{background:linear-gradient(135deg,#ffe29a,#ff8a2b)!important;box-shadow:0 0 14px rgba(255,138,43,.5)!important}
+html.hw .poster-rank{color:var(--hw-o2)!important;border-radius:50%!important}
+html.hw .genre-card{--g:#ff8a2b;background:linear-gradient(135deg,#221640,#180e2e)!important;border-radius:24px!important}
+html.hw .genre-card:nth-child(3n+2){--g:#a78bfa}
+html.hw .genre-card:nth-child(3n+3){--g:#86efac}
+html.hw .genre-card:hover{transform:translateY(-5px) rotate(1deg)!important}
+html.hw .genre-card:hover .genre-icon-badge{animation:hwWobble .6s ease}
+html.hw .shimmer::after{background:linear-gradient(90deg,transparent,rgba(255,190,120,.12),transparent)!important}
+
+/* ===== profile ===== */
+html.hw .hero{background:linear-gradient(135deg,#2a1b4d,#160d2a 70%)!important;border-color:rgba(255,190,120,.22)!important}
+html.hw .hero__glow{background:radial-gradient(60% 80% at 85% 0%,rgba(255,138,43,.28),transparent 70%)!important}
+html.hw .hero,html.hw .vip-card{position:relative}
+/* dripping slime */
+html.hw .hero::after,html.hw .vip-card::before{content:"";position:absolute;top:-1px;left:0;right:0;height:26px;pointer-events:none;border-radius:inherit;z-index:2;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 26'%3E%3Cpath fill='%2386efac' d='M0 0H90V7Q90 9 86 9Q82 9 82 13V19A4 4 0 0 1 74 19V13Q74 9 68 9Q60 9 60 7Q60 9 54 9Q48 9 48 12V16A3 3 0 0 1 42 16V12Q42 9 36 9Q28 9 28 14V23A5 5 0 0 1 18 23V13Q18 9 12 9Q4 9 0 7Z'/%3E%3C/svg%3E") repeat-x top left/90px 26px;
+  filter:drop-shadow(0 4px 5px rgba(0,0,0,.35));opacity:.92}
+html.hw .vip-card::before{filter:hue-rotate(110deg) drop-shadow(0 4px 5px rgba(0,0,0,.35))}
+html.hw .avatar{position:relative}
+html.hw .avatar__frame{border-color:#ff8a2b!important;box-shadow:0 0 0 4px rgba(167,139,250,.35),0 0 24px rgba(255,138,43,.35)!important}
+html.hw .avatar::before{content:"";position:absolute;z-index:3;top:-20px;left:50%;margin-left:-6px;width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-bottom:34px solid #6d4bb8;transform:rotate(14deg);transform-origin:bottom center;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));pointer-events:none}
+html.hw .avatar::after{content:"";position:absolute;z-index:3;top:4px;left:50%;margin-left:-26px;width:52px;height:7px;border-radius:6px;background:#6d4bb8;transform:rotate(14deg);box-shadow:inset 0 -3px 0 #ff8a2b;pointer-events:none}
+html.hw .panel,html.hw .vip-card,html.hw .stat{background:linear-gradient(160deg,#221640,#180e2e)!important;border-color:rgba(255,190,120,.16)!important}
+html.hw .stat:hover{transform:translateY(-3px) rotate(-.8deg)}
+html.hw .sec-head__icon,html.hw .stat__icon{background:rgba(255,138,43,.16)!important;color:#ffa24d!important}
+html.hw .btn,html.hw .vip-card .bg-gradient-to-r{border-radius:999px!important}
+html.hw .btn--primary,html.hw .vip-card .bg-gradient-to-r{background:linear-gradient(135deg,#ff8a2b,#ff6a3d)!important;color:#2a1200!important;box-shadow:0 8px 18px -8px rgba(255,138,43,.7)!important}
+html.hw .input:focus,html.hw input:focus{border-color:#ff8a2b!important;box-shadow:0 0 0 3px rgba(255,138,43,.22)!important}
+html.hw .vip-countdown__fill{background:linear-gradient(90deg,#86efac,#ffc069,#ff8a2b)!important}
+html.hw .vip-countdown__number{color:#ffc069!important}
+
+/* ===== night sky (moon, stars, fog) ===== */
+.hw-sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.hw-moon{position:absolute;top:96px;right:7%;width:64px;height:64px;border-radius:50%;
+  box-shadow:-15px 8px 0 0 #ffe9b0,-15px 8px 30px 3px rgba(255,220,140,.35);animation:hwBob 7s ease-in-out infinite}
+.hw-stars{position:absolute;top:0;left:0;width:2px;height:2px;border-radius:50%;animation:hwTwinkle 3.4s ease-in-out infinite alternate}
+.hw-stars.b{animation-duration:5.1s;animation-delay:-2s}
+.hw-fog{position:absolute;left:-20%;right:-20%;bottom:0;height:36vh;
+  background:radial-gradient(40% 60% at 25% 100%,rgba(167,139,250,.16),transparent),radial-gradient(35% 50% at 70% 100%,rgba(255,138,43,.12),transparent);animation:hwFog 26s ease-in-out infinite alternate}
+
+/* ===== mascot Kodoochi ===== */
+.hw-mascot{position:fixed;z-index:60;left:10px;bottom:88px;width:78px;cursor:pointer;-webkit-tap-highlight-color:transparent;animation:hwPop .7s cubic-bezier(.34,1.56,.64,1) both}
+.hw-mascot svg{display:block;width:100%;overflow:visible;filter:drop-shadow(0 0 14px rgba(255,138,43,.5));animation:hwBob 2.6s ease-in-out infinite;transform-origin:50% 100%}
+.hw-mascot.jump svg{animation:hwJump .6s cubic-bezier(.34,1.56,.64,1)}
+.hw-mascot.dizzy svg{animation:hwDizzy 1.2s ease-in-out}
+.hw-hat{transform-box:fill-box;transform-origin:50% 100%;animation:hwHat 3.4s ease-in-out infinite}
+.hw-eyes{transform:translate(var(--ex,0px),var(--ey,0px));transition:transform .12s}
+.hw-lid{transform-box:fill-box;transform-origin:center;animation:hwBlink 4.5s infinite}
+.hw-say{position:absolute;left:64px;bottom:76px;width:max-content;max-width:min(62vw,230px);padding:9px 13px;border-radius:16px 16px 16px 4px;background:#fff7ea;color:#3a1a05;font:600 13px/1.7 Vazirmatn,system-ui,sans-serif;direction:rtl;box-shadow:0 8px 20px -6px rgba(0,0,0,.5);opacity:0;transform:scale(.6) translateY(8px);transform-origin:0 100%;transition:.3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.hw-say.show{opacity:1;transform:none}
+.hw-toggle{position:fixed;z-index:61;left:76px;bottom:84px;width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,190,120,.5);background:#221640;color:#ffc069;font:700 13px/1 system-ui;cursor:pointer;display:grid;place-items:center}
+.hw-count{position:fixed;z-index:61;left:76px;bottom:118px;padding:3px 9px;border-radius:999px;background:#221640;border:2px solid rgba(167,139,250,.55);color:#ffe9b0;font:700 12px/1.4 Vazirmatn,system-ui,sans-serif;transform:scale(0);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.hw-count.on{transform:scale(1)}
+.hw-count.bump{animation:hwWobble .5s ease}
+
+/* ===== bats ===== */
+.hw-bat{position:fixed;z-index:58;width:46px;pointer-events:none;left:0}
+.hw-bat svg{display:block;width:100%;animation:hwBatBob .9s ease-in-out infinite alternate}
+.hw-bat .wl,.hw-bat .wr{transform-box:fill-box;animation:hwFlap .16s ease-in-out infinite alternate}
+.hw-bat .wl{transform-origin:100% 60%}
+.hw-bat .wr{transform-origin:0 60%}
+
+/* ===== little ghosts (tap to catch) ===== */
+.hwg{position:fixed;bottom:-70px;width:34px;z-index:44;cursor:pointer;opacity:0;animation:hwRise var(--d,32s) linear var(--w,0s) infinite;-webkit-tap-highlight-color:transparent}
+.hwg.gone{visibility:hidden}
+.hwg svg{display:block;width:100%;animation:hwSway2 3.5s ease-in-out infinite alternate;filter:drop-shadow(0 0 8px rgba(255,255,255,.35))}
+.hw-pop{position:fixed;z-index:80;pointer-events:none;font-size:18px;line-height:1}
+
+html:not(.hw) .hw-mascot,html:not(.hw) .hwg,html:not(.hw) .hw-bat,html:not(.hw) .hw-sky,html:not(.hw) .hw-count,html:not(.hw) .hw-pop{display:none!important}
+html:not(.hw) .hw-toggle{left:10px;filter:grayscale(1);opacity:.7}
+
+@keyframes hwBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes hwSway{0%,100%{transform:rotate(-.4deg)}50%{transform:rotate(.4deg)}}
+@keyframes hwSway2{from{transform:translateX(-10px) rotate(-6deg)}to{transform:translateX(10px) rotate(6deg)}}
+@keyframes hwWobble{25%{transform:scale(1.2) rotate(-12deg)}60%{transform:scale(1.12) rotate(9deg)}}
+@keyframes hwBlink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+@keyframes hwJump{0%{transform:scale(1,1)}25%{transform:scale(1.15,.8)}55%{transform:translateY(-34px) scale(.92,1.12)}80%{transform:scale(1.1,.9)}100%{transform:none}}
+@keyframes hwDizzy{0%{transform:rotate(0)}20%{transform:rotate(-14deg)}45%{transform:rotate(12deg) scale(1.08)}70%{transform:rotate(-8deg)}100%{transform:rotate(0)}}
+@keyframes hwHat{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+@keyframes hwPop{from{transform:translateY(120%) scale(.6);opacity:0}}
+@keyframes hwRise{0%{transform:translateY(0);opacity:0}10%{opacity:.6}90%{opacity:.6}100%{transform:translateY(-115vh);opacity:0}}
+@keyframes hwTwinkle{from{opacity:.25}to{opacity:1}}
+@keyframes hwFog{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+@keyframes hwFlicker{0%,100%{filter:brightness(1)}45%{filter:brightness(1.08)}60%{filter:brightness(.97)}}
+@keyframes hwBatBob{from{transform:translateY(-14px) rotate(-4deg)}to{transform:translateY(14px) rotate(4deg)}}
+@keyframes hwFlap{from{transform:scaleY(1)}to{transform:scaleY(.25)}}
+@media (max-width:767px){.hw-mascot{width:64px;bottom:84px}.hw-say{left:54px;bottom:68px}.hw-toggle{left:62px;bottom:80px}.hw-count{left:62px;bottom:114px}.hw-moon{width:48px;height:48px;top:84px}}
+@media (prefers-reduced-motion:reduce){.hwg,.hw-bat{display:none!important}html.hw *{animation-duration:.001s!important;animation-iteration-count:1!important}}
+
+/* ===== v3 plus ===== */
+/* ManhwaChi — Halloween v3 (additive layer).
+   Load AFTER halloween.css. Pairs with halloween-plus.js. Nothing in v2 is edited or removed.
+   Adds: haunted-village skyline, rising embers, witch flying across the moon, hanging spiders,
+   lantern cursor glow, glowing eyes in the dark, lightning, graveyard footer, bat swarm. */
+
+html:not(.hw) .hw-scene,
+html:not(.hw) .hw-lantern,
+html:not(.hw) .hw-spider,
+html:not(.hw) .hw-witch,
+html:not(.hw) .hw-peek,
+html:not(.hw) .hw-flash{display:none!important}
+
+/* ===== bigger, warmer moon halo (overrides v2 box-shadow) ===== */
+.hw-moon{box-shadow:-15px 8px 0 0 #ffe9b0,-15px 8px 30px 3px rgba(255,220,140,.4),-15px 8px 110px 26px rgba(255,190,110,.16)!important}
+
+/* ===== scene: skyline + embers + vignette ===== */
+.hw-scene{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.hw-scene::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 38%,transparent 55%,rgba(8,3,18,.55))}
+.hw-land{position:absolute;left:0;right:0;bottom:0;width:100%;height:clamp(150px,28vh,280px);display:block;opacity:.92}
+.hw-win{fill:#ffb347;filter:drop-shadow(0 0 4px #ff8a2b);animation:hwWin 4.4s ease-in-out infinite}
+.hw-embers i{position:absolute;left:0;top:0;width:3px;height:3px;border-radius:50%;background:transparent;animation:hwEmber 9s ease-in-out infinite alternate}
+.hw-embers i:nth-child(2){animation-duration:13s;animation-delay:-4s}
+.hw-embers i:nth-child(3){animation-duration:17s;animation-delay:-9s}
+
+/* ===== witch crossing the moon ===== */
+.hw-witch{position:fixed;top:0;left:0;width:88px;z-index:57;cursor:pointer;will-change:transform;
+  filter:drop-shadow(0 0 10px rgba(167,139,250,.65));-webkit-tap-highlight-color:transparent}
+.hw-witch svg{display:block;width:100%;overflow:visible}
+
+/* ===== hanging spiders (live inside the header) ===== */
+.hw-spider{position:absolute;top:100%;left:var(--x,20%);width:26px;height:var(--L,60px);margin-left:-13px;z-index:2;pointer-events:none;
+  transform-origin:50% 0;animation:hwSpider 4.6s ease-in-out infinite alternate;transition:height .7s cubic-bezier(.5,0,.2,1)}
+.hw-spider::before{content:"";position:absolute;left:50%;top:0;bottom:18px;width:1px;background:rgba(255,255,255,.5)}
+.hw-spider.up{height:8px}
+.hw-spider svg{position:absolute;left:0;bottom:0;width:26px;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 0 6px rgba(167,139,250,.55))}
+
+/* ===== lantern glow that follows the mouse (desktop only) ===== */
+.hw-lantern{position:fixed;left:0;top:0;width:480px;height:480px;margin:-240px 0 0 -240px;border-radius:50%;pointer-events:none;z-index:39;
+  background:radial-gradient(circle,rgba(255,168,76,.17),rgba(255,138,43,.06) 42%,transparent 70%);mix-blend-mode:screen;
+  opacity:0;transition:opacity .5s;will-change:transform}
+.hw-lantern.on{opacity:1}
+
+/* ===== eyes watching from the dark ===== */
+.hw-peek{position:fixed;z-index:46;width:30px;pointer-events:none;filter:drop-shadow(0 0 7px #d7ff5e);opacity:0}
+.hw-peek svg{display:block;width:100%}
+
+/* ===== lightning ===== */
+.hw-flash{position:fixed;inset:0;z-index:35;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(80% 60% at 70% 0%,rgba(190,170,255,.55),rgba(167,139,250,.12) 60%,transparent)}
+
+/* ===== graveyard footer ===== */
+html.hw footer{position:relative}
+html.hw footer::before{content:"";position:absolute;left:0;right:0;top:-45px;height:46px;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 46'%3E%3Cg fill='%23140a28' stroke='%23a78bfa' stroke-opacity='.35'%3E%3Cpath d='M14 46V28a9 9 0 0 1 18 0v18z'/%3E%3Cpath d='M70 46V24a10 10 0 0 1 20 0v22z'/%3E%3Cpath d='M130 46V32a7 7 0 0 1 14 0v14z'/%3E%3Cpath d='M176 46V26a9 9 0 0 1 18 0v20z'/%3E%3C/g%3E%3Cpath d='M80 22v12M75.500 27h9' stroke='%23a78bfa' stroke-opacity='.55' stroke-width='2' fill='none'/%3E%3Cpath d='M20 34h6M183 32h6' stroke='%23a78bfa' stroke-opacity='.4' stroke-width='1.500'/%3E%3C/svg%3E") repeat-x left bottom/220px 46px}
+
+@keyframes hwWin{0%,100%{opacity:1}40%{opacity:.55}46%{opacity:1}72%{opacity:.8}}
+@keyframes hwEmber{from{transform:translate(0,6vh);opacity:.15}to{transform:translate(16px,-10vh);opacity:.9}}
+@keyframes hwSpider{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+
+@media (max-width:767px){
+  .hw-land{height:clamp(110px,18vh,170px)}
+  .hw-spider.s2{display:none}
+  .hw-witch{width:68px}
+  html.hw footer::before{background-size:170px 36px;top:-35px;height:36px}
+}
+@media (prefers-reduced-motion:reduce){
+  .hw-win,.hw-embers i,.hw-spider{animation:none!important}
+  .hw-witch,.hw-peek,.hw-flash,.hw-lantern{display:none!important}
+}
+
+/* ===== genres page ===== */
+/* ManhwaChi — Halloween genres page add-on.
+   Load AFTER halloween.css / halloween-plus.css / ganre.css. Pairs with halloween-genres.js.
+   Everything is scoped to html.hw, so with the theme switched off the page looks exactly like before. */
+
+/* injected elements stay invisible unless the theme is on */
+.hw-gi, .gw-spot, .gs-s { display: none; }
+html.hw .hw-gi { display: grid; place-items: center; }
+html.hw .gi-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* the original Material glyphs step aside for the custom drawings */
+html.hw .genre-icon-badge .material-symbols-outlined,
+html.hw .empty-row-state .material-symbols-outlined { display: none !important; }
+
+/* ===== genre icon badge ===== */
+html.hw .genre-icon-badge .hw-gi { width: 27px; height: 27px; color: var(--g, #ff8a2b); }
+html.hw .genre-card .genre-icon-badge {
+  position: relative;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--g, #ff8a2b) 32%, transparent), 0 0 20px -4px color-mix(in srgb, var(--g, #ff8a2b) 55%, transparent);
+}
+@media (min-width: 1024px) { html.hw .genre-icon-badge .hw-gi { width: 36px; height: 36px; } }
+
+/* icon micro-animations (only while a card is hovered / tapped) */
+.gi-spin, .gi-needle { transform-box: fill-box; transform-origin: center; transition: transform .7s cubic-bezier(.34, 1.56, .64, 1); }
+html.hw .genre-card:hover .gi-spin { transform: rotate(180deg); }
+html.hw .genre-card:hover .gi-needle { transform: rotate(70deg); }
+html.hw .genre-card:hover .gi-glow { animation: giGlow .9s ease-in-out infinite alternate; }
+html.hw .genre-card:hover .gi-float { animation: giFloat 1s ease-in-out infinite alternate; }
+html.hw .genre-card[data-hwg="favorite"]:hover .gi-svg { animation: giBeat .7s ease-in-out infinite; }
+html.hw .genre-card[data-hwg="skull"]:hover .gi-svg { animation: giShake .5s ease-in-out infinite; }
+
+/* ===== card extras: cursor spotlight, pop-in ===== */
+html.hw .genre-card > :not(.gw-spot) { position: relative; z-index: 1; }
+
+html.hw .genre-card .gw-spot {
+  display: block; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--g, #ff8a2b) 26%, transparent), transparent 70%);
+}
+html.hw .genre-card:hover .gw-spot { opacity: 1; }
+
+html.hw .genre-card { animation: gwPop .55s cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+
+/* ===== row titles: little drawn icon before the genre word ===== */
+html.hw .hw-gi--t { display: inline-grid; width: 30px; height: 30px; color: #ff8a2b; margin-inline: 2px; }
+html.hw .hw-gi--t .gi-svg { filter: drop-shadow(0 0 6px rgba(255, 138, 43, .55)); }
+@media (min-width: 1024px) { html.hw .hw-gi--t { width: 36px; height: 36px; } }
+
+/* ===== empty states ===== */
+html.hw .hw-gi--e { width: 26px; height: 26px; color: #b9a5ff; flex: none; }
+
+/* ===== score pill: tiny pumpkin instead of the star ===== */
+html.hw .poster-score .gs-e { display: none; }
+html.hw .poster-score .gs-s { display: inline-block; width: 14px; height: 14px; vertical-align: -3px; margin-inline-end: 3px; }
+html.hw .poster-score { color: #ffc069; }
+
+/* ===== #1 wears a witch hat ===== */
+html.hw .poster-card:first-child .poster-rank::before {
+  content: ""; position: absolute; top: -5px; right: -4px; width: 15px; height: 14px; transform: rotate(16deg); pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M5 17 11 2q1.500-2 3 0l6 15z' fill='%237a56d6'/%3E%3Cpath d='M2 18.500q10 4.500 20 0l-1-3q-9 3.500-18 0z' fill='%23ff8a2b'/%3E%3Crect x='10' y='11' width='4' height='4' fill='%23ffd27a'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .5));
+}
+@media (min-width: 1024px) {
+  html.hw .poster-card:first-child .poster-rank::before { top: -11px; right: -8px; width: 24px; height: 22px; }
+
+  /* desktop pills get a Halloween voice */
+  html.hw .genre-wall > .flex::after { content: "یه ژانر برای شب‌زنده‌داری انتخاب کن 🕯️"; border-color: rgba(255, 190, 120, .3); color: #ffd9a8; }
+  html.hw .genre-rank > .flex.items-baseline::after { content: "🎃 ۵ اثر برتر بر اساس امتیاز"; border-color: rgba(255, 190, 120, .3); color: #ffd9a8; }
+}
+
+@keyframes gwPop { from { opacity: 0; transform: translateY(14px) scale(.9); } }
+@keyframes giGlow { from { opacity: .5; } to { opacity: 1; } }
+@keyframes giFloat { from { transform: translateY(0); } to { transform: translateY(-1.6px); } }
+@keyframes giBeat { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.16); } 60% { transform: scale(.97); } }
+@keyframes giShake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html.hw .genre-card, html.hw .gi-glow, html.hw .gi-float, html.hw .gi-svg { animation: none !important; }
+  .gi-spin, .gi-needle { transition: none; }
+}
+
+/* =====================================================================
+   ManhwaChi — Halloween v4 (polish layer). Appended after v3; scoped to html.hw.
+   Fixes: pink/red leftovers on comic cards, flat header, plain badges, dull buttons.
+   Adds: candle-lit brand, ember nav underline, moonlit card rims, gradient badges,
+   shine buttons, mist at the page bottom, nicer mascot bubble and toggle.
+   Remove this whole block to go back to v3.
+   ===================================================================== */
+html.hw{
+  --hw-ink:#0d0719;--hw-plum:#170d2b;--hw-plum2:#1f1339;--hw-rim:rgba(255,190,120,.16);
+  --overlay-red:linear-gradient(180deg,rgba(23,13,43,.55),rgba(60,28,90,.82));
+  --shadow-gold:rgba(255,138,43,.6);
+  --hw-ease:cubic-bezier(.22,1,.36,1);
+}
+
+/* ---------- atmosphere ---------- */
+html.hw body{
+  background:
+    radial-gradient(60% 38% at 88% -4%,rgba(167,139,250,.30),transparent 70%),
+    radial-gradient(50% 34% at 6% 8%,rgba(255,138,43,.10),transparent 70%),
+    radial-gradient(80% 40% at 50% 112%,rgba(255,138,43,.16),transparent 70%),
+    linear-gradient(180deg,#0d0719 0%,#140a26 45%,#1a0e30 100%)!important;
+}
+html.hw ::-webkit-scrollbar{width:9px;height:9px}
+html.hw ::-webkit-scrollbar-track{background:#0d0719}
+html.hw ::-webkit-scrollbar-thumb{border:2px solid #0d0719;background:linear-gradient(#ff8a2b,#a78bfa)}
+
+/* ---------- header: frosted night glass + candle brand ---------- */
+html.hw header.sticky{
+  background:linear-gradient(180deg,rgba(23,13,43,.94),rgba(23,13,43,.80))!important;
+  backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border-bottom:1px solid rgba(255,190,120,.22)!important;
+  box-shadow:0 10px 34px -14px rgba(255,138,43,.38),0 1px 0 rgba(167,139,250,.25);
+}
+html.hw header .text-red-600{
+  color:#ffb25c!important;
+  text-shadow:0 0 10px rgba(255,138,43,.75),0 0 26px rgba(255,138,43,.45);
+  animation:hwCandle 3.6s ease-in-out infinite;
+}
+html.hw header img[alt="ManhwaChi Logo"]{filter:drop-shadow(0 0 10px rgba(255,138,43,.55))!important}
+html.hw header .nav-link{position:relative;padding:6px 2px;
+  background:linear-gradient(90deg,#ff8a2b,#a78bfa) no-repeat 50% 100%/0 2px;transition:color .25s,background-size .35s var(--hw-ease)!important}
+html.hw header .nav-link:hover{color:#ffd9a8!important;background-size:100% 2px}
+html.hw header button,html.hw header a[aria-label]{
+  background:rgba(43,27,80,.7)!important;border-color:rgba(255,190,120,.22)!important;
+  transition:transform .25s var(--hw-ease),border-color .25s,box-shadow .25s!important}
+html.hw header button:hover,html.hw header a[aria-label]:hover{
+  border-color:rgba(255,138,43,.7)!important;box-shadow:0 0 18px -4px rgba(255,138,43,.6);transform:translateY(-1px)}
+
+/* ---------- hero slider ---------- */
+html.hw .dot{background:rgba(255,210,160,.25)!important}
+html.hw .dot.is-active{background:linear-gradient(90deg,#ff8a2b,#ffc069)!important;box-shadow:0 0 14px rgba(255,138,43,.7)}
+html.hw .kicker{color:#ffc069!important;text-shadow:0 0 16px rgba(255,138,43,.55)}
+html.hw .headline{text-shadow:0 2px 24px rgba(13,7,25,.85),0 0 30px rgba(167,139,250,.25)}
+
+/* ---------- comic cards: moonlit rim, pumpkin glow ---------- */
+html.hw .comic-card{
+  background:linear-gradient(170deg,#241647,#150c28)!important;
+  border:1px solid var(--hw-rim)!important;border-radius:20px;
+  box-shadow:0 12px 24px -10px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  transition:transform .45s var(--hw-ease),border-color .3s,box-shadow .35s!important}
+html.hw .comic-card:hover{
+  transform:translateY(-9px) rotate(-.7deg) scale(1.02)!important;
+  border-color:rgba(255,160,70,.75)!important;
+  box-shadow:0 22px 38px -14px rgba(255,138,43,.5),0 0 0 1px rgba(255,138,43,.25),0 0 34px -6px rgba(167,139,250,.45),inset 0 -46px 56px -46px rgba(255,138,43,.35)!important}
+html.hw .comic-card:active{transform:scale(.96)!important}
+html.hw .comic-pic::after{
+  background:linear-gradient(to top,#150c28 0%,rgba(21,12,40,.35) 48%,rgba(60,28,100,.28) 100%)!important}
+html.hw .comic-pic img{filter:saturate(1.08) contrast(1.03)}
+html.hw .comic-card:hover .comic-pic img{filter:saturate(1.2) contrast(1.05)}
+html.hw .comic-info{background:transparent!important}
+html.hw .comic-card:hover .comic-title{color:#ffc069!important;text-shadow:0 0 14px rgba(255,138,43,.5)}
+html.hw .comic-score,html.hw .rating{color:#ffc069!important}
+
+/* ---------- badges ---------- */
+html.hw .badge-vip{
+  background:linear-gradient(135deg,#6d4bb8,#ff8a2b)!important;border:1px solid rgba(255,226,160,.55)!important;
+  color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.45);box-shadow:0 4px 14px -2px rgba(255,138,43,.55)!important}
+html.hw .badge-free{
+  background:linear-gradient(135deg,#34d399,#bef264)!important;border:1px solid rgba(255,255,255,.4)!important;
+  color:#10240f!important;box-shadow:0 4px 14px -2px rgba(134,239,172,.45)!important}
+html.hw .badge-chapter-box{
+  background:rgba(23,13,43,.62)!important;border:1px solid rgba(255,190,120,.28)!important;
+  backdrop-filter:blur(10px) saturate(1.2);-webkit-backdrop-filter:blur(10px) saturate(1.2)}
+html.hw .badge-chapter-num{color:#ffe3b8!important}
+html.hw .badge-chapter-date{color:#c9b8ee!important}
+
+/* ---------- hold-to-preview cards ---------- */
+html.hw .manhwa-card{border-radius:16px;box-shadow:0 10px 22px -10px rgba(0,0,0,.7),0 0 0 1px var(--hw-rim)}
+html.hw .manhwa-title{background:rgba(23,13,43,.78)!important;border:1px solid rgba(255,190,120,.25);border-radius:999px!important;padding:4px 12px!important}
+html.hw .progress-bar{background:linear-gradient(90deg,#ff8a2b,#ffc069)!important}
+
+/* ---------- buttons: pill with a shine sweep ---------- */
+html.hw .btn--primary,html.hw .vip-card .bg-gradient-to-r,html.hw button.bg-primary,html.hw a.bg-primary{
+  position:relative;overflow:hidden;isolation:isolate}
+html.hw .btn--primary::after,html.hw .vip-card .bg-gradient-to-r::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .7s var(--hw-ease)}
+html.hw .btn--primary:hover::after,html.hw .vip-card .bg-gradient-to-r:hover::after{transform:translateX(120%)}
+html.hw .btn:not(.btn--primary){border-color:rgba(255,190,120,.3)!important}
+
+/* ---------- panels, modals, inputs ---------- */
+html.hw #authModal>*,html.hw .modal,html.hw [role="dialog"]{border-color:rgba(255,190,120,.25)!important}
+html.hw input,html.hw textarea,html.hw select{caret-color:#ffc069}
+html.hw input::placeholder,html.hw textarea::placeholder{color:rgba(201,184,238,.5)}
+
+/* ---------- section headers: dotted candle trail ---------- */
+html.hw .sec-head__title,html.hw h2{letter-spacing:-.01em}
+html.hw #app .row-accent{box-shadow:0 0 14px rgba(255,138,43,.75),0 0 30px rgba(255,138,43,.25)!important}
+
+/* ---------- footer: low mist over the graveyard ---------- */
+html.hw footer{background:linear-gradient(180deg,#130a24,#0d0719)!important}
+html.hw footer::after{content:"";position:absolute;left:0;right:0;top:-60px;height:70px;pointer-events:none;
+  background:radial-gradient(60% 100% at 30% 100%,rgba(167,139,250,.16),transparent),radial-gradient(50% 100% at 75% 100%,rgba(255,138,43,.12),transparent);
+  animation:hwFog 22s ease-in-out infinite alternate}
+
+/* ---------- mascot bubble + toggle ---------- */
+.hw-say{background:linear-gradient(180deg,#fffaf0,#ffe9c8)!important;border:2px solid #ffb25c;color:#3a1a05!important;
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.6),0 0 22px -4px rgba(255,138,43,.5)!important}
+.hw-toggle{background:linear-gradient(180deg,#2c1d52,#1d1236)!important;box-shadow:0 6px 16px -6px rgba(0,0,0,.7);
+  transition:transform .25s var(--hw-ease),border-color .25s}
+.hw-toggle:hover{transform:rotate(12deg) scale(1.1);border-color:#ff8a2b}
+.hw-count{background:linear-gradient(180deg,#2c1d52,#1d1236)!important}
+
+/* ---------- richer sky ---------- */
+.hw-fog{background:radial-gradient(40% 60% at 22% 100%,rgba(167,139,250,.20),transparent),radial-gradient(35% 50% at 72% 100%,rgba(255,138,43,.16),transparent)!important}
+
+@keyframes hwCandle{0%,100%{opacity:1}22%{opacity:.86}30%{opacity:1}58%{opacity:.92}64%{opacity:1}}
+
+@media (max-width:767px){
+  html.hw .comic-card{border-radius:16px}
+  html.hw .comic-card:hover{transform:translateY(-4px) scale(1.01)!important}
+  html.hw header.sticky{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+}
+@media (prefers-reduced-motion:reduce){
+  html.hw header .text-red-600,html.hw footer::after{animation:none!important}
+  html.hw .btn--primary::after{display:none}
+}
+
+/* ===== header: lucky wheel button (next to search) ===== */
+html:not(.hw) .hw-wheel-btn{display:none!important}
+.hw-wheel-btn{position:relative;flex-shrink:0;width:40px;height:40px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,rgba(255,138,43,.22),rgba(167,139,250,.22));border:1px solid rgba(255,190,120,.4);
+  box-shadow:0 0 14px -2px rgba(255,138,43,.55);transition:transform .2s,box-shadow .2s,border-color .2s}
+.hw-wheel-btn:hover{border-color:#ffc069;box-shadow:0 0 22px 0 rgba(255,138,43,.8);transform:translateY(-1px)}
+.hw-wheel-btn:active{transform:scale(.94)}
+.hw-wheel-btn::after{content:"";position:absolute;top:-3px;inset-inline-start:-3px;width:9px;height:9px;border-radius:50%;background:#ff8a2b;box-shadow:0 0 8px #ff8a2b;animation:hwWheelPing 2s ease-in-out infinite}
+.hw-wheel-svg{display:block;width:26px;height:26px;overflow:visible;filter:drop-shadow(0 0 4px rgba(255,138,43,.55))}
+.hw-wheel-rot{transform-origin:12px 12px;animation:hwWheelSpin 9s linear infinite}
+.hw-wheel-btn:hover .hw-wheel-rot{animation-duration:1.4s}
+@keyframes hwWheelSpin{to{transform:rotate(360deg)}}
+@keyframes hwWheelPing{0%,100%{transform:scale(.7);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+
+
+/* =====================================================================
+   ManhwaChi — Halloween v5 (Kodoochi 2.0). Appended after v4; pairs with the v5 block at the end of halloween.js.
+   Remove this block + the JS block to go back to the v4 mascot.
+   ===================================================================== */
+html:not(.hw) .k-chip,html:not(.hw) .k-dark,html:not(.hw) .k-lost,html:not(.hw) .k-parade,html:not(.hw) .k-spider,html:not(.hw) .k-orb{display:none!important}
+
+/* ---------- mascot box ---------- */
+.hw-mascot{width:96px;bottom:84px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hw-mascot .k-svg{display:block;width:100%;overflow:visible;animation:none;filter:none;transform-origin:50% 100%}
+.k-wrap{position:relative;transform-origin:50% 100%;animation:kBreath 3.4s ease-in-out infinite;filter:drop-shadow(0 0 14px rgba(255,138,43,.38)) drop-shadow(0 8px 8px rgba(0,0,0,.28))}
+.k-hit{position:absolute;z-index:2;inset:6% 2% 2%;border-radius:46%;cursor:grab;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}
+.k-hit:focus-visible{outline:2px dashed #ffc069;outline-offset:2px}
+.k-hold .k-hit{cursor:grabbing}
+.k-hold{z-index:70}
+.hw-mascot .hw-say{z-index:4;left:86px;bottom:104px;max-width:min(66vw,250px);border-radius:18px 18px 18px 4px}
+.hw-mascot.k-flip .hw-say{left:auto;right:86px;border-radius:18px 18px 4px 18px;transform-origin:100% 100%}
+.hw-mascot.k-under .hw-say{bottom:auto;top:70%}
+
+/* ---------- menu button + orbit ---------- */
+.k-mbtn{position:absolute;z-index:3;left:-4px;top:16px;width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,190,120,.6);background:linear-gradient(160deg,#3a2470,#1d1236);color:#ffe29a;font:700 14px/1 system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif;cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:0 6px 14px -4px rgba(0,0,0,.7),0 0 14px -2px rgba(255,138,43,.6);transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s}
+.k-mbtn:hover{transform:scale(1.15) rotate(12deg);border-color:#ff8a2b}
+.k-mbtn:focus-visible{outline:2px solid #ffc069;outline-offset:2px}
+.k-menu .k-mbtn{transform:rotate(90deg) scale(1.05)}
+.k-mbtn.k-ping::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #ff8a2b;animation:kPing 1.8s ease-out infinite}
+.hw-mascot.k-flip .k-mbtn{left:auto;right:-4px}
+.k-orbit{position:absolute;z-index:5;left:50%;top:54%;width:0;height:0}
+.k-op{position:absolute;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;padding:0;cursor:pointer;
+  border:2px solid rgba(255,190,120,.6);background:linear-gradient(160deg,#3c2676,#1b1033);font:400 21px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;color:#fff;display:grid;place-items:center;
+  box-shadow:0 10px 18px -6px rgba(0,0,0,.75),0 0 18px -3px rgba(255,138,43,.55);
+  transform:translate(0,0) scale(.2);opacity:0;pointer-events:none;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1) calc(var(--i,0)*38ms),opacity .25s calc(var(--i,0)*38ms),border-color .2s,box-shadow .2s}
+.k-orbit.open .k-op{transform:translate(var(--x),var(--y)) scale(1);opacity:1;pointer-events:auto}
+.k-orbit.open .k-op:hover,.k-orbit.open .k-op:focus-visible{transform:translate(var(--x),var(--y)) scale(1.18);border-color:#ffc069;box-shadow:0 10px 20px -6px rgba(0,0,0,.8),0 0 26px 0 rgba(255,138,43,.85);outline:none}
+.k-orbit.open .k-op:active{transform:translate(var(--x),var(--y)) scale(.92)}
+.k-op::after{content:attr(data-t);position:absolute;top:calc(100% + 5px);left:50%;transform:translateX(-50%) scale(.9);white-space:nowrap;padding:2px 9px;border-radius:999px;background:#221640;border:1px solid rgba(255,190,120,.45);color:#ffe9b0;font:700 11px/1.7 Vazirmatn,system-ui,sans-serif;opacity:0;pointer-events:none;transition:.18s}
+.k-op:hover::after,.k-op:focus-visible::after,.k-op:active::after{opacity:1;transform:translateX(-50%) scale(1)}
+
+/* ---------- candy chip ---------- */
+.k-chip{position:fixed;z-index:61;left:76px;bottom:154px;padding:3px 10px;border-radius:999px;background:linear-gradient(180deg,#2c1d52,#1d1236);border:2px solid rgba(255,190,120,.55);color:#ffe9b0;font:700 12px/1.4 Vazirmatn,system-ui,sans-serif;white-space:nowrap;transform:scale(0);transition:transform .35s cubic-bezier(.34,1.56,.64,1);cursor:help}
+.k-chip.on{transform:scale(1)}
+.k-chip.bump{animation:hwWobble .5s ease}
+.hw-toggle{left:100px}
+.hw-count{left:100px}
+.k-float{font:800 17px/1 Vazirmatn,system-ui,sans-serif!important;color:#ffe9b0;text-shadow:0 2px 6px rgba(0,0,0,.7),0 0 12px rgba(255,138,43,.8);white-space:nowrap;z-index:95}
+.k-orb{position:fixed;z-index:95;font-size:40px;pointer-events:none;filter:drop-shadow(0 0 14px #a78bfa)}
+
+/* ---------- body animations ---------- */
+.k-wrap.k-jump{animation:kJump .8s cubic-bezier(.34,1.3,.5,1)}
+.k-wrap.k-hop{animation:kHop .6s ease-out}
+.k-wrap.k-drop{animation:kDrop .7s cubic-bezier(.34,1.56,.5,1)}
+.k-wrap.k-spin{transform-origin:50% 62%;animation:kSpin 1s cubic-bezier(.4,.1,.3,1)}
+.k-wrap.k-dizzy{animation:kDizzy 1.8s ease-in-out}
+.k-wrap.k-sway{animation:kSway 2.5s ease-in-out}
+.k-shake .k-wrap{animation:kShake .12s linear infinite}
+.k-cast .k-wrap{animation:kCast 1.4s ease-in-out}
+.k-hold .k-wrap{transform-origin:50% 6%;animation:kHang .9s ease-in-out infinite alternate}
+.k-hold .k-foot{animation:kDangle .45s ease-in-out infinite alternate}
+.k-hold .k-fr{animation-delay:-.22s}
+.k-hold .k-aura{opacity:1}
+
+.k-aura{transform-origin:60px 68px;animation:kAura 3s ease-in-out infinite}
+.k-inner{animation:kFlick 1.1s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+.k-hat{transform-origin:62px 33px;animation:kHat 3.6s ease-in-out infinite}
+.k-tw{transform-box:fill-box;transform-origin:center;animation:kTw 2.2s ease-in-out infinite}
+.k-foot{transform-box:fill-box;transform-origin:50% 0}
+.k-tap .k-fl{animation:kTap .32s ease-in-out 5}
+.k-arm{transform-origin:13px 78px}
+.k-ar{transform-origin:107px 78px}
+.k-wave .k-ar{animation:kWave 1.9s ease-in-out}
+.k-eye{transform-box:fill-box;transform-origin:center;animation:kBlink 5.4s infinite}
+.k-er{animation-delay:.04s}
+.k-eg{transform-box:fill-box;transform-origin:center;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.k-trk{transform:translate(var(--kx,0px),var(--ky,0px));transition:transform .14s}
+.k-iris{transform-box:fill-box;transform-origin:center;transition:transform .2s}
+.k-svg[data-mood=wow] .k-eg{transform:scale(1.2)}
+.k-svg[data-mood=wow] .k-iris{transform:scale(.62)}
+.k-svg[data-mood=scared] .k-eg{transform:scale(1.14)}
+.k-svg[data-mood=scared] .k-iris{transform:scale(.52)}
+.k-svg[data-mood=evil] .k-sclera{fill:#fff3a0;stroke:#b45309}
+.k-svg[data-mood=evil] .k-iris{transform:scale(.4,1.1);fill:#c2410c}
+.k-svg[data-mood=evil] .k-aura{animation-duration:.9s}
+.k-svg[data-mood=cheer] .k-eg{transform:scale(1.08)}
+.k-cheek{transform-box:fill-box;transform-origin:center;transition:opacity .25s,transform .25s}
+.k-svg[data-mood=love] .k-cheek{opacity:.95;transform:scale(1.3)}
+.k-svg[data-mood=sleepy] .k-aura,.k-svg[data-mood=sleepy] .k-inner{opacity:.55}
+.k-svg[data-mood=sleepy] .k-hat{animation-duration:7s}
+.k-beat{transform-box:fill-box;transform-origin:center;animation:kBeat .8s ease-in-out infinite}
+.k-spiral{transform-box:fill-box;transform-origin:center;animation:kSpiral .9s linear infinite}
+.k-stars{transform-origin:60px 28px;animation:kSpiral 1.1s linear infinite}
+.k-bub{transform-box:fill-box;transform-origin:30% 70%;animation:kBub 2.4s ease-in-out infinite}
+.k-sweat{animation:kSweat 1.2s ease-in infinite}
+.k-zzz text{transform-box:fill-box;opacity:0;animation:kZzz 3s ease-in-out infinite}
+.k-zzz .z2{animation-delay:1s}
+.k-zzz .z3{animation-delay:2s}
+.k-heart{transform-box:fill-box;transform-origin:center;animation:kHeart 2s ease-out infinite}
+.k-fang{display:none}
+.k-svg[data-c=vampire] .k-fang{display:inline}
+.kc{display:none}
+.k-svg[data-c=witch] .kc-witch,.k-svg[data-c=cat] .kc-cat,.k-svg[data-c=devil] .kc-devil,.k-svg[data-c=vampire] .kc-vampire,.k-svg[data-c=crown] .kc-crown{display:inline}
+.k-svg[data-c=witch] .k-stem,.k-svg[data-c=crown] .k-stem{display:none}
+
+/* ---------- flashlight hunt + spells ---------- */
+.k-dark{position:fixed;inset:0;z-index:57;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(circle at var(--lx,50%) var(--ly,50%),rgba(255,190,100,.12) 0,rgba(8,3,18,.3) 70px,rgba(8,3,18,.94) 175px)}
+.k-dark.on{opacity:1}
+.k-lost{position:fixed;z-index:58;width:38px;pointer-events:none;opacity:0;transition:opacity .15s;filter:drop-shadow(0 0 12px #a78bfa)}
+.k-lost svg,.k-parade svg{display:block;width:100%}
+.k-lost svg{animation:hwSway2 2.6s ease-in-out infinite alternate}
+.k-parade{position:fixed;left:0;z-index:44;pointer-events:none;opacity:.88;filter:drop-shadow(0 0 10px rgba(255,255,255,.45))}
+.k-spider{position:fixed;top:0;z-index:92;width:34px;margin-left:-17px;pointer-events:none}
+.k-spider::before{content:"";position:absolute;left:50%;bottom:30px;height:100vh;width:1.5px;background:rgba(255,255,255,.6)}
+.k-spider svg{display:block;width:100%;position:relative}
+
+@keyframes kBreath{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-3px) scale(1.016,.984)}}
+@keyframes kJump{0%{transform:scale(1,1)}18%{transform:scale(1.18,.78)}50%{transform:translateY(-46px) scale(.92,1.1) rotate(-6deg)}78%{transform:translateY(0) scale(1.14,.86)}90%{transform:scale(.98,1.03)}100%{transform:none}}
+@keyframes kHop{0%{transform:none}40%{transform:translateY(-20px) scale(.96,1.05)}70%{transform:scale(1.06,.94)}100%{transform:none}}
+@keyframes kDrop{0%{transform:translateY(-16px) scale(.95,1.06)}40%{transform:scale(1.18,.8)}70%{transform:scale(.96,1.05)}100%{transform:none}}
+@keyframes kSpin{0%{transform:none}30%{transform:translateY(-44px) rotate(-130deg) scale(1.05)}65%{transform:translateY(-50px) rotate(-250deg)}100%{transform:rotate(-360deg)}}
+@keyframes kDizzy{0%{transform:rotate(0)}15%{transform:rotate(-14deg) translateX(-4px)}35%{transform:rotate(12deg) translateX(5px) scale(1.06)}55%{transform:rotate(-10deg)}75%{transform:rotate(6deg)}100%{transform:rotate(0)}}
+@keyframes kSway{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg)}50%{transform:rotate(6deg) translateY(-3px)}80%{transform:rotate(-4deg)}}
+@keyframes kShake{0%{transform:translateX(-2px) rotate(-1deg)}50%{transform:translateX(2px) rotate(1deg)}100%{transform:translateX(-2px) rotate(-1deg)}}
+@keyframes kCast{0%,100%{transform:none}25%{transform:translateY(-10px) rotate(-8deg) scale(1.06)}60%{transform:translateY(-14px) rotate(8deg) scale(1.1)}}
+@keyframes kHang{from{transform:rotate(-6deg) scale(1.05)}to{transform:rotate(6deg) scale(1.05)}}
+@keyframes kDangle{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+@keyframes kAura{0%,100%{transform:scale(.94);opacity:.8}50%{transform:scale(1.06);opacity:1}}
+@keyframes kFlick{from{opacity:.55;transform:scale(.97)}to{opacity:1;transform:scale(1.04)}}
+@keyframes kHat{0%,100%{transform:rotate(0)}50%{transform:rotate(-3.5deg)}}
+@keyframes kTw{0%,100%{transform:scale(.4);opacity:.4}50%{transform:scale(1.15);opacity:1}}
+@keyframes kTap{0%,100%{transform:none}50%{transform:rotate(-18deg) translateY(-3px)}}
+@keyframes kWave{0%{transform:rotate(0)}12%{transform:rotate(-135deg)}24%{transform:rotate(-105deg)}36%{transform:rotate(-140deg)}48%{transform:rotate(-105deg)}60%{transform:rotate(-140deg)}78%{transform:rotate(-120deg)}100%{transform:rotate(0)}}
+@keyframes kBlink{0%,92%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.08)}}
+@keyframes kBeat{0%,100%{transform:scale(1)}40%{transform:scale(1.22)}}
+@keyframes kSpiral{to{transform:rotate(360deg)}}
+@keyframes kBub{0%,100%{transform:scale(.55)}50%{transform:scale(1.15)}}
+@keyframes kSweat{0%{transform:translateY(-4px);opacity:0}25%{opacity:1}100%{transform:translateY(16px);opacity:0}}
+@keyframes kZzz{0%{transform:translate(0,0) scale(.5);opacity:0}25%{opacity:1}100%{transform:translate(16px,-30px) scale(1.2);opacity:0}}
+@keyframes kHeart{0%{transform:translateY(8px) scale(.4);opacity:0}30%{opacity:1}100%{transform:translateY(-26px) scale(1.1);opacity:0}}
+@keyframes kPing{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+
+@media (max-width:767px){
+  .hw-mascot{width:80px;bottom:84px}
+  .hw-mascot .hw-say{left:70px;bottom:88px}
+  .hw-mascot.k-flip .hw-say{left:auto;right:70px}
+  .hw-toggle{left:84px;bottom:80px}
+  .hw-count{left:84px;bottom:114px}
+  .k-op{width:42px;height:42px;margin:-21px 0 0 -21px;font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .k-wrap,.k-aura,.k-inner,.k-hat,.k-tw,.k-eye,.k-beat,.k-spiral,.k-stars,.k-bub,.k-sweat,.k-zzz text,.k-heart,.k-mbtn::after{animation:none!important}
+  .k-zzz text{opacity:1}
+}
+
+
+/* ManhwaChi — Halloween v6 (Kodoochi 3.0). Append AFTER v5 CSS; pairs with halloween-v6.js */
+
+/* ---------- prettier: halo, fireflies, glass bubble ---------- */
+.k-wrap{filter:drop-shadow(0 0 18px rgba(255,138,43,.5)) drop-shadow(0 0 40px rgba(167,139,250,.22)) drop-shadow(0 10px 8px rgba(0,0,0,.3))}
+.k6-halo{position:absolute;z-index:0;left:50%;bottom:-6px;width:130%;height:34px;transform:translateX(-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(255,150,50,.55) 0,rgba(255,138,43,.18) 45%,transparent 72%);animation:k6Halo 3s ease-in-out infinite}
+.k6-ff{position:absolute;z-index:1;left:50%;top:52%;width:0;height:0;pointer-events:none;animation:k6Spin 9s linear infinite}
+.k6-ff i{position:absolute;width:6px;height:6px;border-radius:50%;background:#ffe29a;box-shadow:0 0 10px 3px rgba(255,200,90,.9);animation:k6Tw 1.6s ease-in-out infinite}
+.k6-ff i:nth-child(1){left:62px;top:-4px}
+.k6-ff i:nth-child(2){left:-70px;top:14px;animation-delay:-.5s;background:#d9c9ff;box-shadow:0 0 10px 3px rgba(167,139,250,.9)}
+.k6-ff i:nth-child(3){left:6px;top:-78px;animation-delay:-1s}
+.k6-ff i:nth-child(4){left:-10px;top:70px;animation-delay:-.3s;background:#ffb3c7;box-shadow:0 0 10px 3px rgba(255,93,143,.8)}
+.hw-mascot .hw-say{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 10px 26px -8px rgba(0,0,0,.7),0 0 22px -4px rgba(255,138,43,.55)}
+
+/* ---------- v6 button + panel ---------- */
+.k6-btn{position:absolute;z-index:3;left:-8px;top:52px;width:30px;height:30px;border-radius:50%;border:2px solid rgba(167,139,250,.7);background:linear-gradient(160deg,#4a2c96,#1d1236);color:#fff;font:700 14px/1 system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif;cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:0 6px 14px -4px rgba(0,0,0,.7),0 0 14px -2px rgba(167,139,250,.7);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.k6-btn:hover{transform:scale(1.15) rotate(-12deg)}
+.k6-btn:focus-visible{outline:2px solid #ffc069;outline-offset:2px}
+.hw-mascot.k-flip .k6-btn{left:auto;right:-8px}
+.k6-panel{position:fixed;z-index:80;width:216px;padding:10px;border-radius:20px;background:linear-gradient(180deg,rgba(44,29,82,.96),rgba(24,14,48,.96));border:2px solid rgba(255,190,120,.5);
+  box-shadow:0 18px 40px -10px rgba(0,0,0,.8),0 0 30px -6px rgba(255,138,43,.6);display:grid;grid-template-columns:repeat(3,1fr);gap:7px;direction:rtl;
+  opacity:0;transform:scale(.85);pointer-events:none;transition:opacity .2s,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.k6-panel.open{opacity:1;transform:none;pointer-events:auto}
+.k6-it{border:1px solid rgba(255,190,120,.3);background:rgba(255,255,255,.06);border-radius:14px;padding:6px 2px 5px;color:#ffe9b0;font:700 11px/1.3 Vazirmatn,system-ui,sans-serif;cursor:pointer;display:grid;gap:2px;justify-items:center;transition:transform .15s,background .15s,border-color .15s}
+.k6-it b{font:400 24px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.k6-it:hover,.k6-it:focus-visible{background:rgba(255,138,43,.22);border-color:#ffc069;transform:translateY(-2px) scale(1.05);outline:none}
+.k6-it.act{background:rgba(255,138,43,.35);border-color:#ffc069}
+
+/* ---------- particles / game ---------- */
+.k6-p{position:fixed;left:0;top:0;pointer-events:none;z-index:96;font-size:22px;line-height:1}
+.k6-c{position:fixed;top:-44px;z-index:97;font-size:36px;line-height:1;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;filter:drop-shadow(0 0 10px rgba(255,200,90,.8))}
+.k6-hud{position:fixed;z-index:98;top:12px;left:50%;transform:translateX(-50%);padding:5px 16px;border-radius:999px;background:linear-gradient(180deg,#2c1d52,#1d1236);border:2px solid rgba(255,190,120,.6);color:#ffe9b0;font:800 14px/1.5 Vazirmatn,system-ui,sans-serif;box-shadow:0 8px 20px -6px rgba(0,0,0,.7);pointer-events:none;white-space:nowrap}
+
+/* ---------- body anims ---------- */
+.k-wrap.k6-dance{transform-origin:50% 90%;animation:k6Dance .72s ease-in-out 7}
+.k-wrap.k6-walk{transform-origin:50% 100%;animation:k6Walk .34s ease-in-out infinite}
+.k6-acc>g{display:none}
+.k-svg[data-a=shades] .a-shades,.k-svg[data-a=stache] .a-stache,.k-svg[data-a=bow] .a-bow,.k-svg[data-a=scarf] .a-scarf,.k-svg[data-a=phones] .a-phones{display:inline}
+.k-svg[data-a=shades] [data-for=wow] ~ *{}
+
+@keyframes k6Halo{0%,100%{opacity:.7;transform:translateX(-50%) scale(.95)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+@keyframes k6Spin{to{transform:rotate(360deg)}}
+@keyframes k6Tw{0%,100%{opacity:.25;transform:scale(.5)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes k6Dance{0%,100%{transform:rotate(-9deg) translateY(0) scale(1.04,.96)}25%{transform:rotate(0) translateY(-18px) scale(.96,1.06)}50%{transform:rotate(9deg) translateY(0) scale(1.04,.96)}75%{transform:rotate(0) translateY(-18px) scale(.96,1.06)}}
+@keyframes k6Walk{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(5deg)}}
+
+@media (prefers-reduced-motion:reduce){.k6-halo,.k6-ff,.k6-ff i,.k-wrap.k6-dance,.k-wrap.k6-walk{animation:none!important}}
+
+.k6-btn.k6-ping::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #a78bfa;animation:kPing 1.6s ease-out infinite}
+
+/* ---------- v7: Kodoochi polish (roomier bubble, talking wiggle) ---------- */
+.hw-mascot .hw-say{font-size:13.5px;line-height:1.85;padding:10px 15px}
+@keyframes k7Talk{from{transform:scale(1,1)}to{transform:scale(1.03,.975)}}
+.hw-mascot:has(.hw-say.show) .k-svg{transform-origin:50% 100%;animation:k7Talk .3s ease-in-out infinite alternate}
+@media (prefers-reduced-motion:reduce){.hw-mascot:has(.hw-say.show) .k-svg{animation:none!important}}
+
+
+/* ===== v8 sky — prettier moon + night sky. Append AFTER everything else; pairs with the "v8" block at the end of halloween.js ===== */
+
+/* deep gradient sky + soft aurora */
+.hw-sky{background:
+  radial-gradient(55% 40% at 86% 14%,rgba(255,214,150,.15),transparent 70%),
+  linear-gradient(180deg,#080414 0%,#120a2a 38%,#22103f 70%,#3b1a4c 100%)}
+.hw-sky::before{content:"";position:absolute;left:-10%;right:-10%;top:-8%;height:62vh;pointer-events:none;filter:blur(14px);
+  background:radial-gradient(45% 55% at 24% 42%,rgba(134,239,172,.11),transparent 70%),radial-gradient(50% 60% at 60% 30%,rgba(167,139,250,.22),transparent 70%),radial-gradient(40% 50% at 92% 46%,rgba(255,138,43,.09),transparent 70%);
+  animation:hwAurora 18s ease-in-out infinite alternate}
+
+/* the moon: real glowing disc with craters, shading, halo rings */
+.hw-moon{width:78px!important;height:78px!important;top:90px!important;right:9%!important;
+  background:
+    radial-gradient(circle at 63% 36%,rgba(176,126,62,.42) 0 6px,transparent 7.5px),
+    radial-gradient(circle at 30% 60%,rgba(176,126,62,.36) 0 9px,transparent 10.5px),
+    radial-gradient(circle at 58% 74%,rgba(176,126,62,.30) 0 5px,transparent 6.5px),
+    radial-gradient(circle at 42% 24%,rgba(176,126,62,.28) 0 4px,transparent 5.5px),
+    radial-gradient(circle at 78% 58%,rgba(176,126,62,.26) 0 3.5px,transparent 5px),
+    radial-gradient(circle at 34% 30%,#fffdf2 0,#ffeebd 42%,#f6cf86 78%,#e8b062 100%)!important;
+  box-shadow:inset -9px -7px 16px rgba(190,120,50,.45),inset 5px 4px 10px rgba(255,255,255,.55),
+    0 0 22px 4px rgba(255,226,160,.6),0 0 80px 26px rgba(255,190,110,.26),0 0 190px 70px rgba(167,139,250,.16)!important}
+.hw-moon::before{content:"";position:absolute;inset:-34px;border-radius:50%;pointer-events:none;border:1px solid rgba(255,225,170,.2);
+  box-shadow:0 0 0 14px rgba(255,225,170,.05),0 0 0 32px rgba(255,225,170,.025);animation:hwHalo 6s ease-in-out infinite}
+@media (max-width:767px){.hw-moon{width:56px!important;height:56px!important;top:82px!important;right:8%!important}.hw-moon::before{inset:-22px}}
+
+/* stars: colored layer + 4-point sparkles */
+.hw-stars.c{animation-duration:4.2s;animation-delay:-1s}
+.hw-spk{position:absolute;width:var(--s,12px);height:var(--s,12px);pointer-events:none;background:#fff4d6;filter:drop-shadow(0 0 5px rgba(255,220,150,.9));
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:hwSpk 5s ease-in-out infinite}
+.hw-spk:nth-of-type(3n){background:#d9c9ff;filter:drop-shadow(0 0 5px rgba(167,139,250,.9))}
+.hw-spk:nth-of-type(4n){background:#ffd0b0;filter:drop-shadow(0 0 5px rgba(255,138,43,.9))}
+
+/* clouds drifting across the moon */
+.hw-cloud{position:absolute;left:0;width:380px;height:80px;pointer-events:none;filter:blur(7px);transform-origin:0 50%;
+  background:radial-gradient(ellipse 38% 50% at 22% 62%,#2d1a52 0,transparent 100%),radial-gradient(ellipse 30% 62% at 48% 44%,#34205f 0,transparent 100%),radial-gradient(ellipse 40% 48% at 76% 62%,#2d1a52 0,transparent 100%);
+  animation:hwCloud 120s linear infinite}
+
+/* shooting star */
+.hw-shoot{position:absolute;width:120px;height:2px;border-radius:2px;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,240,210,.95));filter:drop-shadow(0 0 6px rgba(255,230,170,.9))}
+.hw-shoot.go{animation:hwShoot 1s ease-out forwards}
+
+/* warm horizon glow + moonlit mist behind the village */
+.hw-scene::before{content:"";position:absolute;left:0;right:0;bottom:0;height:42vh;pointer-events:none;
+  background:radial-gradient(70% 70% at 50% 100%,rgba(255,138,43,.16),transparent 70%),linear-gradient(180deg,transparent,rgba(120,70,170,.2))}
+/* richer fog */
+.hw-fog{height:42vh;background:radial-gradient(42% 60% at 22% 100%,rgba(167,139,250,.24),transparent),radial-gradient(36% 50% at 72% 100%,rgba(255,138,43,.16),transparent),radial-gradient(30% 40% at 48% 100%,rgba(200,180,255,.12),transparent)}
+
+@keyframes hwAurora{from{transform:translateX(-3%) scaleY(.92);opacity:.75}to{transform:translateX(3%) scaleY(1.08);opacity:1}}
+@keyframes hwHalo{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:1;transform:scale(1.05)}}
+@keyframes hwSpk{0%,100%{opacity:.15;transform:scale(.5) rotate(0)}50%{opacity:1;transform:scale(1.1) rotate(45deg)}}
+@keyframes hwCloud{from{transform:translateX(-45vw) scale(var(--s,1))}to{transform:translateX(115vw) scale(var(--s,1))}}
+@keyframes hwShoot{0%{opacity:0;transform:translate(-60px,-32px) rotate(28deg)}15%{opacity:1}100%{opacity:0;transform:translate(280px,148px) rotate(28deg)}}
+@media (prefers-reduced-motion:reduce){.hw-sky::before,.hw-moon::before,.hw-spk,.hw-cloud,.hw-shoot{animation:none!important}.hw-cloud,.hw-shoot{display:none}}
