@@ -714,3 +714,36 @@ html:not(.hw) .k-chip,html:not(.hw) .k-dark,html:not(.hw) .k-lost,html:not(.hw) 
 .k-hold{z-index:1002}
 .k6-panel{z-index:1003}
 .k-orb,.k-float,.k6-p,.k6-c,.k6-hud,.hw-pop{z-index:1010}
+
+/* ===== v10: فیدها و گرادینت‌های صفحه‌ی مانهوا با پس‌زمینه‌ی هالووین هماهنگ ===== */
+html.hw{--hw-card:#1b1033}
+
+/* 1) زیر کاور (موبایل): به‌جای مشکی خالص، می‌رسه به رنگ بدنه */
+html.hw .glass-scrim{
+  background:linear-gradient(to top,#0d0719 6%,rgba(13,7,25,.72) 45%,transparent 100%)!important}
+
+/* 2) کارت توضیحات و کارت‌های آمار: خاکستری #161616 → بنفش هالووین */
+html.hw .manhwa-card,
+html.hw .stat-card{background:var(--hw-card)!important;border-color:rgba(255,190,120,.14)!important}
+@media (min-width:1024px){
+  /* دسکتاپ: کارت شیشه‌ای، با رنگ بنفش */
+  html.hw main .manhwa-card{
+    background:rgba(27,16,51,.62)!important;
+    border:1px solid rgba(255,190,120,.14)!important}
+  /* گرادینت‌های بک‌دراپ: مشکی/قرمز → بنفش/نارنجی */
+  html.hw .desktop-backdrop::after{
+    background:
+      radial-gradient(ellipse 55% 50% at 22% 26%,rgba(255,138,43,.18),transparent 70%),
+      radial-gradient(ellipse 80% 70% at 50% 0%,transparent 45%,rgba(13,7,25,.55) 100%),
+      linear-gradient(to right,rgba(13,7,25,.6),transparent 20%,transparent 80%,rgba(13,7,25,.6))!important}
+}
+
+/* 3) فید توضیحات: به‌جای لایه‌ی رنگی روی متن، خودِ متن با mask محو می‌شه
+      (روی هر رنگ پس‌زمینه‌ای درست کار می‌کنه) */
+html.hw #descriptionFade{display:none!important}
+html.hw #descriptionWrapper:has(#descriptionFade:not(.hidden-fade)) .description-text:not(.expanded){
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 64px),transparent 100%);
+          mask-image:linear-gradient(to bottom,#000 calc(100% - 64px),transparent 100%)}
+
+/* ===== v11: حذف کدوی کوچیک اول عنوان بخش‌ها (.row-accent) ===== */
+html.hw .row-accent,html.hw #app .row-accent{display:none!important}
