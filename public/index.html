@@ -99,7 +99,7 @@
     <link rel="stylesheet" href="/css/tailwind.css?v=1" onerror="window.__loadTwCdn()">
     <!-- استایل‌های خودِ سایت (قبل از هر منبع خارجی) -->
     <link rel="stylesheet" href="home.css?v=13">
-    <link rel="stylesheet" href="/halloween.css?v=4">
+    <link rel="stylesheet" href="/halloween.css?v=10">
     <link rel="stylesheet" href="/halloween-perf.css?v=1">   <!-- جدید، بعد از halloween.css -->
 
     <!-- فونت‌ها و آیکون‌ها: غیربلاک‌کننده (media=print + onload) تا کندیِ CDN رندر صفحه رو نگه نداره -->
@@ -1119,7 +1119,7 @@
             if (page !== 'home') {
                 const css = document.createElement("link");
                 css.rel = "stylesheet";
-                css.href = `${page}.css?v=4`;
+                css.href = `${page}.css?v=5`;
                 css.className = "dynamic-css";
                 document.head.appendChild(css);
             }
@@ -1140,7 +1140,7 @@
                 // ۵. اجرای اسکریپت‌های مربوط به هر صفحه
                 if (page !== 'home') {
                     const script = document.createElement("script");
-                    script.src = `${page}.js?v=2`;
+                    script.src = `${page}.js?v=3`;
                     script.className = "dynamic-js";
                     document.body.appendChild(script);
 

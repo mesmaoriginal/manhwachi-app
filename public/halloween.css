@@ -747,3 +747,23 @@ html.hw #descriptionWrapper:has(#descriptionFade:not(.hidden-fade)) .description
 
 /* ===== v11: حذف کدوی کوچیک اول عنوان بخش‌ها (.row-accent) ===== */
 html.hw .row-accent,html.hw #app .row-accent{display:none!important}
+
+/* ===== v12: زیر کاور (موبایل) — خودِ تصویر و scrim به شفافیت محو می‌شن، نه به یه رنگ ثابت =====
+   بدنه گرادیان و لکه‌های بنفش داره و رنگش هر جا فرق می‌کنه؛ پس هیچ رنگ ثابتی لازم نیست. */
+@media (max-width:1023.98px){
+  html.hw #dynamic-cover{
+    -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent 100%);
+            mask-image:linear-gradient(to bottom,#000 55%,transparent 100%)}
+  html.hw .glass-scrim{
+    background:linear-gradient(to top,rgba(13,7,25,.8) 0%,rgba(13,7,25,.45) 40%,transparent 100%)!important;
+    -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent 100%);
+            mask-image:linear-gradient(to bottom,#000 55%,transparent 100%)}
+}
+
+
+/* ===== v13: جلوگیری از اسکرول افقی (چپ/راست) در موبایل در حالت هالووین ===== */
+html.hw{overflow-x:hidden}
+@supports (overflow:clip){
+  html.hw{overflow-x:clip}
+}
+html.hw body{max-width:100%}

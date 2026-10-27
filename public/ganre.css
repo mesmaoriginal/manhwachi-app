@@ -362,3 +362,19 @@
   .poster-card:hover::after { opacity: 1; transform: none; }
   .poster-card:hover h4 { bottom: 46px; }
 }
+
+/* ==========================================================================
+   Fallback برای کلاس‌های سفارشی Tailwind که توی /css/tailwind.css (فایل کامپایل‌شده‌ی سایت) نیستن.
+   قبلاً این‌ها از tailwind.config داخل ganre.js ساخته می‌شدن، ولی CDN لود نمی‌شه.
+   ========================================================================== */
+.px-margin-mobile { padding-left: 16px; padding-right: 16px; }
+.space-y-stack-lg > :not([hidden]) ~ :not([hidden]) { margin-top: 32px; }
+.mb-stack-md { margin-bottom: 16px; }
+.gap-gutter { gap: 12px; }
+.font-headline-lg-mobile { font-family: Vazir, Vazirmatn, Montserrat, sans-serif; }
+.text-headline-lg-mobile { font-size: 24px; line-height: 30px; font-weight: 700; }
+.font-title-md { font-family: Vazir, Vazirmatn, Inter, sans-serif; }
+.snap-x { scroll-snap-type: x mandatory; }
+.snap-start { scroll-snap-align: start; }
+.aspect-\[3\/4\] { aspect-ratio: 3 / 4; }
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
