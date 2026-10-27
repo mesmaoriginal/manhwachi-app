@@ -124,12 +124,12 @@
         async function checkAuth() {
             const { data: { session } } = await db.auth.getSession();
             if (session) {
-                const { data: adminData } = await db.from('admins').select('*').eq('id', session.user.id).single();
+                const { data: adminData } = await db.from('admins').select('*').eq('id', session.user.id).maybeSingle();
                 if (adminData) {
                     currentAdmin = adminData;
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('adminDashboard').classList.remove('hidden');
-                    document.getElementById('adminNameTag').innerHTML = `${adminData.display_name} <span class="text-xs px-2 py-0.5 bg-primary/20 text-primary border border-primary/40 rounded-md font-semibold">${adminData.role_tag}</span>`;
+                    document.getElementById('adminNameTag').innerHTML = `${escapeHtml(adminData.display_name)} <span class="text-xs px-2 py-0.5 bg-primary/20 text-primary border border-primary/40 rounded-md font-semibold">${escapeHtml(adminData.role_tag)}</span>`;
                     
                     setupRealtime();
                     loadDashboardData();
@@ -186,10 +186,18 @@
                 list.innerHTML = '<div class="text-center py-12 text-gray-500 flex justify-center items-center gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span> در حال دریافت اطلاعات...</div>';
             }
 
-            const [{ data: messages }, { data: replies }] = await Promise.all([
-                db.from('messages').select('*').order('created_at', { ascending: false }),
-                db.from('replies').select('*').order('created_at', { ascending: true })
+            const [{ data: messages, error: mErr }, { data: replies, error: rErr }] = await Promise.all([
+                db.from('messages').select('*').order('created_at', { ascending: false }).limit(500),
+                db.from('replies').select('*').order('created_at', { ascending: true }).limit(2000)
             ]);
+
+            if (mErr || rErr) {
+                console.error('خطا در دریافت اطلاعات:', mErr || rErr);
+                if (!cachedMessages.length) {
+                    list.innerHTML = '<p class="text-center py-12 text-red-400">خطا در دریافت اطلاعات. دوباره تلاش کنید.</p>';
+                }
+                return;
+            }
 
             cachedMessages = messages || [];
             cachedReplies = replies || [];
@@ -222,6 +230,12 @@
                     (m.manhwa_slug && m.manhwa_slug.toLowerCase().includes(searchQuery))
                 );
             }
+
+            // حفظ پاسخ‌های نیمه‌نوشته هنگام رندر مجدد
+            const drafts = {};
+            list.querySelectorAll('textarea[id^="reply-input-"]').forEach(t => {
+                if (t.value) drafts[t.id] = t.value;
+            });
 
             if (!filtered.length) {
                 list.innerHTML = `<p class="text-center py-12 text-gray-500">هیچ نظری در این بخش یافت نشد.</p>`;
@@ -286,6 +300,11 @@
                 `;
                 list.appendChild(card);
             });
+
+            Object.entries(drafts).forEach(([id, val]) => {
+                const t = document.getElementById(id);
+                if (t) t.value = val;
+            });
         }
 
         // ۱. فقط تایید نظر بدون ارسال پاسخ
@@ -300,16 +319,18 @@
             const replyText = document.getElementById(`reply-input-${msgId}`).value.trim();
             if (!replyText) return alert("لطفا متن پاسخ را وارد کنید یا از دکمه «فقط تایید کامنت» استفاده کنید.");
 
-            const { error: updateErr } = await db.from('messages').update({ approved: true }).eq('id', msgId);
-            if (updateErr) return alert("خطا در تایید نظر: " + updateErr.message);
-
-            await db.from('replies').insert({
+            // اول پاسخ ثبت می‌شود؛ اگر خطا داد، کامنت تایید نمی‌شود و متن از بین نمی‌رود
+            const { error: replyErr } = await db.from('replies').insert({
                 message_id: msgId,
-                reply_text: replyText,
-                admin_id: currentAdmin.id,
-                admin_name: currentAdmin.display_name,
-                admin_role: currentAdmin.role_tag
+                reply_text: replyText
             });
+            if (replyErr) return alert("خطا در ثبت پاسخ: " + replyErr.message);
+
+            const { error: updateErr } = await db.from('messages').update({ approved: true }).eq('id', msgId);
+            if (updateErr) {
+                loadDashboardData();
+                return alert("پاسخ ثبت شد ولی تایید نظر ناموفق بود: " + updateErr.message);
+            }
 
             loadDashboardData();
         }
@@ -321,10 +342,7 @@
 
             const { error: replyErr } = await db.from('replies').insert({
                 message_id: msgId,
-                reply_text: replyText,
-                admin_id: currentAdmin.id,
-                admin_name: currentAdmin.display_name,
-                admin_role: currentAdmin.role_tag
+                reply_text: replyText
             });
 
             if (replyErr) return alert("خطا در ثبت پاسخ: " + replyErr.message);
@@ -336,7 +354,8 @@
         // ۴. حذف نظر
         window.deleteComment = async function(msgId) {
             if (!confirm("آیا از حذف این نظر اطمینان دارید؟")) return;
-            await db.from('messages').delete().eq('id', msgId);
+            const { error } = await db.from('messages').delete().eq('id', msgId);
+            if (error) return alert("خطا در حذف نظر: " + error.message);
             loadDashboardData();
         }
 
@@ -345,9 +364,13 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
+        // سرور محلی Realtime ندارد؛ به‌جای آن هر ۳۰ ثانیه (فقط وقتی تب دیده می‌شود) به‌روز می‌شود
+        let pollTimer = null;
         function setupRealtime() {
-            db.channel('admin_realtime_messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, loadDashboardData).subscribe();
-            db.channel('admin_realtime_replies').on('postgres_changes', { event: '*', schema: 'public', table: 'replies' }, loadDashboardData).subscribe();
+            if (pollTimer) return;
+            pollTimer = setInterval(() => {
+                if (!document.hidden) loadDashboardData();
+            }, 30000);
         }
 
         checkAuth();
