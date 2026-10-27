@@ -1,0 +1,364 @@
+        #header{
+            background:#000000;
+            height:60px;
+            position:relative;
+            z-index:210
+        }
+
+        .header_inner {
+            margin: 0 auto;
+            max-width: 1680px;
+            height: 60px;
+            position: relative;
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo{
+            height:42px;
+            width: 44px;
+            margin-left: 8px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .glass-card {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(0, 220, 100, 0.2);
+        }
+
+        .active-dot::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #43f97d;
+            border-radius: 9999px;
+        }
+
+        /* --- عنوان ردیف‌ها: یک خط قرمز کوچیک کنار عنوان به‌جای دکوراسیون اضافه --- */
+        .row-accent {
+            width: 4px;
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #DC2626, #7f0d0d);
+            display: inline-block;
+        }
+
+        /* --- کارت‌های کاروسل (بهترین در اکشن/رمانتیک) --- */
+        .poster-card {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .poster-card:active {
+            transform: scale(0.96);
+        }
+        .poster-frame {
+            position: relative;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .poster-rank {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            color: #ff8a8a;
+            font-weight: 800;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .poster-score {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- کارت‌های شبکه‌ی «همه ژانرها» --- */
+        .genre-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px 12px;
+            border-radius: 14px;
+            background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .genre-card:hover {
+            border-color: rgba(220, 38, 38, 0.4);
+            background: linear-gradient(155deg, rgba(220, 38, 38, 0.14), rgba(255, 255, 255, 0.02));
+        }
+        .genre-card:active {
+            transform: scale(0.96);
+        }
+        .genre-card .genre-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(220, 38, 38, 0.12);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .genre-card:hover .genre-icon-badge {
+            background: rgba(220, 38, 38, 0.22);
+            transform: scale(1.08);
+        }
+        .genre-card .genre-icon-badge .material-symbols-outlined {
+            font-size: 22px;
+            color: #ff6767;
+        }
+        .genre-card .genre-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e2e2;
+            text-align: center;
+        }
+
+        /* --- اسکلتون بارگذاری برای کاروسل‌ها و شبکه‌ی ژانرها --- */
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+            background: #1b1b1b;
+        }
+        .shimmer::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+            animation: shimmerMove 1.4s infinite;
+        }
+        @keyframes shimmerMove {
+            100% { transform: translateX(100%); }
+        }
+        .skeleton-poster {
+            flex: none;
+            width: 160px;
+        }
+        .skeleton-poster .shimmer {
+            aspect-ratio: 3 / 4;
+            border-radius: 0.5rem;
+            margin-bottom: 8px;
+        }
+        .skeleton-line {
+            height: 10px;
+            border-radius: 4px;
+        }
+        .skeleton-genre-card {
+            height: 104px;
+            border-radius: 14px;
+        }
+
+        .empty-row-state {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #7a7a7a;
+            font-size: 13px;
+            padding: 18px 4px;
+        }
+        .empty-row-state .material-symbols-outlined {
+            font-size: 20px;
+            opacity: 0.6;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .shimmer::after, .poster-card, .genre-card {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+/* ==========================================================================
+   عناصر مخصوص دسکتاپ — روی موبایل/تبلت کاملاً مخفی‌اند (ظاهر موبایل دست‌نخورده)
+   ========================================================================== */
+.genre-card .genre-count,
+.genre-card .genre-arrow { display: none; }
+
+/* ==========================================================================
+   DESKTOP ONLY (>=1024px) — صفحه‌ی ژانرها
+   چیدمان: دیوار ژانرها → ردیف برترین‌های هر ژانر (پوستر استاندارد، هم‌خانواده‌ی خانه)
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  #app main.max-w-5xl {
+    max-width: 1680px;
+    padding: 40px clamp(20px, 2.5vw, 48px) 110px;
+    display: flex; flex-direction: column; gap: 56px;
+  }
+  #app main.max-w-5xl > * { margin: 0 !important; }
+
+  /* ---------- عنوان بخش‌ها (هم‌شکل با عنوان‌های خانه) ---------- */
+  #app main.max-w-5xl h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 800; }
+  #app main.max-w-5xl .row-accent {
+    width: 5px; height: 26px; border-radius: 4px;
+    background: linear-gradient(180deg, #ef4444, #7f1d1d);
+    box-shadow: 0 0 14px rgba(239,68,68,.5);
+  }
+  #app main.max-w-5xl .text-primary { color: #ef4444; }
+
+  /* ======================= دیوار ژانرها ======================= */
+  .genre-wall { order: -1; position: relative; }
+  .genre-wall > .flex { margin-bottom: 22px; }
+  .genre-wall > .flex::after {
+    content: "یک ژانر انتخاب کن"; margin-inline-start: auto;
+    padding: 6px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
+    font-size: .8rem; font-weight: 600; color: #cbd5e1;
+  }
+  #genres-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+
+  .genre-card {
+    --g: #ef4444;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto;
+    column-gap: 16px; row-gap: 2px; align-items: center; justify-items: start; justify-content: stretch;
+    min-height: 96px; padding: 18px 22px; border-radius: 22px;
+    background: linear-gradient(135deg, #16161a, #0e0e11);
+    border: 1px solid rgba(255,255,255,.07);
+    box-shadow: 0 10px 24px -14px rgba(0,0,0,.9);
+    transition: transform .3s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease;
+  }
+  .genre-card:nth-child(6n+2) { --g: #f59e0b; }
+  .genre-card:nth-child(6n+3) { --g: #8b5cf6; }
+  .genre-card:nth-child(6n+4) { --g: #0ea5e9; }
+  .genre-card:nth-child(6n+5) { --g: #10b981; }
+  .genre-card:nth-child(6n+6) { --g: #ec4899; }
+  .genre-card::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--g) 22%, transparent), transparent 60%);
+    opacity: .55; transition: opacity .3s ease;
+  }
+  .genre-card::after {
+    content: ""; position: absolute; right: 0; top: 20%; bottom: 20%; width: 3px;
+    border-radius: 3px 0 0 3px; background: var(--g);
+    opacity: 0; transition: opacity .3s ease, top .3s ease, bottom .3s ease;
+  }
+  .genre-card > * { position: relative; z-index: 1; }
+  .genre-card:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--g) 55%, transparent);
+    box-shadow: 0 20px 38px -12px color-mix(in srgb, var(--g) 35%, transparent);
+  }
+  .genre-card:hover::before { opacity: 1; }
+  .genre-card:hover::after { opacity: 1; top: 12%; bottom: 12%; }
+  .genre-card .genre-icon-badge {
+    grid-column: 1; grid-row: 1 / 3; flex: none;
+    width: 58px; height: 58px; border-radius: 18px;
+    background: color-mix(in srgb, var(--g) 18%, #0b0b0d);
+    border: 1px solid color-mix(in srgb, var(--g) 35%, transparent);
+  }
+  .genre-card:hover .genre-icon-badge { background: color-mix(in srgb, var(--g) 28%, #0b0b0d); transform: scale(1.06) rotate(-4deg); }
+  .genre-card .genre-icon-badge .material-symbols-outlined { font-size: 29px; color: var(--g); }
+  .genre-card .genre-name { grid-column: 2; grid-row: 1; align-self: end; font-size: 16px; font-weight: 800; text-align: start; }
+  .genre-card .genre-count { display: block; grid-column: 2; grid-row: 2; align-self: start; font-size: 12px; color: #8c8c8c; }
+  .genre-card .genre-arrow {
+    display: flex; grid-column: 3; grid-row: 1 / 3; font-size: 22px; color: var(--g);
+    opacity: 0; transform: translateX(8px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .genre-card:hover .genre-arrow { opacity: 1; transform: none; }
+
+  /* ======================= ردیف‌های برترین‌ها ======================= */
+  .genre-rank > .flex.items-baseline { align-items: center; margin-bottom: 20px; }
+  .genre-rank > .flex.items-baseline::after {
+    content: "۵ اثر برتر بر اساس امتیاز";
+    padding: 6px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
+    font-size: .8rem; font-weight: 600; color: #cbd5e1;
+  }
+
+  #action-container, #Romance-container {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px; overflow: visible; padding: 4px 0 0;
+  }
+  #action-container .empty-row-state, #Romance-container .empty-row-state { grid-column: 1 / -1; padding: 30px 4px; }
+
+  /* اسکلتون هم‌اندازه‌ی پوستر */
+  #action-container .skeleton-poster, #Romance-container .skeleton-poster { width: 100%; }
+  #action-container .skeleton-poster .shimmer:first-child,
+  #Romance-container .skeleton-poster .shimmer:first-child { border-radius: 20px; margin-bottom: 12px; }
+  #action-container .skeleton-poster .skeleton-line,
+  #Romance-container .skeleton-poster .skeleton-line { height: 12px; }
+
+  /* پوستر استاندارد ۳:۴ */
+  #action-container .poster-card, #Romance-container .poster-card {
+    position: relative; display: block; width: 100%; min-width: 0; aspect-ratio: 3 / 4;
+    border-radius: 20px; overflow: hidden; background: #0b0b0d;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 14px 28px -14px rgba(0,0,0,.9);
+    transition: transform .4s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease;
+  }
+  #action-container .poster-card:hover, #Romance-container .poster-card:hover {
+    transform: translateY(-8px); border-color: rgba(239,68,68,.6);
+    box-shadow: 0 26px 44px -12px rgba(220,38,38,.38);
+  }
+  .poster-card .poster-frame {
+    position: absolute; inset: 0; margin: 0; aspect-ratio: auto;
+    border: 0; border-radius: 0; box-shadow: none;
+  }
+  .poster-card .poster-frame::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top, rgba(0,0,0,.96) 0%, rgba(0,0,0,.5) 32%, rgba(0,0,0,0) 62%);
+  }
+  .poster-card .poster-frame img { transition: transform .8s cubic-bezier(.16,1,.3,1); }
+  .poster-card:hover .poster-frame img { transform: scale(1.08); }
+
+  /* شماره‌ی رتبه (نفر اول طلایی) */
+  .poster-card .poster-rank {
+    z-index: 2; top: 12px; right: 12px; left: auto; width: 34px; height: 34px; min-width: 0; padding: 0;
+    border-radius: 12px; font-size: 14px; color: #fff; background: rgba(0,0,0,.6);
+  }
+  .poster-card:first-child .poster-rank {
+    color: #1a1000; background: linear-gradient(135deg, #fde68a, #f59e0b); border: 0;
+    box-shadow: 0 0 20px rgba(251,191,36,.5);
+  }
+  .poster-card .poster-score {
+    z-index: 2; top: 12px; bottom: auto; left: 12px; right: auto;
+    padding: 5px 12px; font-size: 12px; background: rgba(0,0,0,.6);
+  }
+
+  .poster-card h4 {
+    position: absolute; z-index: 2; left: 16px; right: 16px; bottom: 16px; margin: 0;
+    font-size: 15px; font-weight: 800; line-height: 1.6;
+    text-shadow: 0 2px 10px rgba(0,0,0,.9);
+    transition: bottom .35s cubic-bezier(.16,1,.3,1);
+  }
+  .poster-card::after {
+    content: "مشاهده مانهوا ‹";
+    position: absolute; z-index: 2; right: 16px; bottom: 14px;
+    padding: 4px 12px; border-radius: 999px; background: #dc2626; color: #fff;
+    font-size: 11px; font-weight: 700;
+    opacity: 0; transform: translateY(8px); transition: opacity .3s ease, transform .3s ease;
+  }
+  .poster-card:hover::after { opacity: 1; transform: none; }
+  .poster-card:hover h4 { bottom: 46px; }
+}
