@@ -1163,7 +1163,7 @@ async function verifyAndCreditPayment(trackId) {
     // می‌شه - این کوئری در سطح دیتابیس روی همون ردیف lock می‌گیره، پس
     // فقط یکی از دو ریکوئست هم‌زمان می‌تونه واقعاً match/آپدیت کنه.
     const claimRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=eq.pending&select=*`,
+      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=in.(pending,failed)&select=*`,
       {
         method: "PATCH",
         headers: supabaseAdminHeaders({
@@ -1361,6 +1361,8 @@ const RECONCILE_INTERVAL_MS = 5 * 60 * 1000; // هر ۵ دقیقه
 const RECONCILE_MIN_AGE_MS = 3 * 60 * 1000; // حداقل ۳ دقیقه از ساخته‌شدنش گذشته باشه
 const RECONCILE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000; // حداکثر تا ۳ روز قبل
 
+const failedRetry = new Map(); // trackId -> تعداد دفعات بازبینی (در حافظه)
+
 async function reconcilePendingPayments() {
   try {
     const now = Date.now();
@@ -1378,6 +1380,32 @@ async function reconcilePendingPayments() {
       return;
     }
     const pendingRows = await pendingRes.json();
+
+    // 🛠 رفع باگ «پرداخت کردم ولی اشتراک فعال نشد»: اگر کاربر بیشتر از ۳ دقیقه
+    // در صفحه‌ی بانک می‌ماند، reconciler جواب «پرداخت نشده» می‌گرفت و رکورد را
+    // برای همیشه failed می‌کرد، حتی اگر کاربر بعداً پرداخت می‌کرد. حالا رکوردهای
+    // failed در ۲۴ ساعت اخیر هم چند بار (حدود ۱۰ دقیقه، ۳۰ دقیقه، ۲ ساعت، ۱۲ ساعت
+    // بعد از ساخت) از زیبال دوباره استعلام می‌شوند. اگر واقعاً پرداخت شده باشد VIP فعال می‌شود.
+    try {
+      const failedFrom = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+      const failedTo = new Date(now - 10 * 60 * 1000).toISOString();
+      const fRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/payments?status=eq.failed&created_at=gte.${encodeURIComponent(failedFrom)}&created_at=lte.${encodeURIComponent(failedTo)}&select=track_id,created_at`,
+        { headers: supabaseAdminHeaders() }
+      );
+      if (fRes.ok) {
+        const SCHEDULE_MS = [10, 30, 120, 720].map((m) => m * 60 * 1000);
+        for (const row of await fRes.json()) {
+          const st = failedRetry.get(row.track_id) || { n: 0 };
+          if (st.n >= SCHEDULE_MS.length) continue;
+          if (now - new Date(row.created_at).getTime() < SCHEDULE_MS[st.n]) continue;
+          failedRetry.set(row.track_id, { n: st.n + 1 });
+          pendingRows.push({ track_id: row.track_id });
+        }
+      }
+    } catch (e) {
+      console.error("reconcilePendingPayments: خطا در بازبینی failedها", e);
+    }
     if (!pendingRows.length) return;
 
     console.log(`reconcilePendingPayments: بررسی ${pendingRows.length} پرداخت pending رهاشده...`);
