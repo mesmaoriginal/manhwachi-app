@@ -475,6 +475,15 @@
     },
     "banner_note": {
      "t": "text"
+    },
+    "banner_translator": {
+     "t": "text"
+    },
+    "banner_typist": {
+     "t": "text"
+    },
+    "banner_cleaner": {
+     "t": "text"
     }
    }
   },
@@ -791,6 +800,12 @@
      "def": {
       "now": true
      }
+    },
+    "slug": {
+     "t": "text"
+    },
+    "source_url": {
+     "t": "text"
     }
    }
   },
