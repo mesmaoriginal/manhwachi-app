@@ -26,6 +26,9 @@
     "better-sqlite3": "^11.5.0",
     "ioredis": "^5.4.1"
   },
+  "overrides": {
+    "@aws-sdk/credential-provider-env": "3.972.78"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
