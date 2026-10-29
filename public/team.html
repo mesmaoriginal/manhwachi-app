@@ -378,6 +378,7 @@ function card(t,actions,extra){
   const r=ROLES[t.role];
   return `<div class="card" style="--c:${r.c}"><div class="card-h"><h3>${ic(r.i)}${esc(t.label)}</h3><span class="pill tok"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg>${fa(t.reward_tokens)} توکن</span></div>${extra||''}
   ${t.description&&t.status!=='approved'?`<div class="info"><b>${t.role==='translator'?'لینک / پیام / نام کار':'توضیحات'}</b><p>${linkify(t.description)}</p></div>`:''}
+  ${t.source_url&&t.status!=='approved'?`<div class="info" style="border-color:var(--gold);background:var(--goldbg)"><b>لینک سورس (نسخه‌ی اصلی)</b><p>${linkify(t.source_url)}</p><p style="color:var(--gold);font-weight:700;margin-top:4px">به نسخه اصلی توجه کنید</p></div>`:''}
   ${t.address&&t.status!=='approved'?`<div class="info"><b>آدرس</b><p>${linkify(t.address)}</p></div>`:''}
   ${t.admin_note&&t.status==='claimed'?`<div class="note"><b>نیاز به اصلاح:</b> ${esc(t.admin_note)}</div>`:''}
   ${actions?`<div class="acts">${actions}</div>`:''}</div>`;

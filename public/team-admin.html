@@ -109,6 +109,7 @@ td .empty::before,th .empty::before{display:none}
 #toast::before{content:"";width:18px;height:18px;flex:none;background:var(--ok);-webkit-mask:var(--m-ok) center/contain no-repeat;mask:var(--m-ok) center/contain no-repeat}
 #toast.err::before{background:var(--bad);-webkit-mask-image:var(--m-err);mask-image:var(--m-err)}
 .tabs em{font-style:normal;background:var(--bad);color:var(--bg);border-radius:99px;padding:0 7px;font-size:11px;font-weight:700}.tabs button.on em{background:var(--bg);color:var(--gold)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}.mgrid .box{margin:0}.mt{aspect-ratio:3/4;max-height:210px;border-radius:10px;background:var(--ph);overflow:hidden;margin-bottom:10px}.mt img{width:100%;height:100%;object-fit:cover;display:block}.mn{display:block;font-size:15px;line-height:1.5}.nm{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--mut)}.nm input{font-size:14px}
 </style>
 </head>
 <body>
@@ -252,7 +253,7 @@ function tcard(t){
   if(t.has_source)a.push(`<button class="b g" data-pv="${t.id}" data-k="source"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg> مشاهده ورودی</button>`);
   if(t.has_extra)a.push(`<button class="b g" data-pv="${t.id}" data-k="extra"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg> مشاهده ترجمه</button>`);
   if(t.has_source)a.push(`<button class="b g" data-dl="${t.id}" data-k="source" data-n="${esc(t.label)}.zip"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> فایل ورودی</button>`);
-  if(t.has_result)a.push(`<button class="b g" data-dl="${t.id}" data-k="result" data-n="${esc(t.label)}-result.${t.role==='translator'?'docx':'zip'}"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> ${t.role==='translator'?'فایل Word':'نتیجه'}</button>`);
+  if(t.has_result)a.push(`<button class="b g" data-dl="${t.id}" data-k="result" data-n="${esc(t.label)}-${t.role==='typist'&&(O.chapters.find(c=>c.id===t.chapter_id)||{}).banner_file?'final':'result'}.${t.role==='translator'?'docx':'zip'}"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> ${t.role==='translator'?'فایل Word':t.role==='typist'&&(O.chapters.find(c=>c.id===t.chapter_id)||{}).banner_file?'نتیجه + بنر (اولین تصویر)':'نتیجه'}</button>`);
   if(t.has_extra)a.push(`<button class="b g" data-dl="${t.id}" data-k="extra" data-n="${esc(t.label)}.docx"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg> ترجمه (Word)</button>`);
   if(t.status==='submitted')a.push(approveBtns(t));
   if(['claimed','submitted'].includes(t.status))a.push(`<button class="b no" data-rel="${t.id}"><svg class="ic" aria-hidden="true"><use href="#i-undo-2"/></svg> پس گرفتن</button>`);
@@ -289,20 +290,42 @@ function sendImg(p,f,bar){return new Promise((ok,no)=>{
   x.upload.onprogress=e=>{if(bar&&e.lengthComputable)bar.style.width=(e.loaded/e.total*100)+'%'};
   x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(new Error(d.error||'آپلود ناموفق بود'))};
   x.onerror=()=>no(new Error('قطع شدن ارتباط هنگام آپلود'));x.send(f)})}
+let mq='',chPre=null;
+const mkey=m=>m.site?'s:'+m.slug:'m:'+m.id;
+function mcard(m){
+  const up=m.site&&!m.id?`data-ms="${esc(m.slug)}"`:`data-mi="${m.id}"`;
+  return `<div class="box"><div class="mt">${m.site_cover?`<img loading="lazy" src="${esc(m.site_cover)}" alt="" onerror="this.remove()">`:''}</div>
+  <b class="mn">${esc(m.name)}</b>${m.name_en?`<div class="hint">${esc(m.name_en)}</div>`:''}
+  ${m.source_url?`<div class="hint" style="word-break:break-all">سورس: <a href="${esc(m.source_url)}" target="_blank" rel="noopener noreferrer">${esc(m.source_url)}</a></div>`:''}
+  <div class="row" style="margin-top:8px"><span class="st ${m.has_image?'approved':'late'}">${m.has_image?'کاور بنر دارد':'بدون کاور بنر'}</span><span class="st">${m.site?`${fa(m.episodes)} چپتر در سایت${m.team_chapters?` · ${fa(m.team_chapters)} کار تیمی`:''}`:'خارج از سایت'}</span></div>
+  <div class="row"><button class="b" data-nc="${esc(mkey(m))}">${ic('book-plus')} چپتر جدید</button>
+  <label class="b g">${ic('image')} ${m.has_image?'جایگزینی کاور':'آپلود کاور'}<input type="file" accept="image/jpeg,image/png,image/webp" hidden ${up}></label>
+  ${m.has_image?`<button class="b g" data-mv="${m.id}" data-n="${esc(m.name)}">${ic('eye')} کاور</button>`:''}
+  <button class="b g" data-su="${esc(mkey(m))}">${ic('globe')} ${m.source_url?'ویرایش لینک سورس':'لینک سورس'}</button>
+  ${!m.site?`<button class="b no" data-md="${m.id}" aria-label="حذف مانهوا" title="حذف مانهوا">${ic('trash-2')}</button>`:''}</div>
+  <div class="bar" hidden><i></i></div></div>`}
 function vManhwa(){
-  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0"><svg class="ic" aria-hidden="true"><use href="#i-book-open"/></svg> افزودن مانهوا</h2>
-   <div class="hint" style="margin-bottom:10px">تصویر هر مانهوا را یک‌بار آپلود کن؛ زیر بنر همه‌ی چپترهای آن مانهوا همان‌طور که هست (بدون برش) چسبانده می‌شود. عرض تصویر باید دقیقاً هم‌اندازه‌ی عرض بنر PSD باشد. ${O.bannerReady?'':'<b style="color:#fca5a5"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg> تنظیمات Adobe روی سرور هنوز گذاشته نشده؛ بنر ساخته نمی‌شود.</b>'}</div>
-   <div class="form"><input id="mhn" placeholder="نام مانهوا (فقط برای خودت)"><div><button class="b" id="mhadd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> افزودن</button></div></div></div>
-  ${O.manhwas.map(m=>`<div class="box"><div class="row" style="margin:0"><b>${esc(m.name)}</b><span class="st ${m.has_image?'approved':'late'}">${m.has_image?'تصویر دارد':'بدون تصویر'}</span>
-   <label class="b g"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> ${m.has_image?'جایگزینی تصویر':'آپلود تصویر'}<input type="file" accept="image/jpeg,image/png,image/webp" hidden data-mi="${m.id}"></label>
-   ${m.has_image?`<button class="b g" data-mv="${m.id}" data-n="${esc(m.name)}">${ic('eye')} مشاهده</button>`:''}
-   <button class="b no" data-md="${m.id}" aria-label="حذف مانهوا" title="حذف مانهوا"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg></button></div><div class="bar" hidden><i></i></div></div>`).join('')||'<div class="empty">هنوز مانهوایی ثبت نشده.</div>'}`;
-  const v=$('#view');
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">${ic('library')} کارهای ما — مانهواهای سایت</h2>
+   <div class="hint" style="margin-bottom:10px">همه‌ی مانهواهای سایت همین‌جا هستن. برای هر کدوم یک‌بار «کاور بنر» رو آپلود کن؛ زیر بنر همه‌ی چپترهاش همون‌طور که هست (بدون برش) چسبونده می‌شه، پس عرضش باید دقیقاً هم‌اندازه‌ی بنر باشه. با «چپتر جدید» مستقیم می‌ری به فرم ثبت چپتر با همون مانهوا. ${O.bannerReady?'':`<b style="color:#fca5a5">${ic('triangle-alert')} قالب بنر یا فونت روی سرور پیدا نشد؛ بنر ساخته نمی‌شود.</b>`}</div>
+   <div class="form"><input id="mq" placeholder="جستجو بین مانهواها…" value="${esc(mq)}"></div></div>
+  <div class="mgrid" id="mlist"></div>
+  <div class="box" style="margin-top:12px"><h3 style="margin-top:0">افزودن دستیِ مانهوای خارج از سایت</h3>
+   <div class="form"><input id="mhn" placeholder="نام مانهوا (فقط برای خودت)"><div><button class="b" id="mhadd">${ic('plus')} افزودن</button></div></div></div>`;
+  const fill=()=>{
+    const q=mq.trim().toLowerCase(),l=O.manhwas.filter(m=>!q||(m.name+' '+(m.name_en||'')+' '+(m.slug||'')).toLowerCase().includes(q)),box=$('#mlist');
+    box.innerHTML=l.map(mcard).join('')||'<div class="empty full" style="grid-column:1/-1">مانهوایی پیدا نشد.</div>';
+    box.querySelectorAll('[data-nc]').forEach(b=>b.onclick=()=>{chPre=b.dataset.nc;tab='chap';draw();scrollTo({top:0,behavior:'smooth'})});
+    box.querySelectorAll('input[type=file]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(!f)return;const bar=i.closest('.box').querySelector('.bar');bar.hidden=false;
+      const p=i.dataset.ms?`/admin/manhwas/by-slug/${encodeURIComponent(i.dataset.ms)}/image`:`/admin/manhwas/${i.dataset.mi}/image`;
+      sendImg(p,f,bar.firstChild).then(()=>{toast('کاور ذخیره شد');load()}).catch(e=>{toast(e.message,'err');bar.hidden=true})});
+    box.querySelectorAll('[data-su]').forEach(b=>b.onclick=()=>{const m=O.manhwas.find(x=>mkey(x)===b.dataset.su);if(!m)return;
+      const u=prompt('لینک سورس این مانهوا (به تایپیست نشان داده می‌شود؛ خالی = حذف):',m.source_url||'');if(u===null)return;
+      act(b,async()=>{await api('POST','/admin/manhwas/source',m.site?{slug:m.slug,url:u}:{id:m.id,url:u});toast(u.trim()?'لینک سورس ذخیره شد':'لینک سورس حذف شد');load()})});
+    box.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>showImg(`/admin/manhwas/${b.dataset.mv}/image`,b.dataset.n));
+    box.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{if(confirm('این مانهوا و تصویرش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/manhwas/'+b.dataset.md);toast('حذف شد');load()})});
+  };
+  fill();$('#mq').oninput=e=>{mq=e.target.value;fill()};
   $('#mhadd').onclick=function(){act(this,async()=>{await api('POST','/admin/manhwas',{name:$('#mhn').value});toast('مانهوا اضافه شد');load()})};
-  v.querySelectorAll('[data-mi]').forEach(i=>i.onchange=()=>{const f=i.files[0];if(!f)return;const bar=i.closest('.box').querySelector('.bar');bar.hidden=false;
-    sendImg(`/admin/manhwas/${i.dataset.mi}/image`,f,bar.firstChild).then(()=>{toast('تصویر ذخیره شد');load()}).catch(e=>{toast(e.message,'err');bar.hidden=true})});
-  v.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>showImg(`/admin/manhwas/${b.dataset.mv}/image`,b.dataset.n));
-  v.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{if(confirm('این مانهوا و تصویرش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/manhwas/'+b.dataset.md);toast('حذف شد');load()})});
 }
 
 /* ---------- تیکت ---------- */
@@ -413,36 +436,63 @@ function list(){
 }
 
 /* ---------- چپترها (زنجیره‌ی خودکار) ---------- */
+const nextNo=m=>{if(!m)return '';let n=m.last_ep||0;O.chapters.filter(c=>c.manhwa_id&&c.manhwa_id===m.id).forEach(c=>{const d=parseInt(String(c.label).replace(/\D/g,''),10);if(d>n)n=d});return n+1};
+const rndCleaner=()=>{const c=(O.bannerDefaults||{}).cleaners||[];return c[Math.floor(Math.random()*c.length)]||''};
+function pollBanner(){[10000,25000,45000,80000].forEach(ms=>setTimeout(()=>{const f=document.querySelector('#ctitle');if(tab==='chap'&&f&&!f.value)load(true)},ms))}
 function vChap(){
-  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0"><svg class="ic" aria-hidden="true"><use href="#i-book-plus"/></svg> ثبت چپتر جدید — بقیه‌ی مسیر خودکار است</h2>
-   <div class="hint" style="margin-bottom:10px">مترجم و کلینر خودکار ساخته می‌شوند. هر وقت هر دو تایید شدند، کار تایپیست (zip کلین‌شده + فایل Word ترجمه) خودکار آزاد می‌شود. ترجمه و کلین تاییدشده تا آن موقع نگه‌داری می‌شوند.</div>
-   <div class="form"><input id="ctitle" placeholder="عنوان داخلی — مثلاً سولو لولینگ چپتر ۱ (فقط شما)"><input id="clabel" placeholder="برچسب عمومی — مثلاً CH1">
+  const BD=O.bannerDefaults||{translator:'',cleaners:[]};
+  $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">${ic('book-plus')} ثبت چپتر جدید — بقیه‌ی مسیر خودکار است</h2>
+   <div class="hint" style="margin-bottom:10px">مانهوا رو از بین مانهواهای سایت انتخاب کن؛ شماره و عنوان خودکار پر می‌شه. مترجم و کلینر خودکار ساخته می‌شن و هر وقت هر دو تایید شدن، کار تایپیست آزاد می‌شه. اسم‌های روی بنر رو هم همین‌جا (یا بعداً روی کارت چپتر) خودت می‌نویسی.</div>
+   <div class="form"><select id="cmh" class="full"><option value="">مانهوا را انتخاب کن…</option>${O.manhwas.map(m=>`<option value="${esc(mkey(m))}">${esc(m.name)}${m.has_image?'':' — بدون کاور'}</option>`).join('')}</select>
+   <input id="ctitle" placeholder="عنوان داخلی — مثلاً سولو لولینگ چپتر ۱ (فقط شما)"><input id="clabel" placeholder="برچسب عمومی — مثلاً CH1">
    <input id="ctr" type="number" min="12" max="15" placeholder="توکن مترجم (۱۲ تا ۱۵)"><input id="ccl" type="number" min="0" placeholder="توکن کلینر (۰ = بدون کلین)"><input id="cty" type="number" value="20" placeholder="توکن تایپیست (ثابت ۲۰)">
-   <select id="cmh"><option value="">مانهوا (برای تصویر زیر بنر)…</option>${O.manhwas.map(m=>`<option value="${m.id}">${esc(m.name)}${m.has_image?'':' — بدون تصویر'}</option>`).join('')}</select>
+   <label class="nm">اسم مترجم روی بنر<input id="cnt" value="${esc(BD.translator)}"></label>
+   <label class="nm">اسم تایپیست روی بنر<input id="cnty" list="memn" placeholder="خالی = اسم کسی که تایپ می‌کند"></label>
+   <label class="nm">اسم کلینر روی بنر (رندم: ${esc(BD.cleaners.join(' / '))})<input id="cncl" value="${esc(rndCleaner())}"></label>
    <div class="full"><textarea id="cnote" rows="3" placeholder="لینک / پیام / نام کار برای مترجم (الزامی — بعد از برداشتن کار دیده می‌شود)"></textarea></div>
-   <div class="full"><label class="b g" style="padding:10px 16px"><svg class="ic" aria-hidden="true"><use href="#i-file-archive"/></svg> <span id="cfn">zip تصاویر برای کلینر (حداکثر ${MAXMB} مگابایت)</span><input id="cfile" type="file" accept=".zip" hidden></label><div class="bar" id="cbar" hidden><i></i></div></div>
-   <div class="full"><button class="b" id="csave"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> ثبت چپتر</button></div></div></div>
-  ${O.chapters.map(ch=>{const ts=O.tasks.filter(t=>t.chapter_id===ch.id),done=ch.status==='done';
+   <div class="full"><label class="b g" style="padding:10px 16px">${ic('file-archive')} <span id="cfn">zip تصاویر برای کلینر (حداکثر ${MAXMB} مگابایت)</span><input id="cfile" type="file" accept=".zip" hidden></label><div class="bar" id="cbar" hidden><i></i></div></div>
+   <div class="full"><label class="b g" style="padding:10px 16px">${ic('image')} <span id="ccn">کاور بنر این مانهوا (اختیاری؛ اگر انتخاب کنی جایگزین کاور فعلی می‌شود)</span><input id="ccov" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><div class="bar" id="ccbar" hidden><i></i></div></div>
+   <div class="full"><button class="b" id="csave">${ic('plus')} ثبت چپتر</button></div></div>
+   <datalist id="memn">${O.members.filter(m=>(m.roles||[]).includes('typist')).map(m=>`<option value="${esc(m.banner_name||m.name)}">`).join('')}</datalist></div>
+  ${O.chapters.map(ch=>{const ts=O.tasks.filter(t=>t.chapter_id===ch.id),done=ch.status==='done',mh=O.manhwas.find(m=>m.id&&m.id===ch.manhwa_id),tw=(ts.find(x=>x.role==='typist')||{}).worker||'';
     const step=r=>{const t=ts.find(x=>x.role===r);return `<span class="st ${t?t.status:''}">${ic(R[r].i)} ${R[r].n}: ${t?ST[t.status]:(r==='typist'?'منتظر ترجمه و کلین':'ندارد')}${t&&t.worker?` · ${esc(t.worker)}`:''}</span>`};
-    return `<div class="box"><div class="row" style="margin:0"><span class="lbl" style="--c:#a78bfa">${esc(ch.label)}</span><b>${esc(ch.title)}</b><span class="st ${done?'approved':'claimed'}">${done?'تمام شد':'در جریان'}</span>
-    <button class="b g" data-cq="${esc(ch.label)}">${ic('clipboard-list')} مشاهده کارها</button><button class="b no" data-cdel="${ch.id}" aria-label="حذف چپتر" title="حذف چپتر"><svg class="ic" aria-hidden="true"><use href="#i-trash-2"/></svg></button></div>
+    const busy=O.bannerBusy.includes(ch.id);
+    return `<div class="box"><div class="row" style="margin:0"><span class="lbl" style="--c:#a78bfa">${esc(ch.label)}</span><b>${esc(ch.title)}</b>${mh?`<span class="st">${esc(mh.name)}</span>`:''}<span class="st ${done?'approved':'claimed'}">${done?'تمام شد':'در جریان'}</span>
+    <button class="b g" data-cq="${esc(ch.label)}">${ic('clipboard-list')} مشاهده کارها</button><button class="b no" data-cdel="${ch.id}" aria-label="حذف چپتر" title="حذف چپتر">${ic('trash-2')}</button></div>
     <div class="row">${step('translator')} ${step('cleaner')} ${step('typist')}</div>
-    ${(()=>{const busy=O.bannerBusy.includes(ch.id);return `<div class="row">${busy?'<span class="st claimed"><svg class="ic ic-spin" aria-hidden="true"><use href="#i-loader-circle"/></svg> در حال ساخت بنر…</span>':ch.banner_file?'<span class="st approved"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> بنر آماده</span>':(done?'<span class="st late">بنر ساخته نشده</span>':'<span class="st">بنر بعد از اتمام چپتر ساخته می‌شود</span>')}
-      ${ch.banner_file?`<button class="b" data-bv="${ch.id}" data-n="${esc(ch.label)}">${ic('eye')} مشاهده بنر</button><button class="b g" data-bd="${ch.id}" data-n="${esc(ch.label)}-banner.png" aria-label="دانلود بنر" title="دانلود بنر"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg></button>`:''}
-      ${done&&!busy?`<button class="b g" data-brb="${ch.id}">${ic('refresh-cw')} ${ch.banner_file?'ساخت دوباره':'ساخت بنر'}</button>`:''}</div>${ch.banner_note?`<div class="note">${esc(ch.banner_note)}</div>`:''}`})()}</div>`}).join('')||'<div class="empty">هنوز چپتری ثبت نشده.</div>'}`;
+    <div class="form" style="margin-top:12px" data-nbox="${ch.id}">
+     <label class="nm">اسم مترجم روی بنر<input data-nm="translator" value="${esc(ch.banner_translator||'')}" placeholder="${esc(BD.translator)}"></label>
+     <label class="nm">اسم تایپیست روی بنر<input data-nm="typist" list="memn" value="${esc(ch.banner_typist||'')}" placeholder="${esc(tw||'خالی = اسم تایپیستِ این چپتر')}"></label>
+     <label class="nm">اسم کلینر روی بنر<input data-nm="cleaner" value="${esc(ch.banner_cleaner||'')}" placeholder="${esc(BD.cleaners.join(' / '))} (رندم)"></label>
+     <div class="full row" style="margin:0"><button class="b g" data-nsv="${ch.id}">${ic('save')} ذخیره‌ی اسم‌ها</button>${busy?'':`<button class="b" data-nsb="${ch.id}">${ic('refresh-cw')} ذخیره و ساخت بنر</button>`}</div></div>
+    <div class="row">${busy?`<span class="st claimed">${ic('loader-circle','ic-spin')} در حال ساخت بنر…</span>`:ch.banner_file?`<span class="st approved">${ic('image')} بنر آماده</span>`:(done?'<span class="st late">بنر ساخته نشده</span>':'<span class="st">بنر خودکار بعد از اتمام چپتر ساخته می‌شود (هر وقت خواستی با دکمه‌ی بالا هم می‌سازی)</span>')}
+      ${ch.banner_file&&ts.some(x=>x.role==='typist'&&x.has_result)?`<button class="b ok" data-fd="${ts.find(x=>x.role==='typist').id}" data-n="${esc(ch.label)}-final.zip">${ic('download')} دانلود نهایی (بنر + صفحات)</button>`:''}
+      ${ch.banner_file?`<button class="b" data-bv="${ch.id}" data-n="${esc(ch.label)}">${ic('eye')} مشاهده بنر</button><button class="b g" data-bd="${ch.id}" data-n="${esc(ch.label)}-banner.png" aria-label="دانلود بنر" title="دانلود بنر">${ic('download')}</button>`:''}</div>${ch.banner_note?`<div class="note">${esc(ch.banner_note)}</div>`:''}</div>`}).join('')||'<div class="empty">هنوز چپتری ثبت نشده.</div>'}`;
+  const v=$('#view'),sel=$('#cmh');
+  const fillNo=()=>{const m=O.manhwas.find(x=>mkey(x)===sel.value);if(!m)return;const n=nextNo(m);$('#clabel').value='CH'+n;$('#ctitle').value=`${m.name} چپتر ${n}`};
+  sel.onchange=fillNo;
+  if(chPre){sel.value=chPre;chPre=null;if(sel.value)fillNo()}
   $('#cfile').onchange=e=>$('#cfn').textContent=e.target.files[0]?.name||'zip تصاویر برای کلینر';
-  const v=$('#view');
+  $('#ccov').onchange=e=>$('#ccn').textContent=e.target.files[0]?.name||'کاور بنر این مانهوا (اختیاری)';
   v.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{filt={role:'',status:'',q:b.dataset.cq};tab='tasks';draw()});
   v.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>showImg(`/admin/chapters/${b.dataset.bv}/banner`,'بنر '+b.dataset.n));
+  v.querySelectorAll('[data-fd]').forEach(b=>b.onclick=()=>dl(b.dataset.fd,'result',b.dataset.n));
   v.querySelectorAll('[data-bd]').forEach(b=>b.onclick=async()=>{try{const u=URL.createObjectURL(await blobGet(`/admin/chapters/${b.dataset.bd}/banner?dl=1`));const l=document.createElement('a');l.href=u;l.download=b.dataset.n;l.click();setTimeout(()=>URL.revokeObjectURL(u),5000)}catch(e){toast(e.message,'err')}});
-  v.querySelectorAll('[data-brb]').forEach(b=>b.onclick=()=>act(b,async()=>{await api('POST',`/admin/chapters/${b.dataset.brb}/banner`);toast('ساخت بنر شروع شد (حدود یک دقیقه)');await load();[10000,25000,45000,80000].forEach(ms=>setTimeout(()=>{const f=document.querySelector('#ctitle');if(tab==='chap'&&f&&!f.value)load(true)},ms))}));
+  v.querySelectorAll('[data-nsv],[data-nsb]').forEach(b=>b.onclick=()=>act(b,async()=>{
+    const rb=!!b.dataset.nsb,id=b.dataset.nsb||b.dataset.nsv,o={};b.closest('[data-nbox]').querySelectorAll('[data-nm]').forEach(i=>o[i.dataset.nm]=i.value);
+    await api('PATCH',`/admin/chapters/${id}/names`,{...o,rebuild:rb});toast(rb?'اسم‌ها ذخیره شد؛ ساخت بنر شروع شد (حدود یک دقیقه)':'اسم‌ها ذخیره شد');await load();if(rb)pollBanner()}));
   v.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{if(confirm('این چپتر و کارهای آزادش حذف شود؟'))act(b,async()=>{await api('DELETE','/admin/chapters/'+b.dataset.cdel);toast('حذف شد');load()})});
   $('#csave').onclick=function(){act(this,async()=>{
-    const f=$('#cfile').files[0],cl=parseInt($('#ccl').value)||0;
+    const f=$('#cfile').files[0],cv=$('#ccov').files[0],cl=parseInt($('#ccl').value)||0,key=sel.value;
+    if(!key)throw new Error('اول مانهوا را انتخاب کن.');
     if(cl>0&&!f)throw new Error('برای کلینر، zip تصاویر را انتخاب کن (یا توکن کلینر را ۰ بگذار).');
     if(f&&f.size>MAXMB*1048576)throw new Error(`حجم فایل بیشتر از ${MAXMB} مگابایته.`);
-    const r=await api('POST','/admin/chapters',{title:$('#ctitle').value,label:$('#clabel').value,translator_note:$('#cnote').value,manhwa_id:$('#cmh').value,translator_reward:$('#ctr').value,cleaner_reward:cl,typist_reward:$('#cty').value});
+    if(cv&&!/\.(jpe?g|png|webp)$/i.test(cv.name))throw new Error('کاور فقط JPG، PNG یا WebP باشد.');
+    if(cv&&cv.size>30*1048576)throw new Error('حجم کاور بیشتر از ۳۰ مگابایته.');
+    const isSite=key.startsWith('s:'),ref=key.slice(2);
+    const r=await api('POST','/admin/chapters',{title:$('#ctitle').value,label:$('#clabel').value,translator_note:$('#cnote').value,...(isSite?{manhwa_slug:ref}:{manhwa_id:ref}),translator_reward:$('#ctr').value,cleaner_reward:cl,typist_reward:$('#cty').value,banner_translator:$('#cnt').value,banner_typist:$('#cnty').value,banner_cleaner:$('#cncl').value});
     if(f&&r.cleaner_task_id){$('#cbar').hidden=false;await sendZip(`/admin/tasks/${r.cleaner_task_id}/source`,f,$('#cbar').firstChild)}
+    if(cv){$('#ccbar').hidden=false;try{await sendImg(`/admin/manhwas/${r.manhwa_id}/image`,cv,$('#ccbar').firstChild)}catch(e){toast('چپتر ثبت شد ولی کاور آپلود نشد: '+e.message,'err');await load();return}}
     toast('چپتر ثبت شد — مسیر خودکار شروع شد');load()})};
 }
 
