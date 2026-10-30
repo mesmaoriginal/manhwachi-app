@@ -824,7 +824,7 @@ module.exports = function ({ getAuthContext }) {
   });
 
   // کار تایپیست فقط وقتی برای بقیه دیده می‌شود که هم zip صفحات کلین‌شده و هم Word ترجمه را داشته باشد
-  const readyToOpen = (role, source, extra) => !!source && (role !== "typist" || !!extra);
+  const readyToOpen = (role, source, extra) => !!source;
 
   admin.put("/tasks/:id/source", async (req, res) => {
     const id = req.params.id;
@@ -977,11 +977,12 @@ module.exports = function ({ getAuthContext }) {
     } catch (e) { fail(res, e); }
   });
 
-  // ثبت یک چپتر = یک کار تایپ؛ ترجمه و کلین از قبل انجام شده‌اند. کار تا آپلود zip صفحات و Word ترجمه «پیش‌نویس» می‌ماند.
+  // ثبت یک چپتر = یک کار تایپ؛ ترجمه و کلین از قبل انجام شده‌اند. کار تا آپلود zip صفحات «پیش‌نویس» می‌ماند.
   admin.post("/chapters", async (req, res) => {
     const b = req.body || {};
     const title = String(b.title || "").trim().slice(0, 200), label = String(b.label || "").trim().slice(0, 60);
     const ty = parseInt(b.typist_reward, 10) || BASE_RANGE.typist[0];
+    const description = String(b.description || "").trim().slice(0, 2000);
     if (!title || !label) return res.status(400).json({ error: "عنوان داخلی و برچسب (مثلاً CH1) لازم است." });
     const g = BASE_RANGE.typist;
     if (ty < g[0] || ty > g[1]) return res.status(400).json({ error: g[0] === g[1] ? `حقوق ${ROLES.typist} ثابت و ${g[0]} توکن است.` : `حقوق ${ROLES.typist} باید بین ${g[0]} تا ${g[1]} توکن باشد.` });
@@ -995,7 +996,7 @@ module.exports = function ({ getAuthContext }) {
       }
       const made = db.tx(() => {
         const ch = db.insert("team_chapters", { title, label, typist_reward: ty, manhwa_id: manhwaId });
-        const task = db.insert("team_tasks", { role: "typist", chapter_id: ch.id, title: `${title} — تایپ`, label, reward_tokens: ty, status: "draft" });
+        const task = db.insert("team_tasks", { role: "typist", chapter_id: ch.id, title: `${title} — تایپ`, label, reward_tokens: ty, description, status: "draft" });
         return { ch, task };
       });
       res.json({ ok: true, task_id: made.task.id, chapter_id: made.ch.id, manhwa_id: manhwaId });
