@@ -49,6 +49,10 @@ const FLAT = { mode: "flat", quality: 2, speed: 3, bad: 2, late: 3 };        // 
 const MULT = { mode: "mult", quality: 0.10, speed: 0.15, bad: 2, late: 3 };  // مترجم / کلینر: ضریب ۱.۱ و ۱.۱۵ (گرد می‌شود)
 const PAY = { typist: FLAT, font: FLAT, translator: MULT, cleaner: MULT };
 const BASE_RANGE = { typist: [20, 20], font: [20, 20], translator: [12, 15] }; // حقوق پایه؛ کلینر محدودیتی ندارد
+// «اسم روی بنر» یک عضو: اسم خودش؛ اگر نداشت نام نمایشی، به‌شرطی که ایمیل/شماره نباشد (هویت کسی روی بنر نیفتد)
+const cleanBannerName = (x) => String(x || "").replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "").replace(/\s+/g, " ").trim().slice(0, 40);
+const looksLikeId = (x) => /@/.test(x) || (x.replace(/\D/g, "").length >= 7 && x.replace(/\D/g, "").length >= x.length * 0.6);
+const bannerNameOf = (m) => { const own = cleanBannerName(m && m.banner_name); if (own) return own; const dn = cleanBannerName(m && m.display_name); return dn && !looksLikeId(dn) ? dn : ""; };
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DIR = process.env.TEAM_FILES_DIR || path.join(__dirname, "..", "team_files");
 fs.mkdirSync(DIR, { recursive: true }); // فقط برای فایل‌های قدیمی که قبل از انتقال به S3 آپلود شده‌اند
@@ -153,13 +157,14 @@ module.exports = function ({ getAuthContext }) {
       const ts = db.all("SELECT role, assignee FROM team_tasks WHERE chapter_id=?", [chapterId]);
       const ids = [...new Set(ts.map((t) => t.assignee).filter(Boolean))];
       const mem = ids.length ? db.all(`SELECT user_id, display_name, banner_name FROM team_members WHERE user_id IN (${db.ph(ids)})`, ids) : [];
-      const nm = Object.fromEntries(mem.map((m) => [m.user_id, String(m.banner_name || m.display_name || "").trim()]));
+      const nm = Object.fromEntries(mem.map((m) => [m.user_id, bannerNameOf(m)]));
       const names = {};
       for (const r of ["translator", "cleaner", "typist"]) { const t = ts.find((x) => x.role === r); names[r] = t && t.assignee ? nm[t.assignee] || "" : ""; }
-      // مترجم = «هانا»، کلینر = رندم (سهراب/شین)، تایپیست = اسم دستیِ ادمین یا اسم تایپیستِ واقعی؛ هر کدام را ادمین روی چپتر نوشته باشد همان می‌ماند
-      names.translator = String(ch.banner_translator || "").trim() || banner.NAMES.translator;
-      names.cleaner = String(ch.banner_cleaner || "").trim() || banner.pickCleaner();
-      names.typist = String(ch.banner_typist || "").trim() || names.typist;
+      // مترجم و کلینر ثابت‌اند (هانا / سهراب). تایپیست = «اسم روی بنر» همان کسی که این کار را انجام داده؛
+      // فقط اگر کاری/کارمندی نبود (چپترهای قدیمی) اسمِ دستیِ ذخیره‌شده روی چپتر استفاده می‌شود.
+      names.translator = banner.NAMES.translator;
+      names.cleaner = banner.NAMES.cleaner;
+      names.typist = names.typist || String(ch.banner_typist || "").trim();
       let cover = null;
       if (ch.manhwa_id) { const mh = db.get("SELECT image_file FROM team_manhwas WHERE id=?", [ch.manhwa_id]); cover = (mh && mh.image_file) || null; }
       const png = await banner.buildBanner({ names, coverKey: cover });
@@ -298,7 +303,7 @@ module.exports = function ({ getAuthContext }) {
       req.user = ctx.user;
       req.isAdmin = isAdminUser(ctx.user);
       const m = db.get("SELECT * FROM team_members WHERE user_id=?", [ctx.user.id], "team_members");
-      req.member = m && m.active ? m : null;
+      req.member = m && m.active ? { ...m, roles: ["typist"] } : null; // این پنل فقط تایپ است؛ هر عضو فعال = تایپیست
       next();
     } catch (e) { fail(res, e, 503); }
   });
@@ -485,7 +490,7 @@ module.exports = function ({ getAuthContext }) {
   // ================== کاربر عادی ==================
   router.get("/me", async (req, res) => {
     try {
-      const out = { isAdmin: req.isAdmin, member: req.member ? { roles: req.member.roles, name: req.member.display_name } : null, roles: ROLES };
+      const out = { isAdmin: req.isAdmin, member: req.member ? { roles: req.member.roles, name: req.member.display_name, banner_name: cleanBannerName(req.member.banner_name), banner_default: bannerNameOf({ display_name: req.member.display_name }) } : null, roles: ROLES };
       if (req.member) {
         const [bal, pend] = await Promise.all([balanceOf(req.user.id), pendingTokens(req.user.id).catch(() => 0)]);
         const avail = Math.max(0, bal - pend);
@@ -496,6 +501,16 @@ module.exports = function ({ getAuthContext }) {
         });
       }
       res.json(out);
+    } catch (e) { fail(res, e); }
+  });
+
+  // اسم روی بنر: خود تایپیست هم می‌تواند عوضش کند (ادمین هم از پنل مدیریت)
+  router.patch("/me/banner-name", needMember, async (req, res) => {
+    const name = cleanBannerName((req.body || {}).name);
+    if (name.length < 2) return res.status(400).json({ error: "اسم روی بنر باید حداقل ۲ حرف باشد." });
+    try {
+      db.update("team_members", { banner_name: name }, "user_id=?", [req.user.id]);
+      res.json({ ok: true, banner_name: name });
     } catch (e) { fail(res, e); }
   });
 
@@ -754,13 +769,13 @@ module.exports = function ({ getAuthContext }) {
       res.json({
         tomanPerToken: TOMAN_PER_TOKEN, rules: ROLE_RULES, roles: ROLES, chapters,
         pay: { deadlineH: DEADLINE_H, graceH: GRACE_H, fastH: FAST_H, roles: PAY, baseRange: BASE_RANGE },
-        manhwas: mergeManhwas(manhwas, chapters), bannerDefaults: { translator: banner.NAMES.translator, cleaners: banner.NAMES.cleaners }, bannerBusy: [...bannerBusy], bannerReady: banner.configured(),
+        manhwas: mergeManhwas(manhwas, chapters), bannerNames: { translator: banner.NAMES.translator, cleaner: banner.NAMES.cleaner }, bannerBusy: [...bannerBusy], bannerReady: banner.configured(),
         auto: { claimHours: CLAIM_HOURS, autoApproveHours: AUTO_APPROVE_HOURS },
         stats: { rewarded, cashedOut, owed: Object.values(bal).reduce((a, b) => a + b, 0) },
         pending: { withdrawals: wdPend.length, withdrawTokens: sum(wdPend), support: supOpen.length },
         minWithdrawTokens: MIN_WITHDRAW_TOKENS,
         tasks: tasks.map((t) => ({ ...pubAdmin(t), worker: t.assignee ? name[t.assignee] || t.assignee.slice(0, 8) : null })),
-        members: members.map((m) => ({ user_id: m.user_id, name: m.display_name, roles: m.roles, active: m.active, balance: bal[m.user_id] || 0, done: done[m.user_id] || 0, auto_approve: !!m.auto_approve, banner_name: m.banner_name || "" })),
+        members: members.map((m) => ({ user_id: m.user_id, name: m.display_name, roles: m.roles, active: m.active, balance: bal[m.user_id] || 0, done: done[m.user_id] || 0, auto_approve: !!m.auto_approve, banner_name: cleanBannerName(m.banner_name), banner_effective: bannerNameOf(m) })),
       });
     } catch (e) { fail(res, e); }
   });
@@ -808,15 +823,18 @@ module.exports = function ({ getAuthContext }) {
     } catch (e) { fail(res, e); }
   });
 
+  // کار تایپیست فقط وقتی برای بقیه دیده می‌شود که هم zip صفحات کلین‌شده و هم Word ترجمه را داشته باشد
+  const readyToOpen = (role, source, extra) => !!source && (role !== "typist" || !!extra);
+
   admin.put("/tasks/:id/source", async (req, res) => {
     const id = req.params.id;
     if (!UUID_RE.test(id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
     try {
-      const t = db.get("SELECT role, status, source_file FROM team_tasks WHERE id=?", [id]);
+      const t = db.get("SELECT role, status, source_file, extra_file FROM team_tasks WHERE id=?", [id]);
       if (!t) return res.status(404).json({ error: "کار پیدا نشد." });
       if (!ROLE_RULES[t.role].source) return res.status(400).json({ error: "این نقش فایل ورودی ندارد." });
       const name = await saveZip(req, "zip", id, t.role, "source");
-      db.update("team_tasks", { source_file: name, status: t.status === "draft" ? "open" : t.status }, "id=?", [id]);
+      db.update("team_tasks", { source_file: name, status: t.status === "draft" && readyToOpen(t.role, name, t.extra_file) ? "open" : t.status }, "id=?", [id]);
       await rmFile(t.source_file);
       res.json({ ok: true });
     } catch (e) { upErr(res, e); }
@@ -827,16 +845,34 @@ module.exports = function ({ getAuthContext }) {
     async (req, res) => {
       const id = req.params.id;
       if (!UUID_RE.test(id)) { res.status(400).json({ error: "شناسه نامعتبر است." }); return null; }
-      const t = db.get("SELECT role, status, source_file FROM team_tasks WHERE id=?", [id]);
+      const t = db.get("SELECT role, status, source_file, extra_file FROM team_tasks WHERE id=?", [id]);
       if (!t) { res.status(404).json({ error: "کار پیدا نشد." }); return null; }
       if (!ROLE_RULES[t.role].source) { res.status(400).json({ error: "این نقش فایل ورودی ندارد." }); return null; }
       req.task = t;
       return { role: t.role, taskId: id, kind: "source", ext: "zip" };
     },
     async (req, res, c, name) => {
-      const t = req.task;
-      db.update("team_tasks", { source_file: name, status: t.status === "draft" ? "open" : t.status }, "id=?", [c.taskId]);
+      const t = db.get("SELECT role, status, source_file, extra_file FROM team_tasks WHERE id=?", [c.taskId]) || req.task;
+      db.update("team_tasks", { source_file: name, status: t.status === "draft" && readyToOpen(t.role, name, t.extra_file) ? "open" : t.status }, "id=?", [c.taskId]);
       await rmFile(t.source_file);
+      res.json({ ok: true });
+    });
+
+  // آپلود تکه‌تکه‌ی «ترجمه‌ی Word» برای کار تایپیست (ادمین)
+  chunkedRoutes(admin, "/tasks/:id/extra", (req, res, next) => next(),
+    async (req, res) => {
+      const id = req.params.id;
+      if (!UUID_RE.test(id)) { res.status(400).json({ error: "شناسه نامعتبر است." }); return null; }
+      const t = db.get("SELECT role, status, source_file, extra_file FROM team_tasks WHERE id=?", [id]);
+      if (!t) { res.status(404).json({ error: "کار پیدا نشد." }); return null; }
+      if (t.role !== "typist") { res.status(400).json({ error: "فقط کار تایپیست فایل ترجمه دارد." }); return null; }
+      return { role: t.role, taskId: id, kind: "extra", ext: "docx" };
+    },
+    async (req, res, c, name) => {
+      const t = db.get("SELECT role, status, source_file, extra_file FROM team_tasks WHERE id=?", [c.taskId]);
+      if (!t) { await rmFile(name); return res.status(404).json({ error: "کار پیدا نشد." }); }
+      db.update("team_tasks", { extra_file: name, status: t.status === "draft" && readyToOpen(t.role, t.source_file, name) ? "open" : t.status }, "id=?", [c.taskId]);
+      await rmFile(t.extra_file);
       res.json({ ok: true });
     });
 
@@ -932,21 +968,23 @@ module.exports = function ({ getAuthContext }) {
       if (!rows.length) return res.status(409).json({ error: "فقط کار پیش‌نویس یا آزاد قابل حذف است. برای بقیه اول «پس گرفتن» را بزن." });
       await rmFile(rows[0].source_file);
       await rmFile(rows[0].extra_file);
+      const cid = rows[0].chapter_id;
+      if (cid && !db.get("SELECT id FROM team_tasks WHERE chapter_id=? LIMIT 1", [cid])) {
+        const gone = db.remove("team_chapters", "id=?", [cid]);
+        if (gone[0] && gone[0].banner_file) await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: gone[0].banner_file })).catch(() => {});
+      }
       res.json({ ok: true });
     } catch (e) { fail(res, e); }
   });
 
-  // ثبت یک چپتر = ساخت خودکار کار مترجم + کار کلینر (تایپیست بعداً خودکار ساخته می‌شود)
+  // ثبت یک چپتر = یک کار تایپ؛ ترجمه و کلین از قبل انجام شده‌اند. کار تا آپلود zip صفحات و Word ترجمه «پیش‌نویس» می‌ماند.
   admin.post("/chapters", async (req, res) => {
     const b = req.body || {};
     const title = String(b.title || "").trim().slice(0, 200), label = String(b.label || "").trim().slice(0, 60);
-    const note = String(b.translator_note || "").trim().slice(0, 2000);
-    const tr = parseInt(b.translator_reward, 10), cl = parseInt(b.cleaner_reward, 10) || 0, ty = parseInt(b.typist_reward, 10);
+    const ty = parseInt(b.typist_reward, 10) || BASE_RANGE.typist[0];
     if (!title || !label) return res.status(400).json({ error: "عنوان داخلی و برچسب (مثلاً CH1) لازم است." });
-    if (!note) return res.status(400).json({ error: "لینک/پیام/نام کار برای مترجم لازم است." });
-    if (!(tr > 0 && ty > 0 && cl >= 0) || Math.max(tr, cl, ty) > 100000) return res.status(400).json({ error: "توکن‌های هر مرحله را درست وارد کن (کلین می‌تواند ۰ باشد)." });
-    const nmv = (x) => String(x || "").trim().slice(0, 80) || null;
-    for (const [r, v] of [["translator", tr], ["typist", ty]]) { const g = BASE_RANGE[r]; if (v < g[0] || v > g[1]) return res.status(400).json({ error: g[0] === g[1] ? `حقوق ${ROLES[r]} ثابت و ${g[0]} توکن است.` : `حقوق ${ROLES[r]} باید بین ${g[0]} تا ${g[1]} توکن باشد.` }); }
+    const g = BASE_RANGE.typist;
+    if (ty < g[0] || ty > g[1]) return res.status(400).json({ error: g[0] === g[1] ? `حقوق ${ROLES.typist} ثابت و ${g[0]} توکن است.` : `حقوق ${ROLES.typist} باید بین ${g[0]} تا ${g[1]} توکن باشد.` });
     try {
       // مانهوا: یا از مانهواهای سایت (slug)، یا ردیف دستیِ قدیمی (id)
       let manhwaId = UUID_RE.test(String(b.manhwa_id || "")) ? b.manhwa_id : null;
@@ -955,15 +993,12 @@ module.exports = function ({ getAuthContext }) {
         if (!m) return res.status(400).json({ error: "این مانهوا در سایت پیدا نشد." });
         manhwaId = m.id;
       }
-      const ch = db.insert("team_chapters", {
-        title, label, typist_reward: ty, manhwa_id: manhwaId,
-        banner_translator: nmv(b.banner_translator) || banner.NAMES.translator, banner_cleaner: nmv(b.banner_cleaner) || banner.pickCleaner(), banner_typist: nmv(b.banner_typist),
+      const made = db.tx(() => {
+        const ch = db.insert("team_chapters", { title, label, typist_reward: ty, manhwa_id: manhwaId });
+        const task = db.insert("team_tasks", { role: "typist", chapter_id: ch.id, title: `${title} — تایپ`, label, reward_tokens: ty, status: "draft" });
+        return { ch, task };
       });
-      const rows = [{ role: "translator", chapter_id: ch.id, title: `${title} — ترجمه`, label, description: note, reward_tokens: tr, status: "open" }];
-      if (cl > 0) rows.push({ role: "cleaner", chapter_id: ch.id, title: `${title} — کلین`, label, reward_tokens: cl, status: "draft" });
-      const made = db.tx(() => rows.map((r) => db.insert("team_tasks", r)));
-      const c = made.find((t) => t.role === "cleaner");
-      res.json({ ok: true, cleaner_task_id: c ? c.id : null, manhwa_id: manhwaId });
+      res.json({ ok: true, task_id: made.task.id, chapter_id: made.ch.id, manhwa_id: manhwaId });
     } catch (e) { fail(res, e); }
   });
 
@@ -1007,7 +1042,7 @@ module.exports = function ({ getAuthContext }) {
     if (typeof b.active === "boolean") upd.active = b.active;
     if (typeof b.auto_approve === "boolean") upd.auto_approve = b.auto_approve;
     if (typeof b.name === "string") upd.display_name = b.name.trim().slice(0, 80);
-    if (typeof b.banner_name === "string") upd.banner_name = b.banner_name.trim().slice(0, 80) || null;
+    if (typeof b.banner_name === "string") { const bn = cleanBannerName(b.banner_name); if (bn.length < 2) return res.status(400).json({ error: "اسم روی بنر باید حداقل ۲ حرف باشد." }); upd.banner_name = bn; }
     try { db.update("team_members", upd, "user_id=?", [req.params.uid]); res.json({ ok: true }); }
     catch (e) { fail(res, e); }
   });
@@ -1047,20 +1082,6 @@ module.exports = function ({ getAuthContext }) {
       if (!ch) return res.status(404).json({ error: "چپتر پیدا نشد." });
       if (bannerBusy.has(ch.id)) return res.status(409).json({ error: "بنر همین الان در حال ساخت است." });
       makeBanner(ch.id).catch(() => {});
-      res.json({ ok: true });
-    } catch (e) { fail(res, e); }
-  });
-  // اسم‌های روی بنر (مترجم / تایپیست / کلینر) را ادمین دستی می‌نویسد؛ خالی = پیش‌فرض (هانا / اسم تایپیست / رندم)
-  admin.patch("/chapters/:id/names", async (req, res) => {
-    if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: "شناسه نامعتبر است." });
-    const b = req.body || {}, nmv = (x) => String(x || "").trim().slice(0, 80) || null;
-    try {
-      const rows = db.update("team_chapters", { banner_translator: nmv(b.translator), banner_typist: nmv(b.typist), banner_cleaner: nmv(b.cleaner) }, "id=?", [req.params.id]);
-      if (!rows.length) return res.status(404).json({ error: "چپتر پیدا نشد." });
-      if (b.rebuild) {
-        if (!banner.configured()) return res.status(400).json({ error: "اسم‌ها ذخیره شد، ولی ساخت بنر روی سرور آماده نیست (قالب یا فونت پیدا نشد)." });
-        if (!bannerBusy.has(req.params.id)) makeBanner(req.params.id).catch(() => {});
-      }
       res.json({ ok: true });
     } catch (e) { fail(res, e); }
   });
@@ -1237,10 +1258,10 @@ module.exports = function ({ getAuthContext }) {
 
   // افزودن/ویرایش عضو با ایمیل یا شماره موبایل
   admin.post("/members", async (req, res) => {
-    const { identifier, name, roles } = req.body || {};
-    const rl = Array.isArray(roles) ? roles.filter((r) => ROLES[r]) : [];
+    const { identifier, name, banner_name } = req.body || {};
+    const rl = ["typist"]; // این پنل فقط تایپ است
     const idf = String(identifier || "").trim();
-    if (!idf || !rl.length) return res.status(400).json({ error: "ایمیل/شماره و حداقل یک نقش لازم است." });
+    if (!idf) return res.status(400).json({ error: "ایمیل یا شماره موبایل لازم است." });
     try {
       const isEmail = idf.includes("@");
       const phone = isEmail ? null : normalizeIranPhone(idf);
@@ -1248,8 +1269,9 @@ module.exports = function ({ getAuthContext }) {
       const user = db.findAuthUser({ phone, email: isEmail ? idf.toLowerCase() : null });
       if (!user) return res.status(404).json({ error: "کاربری با این مشخصات در سایت ثبت‌نام نکرده است." });
       const dn = String(name || idf).slice(0, 80);
-      if (db.get("SELECT 1 AS x FROM team_members WHERE user_id=?", [user.id])) db.update("team_members", { display_name: dn, roles: rl, active: true }, "user_id=?", [user.id]);
-      else db.insert("team_members", { user_id: user.id, display_name: dn, roles: rl, active: true });
+      const bn = cleanBannerName(banner_name) || (looksLikeId(dn) ? "" : cleanBannerName(dn)) || null; // هر تایپیست از همان اول یک اسم روی بنر دارد
+      if (db.get("SELECT 1 AS x FROM team_members WHERE user_id=?", [user.id])) db.update("team_members", { display_name: dn, roles: rl, active: true, ...(cleanBannerName(banner_name) ? { banner_name: bn } : {}) }, "user_id=?", [user.id]);
+      else db.insert("team_members", { user_id: user.id, display_name: dn, roles: rl, active: true, banner_name: bn });
       res.json({ ok: true });
     } catch (e) { fail(res, e); }
   });
