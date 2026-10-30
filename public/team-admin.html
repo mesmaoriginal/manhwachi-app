@@ -257,7 +257,6 @@ function tcard(t){
   if(t.assignee)a.push(`<button class="b g" data-tk="${t.id}">${ic('ticket')} تیکت</button>`);
   if(t.has_result)a.push(`<button class="b g" data-dl="${t.id}" data-k="result" data-n="${esc(t.label)}-${ch&&ch.banner_file?'final':'result'}.zip">${ic('download')} ${ch&&ch.banner_file?'نتیجه + بنر':'نتیجه'}</button>`);
   if(t.has_source)a.push(`<button class="b g" data-dl="${t.id}" data-k="source" data-n="${esc(t.label)}.zip">${ic('download')} zip صفحات</button>`);
-  if(t.has_extra)a.push(`<button class="b g" data-dl="${t.id}" data-k="extra" data-n="${esc(t.label)}.docx">${ic('file-text')} ترجمه (Word)</button>`);
   if(['claimed','submitted'].includes(t.status))a.push(`<button class="b no" data-rel="${t.id}">${ic('undo-2')} پس گرفتن</button>`);
   if(['draft','open'].includes(t.status))a.push(`<button class="b no" data-del="${t.id}" aria-label="حذف کار" title="حذف کار">${ic('trash-2')}</button>`);
   let banner='';
@@ -347,13 +346,13 @@ const nextNo=m=>{if(!m)return '';let n=m.last_ep||0;O.chapters.filter(c=>c.manhw
 function vUpload(){
   const rg=((O.pay.baseRange||{}).typist)||[20,20],fixed=rg[0]===rg[1];
   $('#view').innerHTML=`<div class="box"><h2 style="margin-top:0">${ic('clipboard-plus')} آپلود کار جدید برای تایپیست‌ها</h2>
-   <div class="hint" style="margin-bottom:12px">ترجمه و کلین از قبل انجام شده؛ مانهوا را انتخاب کن و دو فایل را بده. شماره، عنوان و حقوق خودکار پر می‌شود و کار بلافاصله برای تایپیست‌ها آزاد می‌شود.</div>
+   <div class="hint" style="margin-bottom:12px">ترجمه و کلین از قبل انجام شده؛ مانهوا را انتخاب کن و zip صفحات را بده (در صورت نیاز توضیحات هم بنویس). شماره، عنوان و حقوق خودکار پر می‌شود و کار بلافاصله برای تایپیست‌ها آزاد می‌شود.</div>
    <div class="form"><select id="cmh" class="full"><option value="">مانهوا را انتخاب کن…</option>${O.manhwas.map(m=>`<option value="${esc(mkey(m))}">${esc(m.name)}</option>`).join('')}</select>
    <input id="clabel" placeholder="برچسب — مثلاً CH12"><input id="ctitle" placeholder="عنوان داخلی (فقط برای خودت)">
    ${fixed?'':`<input id="cty" type="number" min="${rg[0]}" max="${rg[1]}" value="${rg[0]}" placeholder="توکن تایپیست (${fa(rg[0])} تا ${fa(rg[1])})">`}
    <div class="full" id="cwarn" hidden></div>
    <div class="full"><label class="b g" style="padding:10px 16px">${ic('file-archive')} <span id="czn">zip صفحات کلین‌شده (حداکثر ${MAXMB} مگابایت)</span><input id="czip" type="file" accept=".zip" hidden></label><div class="bar" id="czb" hidden><i></i></div></div>
-   <div class="full"><label class="b g" style="padding:10px 16px">${ic('file-text')} <span id="cdn">فایل Word ترجمه (docx)</span><input id="cdoc" type="file" accept=".docx" hidden></label><div class="bar" id="cdb" hidden><i></i></div></div>
+   <div class="full"><textarea id="cdesc" rows="4" maxlength="2000" placeholder="توضیحات برای تایپیست (اختیاری) — مثلاً نکته‌ها، لینک یا دستور کار" style="width:100%;box-sizing:border-box"></textarea></div>
    <div class="full"><button class="b" id="csave">${ic('plus')} ثبت و آزاد کردن برای تایپیست‌ها</button>${fixed?` <span class="hint">حقوق تایپیست ثابت: ${fa(rg[0])} توکن</span>`:''}</div></div></div>`;
   const sel=$('#cmh');
   const fillNo=()=>{
@@ -366,22 +365,18 @@ function vUpload(){
   sel.onchange=fillNo;
   if(chPre){sel.value=chPre;chPre=null;if(sel.value)fillNo()}
   $('#czip').onchange=e=>$('#czn').textContent=e.target.files[0]?.name||'zip صفحات کلین‌شده';
-  $('#cdoc').onchange=e=>$('#cdn').textContent=e.target.files[0]?.name||'فایل Word ترجمه (docx)';
   $('#csave').onclick=function(){act(this,async()=>{
-    const key=sel.value,zip=$('#czip').files[0],doc=$('#cdoc').files[0],label=$('#clabel').value.trim(),title=$('#ctitle').value.trim();
+    const key=sel.value,zip=$('#czip').files[0],desc=$('#cdesc').value.trim(),label=$('#clabel').value.trim(),title=$('#ctitle').value.trim();
     if(!key)throw new Error('اول مانهوا را انتخاب کن.');
     if(!label||!title)throw new Error('برچسب و عنوان را وارد کن.');
     if(!zip)throw new Error('zip صفحات کلین‌شده را انتخاب کن.');
-    if(!doc)throw new Error('فایل Word ترجمه را انتخاب کن.');
     if(!/\.zip$/i.test(zip.name))throw new Error('صفحات باید فایل zip باشند.');
-    if(!/\.docx$/i.test(doc.name))throw new Error('ترجمه باید فایل Word با پسوند docx باشد.');
-    if(zip.size>MAXMB*1048576||doc.size>MAXMB*1048576)throw new Error(`حجم هر فایل حداکثر ${MAXMB} مگابایت است.`);
-    if(!zip.size||!doc.size)throw new Error('یکی از فایل‌ها خالی است.');
+    if(zip.size>MAXMB*1048576)throw new Error(`حجم فایل حداکثر ${MAXMB} مگابایت است.`);
+    if(!zip.size)throw new Error('فایل خالی است.');
     const isSite=key.startsWith('s:'),ref=key.slice(2);let made=null;uploading++;
     try{
-      made=await api('POST','/admin/chapters',{title,label,...(isSite?{manhwa_slug:ref}:{manhwa_id:ref}),typist_reward:$('#cty')?$('#cty').value:rg[0]});
+      made=await api('POST','/admin/chapters',{title,label,...(isSite?{manhwa_slug:ref}:{manhwa_id:ref}),typist_reward:$('#cty')?$('#cty').value:rg[0],description:desc});
       $('#czb').hidden=false;await sendFileTo(`/admin/tasks/${made.task_id}/source`,zip,'zip',$('#czb').firstChild);
-      $('#cdb').hidden=false;await sendFileTo(`/admin/tasks/${made.task_id}/extra`,doc,'docx',$('#cdb').firstChild);
     }catch(e){ // آپلود ناقص: چپترِ نیمه‌کاره پاک شود تا چیز خراب باقی نماند
       if(made)await api('DELETE','/admin/chapters/'+made.chapter_id).catch(()=>{});
       throw e;

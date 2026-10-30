@@ -399,8 +399,7 @@ function mine(t){
   const steps=['برداشته شد','تحویل شد','تایید شد'].map((s,i)=>`<div class="${i<=idx?'d':''}">${s}</div>`).join('');
   let a='';
   if(t.status==='claimed'){
-    a=(t.has_source?`<button class="btn g" data-dl="${t.id}:source" data-n="${esc(t.label)}.zip"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> دانلود فایل کار</button>`:'')+
-      (t.has_extra?`<button class="btn g" data-dl="${t.id}:extra" data-n="${esc(t.label)}.docx"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg> دانلود متن ترجمه</button>`:'');
+    a=(t.has_source?`<button class="btn g" data-dl="${t.id}:source" data-n="${esc(t.label)}.zip"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> دانلود فایل کار</button>`:'');
     a+=`<label class="drop dz" style="flex:1 1 100%" data-id="${t.id}" data-x="${ex}"><svg class="ic ic-lg" aria-hidden="true"><use href="#i-cloud-upload"/></svg><b>${ex==='docx'?'فایل Word را اینجا رها کن':'فایل zip را اینجا رها کن'}</b><small>یا کلیک کن و انتخاب کن · حداکثر ۱۰۰ مگابایت</small><input type="file" accept=".${ex}" hidden></label>`;
   }
   if(t.status==='submitted')a='<span class="pill st-submitted"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg> منتظر بررسی ادمین</span>';
@@ -445,7 +444,7 @@ function rulesHtml(){
   const R=me.rules,fm=n=>fa(n)+' توکن',h=R.deadlineH,hh=R.deadlineH+R.graceH;
   return [
     'هم‌زمان فقط یک کار «در حال انجام» داری. بعد از تحویل، حتی قبل از تایید، می‌تونی کار بعدی رو برداری؛ حداکثر ۳ کار در جریان (در حال انجام + در انتظار تایید). با تایید هر کار، یک جا خالی می‌شه.',
-    `حقوق ثابت هر چپتر ${fm(R.base.flat)} است. برای هر کار، zip صفحات کلین‌شده و فایل Word ترجمه رو دانلود کن و فقط نتیجه‌ی تایپ‌شده رو به‌صورت zip تحویل بده.`,
+    `حقوق ثابت هر چپتر ${fm(R.base.flat)} است. برای هر کار، zip صفحات کلین‌شده رو دانلود کن و فقط نتیجه‌ی تایپ‌شده رو به‌صورت zip تحویل بده.`,
     `کیفیت بالا = ${fm(R.qualityFlat)} پاداش. تحویل زیر ${fa(R.fastH)} ساعت = ${fm(R.speedFlat)} پاداش سرعت.`,
     `مهلت تحویل ${fa(h)} ساعت از لحظه‌ی برداشتن است. بین ${fa(h)} تا ${fa(hh)} ساعت: ${fm(R.late)} جریمه. بعد از ${fa(hh)} ساعت: کار از تو گرفته می‌شه و کل مبلغ کار از حسابت کسر می‌شه.`,
     `کیفیت بد = ${fm(R.bad)} کسر و برگشت برای اصلاح. کاری که یک‌بار به‌خاطر کیفیت بد برگشته، پاداش سرعت و کیفیت بالا نمی‌گیره.`,
