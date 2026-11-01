@@ -378,9 +378,9 @@
                 .map(g => Object.assign({}, g, { list: plans.filter(p => (p.tier || 'standard') === g.tier) }))
                 .filter(g => g.list.length);
 
-            // تب پیش‌فرض: گروهی که پلن پیشنهادی (hero) داره
-            const heroGroup = groups.find(g => g.list.some(p => p.hero)) || groups[0];
-            let active = (window.__vipTier && groups.some(g => g.tier === window.__vipTier)) ? window.__vipTier : heroGroup.tier;
+            // تب پیش‌فرض همیشه «استاندارد» است (اگر پلنی نداشت، اولین گروه موجود)
+            const defGroup = groups.find(g => g.tier === 'standard') || groups[0];
+            let active = (window.__vipTier && groups.some(g => g.tier === window.__vipTier)) ? window.__vipTier : defGroup.tier;
 
             const tabs = mk('div', 'v-tabs');
             tabs.setAttribute('role', 'tablist');

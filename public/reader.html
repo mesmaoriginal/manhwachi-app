@@ -177,6 +177,38 @@
         @media (prefers-reduced-motion: reduce) {
             .loader-ring::after, #reader.mode-vertical .manhwa-panel.panel-loading { animation: none; }
         }
+
+        /* ===== مودال پرمیوم (دانلود آفلاین) ===== */
+        .pm-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;
+            background: rgba(0,0,0,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+        .pm-overlay.show { opacity: 1; pointer-events: auto; }
+        .pm-card { position: relative; width: 100%; max-width: 380px; text-align: center; direction: rtl; overflow: hidden;
+            padding: 34px 24px 24px; border-radius: 28px; color: #fff;
+            background: radial-gradient(120% 80% at 50% -10%, rgba(240,195,95,.22), transparent 60%), linear-gradient(180deg, #17120a, #0b0905);
+            border: 1px solid rgba(240,195,95,.35); box-shadow: 0 30px 80px -20px rgba(232,182,74,.35), 0 0 0 1px rgba(0,0,0,.6) inset;
+            transform: translateY(24px) scale(.94); transition: transform .35s cubic-bezier(.2,.9,.3,1.2); }
+        .pm-overlay.show .pm-card { transform: none; }
+        .pm-close { position: absolute; top: 12px; left: 12px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+            background: rgba(255,255,255,.07); color: #a1a1aa; transition: background .2s, color .2s; }
+        .pm-close:hover { background: rgba(255,255,255,.14); color: #fff; }
+        .pm-crown { width: 76px; height: 76px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
+            background: linear-gradient(135deg, #f0c35f, #b8862b); color: #1a1204; box-shadow: 0 10px 30px -6px rgba(232,182,74,.6);
+            animation: pmFloat 3s ease-in-out infinite; }
+        .pm-crown .material-symbols-outlined { font-size: 40px; font-variation-settings: 'FILL' 1; }
+        @keyframes pmFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .pm-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px;
+            background: linear-gradient(90deg, #f6d98a, #e8b64a, #f6d98a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .pm-sub { font-size: .85rem; color: #a1a1aa; line-height: 1.8; margin-bottom: 18px; }
+        .pm-list { list-style: none; padding: 0; margin: 0 0 22px; text-align: right; display: grid; gap: 10px; }
+        .pm-list li { display: flex; align-items: center; gap: 10px; font-size: .88rem; color: #e4e4e7; padding: 10px 12px;
+            border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.05); }
+        .pm-list .material-symbols-outlined { font-size: 20px; color: #e8b64a; }
+        .pm-buy { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 16px; font-weight: 800; font-size: .95rem;
+            background: linear-gradient(135deg, #f0c35f, #b8862b); color: #1a1204; box-shadow: 0 10px 26px -8px rgba(232,182,74,.6); transition: transform .15s; }
+        .pm-buy:active { transform: scale(.97); }
+        .pm-later { margin-top: 10px; width: 100%; padding: 10px; font-size: .8rem; color: #71717a; }
+        .pm-later:hover { color: #d4d4d8; }
+        @media (prefers-reduced-motion: reduce) { .pm-crown { animation: none; } .pm-card, .pm-overlay { transition: none; } }
     </style>
 </head>
 <body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
@@ -216,7 +248,7 @@
                     <span id="auto-text" class="hidden md:inline text-xs">اسکرول خودکار</span>
                 </button>
                 <button onclick="toggleFullscreen()" id="fullscreen-btn" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">fullscreen</span></button>
-                <button id="offline-btn" class="hidden flex items-center gap-0.5 p-1.5 md:p-2 hover:text-red-400 transition-colors" title="دانلود برای خواندن آفلاین"><span class="material-symbols-outlined text-lg md:text-xl" id="offline-icon">download</span><span id="offline-label" class="text-[10px] font-mono"></span></button>
+                <button id="offline-btn" class="flex items-center gap-0.5 p-1.5 md:p-2 hover:text-red-400 transition-colors" title="دانلود برای خواندن آفلاین"><span class="material-symbols-outlined text-lg md:text-xl" id="offline-icon">download</span><span id="offline-label" class="text-[10px] font-mono"></span></button>
                 <button onclick="toggleSettings()" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">settings</span></button>
             </div>
         </div>
@@ -227,6 +259,21 @@
 
     <!-- کانتینر اصلی مانهوا -->
     <main class="pt-14 pb-20 w-full min-h-screen flex items-center justify-start mode-vertical" id="reader"></main>
+    <div id="premium-modal" class="pm-overlay" role="dialog" aria-modal="true" aria-labelledby="pm-title">
+        <div class="pm-card">
+            <button type="button" class="pm-close" id="pm-close" aria-label="بستن"><span class="material-symbols-outlined" style="font-size:20px">close</span></button>
+            <div class="pm-crown"><span class="material-symbols-outlined">workspace_premium</span></div>
+            <h3 class="pm-title" id="pm-title">اشتراک پرمیوم بخرید</h3>
+            <p class="pm-sub">دانلود چپتر برای خواندن آفلاین فقط برای کاربران پرمیوم فعاله.</p>
+            <ul class="pm-list">
+                <li><span class="material-symbols-outlined">download_for_offline</span>دانلود چپترها و خواندن بدون اینترنت</li>
+                <li><span class="material-symbols-outlined">lock_open</span>دسترسی به همه‌ی چپترهای اشتراکی</li>
+                <li><span class="material-symbols-outlined">add_circle</span>ثبت درخواست مانهوای جدید</li>
+            </ul>
+            <a href="/vip.html" class="pm-buy"><span class="material-symbols-outlined" style="font-size:20px">workspace_premium</span>مشاهده‌ی پلن‌های پرمیوم</a>
+            <button type="button" class="pm-later" id="pm-later">فعلاً نه</button>
+        </div>
+    </div>
     <div id="reader-toast" class="reader-toast"></div>
 
     <!-- بخش انتهای چپتر -->
@@ -525,7 +572,7 @@
             try {
                 const r = await Promise.race([db.auth.getSession(), new Promise(res => setTimeout(() => res(null), 2500))]);
                 const s = r && r.data && r.data.session;
-                if (s && s.user) { MCOffline.rememberUid(s.user.id); return { uid: s.user.id, token: s.access_token }; }
+                if (s && s.user) { if (window.MCOffline) MCOffline.rememberUid(s.user.id); return { uid: s.user.id, token: s.access_token }; }
             } catch (e) {}
             const uid = window.MCOffline && MCOffline.lastUid();
             return uid ? { uid, token: null } : null;
@@ -565,16 +612,30 @@
             return { [slug]: { title_fa: items[0].title, episodes: items.map(i => ({ num: i.ch, free: true })) } };
         }
 
+        function showPremiumModal() {
+            const m = document.getElementById('premium-modal');
+            m.classList.add('show');
+        }
+        function hidePremiumModal() { document.getElementById('premium-modal').classList.remove('show'); }
+        (function () {
+            const m = document.getElementById('premium-modal');
+            m.addEventListener('click', (e) => { if (e.target === m) hidePremiumModal(); });
+            document.getElementById('pm-close').onclick = hidePremiumModal;
+            document.getElementById('pm-later').onclick = hidePremiumModal;
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePremiumModal(); });
+        })();
+
         async function setupOfflineButton() {
             const btn = document.getElementById('offline-btn');
-            if (!btn || !window.MCOffline || !MCOffline.supported()) return;
+            if (!btn) return;
+            const offlineOk = !!(window.MCOffline && MCOffline.supported());
             btn.classList.remove('hidden');
             const icon = document.getElementById('offline-icon');
             const label = document.getElementById('offline-label');
             let busy = false;
             async function refresh() {
-                const s = await getOfflineSession();
-                const saved = s ? await MCOffline.has(s.uid, slug, chNum) : false;
+                const s = offlineOk ? await getOfflineSession() : null;
+                const saved = (s && offlineOk) ? await MCOffline.has(s.uid, slug, chNum) : false;
                 icon.textContent = saved ? 'download_done' : 'download';
                 btn.classList.toggle('text-green-400', saved);
                 btn.title = saved ? 'ذخیره‌شده برای آفلاین (برای حذف بزنید)' : 'دانلود برای خواندن آفلاین';
@@ -592,22 +653,25 @@
                     }
                     return;
                 }
-                if (!s || !s.token || !navigator.onLine) {
-                    showToast('برای دانلود باید آنلاین و وارد حساب باشید', [], 3000);
-                    if (navigator.onLine && typeof openAuthModal === 'function') openAuthModal('login');
+                if (!navigator.onLine) { showToast('برای دانلود باید آنلاین باشید', [], 3000); return; }
+                let sess = s;
+                if (!sess || !sess.token) {
+                    try { sess = await getOfflineSession(); } catch (e) {}
+                }
+                if (!sess || !sess.token) {
+                    showToast('برای دانلود باید وارد حساب شوید', [], 3000);
+                    if (typeof openAuthModal === 'function') openAuthModal('login');
                     return;
                 }
-                const acc = await fetchAccess(s.token);
-                if (acc && !acc.canOffline) {
-                    showToast('👑 دانلود آفلاین فقط برای اشتراک پرمیوم است', [{ label: 'مشاهده پلن‌ها', primary: true, onClick: () => { location.href = '/vip.html'; } }], 6000);
-                    return;
-                }
+                const acc = await fetchAccess(sess.token);
+                if (acc && !acc.canOffline) { showPremiumModal(); return; }
+                if (!offlineOk) { showToast('مرورگر شما از دانلود آفلاین پشتیبانی نمی‌کند', [], 3500); return; }
                 busy = true;
                 icon.textContent = 'hourglass_top';
                 try {
                     await MCOffline.download({
                         slug, ch: chNum, title: (manhwaData && manhwaData.title_fa) || slug,
-                        uid: s.uid, accessToken: s.token,
+                        uid: sess.uid, accessToken: sess.token,
                         onProgress: (d, n) => { label.textContent = Math.round((d / n) * 100) + '%'; }
                     });
                     showToast('✅ برای خواندن آفلاین ذخیره شد', [], 2500);
@@ -619,7 +683,7 @@
                     await refresh();
                 }
             };
-            const s0 = await getOfflineSession();
+            const s0 = offlineOk ? await getOfflineSession() : null;
             if (s0 && s0.token) MCOffline.renewAll(s0.uid, s0.token).catch(() => {});
         }
 
