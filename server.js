@@ -130,6 +130,10 @@ app.use((req, res, next) => {
 // قبلاً وجود نداشت - یعنی همه‌چیز بدون فشرده‌سازی رد و بدل می‌شد.
 app.use(compression());
 
+// 🔎 سئو: ریدایرکت 301 از www به دامنه‌ی اصلی + هدر X-Robots-Tag برای صفحات خصوصی/ابزاری (lib/seoPolicy.js)
+const seoPolicy = require("./lib/seoPolicy");
+app.use(seoPolicy.middleware);
+
 // ۵۰ کیلوبایت برای بدنه‌ی JSON کافیه (بیشترین بدنه‌ی واقعی همین الان چند
 // فیلد کوتاهه: slug/chapterNum/planKey/trackId). قبلاً express.json() بدون
 // آرگومان صدا زده می‌شد که به‌صورت ضمنی همون ۱۰۰kb پیش‌فرض خودِ Express رو
@@ -219,9 +223,14 @@ function versionedHtml(file) {
       return m;
     }
   });
-  htmlCache.set(file, { at: Date.now(), body: html });
-  return html;
+  const out = seoPolicy.enhance("/" + path.basename(file), html); // 🔎 canonical/robots برای صفحاتی که ندارند
+  htmlCache.set(file, { at: Date.now(), body: out });
+  return out;
 }
+
+// 🔎 سئو: robots.txt ، sitemap.xml ، صفحه‌ی اصلی با لیست‌های SSR ، /genres و /genre/:slug
+// حتماً قبل از middleware سرو index.html و express.static ثبت شود.
+app.use(require("./routes/seoRouter")({ readHtml: versionedHtml, publicDir: PUBLIC_DIR }));
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   const p = req.path === "/" ? "/index.html" : req.path;
@@ -375,6 +384,8 @@ app.get("/chapter-image/:key(*)", async (req, res) => {
 // فقط یک بار از دیسک می‌خونه و در حافظه کش می‌مونه.
 const { getData, getRawJson } = require("./lib/dataStore");
 
+const { genreInfo, isoDate: seoIso, trimTo: seoTrim } = require("./routes/seoRouter");
+
 function renderMangaPage(req, res, slugRaw) {
   const slug = (slugRaw || "").toString().trim();
   const data = getData();
@@ -392,12 +403,29 @@ function renderMangaPage(req, res, slugRaw) {
     const origin = manhwa.origin || "مانهوا";
     const type = manhwa.type || "مانهوا";
 
-    const seo_title = title_fa
-      ? `خواندن مانهوا ${title_fa} (${title_en}) با ترجمه اختصاصی | مانهواچی`
-      : `${title_en} | مانهواچی`;
+    // ---- 🔎 سئو: آخرین چپتر و تاریخ آپدیت (تاریخ شمسی → میلادی برای schema) ----
+    let _last = null, _lastKey = "";
+    for (const ep of manhwa.episodes || []) {
+      const k = (seoIso(ep.date) || "0000-00-00") + String(1e6 + (Number(ep.num) || 0));
+      if (k > _lastKey) { _lastKey = k; _last = ep; }
+    }
+    const latest_num = _last ? _last.num : null;
+    const date_modified = _last ? seoIso(_last.date) : "";
 
-    const raw_desc = stripTags(manhwa.description || "");
-    const seo_desc = raw_desc.substring(0, 160) + "...";
+    const nameFa = title_fa || title_en;
+    const _titles = [
+      title_fa && title_en && title_fa !== title_en ? `مانهوا ${title_fa} (${title_en}) | خواندن آنلاین | مانهواچی` : null,
+      `مانهوا ${nameFa} | خواندن آنلاین با ترجمه فارسی | مانهواچی`,
+      `مانهوا ${nameFa} | خواندن آنلاین | مانهواچی`,
+      `${nameFa} | مانهواچی`,
+    ].filter(Boolean);
+    const seo_title = _titles.find((t) => t.length <= 62) || seoTrim(_titles[_titles.length - 1], 62);
+
+    const raw_desc = stripTags(manhwa.description || "").replace(/\s+/g, " ").trim();
+    const _lead = `خواندن آنلاین مانهوا ${nameFa} با ترجمه فارسی${latest_num ? ` تا چپتر ${latest_num}` : ""}`;
+    const _body = raw_desc || ((manhwa.genres || []).length ? `ژانر ${(manhwa.genres || []).map((g) => genreInfo(g).name).join("، ")}` : "");
+    const seo_desc = seoTrim(_body ? `${_lead}؛ ${_body}` : `${_lead} در مانهواچی.`, 158);
+    const genre_links = (manhwa.genres || []).map((g) => genreInfo(g)); // [{name, slug}] → لینک داخلی به /genre/<slug>
 
     const cover_url = `/manhwas/${encodeURIComponent(slug)}/${manhwa.cover_image || ""}`;
     const full_cover_url = `https://manhwachi.ir${cover_url}`;
@@ -413,7 +441,7 @@ function renderMangaPage(req, res, slugRaw) {
 
     vars = {
       manhwa, slug, title_en, title_fa, origin, type,
-      seo_title, seo_desc, raw_desc,
+      seo_title, seo_desc, raw_desc, genre_links, latest_num, date_modified,
       cover_url, full_cover_url, canonical_url,
       score, scans_by, episodes, genres, has_locked, release_date,
     };
@@ -434,6 +462,9 @@ function renderMangaPage(req, res, slugRaw) {
       scans_by: "",
       episodes: [],
       genres: [],
+      genre_links: [],
+      latest_num: null,
+      date_modified: "",
       has_locked: false,
       release_date: "",
     };
@@ -444,11 +475,21 @@ function renderMangaPage(req, res, slugRaw) {
 }
 
 app.get("/comic/:slug", (req, res) => {
-  renderMangaPage(req, res, req.params.slug);
+  // 🔎 اگر فقط حروف بزرگ/کوچک فرق داشت (مثلاً /comic/Solo-Leveling) → 301 به آدرس استاندارد، نه صفحه‌ی تکراری
+  const raw = String(req.params.slug || "").trim();
+  const data = getData();
+  if (!Object.prototype.hasOwnProperty.call(data, raw)) {
+    const k = Object.keys(data).find((x) => x.toLowerCase() === raw.toLowerCase());
+    if (k) return res.redirect(301, `/comic/${encodeURIComponent(k)}`);
+  }
+  renderMangaPage(req, res, raw);
 });
 
 app.get("/manga.php", (req, res) => {
-  renderMangaPage(req, res, req.query.slug);
+  // 🔎 آدرس قدیمی → 301 به آدرس زیبا (جلوگیری از محتوای تکراری و انتقال اعتبار لینک‌های قدیمی)
+  const q = String(req.query.slug || "").trim();
+  if (q && Object.prototype.hasOwnProperty.call(getData(), q)) return res.redirect(301, `/comic/${encodeURIComponent(q)}`);
+  renderMangaPage(req, res, q);
 });
 
 // ---------- بخش ۳: خرید VIP (مستقیم، بدون pg_net) ----------
