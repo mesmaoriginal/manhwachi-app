@@ -75,7 +75,9 @@ for (const key of Object.keys(data)) {
     skipped.push(`${key}: cover_image خالیه`);
     continue;
   }
-  const to = from.toLowerCase();
+  // اسم جدید = اسلاگ (lowercase) + پسوند فایل؛ پس کاراکترهای عجیب مثل ’ هم از اسم کاور حذف می‌شن
+  const ext = path.extname(from).toLowerCase();
+  const to = `${key.toLowerCase()}${ext}`;
   if (to === from) {
     skipped.push(`${key}: از قبل lowercase (${from})`);
     continue;
