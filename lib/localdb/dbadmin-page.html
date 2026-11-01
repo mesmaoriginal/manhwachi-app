@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>پنل دیتابیس مانهواچی</title>
+<style>
+:root{--bg:#0b0b0c;--side:#111113;--c:#18181b;--c2:#202024;--b:#2a2a2f;--t:#ececf0;--m:#9494a0;--r:#ef4444;--r2:#dc2626;--g:#22c55e;--y:#f59e0b;--bl:#38bdf8;--rad:12px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.6 Vazirmatn,Tahoma,"Segoe UI",Arial,sans-serif}
+::selection{background:rgba(239,68,68,.5)}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#3a3a42;border-radius:9px}::-webkit-scrollbar-thumb:hover{background:var(--r2)}
+button,input,select,textarea{font:inherit;color:var(--t);background:var(--c);border:1px solid var(--b);border-radius:9px;padding:7px 12px;outline:none;transition:border-color .15s,background .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--r)}
+button{cursor:pointer}button:hover:not(:disabled){background:var(--c2);border-color:#3b3b42}button:disabled{opacity:.45;cursor:not-allowed}
+button.pri{background:var(--r2);border-color:var(--r2);color:#fff}button.pri:hover:not(:disabled){background:var(--r);border-color:var(--r)}
+button.dng{border-color:rgba(239,68,68,.5);color:#fca5a5}button.dng:hover:not(:disabled){background:rgba(239,68,68,.15)}
+button.sm{padding:3px 9px;font-size:12px}
+button:focus-visible,a:focus-visible{outline:2px solid var(--r);outline-offset:2px}
+a{color:var(--r)}
+.layout{display:flex;min-height:100vh}
+aside{width:210px;flex:none;background:var(--side);border-left:1px solid var(--b);padding:16px 10px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+aside .brand{font-weight:800;font-size:16px;padding:6px 10px 16px;display:flex;gap:8px;align-items:center}aside .brand i{width:10px;height:10px;border-radius:50%;background:var(--r);box-shadow:0 0 12px var(--r)}
+aside button{text-align:right;background:transparent;border:0;border-radius:10px;padding:9px 12px;color:var(--m);display:flex;gap:10px;align-items:center}
+aside button:hover:not(:disabled){background:var(--c);color:var(--t)}aside button.on{background:rgba(239,68,68,.14);color:#fff;box-shadow:inset -3px 0 0 var(--r)}
+aside .sp{flex:1}
+main{flex:1;min-width:0;padding:20px 24px;max-width:1500px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}.top h2{margin:0;font-size:20px}
+@media(max-width:820px){.layout{flex-direction:column}aside{width:100%;height:auto;position:sticky;z-index:20;flex-direction:row;overflow-x:auto;padding:8px;border-left:0;border-bottom:1px solid var(--b)}aside .brand{display:none}aside button{white-space:nowrap}main{padding:14px}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.card{background:var(--c);border:1px solid var(--b);border-radius:var(--rad);padding:14px}
+.stat .n{font-size:24px;font-weight:800;line-height:1.2}.stat .l{color:var(--m);font-size:12px;margin-top:2px}
+.ok{color:var(--g)}.bad{color:var(--r)}.warn{color:var(--y)}.mut{color:var(--m)}.ltr{direction:ltr;unicode-bidi:plaintext}
+h3{margin:22px 0 8px;font-size:15px;display:flex;gap:8px;align-items:center}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border-radius:99px;padding:3px 12px;font-size:12px;background:var(--c);border:1px solid var(--b);color:var(--m)}.chip.on{background:var(--r2);border-color:var(--r2);color:#fff}
+.tw{overflow:auto;border:1px solid var(--b);border-radius:var(--rad);max-height:68vh;background:var(--c)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--b);text-align:right;white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}
+th{color:var(--m);background:var(--c2);position:sticky;top:0;z-index:1;font-weight:600;user-select:none}th.s{cursor:pointer}th.s:hover{color:var(--t)}
+tr:last-child td{border-bottom:0}tr.k{cursor:pointer}tr.k:hover td{background:rgba(255,255,255,.035)}
+td.ed{cursor:cell}td.ed:hover{outline:1px dashed #555;outline-offset:-2px}
+td.nul{color:#555}
+.tag{display:inline-block;border-radius:6px;padding:0 8px;font-size:12px;border:1px solid var(--b)}.tag.g{color:var(--g);border-color:rgba(34,197,94,.4)}.tag.r{color:var(--r);border-color:rgba(239,68,68,.4)}.tag.y{color:var(--y);border-color:rgba(245,158,11,.4)}
+dl{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;margin:0}dt{color:var(--m)}dd{margin:0;word-break:break-all;direction:ltr;text-align:right}
+.bars{display:flex;align-items:flex-end;gap:3px;height:96px;direction:ltr}.bars div{flex:1;background:linear-gradient(var(--r),var(--r2));border-radius:3px 3px 0 0;min-height:2px;position:relative;opacity:.85}.bars div:hover{opacity:1}
+.bars div:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#000;border:1px solid var(--b);border-radius:6px;padding:1px 8px;font-size:11px;white-space:nowrap;margin-bottom:4px;z-index:3}
+.bars.bl div{background:linear-gradient(var(--bl),#0284c7)}.bars.gr div{background:linear-gradient(var(--g),#15803d)}
+.cap{display:flex;justify-content:space-between;color:var(--m);font-size:11px;margin-top:6px;direction:ltr}
+textarea.sql{width:100%;min-height:130px;direction:ltr;text-align:left;font:13px/1.6 ui-monospace,Consolas,monospace;resize:vertical}
+.login{max-width:340px;margin:18vh auto;text-align:center}.login input{width:100%;margin:12px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;backdrop-filter:blur(4px)}
+.modal .box{background:var(--c);border:1px solid var(--b);border-radius:16px;padding:18px;width:min(720px,100%);max-height:88vh;overflow:auto}
+.modal pre{direction:ltr;text-align:left;background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:10px;overflow:auto;max-height:46vh;font-size:12px;white-space:pre-wrap;word-break:break-all}
+#toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:200;align-items:center}
+.toast{background:#18181b;border:1px solid var(--b);border-radius:12px;padding:10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.6);animation:in .2s}.toast.e{border-color:var(--r)}.toast.s{border-color:var(--g)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+.empty{padding:30px;text-align:center;color:var(--m)}
+.skel{height:80px;border-radius:12px;background:linear-gradient(90deg,var(--c) 25%,var(--c2) 50%,var(--c) 75%);background-size:200% 100%;animation:sk 1.2s infinite}@keyframes sk{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+<script>
+'use strict';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const H={'X-Requested-With':'dbadmin','Content-Type':'application/json'};
+const esc=v=>v==null?'':String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fd=v=>v?esc(String(v).replace('T',' ').slice(0,16)):'—';
+const fmt=v=>Number(v||0).toLocaleString('en-US');
+const ago=v=>{if(!v)return'—';const d=(Date.now()-Date.parse(v))/864e5;return d<1?'امروز':d<2?'دیروز':Math.floor(d)+' روز پیش'};
+const store={get:(k,d)=>{try{return JSON.parse(localStorage.getItem('dba_'+k))??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem('dba_'+k,JSON.stringify(v))}catch{}}};
+
+function toast(msg,type){const t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),type==='e'?5000:2600)}
+function modal(html,onMount){const m=document.createElement('div');m.className='modal';m.innerHTML='<div class="box" role="dialog" aria-modal="true">'+html+'</div>';
+  const close=()=>{m.remove();document.removeEventListener('keydown',esk)};const esk=e=>{if(e.key==='Escape')close()};
+  document.addEventListener('keydown',esk);m.addEventListener('mousedown',e=>{if(e.target===m)close()});document.body.appendChild(m);onMount&&onMount(m,close);return close}
+function confirmBox(msg,okText='تأیید',danger){return new Promise(res=>{modal('<p style="margin:0 0 16px;white-space:pre-line">'+esc(msg)+'</p><div class="row" style="justify-content:flex-end"><button id="n">انصراف</button><button id="y" class="'+(danger?'dng':'pri')+'">'+esc(okText)+'</button></div>',(m,close)=>{$('#n',m).onclick=()=>{close();res(false)};$('#y',m).onclick=()=>{close();res(true)};$('#y',m).focus()})})}
+function download(name,text,type='text/csv;charset=utf-8'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+async function copy(t){try{await navigator.clipboard.writeText(t);toast('کپی شد','s')}catch{toast('کپی نشد','e')}}
+
+async function api(p,o={}){const r=await fetch('/dbadmin'+p,{credentials:'same-origin',headers:H,...o});
+  if(r.status===401){login();throw new Error('401')}
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('خطا '+r.status));return j}
+const qstr=o=>Object.entries(o).filter(([,v])=>v!==''&&v!=null).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+
+function login(){$('#app').innerHTML='<div class="login"><h2>پنل دیتابیس</h2><p class="mut">برای ورود توکن مدیریت را وارد کنید</p><input id="tk" type="password" placeholder="DBADMIN_TOKEN" autofocus><button class="pri" id="go" style="width:100%">ورود</button><p id="er" class="bad"></p></div>';
+  const go=async()=>{const r=await fetch('/dbadmin/login',{method:'POST',headers:H,body:JSON.stringify({token:$('#tk').value})});if(r.ok)shell();else $('#er').textContent=(await r.json().catch(()=>({}))).error||'خطا'};
+  $('#go').onclick=go;$('#tk').onkeydown=e=>{if(e.key==='Enter')go()}}
+
+const NAV=[['ov','◉','نمای کلی'],['us','☺','کاربران'],['tb','▦','جدول‌ها'],['sq','⌘','کوئری SQL'],['au','✎','گزارش عملیات']];
+function shell(){$('#app').innerHTML='<div class="layout"><aside><div class="brand"><i></i>پنل دیتابیس</div>'+NAV.map(n=>'<button data-v="'+n[0]+'"><span aria-hidden="true">'+n[1]+'</span>'+n[2]+'</button>').join('')+'<div class="sp"></div><button id="lo">⎋ خروج</button></aside><main id="m"></main></div>';
+  $$('aside [data-v]').forEach(b=>b.onclick=()=>view(b.dataset.v));
+  $('#lo').onclick=async()=>{await fetch('/dbadmin/logout',{method:'POST',headers:H}).catch(()=>{});login()};
+  const h=location.hash.slice(1);view(NAV.some(n=>n[0]===h)?h:'ov')}
+function view(v,a){location.hash=v;$$('aside [data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $('#m').innerHTML='<div class="skel"></div>';
+  ({ov:overview,us:users,tb:tables,sq:sqlView,au:auditView}[v])(a).catch(e=>{if(e.message!=='401')$('#m').innerHTML='<p class="bad">'+esc(e.message)+'</p>'})}
+
+/* ---------- اجزای مشترک ---------- */
+const stat=(l,v,c='')=>'<div class="card stat"><div class="n '+c+'">'+esc(v)+'</div><div class="l">'+l+'</div></div>';
+function bars(rows,key,cls,label){if(!rows.length)return'<div class="empty">داده‌ای نیست</div>';const max=Math.max(...rows.map(r=>r[key]),1);
+  return '<div class="bars '+cls+'">'+rows.map(r=>'<div style="height:'+Math.max(3,r[key]/max*100)+'%" data-t="'+esc(r.d)+' · '+esc(label?label(r):r[key])+'"></div>').join('')+'</div><div class="cap"><span>'+esc(rows[0].d)+'</span><span>'+esc(rows[rows.length-1].d)+'</span></div>'}
+function tbl(h,rows,ids,empty){if(!rows.length)return'<div class="card empty">'+(empty||'موردی نیست')+'</div>';
+  return '<div class="tw"><table><tr>'+h.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+rows.map((r,i)=>'<tr '+(ids&&ids[i]?'class="k" data-id="'+esc(ids[i])+'"':'')+'>'+r.map(c=>'<td>'+(c==null?'':c)+'</td>').join('')+'</tr>').join('')+'</table></div>'}
+const bindRows=()=>$$('tr.k[data-id]').forEach(r=>r.onclick=()=>detail(r.dataset.id));
+function pager(d,fn){const last=Math.max(1,Math.ceil(d.total/d.per));const id='p'+Math.random().toString(36).slice(2,7);
+  setTimeout(()=>{const a=$('#'+id+'a'),b=$('#'+id+'b');a&&(a.onclick=()=>fn(d.page-1));b&&(b.onclick=()=>fn(d.page+1))});
+  return '<div class="row"><button id="'+id+'a" '+(d.page<=1?'disabled':'')+'>‹ قبلی</button><span class="mut">صفحه '+d.page+' از '+last+' — '+fmt(d.total)+' مورد</span><button id="'+id+'b" '+(d.page>=last?'disabled':'')+'>بعدی ›</button></div>'}
+const svc=u=>u.banned_until&&Date.parse(u.banned_until)>Date.now()?'<span class="tag r">مسدود</span>':'';
+const vipTag=u=>u.is_vip?(u.vip_until&&Date.parse(u.vip_until)<=Date.now()?'<span class="tag y">منقضی '+fd(u.vip_until).slice(0,10)+'</span>':'<span class="tag g">VIP '+(u.vip_until?'تا '+fd(u.vip_until).slice(0,10):'دائم')+'</span>'):'<span class="mut">—</span>';
+
+/* ---------- نمای کلی ---------- */
+async function overview(){const [d,s]=await Promise.all([api('/api/overview'),api('/api/stats')]),c=d.counts,sy=d.system;
+  $('#m').innerHTML='<div class="top"><h2>نمای کلی</h2><span class="sp" style="flex:1"></span><button id="rf">↻ تازه‌سازی</button></div>'
+  +'<div class="grid">'+stat('کاربران',fmt(c.users))+stat('VIP فعال',fmt(c.vip_active),'ok')+stat('VIP منقضی',fmt(c.vip_expired),'warn')+stat('پرداخت‌ها',fmt(c.payments))+stat('نظر منتظر تایید',fmt(c.messages_pending),c.messages_pending?'warn':'')+stat('کامنت ریلز منتظر',fmt(c.reel_comments_pending),c.reel_comments_pending?'warn':'')+stat('بدون پروفایل',fmt(c.users_without_profile),c.users_without_profile?'warn':'')+stat('گزارش مشکل چپتر',fmt(c.reports))+stat('امتیازها',fmt(c.ratings))+stat('نشان‌ها',fmt(c.bookmarks))+stat('ریلز',fmt(c.reels))+'</div>'
+  +'<div class="two"><div class="card"><b>ثبت‌نام (۳۰ روز اخیر)</b><div style="margin-top:10px">'+bars(s.signups_per_day,'c','', r=>r.c+' نفر')+'</div></div>'
+  +'<div class="card"><b>کاربران فعال بر اساس آخرین ورود</b><div style="margin-top:10px">'+bars(s.logins_per_day,'c','bl',r=>r.c+' نفر')+'</div></div>'
+  +'<div class="card"><b>پرداخت‌ها (تعداد)</b><div style="margin-top:10px">'+bars(s.payments_per_day,'c','gr',r=>r.c+' پرداخت · '+fmt(r.s))+'</div></div></div>'
+  +'<h3>اشتراک‌های در آستانه‌ی انقضا (۷ روز آینده)</h3>'+tbl(['کاربر','نام','انقضا','باقی‌مانده'],s.expiring.map(u=>[esc(u.email||u.phone),esc(u.full_name),fd(u.vip_until),Math.max(0,Math.ceil((Date.parse(u.vip_until)-Date.now())/864e5))+' روز']),s.expiring.map(u=>u.id),'اشتراکی در حال انقضا نیست')
+  +'<div class="two"><div><h3>پرداخت‌ها بر اساس وضعیت</h3>'+tbl(['وضعیت','تعداد','جمع'],d.payments_by_status.map(x=>[esc(x.status),fmt(x.c),fmt(x.s)]))+'</div>'
+  +'<div><h3>بررسی تنظیمات</h3><div class="card">'+d.checks.map(x=>'<div>'+(x[1]?'<span class="ok">✔</span>':'<span class="bad">✘</span>')+' <span class="ltr">'+esc(x[0])+'</span></div>').join('')+'</div></div></div>'
+  +'<h3>آخرین کاربران</h3>'+tbl(['ایمیل / شماره','نام','اشتراک','ثبت‌نام'],d.recent_users.map(u=>[esc(u.email||u.phone),esc(u.full_name),vipTag(u),fd(u.created_at)]),d.recent_users.map(u=>u.id))
+  +'<h3>آخرین پرداخت‌ها</h3>'+tbl(['پلن','مبلغ','وضعیت','زمان'],d.recent_payments.map(x=>[esc(x.plan_key),fmt(x.amount),esc(x.status),fd(x.created_at)]),d.recent_payments.map(x=>x.user_id))
+  +'<h3>سیستم و بکاپ <button class="pri sm" id="bk">بکاپ همین حالا</button></h3><div class="card"><dl><dt>Node / درایور</dt><dd>'+esc(sy.node)+' / '+esc(sy.driver)+'</dd><dt>فایل دیتابیس</dt><dd>'+esc(sy.db_file)+'</dd><dt>حجم</dt><dd>'+sy.db_mb+' MB (WAL '+sy.wal_mb+' MB)</dd><dt>آپ‌تایم</dt><dd>'+Math.round(sy.uptime_s/60)+' دقیقه</dd><dt>حافظه</dt><dd>'+sy.rss_mb+' MB</dd></dl></div>'
+  +'<div style="height:8px"></div>'+tbl(['فایل بکاپ','حجم','زمان',''],sy.backups.map(b=>['<span class="ltr">'+esc(b.f)+'</span>',(b.s/1048576).toFixed(2)+' MB',fd(b.t),'<a href="/dbadmin/api/backup/'+encodeURIComponent(b.f)+'" download>دانلود</a>']),null,'بکاپی نیست');
+  bindRows();$('#rf').onclick=()=>view('ov');
+  $('#bk').onclick=async()=>{try{const r=await api('/api/backup',{method:'POST',body:'{}'});toast('بکاپ ساخته شد ('+r.mb+' MB)','s');view('ov')}catch(e){toast(e.message,'e')}}}
+
+/* ---------- کاربران ---------- */
+const FILTERS=[['','همه'],['vip','VIP فعال'],['vip_soon','در آستانه‌ی انقضا'],['vip_expired','VIP منقضی'],['unconfirmed','ایمیل تایید نشده'],['no_profile','بدون پروفایل'],['banned','مسدود'],['inactive','غیرفعال ۹۰+ روز']];
+async function users(a={}){const st=Object.assign({q:'',page:1,filter:'',sort:'created_at',dir:'desc'},store.get('us',{}),a);store.set('us',{filter:st.filter,sort:st.sort,dir:st.dir});
+  const d=await api('/api/users?'+qstr(st)),go=o=>users({...st,...o});
+  const cols=[['email','ایمیل'],['','شماره'],['full_name','نام'],['vip_until','اشتراک'],['','ایمیل تایید'],['last_sign_in_at','آخرین ورود'],['created_at','ثبت‌نام']];
+  const th=cols.map(c=>c[0]?'<th class="s" data-s="'+c[0]+'">'+c[1]+(st.sort===c[0]?(st.dir==='asc'?' ▲':' ▼'):'')+'</th>':'<th>'+c[1]+'</th>').join('');
+  $('#m').innerHTML='<div class="top"><h2>کاربران</h2></div><div class="row"><input id="q" placeholder="ایمیل، شماره، نام یا ۸ نویسه‌ی اول id" value="'+esc(st.q)+'" style="min-width:280px"><button class="pri" id="s">جستجو</button><button id="csv">⇩ خروجی CSV</button></div>'
+  +'<div class="chips" style="margin-bottom:10px">'+FILTERS.map(f=>'<button class="chip '+(st.filter===f[0]?'on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>').join('')+'</div>'
+  +(d.rows.length?'<div class="tw"><table><tr>'+th+'</tr>'+d.rows.map(u=>'<tr class="k" data-id="'+esc(u.id)+'"><td>'+esc(u.email)+' '+svc(u)+'</td><td class="ltr">'+esc(u.phone)+'</td><td>'+esc(u.full_name)+'</td><td>'+vipTag(u)+'</td><td>'+(u.email_confirmed_at?'<span class="ok">✔</span>':'<span class="mut">—</span>')+'</td><td title="'+fd(u.last_sign_in_at)+'">'+ago(u.last_sign_in_at)+'</td><td>'+fd(u.created_at)+'</td></tr>').join('')+'</table></div>':'<div class="card empty">کاربری پیدا نشد</div>')
+  +pager(d,pg=>go({page:pg}));
+  $('#s').onclick=()=>go({q:$('#q').value,page:1});$('#q').onkeydown=e=>{if(e.key==='Enter')go({q:$('#q').value,page:1})};
+  $$('[data-f]').forEach(b=>b.onclick=()=>go({filter:b.dataset.f,page:1}));
+  $$('th[data-s]').forEach(t=>t.onclick=()=>go({sort:t.dataset.s,dir:st.sort===t.dataset.s&&st.dir==='desc'?'asc':'desc',page:1}));
+  $('#csv').onclick=()=>{location.href='/dbadmin/api/users?'+qstr({...st,format:'csv'})};
+  bindRows()}
+
+async function detail(id){const d=await api('/api/user/'+id),a=d.auth,p=d.profile,banned=a.banned_until&&Date.parse(a.banned_until)>Date.now();
+  const kv=o=>'<dl>'+Object.entries(o||{}).map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+(v&&typeof v==='object'?esc(JSON.stringify(v)):v&&typeof v==='string'&&v.length>9&&/^\d{4}-\d\d-\d\dT/.test(v)?esc(v.replace('T',' ').slice(0,16)):esc(v))+'</dd>').join('')+'</dl>';
+  $('#m').innerHTML='<div class="top"><button id="bk">← برگشت</button><h2 class="ltr">'+esc(a.email||a.phone||a.id)+'</h2>'+svc(a)+vipTag(p||{})+'<button class="sm" id="cp">کپی id</button></div>'
+  +'<div class="two"><div class="card"><b>حساب</b><div style="height:8px"></div>'+kv({id:a.id,email:a.email,phone:a.phone,'رمز دارد':a.has_password?'بله':'خیر',ایمیل_تایید:a.email_confirmed_at,ثبت‌نام:a.created_at,آخرین_ورود:a.last_sign_in_at,'نشست‌های فعال':d.sessions,متادیتا:a.raw_user_meta_data})+'</div>'
+  +'<div class="card"><b>اشتراک (VIP)</b><div style="height:8px"></div>'+(p?kv({نام:p.full_name,is_vip:p.is_vip,vip_until:p.vip_until,vip_tier:p.vip_tier,vip_plan_key:p.vip_plan_key}):'<p class="warn">پروفایل ندارد</p>')
+  +'<div class="row"><button class="pri" data-d="30">+۳۰ روز</button><button data-d="90">+۹۰ روز</button><button data-d="180">+۱۸۰ روز</button><button data-d="365">+۳۶۵ روز</button></div>'
+  +'<div class="row"><input type="date" id="vd"><button id="v1">فعال تا این تاریخ</button><button class="dng" id="v0">غیرفعال کردن</button></div><span class="mut" style="font-size:12px">«+روز» از تاریخ انقضای فعلی (در صورت معتبر بودن) یا از امروز حساب می‌شود.</span></div></div>'
+  +'<h3>عملیات حساب</h3><div class="row"><button id="ce" '+(a.email_confirmed_at?'disabled':'')+'>تایید ایمیل</button><button id="rs">خروج از همه‌ی دستگاه‌ها</button><button class="'+(banned?'pri':'dng')+'" id="bn">'+(banned?'رفع مسدودیت':'مسدود کردن کاربر')+'</button></div>'
+  +'<div class="grid">'+stat('امتیازها',d.ratings)+stat('نشان‌ها',d.bookmarks)+stat('گزارش‌های چپتر',d.reports)+(d.team?stat('عضو تیم',esc(d.team.display_name||'✔')):'')+'</div>'
+  +'<h3>پرداخت‌ها ('+d.payments.length+')</h3>'+tbl(['پلن','مبلغ','وضعیت','ref','زمان'],d.payments.map(x=>[esc(x.plan_key),fmt(x.amount),esc(x.status),esc(x.ref_number),fd(x.created_at)]))
+  +'<h3>نظرها ('+d.messages.length+')</h3>'+tbl(['متن','مانهوا','تایید','زمان'],d.messages.map(x=>[esc((x.text||'').slice(0,80)),esc(x.manhwa_slug),x.approved?'✔':'—',fd(x.created_at)]))
+  +(d.tickets.length?'<h3>تیکت‌های پشتیبانی ('+d.tickets.length+')</h3>'+tbl(Object.keys(d.tickets[0]).slice(0,6),d.tickets.map(x=>Object.keys(d.tickets[0]).slice(0,6).map(k=>esc(String(x[k]??'').slice(0,60))))):'')
+  +(d.requests.length?'<h3>درخواست مانهوا ('+d.requests.length+')</h3>'+tbl(Object.keys(d.requests[0]).slice(0,6),d.requests.map(x=>Object.keys(d.requests[0]).slice(0,6).map(k=>esc(String(x[k]??'').slice(0,60))))):'');
+  const act=async(path,body,msg)=>{try{await api(path,{method:'POST',body:JSON.stringify(body)});toast(msg,'s');detail(id)}catch(e){toast(e.message,'e')}};
+  const base=()=>{const cur=p&&p.vip_until&&Date.parse(p.vip_until)>Date.now()?Date.parse(p.vip_until):Date.now();return cur};
+  $('#bk').onclick=()=>view('us');$('#cp').onclick=()=>copy(a.id);
+  $$('[data-d]').forEach(b=>b.onclick=()=>act('/api/user/'+id+'/vip',{until:new Date(base()+ +b.dataset.d*864e5).toISOString()},'اشتراک تمدید شد'));
+  $('#v1').onclick=()=>$('#vd').value?act('/api/user/'+id+'/vip',{until:$('#vd').value+'T23:59:59Z'},'ثبت شد'):toast('تاریخ را انتخاب کنید','e');
+  $('#v0').onclick=async()=>{if(await confirmBox('VIP این کاربر خاموش شود؟','خاموش شود',true))act('/api/user/'+id+'/vip',{until:null},'VIP خاموش شد')};
+  $('#ce').onclick=()=>act('/api/user/'+id+'/confirm-email',{},'ایمیل تایید شد');
+  $('#rs').onclick=async()=>{if(await confirmBox('کاربر از همه‌ی دستگاه‌ها خارج شود؟','خروج بده'))act('/api/user/'+id+'/revoke-sessions',{},'نشست‌ها باطل شد')};
+  $('#bn').onclick=async()=>{if(await confirmBox(banned?'مسدودیت برداشته شود؟':'کاربر مسدود و از همه‌ی دستگاه‌ها خارج شود؟',banned?'رفع مسدودیت':'مسدود کن',!banned))act('/api/user/'+id+'/ban',{on:!banned},banned?'رفع شد':'مسدود شد')}}
+
+/* ---------- جدول‌ها ---------- */
+async function tables(a={}){
+  if(!a.name){const l=await api('/api/tables');const f=(a.f||'').toLowerCase(),rows=l.filter(t=>t.name.includes(f));
+    $('#m').innerHTML='<div class="top"><h2>جدول‌ها</h2><input id="tf" placeholder="فیلتر نام جدول" value="'+esc(a.f||'')+'"></div>'
+    +'<div class="grid">'+rows.map(t=>'<button class="card stat" data-t="'+esc(t.name)+'" style="text-align:right"><div class="n ltr" style="font-size:15px">'+esc(t.name)+'</div><div class="l">'+fmt(t.count)+' ردیف · '+t.cols+' ستون</div></button>').join('')+'</div>';
+    $$('[data-t]').forEach(x=>x.onclick=()=>tables({name:x.dataset.t}));const i=$('#tf');i.oninput=()=>{tables({f:i.value}).then(()=>{const n=$('#tf');n.focus();n.setSelectionRange(99,99)})};return}
+  const st=Object.assign({q:'',page:1,per:50,sort:'',dir:'desc',fcol:'',fval:''},a),hidden=new Set(store.get('hid_'+a.name,[]));
+  const d=await api('/api/table/'+a.name+'?'+qstr({q:st.q,page:st.page,per:st.per,sort:st.sort,dir:st.dir,fcol:st.fcol,fval:st.fval})),go=o=>tables({...st,...o});
+  const vis=d.cols.filter(c=>!hidden.has(c)),edit=c=>c!==d.pk&&d.types[c]!=='arr';
+  const cell=(r,c)=>{const v=r[c];if(v==null)return'<td class="nul" data-c="'+c+'">null</td>';const s=typeof v==='object'?JSON.stringify(v):String(v);
+    return '<td class="'+(edit(c)?'ed':'')+'" data-c="'+esc(c)+'" title="'+esc(s.slice(0,300))+'">'+(d.types[c]==='bool'?(v?'<span class="ok">✔</span>':'<span class="mut">✘</span>'):esc(s.slice(0,200)))+'</td>'};
+  $('#m').innerHTML='<div class="top"><button id="bk">← جدول‌ها</button><h2 class="ltr">'+esc(a.name)+'</h2><span class="mut">'+fmt(d.total)+' ردیف</span></div>'
+  +'<div class="row"><input id="q" placeholder="جستجو در ستون‌های متنی" value="'+esc(st.q)+'"><button class="pri" id="s">جستجو</button>'
+  +'<select id="per">'+[25,50,100,200].map(n=>'<option '+(n==st.per?'selected':'')+'>'+n+'</option>').join('')+'</select>'
+  +'<button id="cols">ستون‌ها</button><button id="csv">⇩ CSV</button></div>'
+  +(st.fcol?'<div class="row"><span class="chip on">فیلتر: '+esc(st.fcol)+' = '+esc(st.fval==='__null__'?'null':st.fval.slice(0,40))+'</span><button class="sm" id="cf">حذف فیلتر</button></div>':'')
+  +'<p class="mut" style="margin:4px 0 8px;font-size:12px">روی سلول دوبار کلیک = ویرایش · روی شماره‌ی ردیف = جزئیات/حذف · کلیک راست روی سلول = فیلتر بر اساس مقدار</p>'
+  +(d.rows.length?'<div class="tw"><table><tr><th>#</th>'+vis.map(c=>'<th class="s ltr" data-s="'+esc(c)+'">'+esc(c)+(st.sort===c?(st.dir==='asc'?' ▲':' ▼'):'')+'</th>').join('')+'</tr>'
+    +d.rows.map((r,i)=>'<tr data-i="'+i+'"><td class="mut" style="cursor:pointer;color:var(--r)" data-open="'+i+'">'+((d.page-1)*d.per+i+1)+'</td>'+vis.map(c=>cell(r,c)).join('')+'</tr>').join('')+'</table></div>':'<div class="card empty">ردیفی نیست</div>')
+  +pager(d,pg=>go({page:pg}));
+  $('#bk').onclick=()=>tables();$('#s').onclick=()=>go({q:$('#q').value,page:1});$('#q').onkeydown=e=>{if(e.key==='Enter')go({q:$('#q').value,page:1})};
+  $('#per').onchange=e=>go({per:+e.target.value,page:1});$('#csv').onclick=()=>{location.href='/dbadmin/api/table/'+a.name+'?'+qstr({q:st.q,sort:st.sort,dir:st.dir,fcol:st.fcol,fval:st.fval,format:'csv'})};
+  const cf=$('#cf');cf&&(cf.onclick=()=>go({fcol:'',fval:'',page:1}));
+  $$('th[data-s]').forEach(t=>t.onclick=()=>go({sort:t.dataset.s,dir:st.sort===t.dataset.s&&st.dir==='desc'?'asc':'desc',page:1}));
+  $('#cols').onclick=()=>modal('<b>ستون‌های نمایش‌داده‌شده</b><div class="row" style="margin-top:12px">'+d.cols.map(c=>'<label class="chip ltr"><input type="checkbox" value="'+esc(c)+'" '+(hidden.has(c)?'':'checked')+'> '+esc(c)+'</label>').join('')+'</div><div class="row" style="justify-content:flex-end"><button class="pri" id="ok">اعمال</button></div>',(m,close)=>{$('#ok',m).onclick=()=>{store.set('hid_'+a.name,$$('input:not(:checked)',m).map(i=>i.value));close();go({})}});
+  $$('td[data-c]').forEach(td=>{const r=d.rows[td.parentNode.dataset.i],c=td.dataset.c;
+    td.oncontextmenu=e=>{e.preventDefault();go({fcol:c,fval:r[c]==null?'__null__':String(r[c]),page:1})};
+    if(td.classList.contains('ed')||td.classList.contains('nul')&&edit(c))td.ondblclick=()=>editCell(r,c)});
+  $$('[data-open]').forEach(x=>x.onclick=()=>rowModal(d.rows[x.dataset.open]));
+  function rowModal(r){modal('<b class="ltr">'+esc(a.name)+' / '+esc(r[d.pk])+'</b><pre>'+esc(JSON.stringify(r,null,2))+'</pre><div class="row" style="justify-content:space-between"><div class="row"><button id="cj">کپی JSON</button></div><button class="dng" id="del">حذف این ردیف</button></div>',(m,close)=>{
+    $('#cj',m).onclick=()=>copy(JSON.stringify(r,null,2));
+    $('#del',m).onclick=async()=>{close();if(!await confirmBox('این ردیف برای همیشه حذف شود؟\n'+a.name+' / '+r[d.pk]+'\n(نسخه‌ی کامل ردیف در گزارش عملیات ذخیره می‌شود)','حذف شود',true))return;
+      try{await api('/api/table/'+a.name+'/row',{method:'DELETE',body:JSON.stringify({key:r[d.pk]})});toast('حذف شد','s');go({})}catch(e){toast(e.message,'e')}}})}
+  function editCell(r,c){const t=d.types[c],cur=r[c];
+    const input=t==='bool'?'<select id="v"><option value="1" '+(cur?'selected':'')+'>true</option><option value="0" '+(!cur?'selected':'')+'>false</option></select>':
+      t==='text'?'<textarea id="v" class="sql" style="min-height:110px;font-family:inherit;direction:rtl;text-align:right">'+esc(cur)+'</textarea>':
+      '<input id="v" class="ltr" style="width:100%" value="'+esc(cur)+'" '+(t==='int'?'inputmode="numeric"':'')+'>';
+    modal('<b>ویرایش <span class="ltr">'+esc(c)+'</span></b> <span class="mut ltr">('+t+')</span><p class="mut" style="font-size:12px">ردیف: <span class="ltr">'+esc(r[d.pk])+'</span>'+(t==='ts'?' — فرمت ISO مثل 2026-10-31T12:00:00Z':'')+'</p>'+input+'<div class="row" style="justify-content:space-between"><button id="nl" '+(t==='text'?'':'')+'>تنظیم روی null</button><div class="row"><button id="no">انصراف</button><button class="pri" id="sv">ذخیره</button></div></div>',(m,close)=>{
+      $('#v',m).focus();const save=async v=>{try{await api('/api/table/'+a.name+'/row',{method:'POST',body:JSON.stringify({key:r[d.pk],col:c,value:v})});toast('ذخیره شد','s');close();go({})}catch(e){toast(e.message,'e')}};
+      $('#sv',m).onclick=()=>save($('#v',m).value);$('#nl',m).onclick=()=>save(null);$('#no',m).onclick=close;
+      $('#v',m).onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.target.tagName!=='TEXTAREA'))save(e.target.value)}})}
+}
+
+/* ---------- SQL ---------- */
+const SAMPLES=[['۱۰ کاربر آخر','SELECT id, email, created_at FROM auth_users ORDER BY created_at DESC LIMIT 10'],
+ ['درآمد هر وضعیت','SELECT status, COUNT(*) AS n, SUM(amount) AS total FROM payments GROUP BY status'],
+ ['پرطرفدارترین مانهواها (نشان‌ها)','SELECT manhwa_slug, COUNT(*) AS n FROM bookmarks GROUP BY manhwa_slug ORDER BY n DESC LIMIT 20'],
+ ['نظرهای منتظر تایید','SELECT id, name, manhwa_slug, substr(text,1,60) AS text, created_at FROM messages WHERE approved IS NULL OR approved=0 ORDER BY created_at DESC LIMIT 50'],
+ ['ساختار جدول‌ها','SELECT name, sql FROM sqlite_master WHERE type=\'table\' AND name NOT LIKE \'auth_%\'']];
+async function sqlView(){const hist=store.get('sqlh',[]);
+  $('#m').innerHTML='<div class="top"><h2>کوئری SQL</h2><span class="tag y">فقط خواندنی · حداکثر ۵۰۰ ردیف</span></div>'
+  +'<div class="chips" style="margin-bottom:8px">'+SAMPLES.map((s,i)=>'<button class="chip" data-s="'+i+'">'+s[0]+'</button>').join('')+'</div>'
+  +'<textarea class="sql" id="sq" spellcheck="false" placeholder="SELECT * FROM profiles LIMIT 10">'+esc(hist[0]||'')+'</textarea>'
+  +'<div class="row"><button class="pri" id="run">اجرا (Ctrl+Enter)</button><button id="csv" disabled>⇩ CSV نتیجه</button><span id="info" class="mut"></span></div><div id="res"></div>'
+  +(hist.length?'<h3>تاریخچه</h3><div class="chips">'+hist.slice(0,8).map((h,i)=>'<button class="chip ltr" data-h="'+i+'" title="'+esc(h)+'">'+esc(h.slice(0,50))+'</button>').join('')+'</div>':'');
+  let last=null;
+  const run=async()=>{const sql=$('#sq').value.trim();if(!sql)return;$('#run').disabled=true;$('#info').textContent='در حال اجرا…';
+    try{const r=await api('/api/sql',{method:'POST',body:JSON.stringify({sql})});last=r;
+      store.set('sqlh',[sql,...hist.filter(x=>x!==sql)].slice(0,15));
+      $('#info').textContent=fmt(r.rows.length)+' ردیف در '+r.ms+' ms'+(r.truncated?' (بریده شد)':'');$('#csv').disabled=!r.rows.length;
+      $('#res').innerHTML=r.rows.length?'<div class="tw"><table><tr>'+r.cols.map(c=>'<th class="ltr">'+esc(c)+'</th>').join('')+'</tr>'+r.rows.map(x=>'<tr>'+r.cols.map(c=>'<td title="'+esc(x[c])+'">'+(x[c]==null?'<span class="mut">null</span>':esc(String(x[c]).slice(0,200)))+'</td>').join('')+'</tr>').join('')+'</table></div>':'<div class="card empty">نتیجه‌ای نیست</div>'}
+    catch(e){if(e.message!=='401'){$('#info').textContent='';$('#res').innerHTML='<div class="card bad ltr" style="direction:rtl">'+esc(e.message)+'</div>'}}
+    $('#run').disabled=false};
+  $('#run').onclick=run;$('#sq').onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();run()}};
+  $('#csv').onclick=()=>{if(!last)return;const q=v=>{if(v==null)return'';let s=String(v);if(/^[=+\-@]/.test(s))s="'"+s;return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};download('query.csv','﻿'+[last.cols.join(','),...last.rows.map(r=>last.cols.map(c=>q(r[c])).join(','))].join('\r\n'))};
+  $$('[data-s]').forEach(b=>b.onclick=()=>{$('#sq').value=SAMPLES[b.dataset.s][1];run()});
+  $$('[data-h]').forEach(b=>b.onclick=()=>{$('#sq').value=hist[b.dataset.h]})}
+
+/* ---------- گزارش عملیات ---------- */
+const ACT={'vip-set':'تنظیم VIP','vip-off':'خاموش‌کردن VIP',ban:'مسدود','unban':'رفع مسدودیت','revoke-sessions':'ابطال نشست‌ها','confirm-email':'تایید ایمیل',edit:'ویرایش سلول',delete:'حذف ردیف',sql:'کوئری SQL',backup:'بکاپ','backup-download':'دانلود بکاپ',export:'خروجی CSV'};
+async function auditView(){const s=await api('/api/stats');
+  $('#m').innerHTML='<div class="top"><h2>گزارش عملیات</h2><span class="mut">۱۰۰ مورد آخر از کارهایی که از همین پنل انجام شده</span></div>'
+  +tbl(['زمان','عملیات','جزئیات','IP'],s.audit.map(x=>[fd(x.at),'<span class="tag '+(/delete|ban$|edit/.test(x.action)&&x.action!=='unban'?'r':'')+'">'+esc(ACT[x.action]||x.action)+'</span>','<span class="ltr" title="'+esc(x.detail)+'">'+esc(x.detail.slice(0,140))+'</span>','<span class="ltr">'+esc(x.ip)+'</span>']),null,'هنوز عملیاتی ثبت نشده')}
+
+fetch('/dbadmin/api/overview',{credentials:'same-origin',headers:H}).then(r=>r.ok?shell():login());
+</script>
+</body>
+</html>

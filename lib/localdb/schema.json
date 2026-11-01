@@ -426,6 +426,12 @@
      "def": {
       "now": true
      }
+    },
+    "vip_tier": {
+     "t": "text"
+    },
+    "vip_plan_key": {
+     "t": "text"
     }
    }
   },
@@ -474,15 +480,6 @@
      "t": "text"
     },
     "banner_note": {
-     "t": "text"
-    },
-    "banner_translator": {
-     "t": "text"
-    },
-    "banner_typist": {
-     "t": "text"
-    },
-    "banner_cleaner": {
      "t": "text"
     }
    }
@@ -800,12 +797,6 @@
      "def": {
       "now": true
      }
-    },
-    "slug": {
-     "t": "text"
-    },
-    "source_url": {
-     "t": "text"
     }
    }
   },
@@ -1031,6 +1022,110 @@
     },
     "banner_name": {
      "t": "text"
+    }
+   }
+  },
+  "support_tickets": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "subject": {
+     "t": "text",
+     "nn": true
+    },
+    "message": {
+     "t": "text",
+     "nn": true
+    },
+    "priority": {
+     "t": "int",
+     "nn": true,
+     "def": {
+      "value": 0
+     }
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "open"
+     }
+    },
+    "reply": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "replied_at": {
+     "t": "ts"
+    },
+    "user_read_at": {
+     "t": "ts"
+    }
+   }
+  },
+  "manhwa_requests": {
+   "pk": [
+    "id"
+   ],
+   "cols": {
+    "id": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "uuid": true
+     }
+    },
+    "user_id": {
+     "t": "text",
+     "nn": true
+    },
+    "title": {
+     "t": "text",
+     "nn": true
+    },
+    "link": {
+     "t": "text"
+    },
+    "note": {
+     "t": "text"
+    },
+    "status": {
+     "t": "text",
+     "nn": true,
+     "def": {
+      "value": "pending"
+     }
+    },
+    "admin_note": {
+     "t": "text"
+    },
+    "created_at": {
+     "t": "ts",
+     "nn": true,
+     "def": {
+      "now": true
+     }
+    },
+    "decided_at": {
+     "t": "ts"
     }
    }
   }

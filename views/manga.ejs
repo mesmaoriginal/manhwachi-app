@@ -71,12 +71,29 @@
       gtag('config', 'G-18XD50KTY3');
     </script>
     
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script id="tailwind-config">
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <script>
+      // اگر فایل کامپایل‌شده‌ی کامل Tailwind (با نشانه‌ی --mc-tw) نبود، مثل قبل از CDN لود می‌شود
+      (function () {
+        var ok = false;
+        try { ok = !!getComputedStyle(document.documentElement).getPropertyValue('--mc-tw').trim(); } catch (e) {}
+        window.__twLocal = ok;
+        window.__twFallback = function (cb) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+          if (cb) s.onload = cb;
+          document.head.appendChild(s);
+        };
+        
+      })();
+    </script>
+    <link rel="stylesheet" href="/css/vendor/montserrat.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400..800&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/inter.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+    <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+        <link rel="stylesheet" href="/css/vendor/fontawesome.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css'">
+        <script id="tailwind-config">
+        if (!window.__twLocal) window.__twFallback(function () {
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -95,6 +112,7 @@
                 }
             }
         }
+    });
     </script>
 
     <style>
@@ -498,12 +516,8 @@
             .desktop-backdrop, .desktop-backdrop img { animation: none; }
         }
     </style>
-    <!-- پیام دانلود اپ فعلاً غیرفعاله: <link rel="stylesheet" href="/app-promo.css?v=1"> -->
-    <!-- Halloween theme -->
-    <script>try{if(localStorage.getItem('hw-off')!=='1')document.documentElement.classList.add('hw')}catch(e){document.documentElement.classList.add('hw')}</script>
-    <link rel="stylesheet" href="/halloween.css?v=9">
-    <link rel="stylesheet" href="/halloween-perf.css?v=1">
-    <script src="/halloween-perf.js?v=1"></script>
+    <link rel="stylesheet" href="/app-promo.css?v=1">
+<link rel="stylesheet" href="/mc-shared.css?v=1">
 </head>
 
 <body class="bg-surface text-on-surface font-body min-h-screen">
@@ -521,233 +535,7 @@
     </div>
 
 <!-- Auth Modal Animations -->
-<style>
-  @keyframes authBackdropIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes authCardIn {
-    from { opacity: 0; transform: scale(.92) translateY(14px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  @keyframes authMsgIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes authGlow {
-    0%, 100% { opacity: .55; }
-    50%      { opacity: 1; }
-  }
-  #authModal.flex { animation: authBackdropIn .25s ease-out; }
-  #authModal.flex .auth-card { animation: authCardIn .4s cubic-bezier(.16,1,.3,1); }
-  .authMsg-in { animation: authMsgIn .3s ease-out; }
-  .auth-card { scrollbar-width: none; -ms-overflow-style: none; }
-  .auth-card::-webkit-scrollbar { display: none; }
-  .auth-orb { animation: authGlow 3.5s ease-in-out infinite; }
-  .auth-icon-input:focus ~ .auth-input-icon { color: #ef4444; }
-</style>
-
-<!-- Modal Container -->
-<div id="authModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/85 backdrop-blur-md p-4 transition-all duration-300">
-
-  <div class="auth-card relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-[28px] bg-gradient-to-b from-zinc-900 to-black border border-zinc-800/80 shadow-[0_25px_70px_-15px_rgba(220,38,38,0.35)] text-zinc-100 font-sans dir-rtl text-right">
-
-    <!-- نوار تزئینی بالای مودال -->
-    <div class="h-1.5 w-full bg-gradient-to-l from-red-700 via-red-500 to-red-700 rounded-t-[28px]"></div>
-
-    <!-- دکمه بستن -->
-    <button onclick="closeAuthModal()" aria-label="بستن" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/80 active:scale-90 transition-all z-10">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-      </svg>
-    </button>
-
-    <div class="p-6 pt-7">
-
-      <!-- برند / لوگو -->
-      <div class="flex flex-col items-center text-center mb-6">
-        <div class="relative mb-3">
-          <div class="auth-orb absolute inset-0 rounded-2xl bg-red-600/40 blur-xl"></div>
-          <div class="relative w-14 h-14 rounded-2xl bg-zinc-800/80 border border-red-500/30 flex items-center justify-center overflow-hidden">
-            <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" class="w-8 h-8 object-contain" />
-          </div>
-        </div>
-        <h2 class="font-bold text-lg text-white font-['Montserrat']">Manhwa<span class="text-red-600">Chi</span></h2>
-        <p id="authSubtitle" class="text-xs text-zinc-400 mt-1">خوش برگشتی! برای ادامه وارد حساب خود شو</p>
-      </div>
-
-      <!-- تب‌ها (سگمنت شیشه‌ای) -->
-      <div class="flex items-center gap-1 bg-zinc-800/50 rounded-full p-1 mb-5 border border-zinc-700/40">
-        <button id="tabLoginBtn" type="button" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40">
-          ورود
-        </button>
-        <button id="tabRegisterBtn" type="button" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200">
-          عضویت جدید
-        </button>
-      </div>
-
-      <!-- باکس نمایش پیام‌ها -->
-      <div id="authMessage" class="hidden mb-4 p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all duration-300"></div>
-
-      <!-- ==================== فرم ورود ==================== -->
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-        <div>
-          <label for="loginEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل یا شماره موبایل</label>
-          <div class="relative">
-            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="text" id="loginEmail" required autocomplete="username" placeholder="example@gmail.com یا 09121234567" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
-        <div>
-          <label for="loginPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="password" id="loginPassword" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-            <button type="button" onclick="toggleAuthPassword('loginPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
-              <i class="fa-solid fa-eye text-sm"></i>
-            </button>
-          </div>
-          <div class="text-left mt-1.5">
-            <button type="button" onclick="showForgotPasswordForm()" class="text-xs text-red-500 hover:text-red-400 transition-all">
-              رمز عبور را فراموش کرده‌اید؟
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" id="loginSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-right-to-bracket text-xs"></i>
-          ورود به حساب
-        </button>
-      </form>
-
-      <!-- ==================== فرم فراموشی رمز عبور ==================== -->
-      <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-4 hidden">
-        <div class="text-center mb-1">
-          <p class="text-xs text-zinc-300">ایمیل حساب خود را وارد کنید تا لینک بازیابی رمز عبور برایتان ارسال شود.</p>
-        </div>
-        <div>
-          <label for="forgotEmail" class="block text-xs font-medium text-zinc-400 mb-1.5">ایمیل</label>
-          <div class="relative">
-            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="email" id="forgotEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
-        <button type="submit" id="forgotSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all">
-          ارسال لینک بازیابی رمز عبور
-        </button>
-        <div class="text-center">
-          <button type="button" onclick="switchAuthTab('login')" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">
-            بازگشت به ورود
-          </button>
-        </div>
-      </form>
-
-      <!-- ==================== فرم تنظیم رمز عبور جدید ==================== -->
-      <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
-        <div class="text-center mb-1">
-          <p class="text-xs text-zinc-300">رمز عبور جدید خود را وارد کنید.</p>
-        </div>
-        <div>
-          <label for="resetNewPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">رمز عبور جدید (حداقل ۶ کاراکتر)</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="password" id="resetNewPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-            <button type="button" onclick="toggleAuthPassword('resetNewPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
-              <i class="fa-solid fa-eye text-sm"></i>
-            </button>
-          </div>
-        </div>
-        <div>
-          <label for="resetConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1.5">تکرار رمز عبور جدید</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="password" id="resetConfirmPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
-        <button type="submit" id="resetSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all">
-          ثبت رمز عبور جدید
-        </button>
-      </form>
-
-      <!-- ==================== فرم ثبت‌نام ==================== -->
-      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
-        <div>
-          <label for="regFullName" class="block text-xs font-medium text-zinc-400 mb-1">نام و نام خانوادگی</label>
-          <div class="relative">
-            <i class="fa-solid fa-user auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="text" id="regFullName" required placeholder="مثال: علی محمدی" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label for="regEmail" class="block text-xs font-medium text-zinc-400 mb-1">جیمیل (فقط Google Gmail)</label>
-          <div class="relative">
-            <i class="fa-solid fa-envelope auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="email" id="regEmail" required placeholder="example@gmail.com" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label for="regPassword" class="block text-xs font-medium text-zinc-400 mb-1">رمز عبور (حداقل ۶ کاراکتر)</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="password" id="regPassword" oninput="checkPasswordStrength(this.value)" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-            <button type="button" onclick="toggleAuthPassword('regPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
-              <i class="fa-solid fa-eye text-sm"></i>
-            </button>
-          </div>
-
-          <!-- نوار سنجش قدرت رمز عبور -->
-          <div class="mt-2">
-            <div class="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
-              <div id="passwordStrengthBar" class="h-1 rounded-full bg-zinc-700 transition-all duration-300 w-0"></div>
-            </div>
-            <div id="passwordStrengthText"></div>
-          </div>
-        </div>
-
-        <div>
-          <label for="regConfirmPassword" class="block text-xs font-medium text-zinc-400 mb-1">تکرار رمز عبور</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock auth-input-icon absolute top-1/2 -translate-y-1/2 right-4 text-zinc-500 text-sm transition-colors pointer-events-none"></i>
-            <input type="password" id="regConfirmPassword" minlength="6" required placeholder="••••••••" class="auth-icon-input w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 pr-11 pl-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-            <button type="button" onclick="toggleAuthPassword('regConfirmPassword', this)" tabindex="-1" aria-label="نمایش رمز عبور" class="absolute top-1/2 -translate-y-1/2 left-3.5 text-zinc-500 hover:text-zinc-300 transition-colors">
-              <i class="fa-solid fa-eye text-sm"></i>
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" id="regSubmitBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 font-bold text-sm text-white shadow-lg shadow-red-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-paper-plane text-xs"></i>
-          ارسال کد تایید به جیمیل
-        </button>
-        <p class="text-[11px] text-zinc-500 text-center leading-5">با ثبت‌نام، قوانین و حریم خصوصی مانهواچی را می‌پذیرید.</p>
-        <p class="text-[11px] text-zinc-500 text-center leading-5">می‌خوای با شماره موبایل ثبت‌نام کنی؟ <a href="/?action=login" class="text-red-500 hover:text-red-400">از صفحه‌ی اصلی</a> این کار رو بکن.</p>
-      </form>
-
-      <!-- ==================== فرم ورود کد OTP ==================== -->
-      <form id="otpForm" onsubmit="handleVerifyOTP(event)" class="space-y-4 hidden">
-        <div class="text-center mb-2 flex flex-col items-center gap-2">
-          <div class="w-12 h-12 rounded-full bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-500">
-            <i class="fa-solid fa-envelope-open-text"></i>
-          </div>
-          <p class="text-xs text-zinc-300">کد ۶ رقمی ارسال‌شده به <span id="otpEmailDisplay" class="text-white font-semibold"></span> را وارد کنید:</p>
-        </div>
-        <div>
-          <input type="text" id="otpCode" inputmode="numeric" autocomplete="one-time-code" dir="ltr" maxlength="12" required placeholder="123456" class="w-full text-center tracking-[0.5em] text-xl font-mono rounded-xl bg-zinc-800/60 border border-zinc-700/50 px-4 py-3 text-white placeholder-zinc-600 focus:border-red-500 focus:ring-1 focus:ring-red-500/50 focus:outline-none transition-all" />
-        </div>
-
-        <button type="submit" id="verifyOtpBtn" class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 font-bold text-sm text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-circle-check text-xs"></i>
-          تایید و فعال‌سازی حساب
-        </button>
-        <div class="flex items-center justify-between pt-1">
-          <button type="button" onclick="backFromOtp()" class="text-xs text-zinc-400 hover:text-zinc-200 transition-all">تغییر ایمیل</button>
-          <button type="button" id="emailResendBtn" onclick="resendSignupCode()" class="text-xs text-red-500 hover:text-red-400 disabled:text-zinc-500 transition-all">ارسال مجدد کد</button>
-        </div>
-        <p class="text-[11px] text-zinc-500 text-center leading-5">ایمیل نرسید؟ پوشه‌ی اسپم (Junk) را هم نگاه کن.</p>
-      </form>
-
-    </div>
-  </div>
-</div>
+<!-- مدال ورود/ثبت‌نام: از /auth-modal.js ساخته می‌شه (کد و استایلش مشترکه) -->
 
     <!-- Main Header -->
     <header class="sticky top-0 z-50 w-full bg-surface/85 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
@@ -779,7 +567,7 @@
             <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-surface-elevated border border-white/10 flex items-center justify-center text-on-surface hover:text-primary hover:border-primary/40 active:scale-95 transition-all">
                     <span class="material-symbols-outlined text-xl">search</span>
                 </a>
-                <a href="/cooperation.html" class="hidden sm:flex items-center gap-2 px-4 h-10 bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white rounded-2xl text-xs font-bold transition-all duration-300">
+                <a href="/Careers.html" class="hidden sm:flex items-center gap-2 px-4 h-10 bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white rounded-2xl text-xs font-bold transition-all duration-300">
                     <span class="material-symbols-outlined text-base">group_add</span> همکاری با ما
                 </a>
             </div>
@@ -1151,14 +939,16 @@
     </footer>
 
     <script src="/js/vendor/supabase.min.js"></script>
+    <!-- مدال ورود/ثبت‌نام مشترک با صفحه‌ی اصلی (auth-modal.js) — باید قبل از اسکریپت اصلی بیاد -->
+    <script src="/auth-modal.js?v=1"></script>
     <script>
         const { createClient } = supabase;
         const db = createClient(window.location.origin, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
         window.supabaseClient = db; // برای هماهنگی با اسکریپت مودال ورود/ثبت‌نام
         
-        const MANHWA_SLUG = <%- JSON.stringify(slug) %>;
-        let englishTitle = <%- JSON.stringify(title_en) %>;
-        let persianTitle = <%- JSON.stringify(title_fa) %>;
+        const MANHWA_SLUG = <%- JSON.stringify(slug).replace(/</g, '\\u003c') %>;
+        let englishTitle = <%- JSON.stringify(title_en).replace(/</g, '\\u003c') %>;
+        let persianTitle = <%- JSON.stringify(title_fa).replace(/</g, '\\u003c') %>;
         const SUBSCRIPTION_PAGE_URL = '/vip.html';
 
         // وضعیت اشتراک کاربر — بعد از هر تغییر لاگین دوباره خونده می‌شه
@@ -1169,6 +959,31 @@
         let subscriptionUnknown = false;
         let currentProfile = null;      // { full_name, avatar_url } کاربر لاگین‌شده
         let bookmarkSyncFn = null;      // توسط setupBookmarkLogic ست می‌شه
+
+        // قفل زمانی هر چپتر برای «همین کاربر»: { [num]: زمان باز شدن (ms) } — از /api/access/chapters (قانون در سرور است)
+        // رایگان: ۲۴ ساعت اول برای بدون اشتراک | اشتراکی: ۱ روز اول برای استاندارد هفتگی
+        let lockMap = {};
+        let locksLoaded = false;
+        async function loadChapterLocks() {
+            try {
+                let headers = {};
+                try {
+                    const { data: { session } } = await db.auth.getSession();
+                    if (session && session.access_token) headers = { Authorization: 'Bearer ' + session.access_token };
+                } catch (e) {}
+                const r = await fetch('/api/access/chapters/' + encodeURIComponent(MANHWA_SLUG), { headers, cache: 'no-store' });
+                if (!r.ok) return;
+                const j = await r.json();
+                const m = {};
+                (j.locked || []).forEach(x => { m[x.num] = new Date(x.unlocksAt).getTime(); });
+                lockMap = m;
+                locksLoaded = true;
+            } catch (e) { console.error('lock info:', e); }
+        }
+        function lockLabel(ts) {
+            const h = Math.max(1, Math.ceil((ts - Date.now()) / 3600000));
+            return h.toLocaleString('fa-IR') + ' ساعت تا باز شدن';
+        }
 
         async function refreshSubscriptionStatus() {
             subscriptionChecked = false;
@@ -1204,6 +1019,7 @@
                 currentUserSubscribed = false;
             } finally {
                 subscriptionChecked = true;
+                await loadChapterLocks();
                 // نام/آواتار واقعی پروفایل حالا در دسترسه؛ UI رو دوباره بساز
                 updateAccountBtnUI();
                 renderCommentAuthorArea();
@@ -1264,590 +1080,6 @@
             return `<div class="${base}">${fallback}<img src="${url}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-cover bg-zinc-900" onload="this.previousElementSibling.style.display='none'" onerror="this.remove()"></div>`;
         }
 
-  // مقداردهی اولیه متغیر ایمیل موقت
-  let tempRegistrationEmail = "";
-
-  // ==================== کمکی‌های ثبت‌نام ایمیلی (ارسال مجدد، بازگشت، پیام فارسی) ====================
-  let emailResendTimer = null;
-  const PENDING_SIGNUP_KEY = 'pendingSignupEmail';
-  const PENDING_SIGNUP_TTL_MS = 30 * 60 * 1000;
-
-  // تبدیل خطاهای انگلیسی Supabase/شبکه به پیام فارسی قابل‌فهم
-  function faAuthError(err) {
-    const raw = String((err && (err.message || err.error_description)) || err || '');
-    if (/[\u0600-\u06FF]/.test(raw)) return raw; // از قبل فارسیه
-    const code = (err && err.code) || '';
-    const m = raw.toLowerCase();
-    if (code === 'otp_expired' || m.includes('expired') || (m.includes('invalid') && m.includes('token')))
-      return "کد وارد شده اشتباه یا منقضی شده است. اگر کد قبلی کار نکرد، «ارسال مجدد کد» را بزن.";
-    if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit' || (err && err.status === 429) || m.includes('rate limit') || m.includes('too many'))
-      return "تعداد درخواست‌ها زیاد بود. یک دقیقه صبر کن و دوباره تلاش کن.";
-    if (code === 'weak_password' || (m.includes('password') && m.includes('least')))
-      return "رمز عبور باید حداقل ۶ کاراکتر باشد.";
-    if (code === 'email_address_invalid' || (m.includes('email') && m.includes('invalid')))
-      return "ایمیل واردشده معتبر نیست.";
-    if (code === 'user_already_exists' || m.includes('already registered'))
-      return "این ایمیل قبلاً ثبت‌نام شده است. وارد شو یا «فراموشی رمز عبور» را بزن.";
-    if (code === 'invalid_credentials' || m.includes('invalid login credentials'))
-      return "اطلاعات ورود اشتباه است.";
-    if (code === 'email_not_confirmed' || m.includes('email not confirmed'))
-      return "ایمیل شما هنوز تایید نشده است.";
-    if (m.includes('failed to fetch') || m.includes('networkerror') || m.includes('network request failed'))
-      return "ارتباط با سرور برقرار نشد. اینترنت (یا فیلترشکن) را بررسی کن و دوباره تلاش کن.";
-    return "خطایی رخ داد. دوباره تلاش کن.";
-  }
-
-  function rememberPendingSignup(email) {
-    try { localStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify({ email, t: Date.now() })); } catch {}
-  }
-  function clearPendingSignup() {
-    try { localStorage.removeItem(PENDING_SIGNUP_KEY); } catch {}
-  }
-  function getPendingSignupEmail() {
-    try {
-      const p = JSON.parse(localStorage.getItem(PENDING_SIGNUP_KEY) || 'null');
-      if (p && p.email && Date.now() - p.t < PENDING_SIGNUP_TTL_MS) return p.email;
-    } catch {}
-    return "";
-  }
-
-  function startEmailResendCountdown(seconds = 60) {
-    const btn = document.getElementById('emailResendBtn');
-    if (!btn) return;
-    clearInterval(emailResendTimer);
-    let left = seconds;
-    const tick = () => {
-      if (left <= 0) {
-        clearInterval(emailResendTimer);
-        btn.disabled = false;
-        btn.textContent = 'ارسال مجدد کد';
-        return;
-      }
-      btn.disabled = true;
-      btn.textContent = `ارسال مجدد تا ${left} ثانیه دیگر`;
-      left--;
-    };
-    tick();
-    emailResendTimer = setInterval(tick, 1000);
-  }
-
-  // نمایش فرم کد ایمیل (بعد از ثبت‌نام، بعد از ورود با حساب تاییدنشده، یا بعد از رفرش صفحه)
-  function showEmailOtpForm(email, cooldownSeconds = 0) {
-    tempRegistrationEmail = email;
-    rememberPendingSignup(email);
-    const display = document.getElementById('otpEmailDisplay');
-    if (display) display.textContent = email;
-    ['loginForm', 'registerForm', 'registerPhoneForm', 'registerMethodSwitch', 'forgotPasswordForm', 'forgotPhoneForm', 'resetPasswordForm']
-      .forEach((id) => document.getElementById(id)?.classList.add('hidden'));
-    document.getElementById('otpForm')?.classList.remove('hidden');
-    const input = document.getElementById('otpCode');
-    if (input) input.value = '';
-    clearInterval(emailResendTimer);
-    const btn = document.getElementById('emailResendBtn');
-    if (btn) { btn.disabled = false; btn.textContent = 'ارسال مجدد کد'; }
-    if (cooldownSeconds > 0) startEmailResendCountdown(cooldownSeconds);
-    input?.focus();
-  }
-
-  async function resendSignupCode() {
-    const email = tempRegistrationEmail || getPendingSignupEmail();
-    if (!email) {
-      showAuthMessage("ایمیل پیدا نشد. دوباره ثبت‌نام کن.", true);
-      backFromOtp();
-      return;
-    }
-    const btn = document.getElementById('emailResendBtn');
-    if (btn) btn.disabled = true;
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-      const { error } = await client.auth.resend({ type: 'signup', email });
-      if (error) throw error;
-      showAuthMessage("کد جدید به ایمیلت ارسال شد. پوشه‌ی اسپم را هم نگاه کن.", false);
-      startEmailResendCountdown(60);
-    } catch (err) {
-      showAuthMessage(faAuthError(err), true);
-      startEmailResendCountdown(20);
-    }
-  }
-
-  // «تغییر ایمیل»: برگشت به فرم ثبت‌نام
-  function backFromOtp() {
-    clearPendingSignup();
-    tempRegistrationEmail = "";
-    clearInterval(emailResendTimer);
-    switchAuthTab('register');
-  }
-
-  // کاربر با حساب تاییدنشده وارد شده: به‌جای خطا، کد جدید بفرست و فرم کد رو نشون بده
-  async function continueUnconfirmedSignup(email) {
-    showEmailOtpForm(email);
-    showAuthMessage("حساب شما ساخته شده ولی ایمیلش هنوز تایید نشده. در حال ارسال کد جدید...", false, 'warning');
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-      const { error } = await client.auth.resend({ type: 'signup', email });
-      if (error) throw error;
-      showAuthMessage("کد جدید به ایمیلت ارسال شد. آن را وارد کن تا حسابت فعال شود.", false);
-      startEmailResendCountdown(60);
-    } catch (err) {
-      showAuthMessage(faAuthError(err), true);
-      startEmailResendCountdown(20);
-    }
-  }
-
-  // کاربر وسط تایید ایمیل از صفحه خارج شده (مثلاً برای دیدن ایمیل) و برگشته
-  function restorePendingSignup() {
-    const email = getPendingSignupEmail();
-    if (!email) return;
-    showEmailOtpForm(email);
-    showAuthMessage("کد تایید قبلاً برای " + email + " ارسال شده. اگر نرسید «ارسال مجدد کد» را بزن.", false, 'warning');
-  }
-
-  // نرمال‌سازی شماره موبایل ایران (هم‌سان با index.html و lib/phone.js سرور)
-  function toEnDigitsClient(input) {
-    return String(input ?? "")
-      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
-      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
-  }
-  function normalizeIranPhoneClient(raw) {
-    if (!raw) return null;
-    let digits = toEnDigitsClient(raw).replace(/[\s\-().\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, "");
-    digits = digits.replace(/^\+/, "");
-    digits = digits.replace(/^0098/, "98");
-    digits = digits.replace(/^0/, "98");
-    if (/^9\d{9}$/.test(digits)) digits = "98" + digits;
-    return /^989\d{9}$/.test(digits) ? digits : null;
-  }
-
-  // تابع دسترسی امن به Supabase
-  function getSupabase() {
-    return window.supabaseClient || window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
-  }
-
-  // ==================== توابع کنترل نمایش مودال ====================
-  function openAuthModal(tab = 'login') {
-    switchAuthTab(tab);
-    if (tab === 'register') restorePendingSignup();
-    const modal = document.getElementById('authModal');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-  }
-
-  function closeAuthModal() {
-    const modal = document.getElementById('authModal');
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-    hideAuthMessage();
-    document.getElementById('otpForm')?.classList.add('hidden');
-    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
-    document.getElementById('resetPasswordForm')?.classList.add('hidden');
-  }
-
-  function switchAuthTab(type) {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const otpForm = document.getElementById('otpForm');
-    const tabLoginBtn = document.getElementById('tabLoginBtn');
-    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
-
-    hideAuthMessage();
-    otpForm?.classList.add('hidden');
-    document.getElementById('forgotPasswordForm')?.classList.add('hidden');
-    document.getElementById('resetPasswordForm')?.classList.add('hidden');
-
-    const activeCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-950/40";
-    const inactiveCls = "flex-1 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 text-zinc-400 hover:text-zinc-200";
-    const subtitle = document.getElementById('authSubtitle');
-
-    if (type === 'login') {
-      loginForm?.classList.remove('hidden');
-      registerForm?.classList.add('hidden');
-      if (tabLoginBtn) tabLoginBtn.className = activeCls;
-      if (tabRegisterBtn) tabRegisterBtn.className = inactiveCls;
-      if (subtitle) subtitle.textContent = "خوش برگشتی! برای ادامه وارد حساب خود شو";
-    } else {
-      loginForm?.classList.add('hidden');
-      registerForm?.classList.remove('hidden');
-      if (tabRegisterBtn) tabRegisterBtn.className = activeCls;
-      if (tabLoginBtn) tabLoginBtn.className = inactiveCls;
-      if (subtitle) subtitle.textContent = "چند قدم تا ساخت حساب جدیدت باقی مونده";
-    }
-  }
-
-  // ==================== نمایش/مخفی‌سازی رمز عبور ====================
-  function toggleAuthPassword(inputId, btn) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const willShow = input.type === 'password';
-    input.type = willShow ? 'text' : 'password';
-    const icon = btn.querySelector('i');
-    if (icon) {
-      icon.classList.toggle('fa-eye', !willShow);
-      icon.classList.toggle('fa-eye-slash', willShow);
-    }
-  }
-
-  // ==================== مدیریت پیام‌های خطا، هشدار و موفقیت ====================
-  function showAuthMessage(msg, isError = false, type = null) {
-    const msgBox = document.getElementById('authMessage');
-    if (!msgBox) return;
-
-    const kind = type || (isError ? 'error' : 'success');
-    const styleMap = {
-      error:   { icon: 'fa-circle-exclamation',   classes: ['bg-red-500/10', 'text-red-400', 'border-red-500/30'] },
-      success: { icon: 'fa-circle-check',         classes: ['bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30'] },
-      warning: { icon: 'fa-triangle-exclamation', classes: ['bg-amber-500/10', 'text-amber-300', 'border-amber-500/30'] }
-    };
-    const cfg = styleMap[kind] || styleMap.error;
-
-    msgBox.classList.remove(
-      'hidden',
-      'bg-red-500/10', 'text-red-400', 'border-red-500/30',
-      'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30',
-      'bg-amber-500/10', 'text-amber-300', 'border-amber-500/30',
-      'authMsg-in'
-    );
-    msgBox.classList.add('border', ...cfg.classes);
-    // force re-trigger of the entrance animation
-    void msgBox.offsetWidth;
-    msgBox.classList.add('authMsg-in');
-
-    msgBox.innerHTML = '';
-    const iconEl = document.createElement('i');
-    iconEl.className = `fa-solid ${cfg.icon} mt-0.5 text-sm shrink-0`;
-    const textEl = document.createElement('span');
-    textEl.className = 'leading-5';
-    textEl.textContent = msg;
-    msgBox.appendChild(iconEl);
-    msgBox.appendChild(textEl);
-  }
-
-  function hideAuthMessage() {
-    const msgBox = document.getElementById('authMessage');
-    if (msgBox) msgBox.classList.add('hidden');
-  }
-
-  // ==================== سنجش قدرت رمز عبور ====================
-  function checkPasswordStrength(password) {
-    const bar = document.getElementById('passwordStrengthBar');
-    const text = document.getElementById('passwordStrengthText');
-    if (!bar || !text) return;
-
-    if (!password) {
-      bar.className = "h-1 rounded-full bg-zinc-700 transition-all duration-300 w-0";
-      text.innerText = "";
-      return;
-    }
-
-    let score = 0;
-    if (password.length >= 6) score += 1;
-    if (password.length >= 10) score += 1;
-    if (/[A-Z]/.test(password) || /[0-9]/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
-
-    if (score <= 1) {
-      bar.className = "h-1 rounded-full bg-red-500 transition-all duration-300 w-1/3";
-      text.innerText = "رمز عبور ضعیف است";
-      text.className = "text-[11px] mt-1 text-red-400";
-    } else if (score === 2 || score === 3) {
-      bar.className = "h-1 rounded-full bg-yellow-500 transition-all duration-300 w-2/3";
-      text.innerText = "رمز عبور متوسط است";
-      text.className = "text-[11px] mt-1 text-yellow-400";
-    } else {
-      bar.className = "h-1 rounded-full bg-emerald-500 transition-all duration-300 w-full";
-      text.innerText = "رمز عبور بسیار قوی است ✓";
-      text.className = "text-[11px] mt-1 text-emerald-400";
-    }
-  }
-
-  // ==================== تابع ورود ====================
-  async function handleLogin(e) {
-    e.preventDefault();
-    const idRaw = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const btn = document.getElementById('loginSubmitBtn');
-
-    btn.disabled = true;
-    btn.innerText = "در حال بررسی...";
-
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-
-      // شامل @ باشه ایمیله، وگرنه شماره موبایل (کاربرها با هر دو روش ثبت‌نام می‌کنن)
-      let credentials;
-      if (idRaw.includes('@')) {
-        credentials = { email: idRaw.toLowerCase(), password };
-      } else {
-        const phone = normalizeIranPhoneClient(idRaw);
-        if (!phone) throw new Error("ایمیل یا شماره موبایل وارد شده معتبر نیست.");
-        credentials = { phone, password };
-      }
-
-      const { data, error } = await client.auth.signInWithPassword(credentials);
-
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error("اطلاعات ورود اشتباه است.");
-        } else if (error.message.includes('Email not confirmed')) {
-          if (credentials.email) {
-            await continueUnconfirmedSignup(credentials.email);
-            return;
-          }
-          throw new Error("ایمیل شما هنوز تایید نشده است. ابتدا کد ارسال شده را تایید کنید.");
-        } else {
-          throw error;
-        }
-      }
-
-      showAuthMessage("با موفقیت وارد شدید!", false);
-      setTimeout(() => { location.reload(); }, 1000);
-
-    } catch (err) {
-      showAuthMessage(faAuthError(err), true);
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "ورود به حساب";
-    }
-  }
-
-  // ==================== تابع ثبت‌نام ====================
-  async function handleRegister(e) {
-    e.preventDefault();
-    
-    const fullName = document.getElementById('regFullName').value.trim();
-    const email = document.getElementById('regEmail').value.trim().toLowerCase();
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regConfirmPassword').value;
-    const btn = document.getElementById('regSubmitBtn');
-
-    if (!email.endsWith('@gmail.com')) {
-      showAuthMessage("فقط ایمیل جیمیل پذیرفته می‌شود (مثلاً name@gmail.com).", true);
-      return;
-    }
-
-    if (password.length < 6) {
-      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "در حال ارسال کد...";
-
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-
-      const { data, error } = await client.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      // اگر کاربر قبلاً ثبت‌نام و ایمیلش تایید شده باشد، Supabase به دلایل امنیتی
-      // خطا برنمی‌گرداند، ولی آرایه identities خالی برمی‌گردد. این تنها راه
-      // تشخیص «کاربر تکراری» در سمت کلاینت است.
-      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        switchAuthTab('login');
-        const loginEmailInput = document.getElementById('loginEmail');
-        if (loginEmailInput) {
-          loginEmailInput.value = email;
-          document.getElementById('loginPassword')?.focus();
-        }
-        showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن یا از «فراموشی رمز عبور» استفاده کن.", true, 'warning');
-        return;
-      }
-
-      showEmailOtpForm(email, 60);
-      showAuthMessage("کد ۶ رقمی تایید به جیمیل شما ارسال شد. اگر نرسید، پوشه‌ی اسپم را هم نگاه کن.", false);
-
-    } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('already registered')) {
-        switchAuthTab('login');
-        const loginEmailInput = document.getElementById('loginEmail');
-        if (loginEmailInput) {
-          loginEmailInput.value = email;
-          document.getElementById('loginPassword')?.focus();
-        }
-        showAuthMessage("این ایمیل قبلاً در مانهواچی ثبت‌نام شده. برای ورود، رمز عبورت را وارد کن.", true, 'warning');
-      } else {
-        showAuthMessage(faAuthError(err), true);
-      }
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "ارسال کد تایید به جیمیل";
-    }
-  }
-
-  // ==================== تابع فراموشی رمز عبور (ارسال لینک بازیابی) ====================
-  async function handleForgotPassword(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
-    const btn = document.getElementById('forgotSubmitBtn');
-
-    btn.disabled = true;
-    btn.innerText = "در حال ارسال...";
-
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-
-      const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + window.location.pathname
-      });
-
-      if (error) throw error;
-
-      showAuthMessage("لینک بازیابی رمز عبور به ایمیل شما ارسال شد. لطفاً صندوق ایمیل خود را بررسی کنید.", false);
-
-    } catch (err) {
-      showAuthMessage(err.message || "خطا در ارسال لینک بازیابی رمز عبور", true);
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "ارسال لینک بازیابی رمز عبور";
-    }
-  }
-
-  // ==================== تابع تنظیم رمز عبور جدید (بعد از کلیک روی لینک ایمیل) ====================
-  async function handleResetPassword(e) {
-    e.preventDefault();
-
-    const newPassword = document.getElementById('resetNewPassword').value;
-    const confirmNewPassword = document.getElementById('resetConfirmPassword').value;
-    const btn = document.getElementById('resetSubmitBtn');
-
-    if (newPassword.length < 6) {
-      showAuthMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.", true);
-      return;
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      showAuthMessage("رمز عبور و تکرار آن یکسان نیستند.", true);
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "در حال ثبت...";
-
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-
-      const { error } = await client.auth.updateUser({ password: newPassword });
-
-      if (error) throw error;
-
-      showAuthMessage("رمز عبور شما با موفقیت تغییر کرد. اکنون می‌توانید وارد شوید.", false);
-      setTimeout(() => {
-        switchAuthTab('login');
-      }, 1200);
-
-    } catch (err) {
-      showAuthMessage(err.message || "خطا در تغییر رمز عبور", true);
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "ثبت رمز عبور جدید";
-    }
-  }
-
-  // نمایش فرم فراموشی رمز عبور
-  function showForgotPasswordForm() {
-    hideAuthMessage();
-    document.getElementById('loginForm')?.classList.add('hidden');
-    document.getElementById('registerForm')?.classList.add('hidden');
-    document.getElementById('otpForm')?.classList.add('hidden');
-    document.getElementById('resetPasswordForm')?.classList.add('hidden');
-    document.getElementById('forgotPasswordForm')?.classList.remove('hidden');
-  }
-
-  // بررسی رویداد بازیابی رمز عبور (وقتی کاربر روی لینک ایمیل کلیک می‌کند)
-  document.addEventListener('DOMContentLoaded', () => {
-    const client = getSupabase();
-    if (client && client.auth && typeof client.auth.onAuthStateChange === 'function') {
-      client.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          if (typeof openAuthModal === 'function') openAuthModal('login');
-          document.getElementById('loginForm')?.classList.add('hidden');
-          document.getElementById('registerForm')?.classList.add('hidden');
-          document.getElementById('otpForm')?.classList.add('hidden');
-          document.getElementById('forgotPasswordForm')?.classList.add('hidden');
-          document.getElementById('resetPasswordForm')?.classList.remove('hidden');
-          showAuthMessage("لطفاً رمز عبور جدید خود را وارد کنید.", false);
-        }
-      });
-    }
-  });
-
-  // ==================== تابع تایید کد OTP ====================
-  async function handleVerifyOTP(e) {
-    e.preventDefault();
-    
-    const otpCode = toEnDigitsClient(document.getElementById('otpCode').value).replace(/\D/g, '');
-    if (otpCode.length !== 6) {
-      showAuthMessage("کد تایید باید ۶ رقم باشد.", true);
-      return;
-    }
-    const btn = document.getElementById('verifyOtpBtn');
-
-    btn.disabled = true;
-    btn.innerText = "در حال تایید...";
-
-    try {
-      const client = getSupabase();
-      if (!client) throw new Error("ارتباط با دیتابیس برقرار نشد.");
-
-      const { data, error } = await client.auth.verifyOtp({
-        email: tempRegistrationEmail || getPendingSignupEmail(),
-        token: otpCode,
-        type: 'signup'
-      });
-
-      if (error) throw error;
-
-      clearPendingSignup();
-      showAuthMessage("حساب شما با موفقیت تایید و فعال شد!", false);
-      setTimeout(() => { location.reload(); }, 1200);
-
-    } catch (err) {
-      showAuthMessage(faAuthError(err), true);
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "تایید و فعال‌سازی حساب";
-    }
-  }
-
-async function handleLogout() {
-  const client = window.supabaseClient || window.supabase;
-  await client.auth.signOut();
-  location.reload();
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('action') === 'login') {
-        if (typeof openAuthModal === 'function') {
-            openAuthModal('login');
-        }
-    }
-});
 
         function renderCommentAuthorArea() {
             const area = document.getElementById('commentAuthorArea');
@@ -2031,6 +1263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 allEpisodes = manhwa.episodes || [];
 
                 renderSimilarManhwas(data, MANHWA_SLUG, manhwa.genres || []);
+                if (!locksLoaded) await loadChapterLocks();
                 renderEpisodes();
             } catch (err) {
                 console.error("خطا در بارگذاری دیتای داینامیک:", err);
@@ -2061,16 +1294,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 a.dataset.num = ep.num;
 
                 a.className = `flex items-center gap-4 p-4 rounded-2xl episode-card bg-surface-elevated`;
-                let statusHTML = isFree 
-                    ? `<span class="text-sm font-bold text-green-500">رایگان</span>`
-                    : `<span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>`;
+                const lockAt = lockMap[ep.num] || 0;
+                const timeLocked = lockAt > Date.now();
+                let statusHTML = timeLocked
+                    ? `<span class="block text-left text-amber-400 text-xs font-medium">🔒 ${lockLabel(lockAt)}</span>`
+                    : (isFree
+                        ? `<span class="text-sm font-bold text-green-500">رایگان</span>`
+                        : `<span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>`);
 
                 const isNew = isChapterNew(ep);
                 a.innerHTML = `
                     <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
                         <img src="/manhwas/${encodeURIComponent(MANHWA_SLUG)}/chapterPictures/chapterpicture${ep.num}.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
                         <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#${ep.num}</span></div>
-                        ${(!isFree && !currentUserSubscribed) ? `<div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>` : ''}
+                        ${((!isFree && !currentUserSubscribed) || timeLocked) ? `<div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>` : ''}
                         ${isNew ? `<span class="new-badge">جدید</span>` : ''}
                     </div>
                     <div class="flex-1">
@@ -2289,7 +1526,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const name = getDisplayName(currentUser);
                 const text = messageTextArea.value.trim();
-                if (!text || text.length < 2) return alert('نظر باید حداقل ۲ کاراکتر باشد');
+                if (!text || text.length < 2) return mcToast('نظر باید حداقل ۲ کاراکتر باشد', 'error');
 
                 const submitBtn = messageForm.querySelector('button[type="submit"]');
                 submitBtn.disabled = true;
@@ -2303,7 +1540,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showSuccessModal();
                 } catch (err) {
                     console.error('خطا در ارسال نظر:', err);
-                    alert('خطایی پیش اومد، دوباره تلاش کن.');
+                    mcToast('خطایی پیش اومد، دوباره تلاش کن.', 'error');
                 } finally {
                     submitBtn.disabled = false;
                 }
@@ -2386,13 +1623,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         content: r.text
                     }));
 
+                // پاسخ ادمین ممکنه به خودِ نظر اصلی یا به یکی از ریپلای‌های کاربرها داده شده باشه؛
+                // هر دو باید داخل همین رشته (thread) نمایش داده بشن
+                const threadTargets = new Map([[msg.id, null]]);
+                userReplies.forEach(r => threadTargets.set(r.id, r));
                 const adminReplies = globalAdminReplies
-                    .filter(reply => reply.message_id === msg.id || reply.parent_message_id === msg.id)
-                    .map(r => ({
-                        ...r,
-                        is_admin: true,
-                        content: r.reply_text || r.text || r.content
-                    }));
+                    .filter(reply => threadTargets.has(reply.message_id))
+                    .map(r => {
+                        const target = threadTargets.get(r.message_id);
+                        return {
+                            ...r,
+                            is_admin: true,
+                            reply_to_name: target ? getCommentAuthorName(target) : '',
+                            content: r.reply_text || r.text || r.content
+                        };
+                    });
 
                 const allRepliesSorted = [...userReplies, ...adminReplies].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
@@ -2416,6 +1661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </div>
                                     <span class="text-[10px] text-text-muted font-mono" dir="ltr">${replyDate}</span>
                                 </div>
+                                ${reply.reply_to_name ? `<div class="text-[11px] text-text-muted pr-9 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">subdirectory_arrow_left</span>در پاسخ به ${escapeHtml(reply.reply_to_name)}</div>` : ''}
                                 <p class="text-on-surface-variant leading-relaxed text-[14px] pr-9">${escapeHtml(reply.content)}</p>
                             </div>
                         `;
@@ -2622,7 +1868,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = getDisplayName(currentUser);
             const text = textInput ? textInput.value.trim() : '';
 
-            if (!text || text.length < 2) return alert("متن پاسخ کوتاه است");
+            if (!text || text.length < 2) return mcToast("متن پاسخ کوتاه است", "error");
 
             try {
                 btn.disabled = true;
@@ -2643,7 +1889,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showSuccessModal();
             } catch (err) {
                 console.error("خطا در ارسال پاسخ:", err);
-                alert("خطایی رخ داد. لطفا دوباره تلاش کنید.");
+                mcToast("خطایی رخ داد. لطفا دوباره تلاش کنید.", "error");
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -2799,7 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 
 
-<!-- پیام دانلود اپ فعلاً غیرفعاله: <script src="/app-promo.js?v=1" defer></script> -->
-<script src="/halloween.js?v=7" defer></script>
+<script src="/mc-ui.js?v=1" defer></script>
+<script src="/app-promo.js?v=1" defer></script>
 </body>
 </html>

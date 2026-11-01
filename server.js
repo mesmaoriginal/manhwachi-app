@@ -9,7 +9,14 @@ const express = require("express");
 const helmet = require('helmet');
 const compression = require("compression");
 const path = require("path");
+const crypto = require("crypto");
+const deviceLimit = require("./lib/deviceLimit");
 const app = express();
+
+// شبکه‌ی ایمنی: یک promise رد‌شده‌ی فراموش‌شده (مثلاً در یک هندلر async) نباید کل پروسه را (Node >= 15) بکشد
+process.on("unhandledRejection", (reason) => {
+  console.error("[unhandledRejection]", reason && reason.stack ? reason.stack : reason);
+});
 
 // ⚠️ نکته‌ی حیاتی، حتماً قبل از production چک کنید:
 // اگه سرور Node پشت یک reverse proxy (مثلاً Nginx) باشه - که رایج‌ترین
@@ -114,6 +121,11 @@ app.use(
     hidePoweredBy: true,
   })
 );
+// دسترسی به دوربین/میکروفون/موقعیت مکانی برای این سایت بسته است (کاهش خسارت در صورت XSS)
+app.use((req, res, next) => {
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+  next();
+});
 // فشرده‌سازی gzip/brotli برای همه‌ی جواب‌ها (JSON، HTML، فایل‌های استاتیک).
 // قبلاً وجود نداشت - یعنی همه‌چیز بدون فشرده‌سازی رد و بدل می‌شد.
 app.use(compression());
@@ -135,6 +147,10 @@ if (process.env.LOCAL_DB === "1") {
   process.env.SUPABASE_URL = localdb.LOCAL_PREFIX; // http://supabase.local (آدرس مجازی؛ شبکه استفاده نمی‌شود)
   localdb.init();
   localdb.installFetch();
+  // 🔐 محدودیت «هر حساب حداکثر ۲ دستگاه» (lib/deviceLimit.js). باید قبل از localdb.mount باشد تا
+  // پاسخ‌های ورود/رفرش توکن را ببیند. کلید اضطراری: متغیر DEVICE_LIMIT=0
+  app.use("/auth/v1", (req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
+  deviceLimit.mount(app, express);
   localdb.mount(app, express);
 }
 
@@ -180,7 +196,67 @@ app.set("views", path.join(__dirname, "views"));
 // maxAge اضافه شد تا مرورگر فایل‌های استاتیک (CSS/JS/فونت/عکس) رو کش کنه
 // و مجبور نباشه هر بار دوباره از سرور دانلودشون کنه.
 app.use("/.well-known", express.static("public/.well-known", { dotfiles: "allow" }));
-app.use(express.static("public", { maxAge: "7d", etag: true }));
+// ⚡ کش هوشمند + نسخه‌دهی خودکار (جایگزین maxAge: "7d" سراسری)
+// قبلاً همه‌چیز (حتی HTML) ۷ روز کش می‌شد؛ نتیجه: بعد از هر آپدیت، کاربر HTML قدیمی را با CSS/JS جدید
+// (یا برعکس) می‌دید و صفحه‌ها ناهماهنگ/خراب بودند. حالا:
+//  • HTML همیشه با ETag دوباره‌چک می‌شود (۳۰۴ سریع) و در آن ?v=... هر css/js خودکار از زمان
+//    آخرین تغییر خود فایل ساخته می‌شود (دیگر لازم نیست ?v=14 را دستی عوض کنید).
+//  • css/js دارای ?v= یک سال کش می‌شوند (immutable)؛ بدون ?v= همیشه چک می‌شوند.
+//  • فونت‌ها یک سال، تصاویر ۷ روز.
+const fs = require("fs");
+const PUBLIC_DIR = path.resolve("public");
+const LOCAL_ASSET_RE = /\b(href|src)=(["'])(\/?[A-Za-z0-9_\-./]+\.(?:css|js))(?:\?v=[^"']*)?\2/g;
+const htmlCache = new Map();
+function versionedHtml(file) {
+  const hit = htmlCache.get(file);
+  if (hit && Date.now() - hit.at < 10000) return hit.body;
+  const html = fs.readFileSync(file, "utf8").replace(LOCAL_ASSET_RE, (m, attr, q, url) => {
+    if (url.startsWith("//")) return m;
+    try {
+      const st = fs.statSync(path.join(PUBLIC_DIR, url.replace(/^\//, "")));
+      return `${attr}=${q}${url}?v=${Math.floor(st.mtimeMs / 1000).toString(36)}${q}`;
+    } catch (e) {
+      return m;
+    }
+  });
+  htmlCache.set(file, { at: Date.now(), body: html });
+  return html;
+}
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
+  const p = req.path === "/" ? "/index.html" : req.path;
+  if (!/^\/[A-Za-z0-9_-]+\.html$/.test(p)) return next();
+  try {
+    const file = path.join(PUBLIC_DIR, p);
+    if (!fs.existsSync(file)) return next();
+    res.set({ "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
+    return res.send(versionedHtml(file));
+  } catch (e) {
+    return next();
+  }
+});
+app.use((req, res, next) => {
+  if (req.query && req.query.v && /\.(?:css|js)$/i.test(req.path)) {
+    res.set("Cache-Control", "public, max-age=31536000, immutable");
+  }
+  next();
+});
+app.use(
+  express.static("public", {
+    etag: true,
+    setHeaders(res, filePath) {
+      if (res.getHeader("Cache-Control") && /immutable/.test(String(res.getHeader("Cache-Control")))) return;
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === ".html" || ext === ".css" || ext === ".js" || ext === ".json") {
+        res.setHeader("Cache-Control", "no-cache");
+      } else if ([".woff2", ".woff", ".ttf", ".otf"].includes(ext)) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      } else {
+        res.setHeader("Cache-Control", "public, max-age=604800");
+      }
+    },
+  })
+);
 
 // ---------- بخش ۱٫۵: تصاویر عمومی (کاور مانهوا / تامبنیل چپتر) از S3 ----------
 // این عکس‌ها (کاور اصلی هر مانهوا + تصویر بندانگشتی هر چپتر تو
@@ -210,7 +286,7 @@ const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 const PUBLIC_MANHWA_PATH_RE =
   /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif|svg)$/i;
 
-const { getCachedImage } = require("./lib/imageProxyCache");
+const { getCachedImage, UpstreamBusyError } = require("./lib/imageProxyCache");
 
 app.get("/manhwas/*", async (req, res) => {
   // req.params[0] یعنی همه‌چیز بعد از "/manhwas/" (مثلاً "<slug>/cover.jpg"
@@ -223,7 +299,8 @@ app.get("/manhwas/*", async (req, res) => {
   try {
     // از کش دیسک (imageProxyCache) استفاده می‌کنیم تا هر بازدیدکننده‌ی جدید
     // یک GetObject مستقیم به پارس‌پک نزنه (سقف ۳۰۰ در دقیقه برای کل باکت).
-    const { buffer, contentType } = await getCachedImage(key);
+    // ns: "pub" → کش دیسک جدا از تصاویر خصوصی چپتر (جلوگیری از برخورد نام فایل کش: manhwas/a/CH1_x.jpg با manhwas/a/CH1/x.jpg)
+    const { buffer, contentType } = await getCachedImage(key, { ns: "pub" });
     res.set("Content-Type", contentType);
     // این تصاویر به‌ندرت عوض می‌شن (فقط وقتی از پنل ادمین آپلود جدید
     // می‌گیرن)، پس کش طولانی‌مدت مثل بقیه‌ی فایل‌های استاتیک منطقیه.
@@ -232,6 +309,10 @@ app.get("/manhwas/*", async (req, res) => {
   } catch (err) {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
+    }
+    if (err instanceof UpstreamBusyError) {
+      res.setHeader("Retry-After", String(err.retryAfterSeconds || 20));
+      return res.status(503).send("سرور موقتاً شلوغ است؛ کمی بعد دوباره تلاش کنید");
     }
     console.error("خطا در گرفتن تصویر از S3:", err.message);
     return res.status(500).send("خطای داخلی سرور");
@@ -277,6 +358,10 @@ app.get("/chapter-image/:key(*)", async (req, res) => {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
     }
+    if (err instanceof UpstreamBusyError) {
+      res.setHeader("Retry-After", String(err.retryAfterSeconds || 20));
+      return res.status(503).send("سرور موقتاً شلوغ است؛ کمی بعد دوباره تلاش کنید");
+    }
     console.error("خطا در گرفتن تصویر از کش/پارس‌پک:", err.message);
     return res.status(500).send("خطای داخلی سرور");
   }
@@ -293,7 +378,7 @@ const { getData, getRawJson } = require("./lib/dataStore");
 function renderMangaPage(req, res, slugRaw) {
   const slug = (slugRaw || "").toString().trim();
   const data = getData();
-  const manhwa = data[slug] || null;
+  const manhwa = Object.prototype.hasOwnProperty.call(data, slug) ? data[slug] || null : null; // جلوگیری از slug هایی مثل constructor / __proto__
 
   function stripTags(str) {
     return (str || "").replace(/<[^>]*>/g, "");
@@ -354,6 +439,7 @@ function renderMangaPage(req, res, slugRaw) {
     };
   }
 
+  if (!manhwa) res.status(404); // صفحه‌ی «پیدا نشد» نباید با 200 (soft-404) سرو شود
   res.render("manga", vars);
 }
 
@@ -382,6 +468,8 @@ const PURCHASE_CALLBACK_URL =
 // قیمت/مدت/وضعیت پلن‌ها دیگه ثابت نیست: از lib/vipConfig.js (فایل data/vip-config.json) خونده می‌شه
 // و از پنل /vip-admin قابل تغییره. مبلغ زیبال (ریال) همیشه همین‌جا سمت سرور حساب می‌شه، نه از کلاینت.
 const vipConfig = require("./lib/vipConfig");
+const accessPolicy = require("./lib/accessPolicy");
+const chapterTimes = require("./lib/chapterTimes");
 
 function supabaseAdminHeaders(extra = {}) {
   return {
@@ -392,6 +480,8 @@ function supabaseAdminHeaders(extra = {}) {
 }
 
 async function getUserFromAccessToken(accessToken) {
+  // دستگاهی که از حساب خارج شده، همان لحظه رد می‌شود (نه بعد از انقضای توکن)
+  if (deviceLimit.isRevoked(accessToken)) return null;
   const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
@@ -428,6 +518,11 @@ const AUTH_CACHE_MAX_ENTRIES = 5000;
 const authCache = new Map(); // accessToken -> { user, isVip, expiresAt }
 
 async function getAuthContext(accessToken) {
+  // قبل از کش: خروج یک دستگاه نباید تا ۹۰ ثانیه دیگر کار کند
+  if (deviceLimit.isRevoked(accessToken)) {
+    authCache.delete(accessToken);
+    return null;
+  }
   const cached = authCache.get(accessToken);
   if (cached && cached.expiresAt > Date.now()) {
     return cached;
@@ -437,24 +532,27 @@ async function getAuthContext(accessToken) {
   if (!user || !user.id) return null;
 
   const profRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=is_vip,vip_until`,
+    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=is_vip,vip_until,vip_tier,vip_plan_key`,
     { headers: supabaseAdminHeaders(), signal: AbortSignal.timeout(10_000) }
   );
   // اگه خواندن پروفایل خطا داد، نباید «غیر VIP» رو ۹۰ ثانیه کش کنیم (کاربر VIP
   // قفل می‌شد). throw می‌کنیم تا هیچ چیزی کش نشه.
   if (!profRes.ok) throw new Error(`profiles ${profRes.status}`);
   const profRows = await profRes.json();
-  // فقط is_vip کافی نیست: هیچ‌جا (سمت سرور) is_vip بعد از انقضا false نمی‌شه، و
-  // فرانت هم جدا vip_until رو چک می‌کنه. پس اشتراک منقضی‌شده باید اینجا هم رد بشه.
   const prof = Array.isArray(profRows) ? profRows[0] : null;
-  const vipUntilMs = prof?.vip_until ? new Date(prof.vip_until).getTime() : null;
-  const isVip = !!prof?.is_vip && (vipUntilMs === null || (Number.isFinite(vipUntilMs) && vipUntilMs > Date.now()));
+  // وضعیت اشتراک (فعال بودن + استاندارد/پرمیوم + قفل پلن) فقط در lib/accessPolicy.js تعریف شده.
+  // اشتراک منقضی‌شده همان‌جا رد می‌شود (is_vip بعد از انقضا false نمی‌شود).
+  const sub = accessPolicy.resolveSubscription(prof, vipConfig.planLookup);
+  const isVip = sub.active;
+  const vipUntilMs = sub.until;
 
   const tokenExp = jwtExpiryMs(accessToken);
   const result = {
     user,
     isVip,
-    // کش هیچ‌وقت از عمر توکن یا از لحظه‌ی انقضای اشتراک بیشتر نمی‌شه
+    isPremium: sub.isPremium,
+    sub,
+    // کش هیچ‌وقت از عمر توکن یا از لحظه‌ی انقضای اشتراک بیشتر نمی‌شود
     expiresAt: Math.min(Date.now() + AUTH_CACHE_TTL_MS, tokenExp ?? Infinity, isVip && vipUntilMs ? vipUntilMs : Infinity),
   };
   authCache.set(accessToken, result);
@@ -499,16 +597,8 @@ app.use(
     adminHeaders: supabaseAdminHeaders,
   })
 );
-// ---------- چرخونه‌ی هالووین (یک چرخش برای هر کاربر؛ جایزه سمت سرور) ----------
-const halloween = require("./lib/halloweenWheel")({
-  getAuthContext,
-  supabaseUrl: SUPABASE_URL,
-  adminHeaders: supabaseAdminHeaders,
-  invalidateAuthCache: invalidateAuthCacheForUser,
-  rateLimit: checkAndRecordPurchaseRequest,
-  getPlan: (k) => vipConfig.getPlan(k),
-});
-app.use("/api/halloween", halloween.router);
+// پشتیبانی/تیکت (همه‌ی کاربران) + درخواست مانهوا (فقط پرمیوم)
+app.use("/api", require("./routes/userServiceRouter")({ getAuthContext, supabaseUrl: SUPABASE_URL, adminHeaders: supabaseAdminHeaders }));
 app.use("/api/team", require("./routes/teamRouter")({ getAuthContext, supabaseUrl: SUPABASE_URL, adminHeaders: supabaseAdminHeaders }));
 // کپی میانگین/تعداد رأی (از ۵) داخل data.json؛ نیاز به ratings_sync.sql و متغیر DATA_JSON_PATH
 if (process.env.DATA_JSON_PATH) {
@@ -999,6 +1089,8 @@ app.post("/api/password/forgot/reset", async (req, res) => {
     }
 
     resetSessions.remove((req.body || {}).sessionId); // یک‌بار مصرف
+    // بعد از تغییر رمز همه‌ی دستگاه‌ها خارج می‌شوند (اگر حساب لو رفته بود، نشست مهاجم هم قطع شود)
+    try { deviceLimit.revokeAllForUser(session.userId, "password_reset"); } catch (e) { console.error("[deviceLimit] reset:", e.message); }
     return res.json({ ok: true });
   } catch (err) {
     console.error("[password/reset] خطای غیرمنتظره:", err);
@@ -1067,18 +1159,18 @@ app.post("/purchase/request", async (req, res) => {
     );
     if (!userLimit.allowed) return purchaseRateLimited(res, userLimit);
 
-    const hw = halloween.quote(user.id, plan); // قیمت بعد از کد تخفیف هالووین (اگه داشته باشه)
     const orderId = require("crypto").randomUUID();
     const zibalRes = await fetch("https://gateway.zibal.ir/v1/request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         merchant: ZIBAL_MERCHANT,
-        amount: hw.amount,
+        amount: plan.amount,
         callbackUrl: PURCHASE_CALLBACK_URL,
-        description: `اشتراک VIP مانهواچی - پلن ${planKey}`,
+        description: `اشتراک ${plan.title || planKey} مانهواچی`,
         orderId,
       }),
+      signal: AbortSignal.timeout(15_000),
     });
     const zibalData = await zibalRes.json();
 
@@ -1096,17 +1188,17 @@ app.post("/purchase/request", async (req, res) => {
         {
           user_id: user.id,
           plan_key: planKey,
-          amount: hw.amount,
+          amount: plan.amount,
           status: "pending",
           track_id: String(zibalData.trackId),
         },
       ]),
     });
     if (!insertRes.ok) {
-      throw new Error("ثبت تراکنش در پایگاه داده ناموفق بود: " + (await insertRes.text()));
+      console.error("[purchase/request] insert payment failed:", insertRes.status, await insertRes.text().catch(() => ""));
+      throw new Error("ثبت تراکنش در پایگاه داده ناموفق بود.");
     }
 
-    if (hw.discounted) halloween.reserve(user.id, String(zibalData.trackId));
     res.json({ trackId: zibalData.trackId });
   } catch (err) {
     res.status(400).json({ message: err.message || "خطا در ایجاد درگاه پرداخت." });
@@ -1139,6 +1231,7 @@ async function verifyAndCreditPayment(trackId) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ merchant: ZIBAL_MERCHANT, trackId }),
+      signal: AbortSignal.timeout(15_000),
     });
     const zibalData = await zibalRes.json();
 
@@ -1163,7 +1256,7 @@ async function verifyAndCreditPayment(trackId) {
     // می‌شه - این کوئری در سطح دیتابیس روی همون ردیف lock می‌گیره، پس
     // فقط یکی از دو ریکوئست هم‌زمان می‌تونه واقعاً match/آپدیت کنه.
     const claimRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=in.(pending,failed)&select=*`,
+      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=eq.pending&select=*`,
       {
         method: "PATCH",
         headers: supabaseAdminHeaders({
@@ -1174,7 +1267,8 @@ async function verifyAndCreditPayment(trackId) {
       }
     );
     if (!claimRes.ok) {
-      throw new Error("خطا در قفل کردن تراکنش برای پردازش: " + (await claimRes.text()));
+      console.error("[verifyAndCreditPayment] claim failed:", claimRes.status, await claimRes.text().catch(() => ""));
+      throw new Error("خطا در قفل کردن تراکنش برای پردازش.");
     }
     const claimedRows = await claimRes.json();
     let paymentRecord = claimedRows[0];
@@ -1208,7 +1302,7 @@ async function verifyAndCreditPayment(trackId) {
       if (!duration) throw new Error("پلن ثبت‌شده برای این تراکنش نامعتبر است.");
 
       const profRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}&select=vip_until`,
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${paymentRecord.user_id}&select=is_vip,vip_until,vip_tier,vip_plan_key`,
         { headers: supabaseAdminHeaders() }
       );
       const profRows = await profRes.json();
@@ -1218,6 +1312,9 @@ async function verifyAndCreditPayment(trackId) {
       if (profile?.vip_until && new Date(profile.vip_until) > new Date()) {
         currentVipDate = new Date(profile.vip_until);
       }
+      // نوع/پلن ذخیره‌شده: پلن هم‌رتبه یا بالاتر جایگزین می‌شود؛ پلن پایین‌تر فقط زمان اضافه می‌کند (accessPolicy.stackedPlan)
+      const currentSub = accessPolicy.resolveSubscription(profile, vipConfig.planLookup);
+      const stacked = accessPolicy.stackedPlan(currentSub, duration);
       if (duration.days) currentVipDate.setDate(currentVipDate.getDate() + duration.days);
       if (duration.months) currentVipDate.setMonth(currentVipDate.getMonth() + duration.months);
 
@@ -1244,6 +1341,8 @@ async function verifyAndCreditPayment(trackId) {
           body: JSON.stringify({
             is_vip: true,
             vip_until: currentVipDate.toISOString(),
+            vip_tier: stacked.tier,
+            vip_plan_key: stacked.planKey,
           }),
         }
       );
@@ -1267,14 +1366,14 @@ async function verifyAndCreditPayment(trackId) {
               id: paymentRecord.user_id,
               is_vip: true,
               vip_until: currentVipDate.toISOString(),
+              vip_tier: stacked.tier,
+              vip_plan_key: stacked.planKey,
             },
           ]),
         });
         if (!upsertRes.ok) {
-          throw new Error(
-            "پروفایل کاربر برای اعمال VIP پیدا نشد و ساخت (upsert) آن هم ناموفق بود: " +
-              (await upsertRes.text())
-          );
+          console.error("[verifyAndCreditPayment] profile upsert failed:", upsertRes.status, await upsertRes.text().catch(() => ""));
+          throw new Error("پروفایل کاربر برای اعمال VIP پیدا نشد و ساخت (upsert) آن هم ناموفق بود.");
         }
         console.warn(
           `[VIP] پروفایل از پیش موجود برای userId=${paymentRecord.user_id} پیدا نشد؛ با upsert ساخته شد. این احتمالاً یعنی جایی در فرآیند signup پروفایل ساخته نمی‌شه - ارزش بررسی داره.`
@@ -1291,7 +1390,6 @@ async function verifyAndCreditPayment(trackId) {
       // درخواست بعدیِ چپتر قفل، بدون صبر برای انقضای AUTH_CACHE_TTL_MS،
       // وضعیت تازه رو ببینه.
       invalidateAuthCacheForUser(paymentRecord.user_id);
-      halloween.onPaid(trackId); // کد تخفیف هالووین فقط بعد از پرداخت موفق مصرف می‌شود
 
       return { httpStatus: 200, body: { status: 100, message: "اشتراک VIP با موفقیت فعال شد." } };
     } catch (creditErr) {
@@ -1361,8 +1459,6 @@ const RECONCILE_INTERVAL_MS = 5 * 60 * 1000; // هر ۵ دقیقه
 const RECONCILE_MIN_AGE_MS = 3 * 60 * 1000; // حداقل ۳ دقیقه از ساخته‌شدنش گذشته باشه
 const RECONCILE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000; // حداکثر تا ۳ روز قبل
 
-const failedRetry = new Map(); // trackId -> تعداد دفعات بازبینی (در حافظه)
-
 async function reconcilePendingPayments() {
   try {
     const now = Date.now();
@@ -1380,32 +1476,6 @@ async function reconcilePendingPayments() {
       return;
     }
     const pendingRows = await pendingRes.json();
-
-    // 🛠 رفع باگ «پرداخت کردم ولی اشتراک فعال نشد»: اگر کاربر بیشتر از ۳ دقیقه
-    // در صفحه‌ی بانک می‌ماند، reconciler جواب «پرداخت نشده» می‌گرفت و رکورد را
-    // برای همیشه failed می‌کرد، حتی اگر کاربر بعداً پرداخت می‌کرد. حالا رکوردهای
-    // failed در ۲۴ ساعت اخیر هم چند بار (حدود ۱۰ دقیقه، ۳۰ دقیقه، ۲ ساعت، ۱۲ ساعت
-    // بعد از ساخت) از زیبال دوباره استعلام می‌شوند. اگر واقعاً پرداخت شده باشد VIP فعال می‌شود.
-    try {
-      const failedFrom = new Date(now - 24 * 60 * 60 * 1000).toISOString();
-      const failedTo = new Date(now - 10 * 60 * 1000).toISOString();
-      const fRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/payments?status=eq.failed&created_at=gte.${encodeURIComponent(failedFrom)}&created_at=lte.${encodeURIComponent(failedTo)}&select=track_id,created_at`,
-        { headers: supabaseAdminHeaders() }
-      );
-      if (fRes.ok) {
-        const SCHEDULE_MS = [10, 30, 120, 720].map((m) => m * 60 * 1000);
-        for (const row of await fRes.json()) {
-          const st = failedRetry.get(row.track_id) || { n: 0 };
-          if (st.n >= SCHEDULE_MS.length) continue;
-          if (now - new Date(row.created_at).getTime() < SCHEDULE_MS[st.n]) continue;
-          failedRetry.set(row.track_id, { n: st.n + 1 });
-          pendingRows.push({ track_id: row.track_id });
-        }
-      }
-    } catch (e) {
-      console.error("reconcilePendingPayments: خطا در بازبینی failedها", e);
-    }
     if (!pendingRows.length) return;
 
     console.log(`reconcilePendingPayments: بررسی ${pendingRows.length} پرداخت pending رهاشده...`);
@@ -1435,7 +1505,9 @@ const RELAY_SECRET = process.env.RELAY_SECRET;
 
 function checkSecret(req, res, next) {
   const provided = req.headers["x-relay-secret"];
-  if (!RELAY_SECRET || provided !== RELAY_SECRET) {
+  const a = Buffer.from(String(provided || ""));
+  const b = Buffer.from(String(RELAY_SECRET || ""));
+  if (!RELAY_SECRET || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
     return res.status(401).json({ error: "دسترسی غیرمجاز به رله" });
   }
   next();
@@ -1499,7 +1571,6 @@ const { checkAndRecordChapterRequest, checkAndRecordGuestChapterRequest } = requ
 //
 // از cookie-parser استفاده نکردیم تا یه وابستگی جدید اضافه نشه - پارس
 // کردن هدر Cookie برای فقط یک کلید، چند خط ساده‌ست.
-const crypto = require("crypto");
 
 const GUEST_COOKIE_NAME = "mc_gid";
 const GUEST_COOKIE_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000; // ۱۸۰ روز
@@ -1597,43 +1668,92 @@ function findEpisode(slug, chapterNum) {
   return manhwa.episodes.find((ep) => Number(ep.num) === numTarget) || null;
 }
 
+// ---------- بخش ۵٫۵: دانلود امن آفلاین (lib/offlineVault.js) ----------
+// صفحه‌ها روی سرور با ایمیل/شماره‌ی خودِ کاربر واترمارک و با AES-256-GCM رمز می‌شوند؛ فایل خام هرگز به کاربر نمی‌رسد.
+// نیاز: متغیر OFFLINE_SECRET (حداقل ۳۲ نویسه) و پکیج sharp. خاموش‌کردن اضطراری: OFFLINE_ENABLED=0
+require("./lib/offlineVault").mount(app, {
+  getAuthContext,
+  buildSignedUrls,
+  findEpisode,
+  getCachedImage,
+});
+
 app.post("/api/get-chapter-images", async (req, res) => {
   try {
     let { slug, chapterNum } = req.body || {};
-if (chapterNum !== undefined && chapterNum !== null) {
-  chapterNum = parseInt(chapterNum, 10);
-}
+    if (chapterNum !== undefined && chapterNum !== null) {
+      chapterNum = parseInt(chapterNum, 10);
+    }
     // نکته: چون چپتر شماره 0 هم معتبره، نباید با !chapterNum چک بشه
     if (!slug || chapterNum === undefined || chapterNum === null || chapterNum === "") {
       return res.status(400).json({ error: "پارامترهای ناقص" });
     }
 
-    // ۱. چک وضعیت چپتر (رایگان یا قفل) از کش data.json
+    // ۱. وضعیت چپتر (رایگان/اشتراکی) و زمان انتشارش
     const episode = findEpisode(slug, chapterNum);
-
     if (!episode) {
       console.warn(`چپتر پیدا نشد برای slug=${slug} num=${chapterNum}`);
       return res.status(404).json({ error: "چپتر پیدا نشد" });
     }
+    const now = Date.now();
+    const releasedAtMs = chapterTimes.getReleaseMs(slug, episode);
 
-    // ۲. اگه رایگانه، بدون چک کاربر، URLها رو بده - ولی همچنان از نظر IP
-    // محدود می‌کنیم، وگرنه چپترهای رایگان بی‌هیچ محدودیتی قابل اسکرپ می‌مونن.
-    if (episode.free) {
+    // ۲. قانون دسترسی (lib/accessPolicy.js). چپتر رایگانِ بیش از ۲۴ ساعت‌گذشته برای همه بازه و
+    // نیازی به احراز هویت ندارد؛ در بقیه‌ی حالت‌ها باید اشتراک کاربر را بدانیم.
+    const guestView = accessPolicy.decideChapterAccess({
+      episode, releasedAtMs, sub: accessPolicy.NO_SUB, loggedIn: false, now,
+    });
+    const needAuth = !(episode.free && guestView.allowed);
+
+    const authHeader = req.headers.authorization || "";
+    const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    let authContext = null;
+    if (needAuth && accessToken) {
+      try {
+        authContext = await getAuthContext(accessToken);
+      } catch (e) {
+        console.error("[chapter] بررسی اشتراک ناموفق:", e.message);
+        return res.status(503).json({ error: "بررسی اشتراک موقتاً ممکن نیست؛ چند لحظه بعد دوباره امتحان کنید.", code: "AUTH_TEMP" });
+      }
+      if (!authContext && !episode.free) {
+        return res.status(401).json({ error: "نشست شما نامعتبر است، دوباره وارد شوید", code: "AUTH_REQUIRED" });
+      }
+    }
+    const sub = authContext ? authContext.sub : accessPolicy.NO_SUB;
+
+    const decision = needAuth
+      ? accessPolicy.decideChapterAccess({ episode, releasedAtMs, sub, loggedIn: !!authContext, now })
+      : { allowed: true };
+    if (!decision.allowed) {
+      const body = { error: decision.error, code: decision.code };
+      if (decision.unlocksAt) {
+        body.unlocksAt = new Date(decision.unlocksAt).toISOString();
+        body.remainingSeconds = Math.max(1, Math.ceil((decision.unlocksAt - now) / 1000));
+      }
+      return res.status(decision.status).json(body);
+    }
+
+    // ۳. محدودیت نرخ (ضد اسکرپ): کاربر مشترک با userId؛ بقیه (مهمان/بدون اشتراک) با guestId/IP.
+    if (authContext && sub.active) {
+      const rl = await checkAndRecordChapterRequest(`user:${authContext.user.id}`);
+      if (!rl.allowed) {
+        res.setHeader("Retry-After", String(rl.retryAfterSeconds));
+        return res.status(429).json({
+          error:
+            rl.reason === "burst"
+              ? "تعداد درخواست‌های شما در این دقیقه زیاده. کمی صبر کنید."
+              : "شما به سقف مجاز خواندن چپتر در این ساعت رسیدید.",
+          retryAfterSeconds: rl.retryAfterSeconds,
+          code: "RATE_LIMITED",
+        });
+      }
+    } else {
       const { guestId, isNew } = getOrSetGuestId(req, res);
       const rl = await checkAndRecordGuestChapterRequest(guestId, req.ip, isNew);
       if (!rl.allowed) {
-        // لاگ تشخیصی: نشون می‌ده 429 از سقف کدوم سطل (guest یا ip) اومده و
-        // آیا req.ip واقعاً IP کاربره (ips / xff رو با هم مقایسه کن). اگه
-        // ip همیشه 127.0.0.1 یا IP یک CDN بود، trust proxy/Nginx غلطه.
         console.warn("[RL-429]", {
-          bucket: rl.bucket,
-          reason: rl.reason,
-          ip: req.ip,
-          ips: req.ips,
-          xff: req.headers["x-forwarded-for"],
-          ua: (req.headers["user-agent"] || "").slice(0, 60),
-          slug,
-          chapterNum,
+          bucket: rl.bucket, reason: rl.reason, ip: req.ip, ips: req.ips,
+          xff: req.headers["x-forwarded-for"], ua: (req.headers["user-agent"] || "").slice(0, 60), slug, chapterNum,
         });
         res.setHeader("Retry-After", String(rl.retryAfterSeconds));
         return res.status(429).json({
@@ -1644,54 +1764,9 @@ if (chapterNum !== undefined && chapterNum !== null) {
           retryAfterSeconds: rl.retryAfterSeconds,
         });
       }
-
-      const urls = await buildSignedUrls(slug, chapterNum, episode.images);
-      if (urls.length === 0) {
-        return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
-      }
-      return res.json({ urls });
     }
 
-    // ۳. چپتر VIP است -> باید کاربر لاگین و مشترک باشه
-    const authHeader = req.headers.authorization || "";
-    const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    if (!accessToken) {
-      return res
-        .status(401)
-        .json({ error: "برای این قسمت باید وارد حساب شوید", code: "AUTH_REQUIRED" });
-    }
-
-    const authContext = await getAuthContext(accessToken);
-    if (!authContext) {
-      return res
-        .status(401)
-        .json({ error: "نشست شما نامعتبر است، دوباره وارد شوید", code: "AUTH_REQUIRED" });
-    }
-
-    if (!authContext.isVip) {
-      return res
-        .status(403)
-        .json({ error: "این قسمت مخصوص کاربران VIP است", code: "VIP_REQUIRED" });
-    }
-
-    // ۳.۵ اینجاست که همون سناریوی نگران‌کننده رو می‌گیریم: یک اکانت VIP که
-    // اسکریپتی/بات مستقیم به همین endpoint می‌زنه. کلید rate limit روی
-    // userId ثابته - چون این اکانته که رفتار غیرعادی داره، نه IPش (که ممکنه
-    // پشت VPN عوض بشه).
-    const rl = await checkAndRecordChapterRequest(`user:${authContext.user.id}`);
-    if (!rl.allowed) {
-      res.setHeader("Retry-After", String(rl.retryAfterSeconds));
-      return res.status(429).json({
-        error:
-          rl.reason === "burst"
-            ? "تعداد درخواست‌های شما در این دقیقه زیاده. کمی صبر کنید."
-            : "شما به سقف مجاز خواندن چپتر در این ساعت رسیدید.",
-        retryAfterSeconds: rl.retryAfterSeconds,
-        code: "RATE_LIMITED",
-      });
-    }
-
-    // ۴. کاربر مجازه -> URLهای امضاشده رو بده
+    // ۴. مجاز است → URLهای امضاشده
     const urls = await buildSignedUrls(slug, chapterNum, episode.images);
     if (urls.length === 0) {
       return res.status(404).json({ error: "تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است." });
@@ -1703,16 +1778,67 @@ if (chapterNum !== undefined && chapterNum !== null) {
   }
 });
 
+// ---------- وضعیت دسترسی کاربر (برای نمایش درست قفل/دکمه‌ها در سایت و اپ) ----------
+// توکن اختیاری است؛ بدون توکن = مهمان. تصمیم نهایی همیشه سمت سرور در /api/get-chapter-images گرفته می‌شود.
+async function optionalAuth(req) {
+  const h = req.headers.authorization || "";
+  const t = h.startsWith("Bearer ") ? h.slice(7) : null;
+  if (!t) return null;
+  try { return await getAuthContext(t); } catch { return undefined; } // undefined = خطای موقت
+}
+
+app.get("/api/access/me", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const ctx = await optionalAuth(req);
+  if (ctx === undefined) return res.status(503).json({ error: "موقتاً در دسترس نیست" });
+  res.json({
+    loggedIn: !!ctx,
+    ...accessPolicy.publicSub(ctx ? ctx.sub : accessPolicy.NO_SUB),
+    freeChapterLockHours: accessPolicy.FREE_CHAPTER_LOCK_HOURS,
+    now: new Date().toISOString(),
+  });
+});
+
+// برای هر چپتر مانهوا: چه زمانی برای «همین کاربر» باز می‌شود (فقط چپترهایی که هنوز قفل‌اند برمی‌گردند)
+app.get("/api/access/chapters/:slug", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const ctx = await optionalAuth(req);
+  if (ctx === undefined) return res.status(503).json({ error: "موقتاً در دسترس نیست" });
+  const sub = ctx ? ctx.sub : accessPolicy.NO_SUB;
+  const _data = getData();
+  const manhwa = Object.prototype.hasOwnProperty.call(_data, req.params.slug) ? _data[req.params.slug] : null;
+  if (!manhwa || !Array.isArray(manhwa.episodes)) return res.status(404).json({ error: "مانهوا پیدا نشد" });
+  const now = Date.now();
+  const locked = [];
+  for (const ep of manhwa.episodes) {
+    const t = accessPolicy.unlockTimeFor({ episode: ep, releasedAtMs: chapterTimes.getReleaseMs(req.params.slug, ep), sub, now });
+    if (t) locked.push({ num: ep.num, unlocksAt: new Date(t).toISOString() });
+  }
+  res.json({ now: new Date(now).toISOString(), tier: sub.tier, active: sub.active, locked });
+});
+
 // ---------- دادن data.json به کلاینت (سمت مرورگر) به صورت امن ----------
 // چون data.json بیرون از پوشه‌ی public قرار داره، مرورگر مستقیم بهش دسترسی نداره
 // پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه.
 // حالا این روت هم از همون کش مشترک dataStore استفاده می‌کنه، نه یک کش جدا.
 app.get("/data/data.json", (req, res) => {
+  // ۶۰ ثانیه کش + نمایش نسخه‌ی قبلی هنگام به‌روزرسانی در پس‌زمینه (سرعت بیشتر، فشار کمتر روی سرور)
+  res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=600");
   res.type("application/json").send(getRawJson());
 });
 
 app.get("/health", (req, res) => {
   res.json({ ok: true });
+});
+
+// هندلر خطای نهایی: بدون این، Express در حالت غیر-production استک‌تریس را به کلاینت می‌فرستد
+// (مثلاً خطای JSON نامعتبر / بدنه‌ی بزرگ).
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status = Number(err && (err.status || err.statusCode));
+  const code = status >= 400 && status < 500 ? status : 500;
+  if (code === 500) console.error("[express]", err && err.stack ? err.stack : err);
+  res.status(code).json({ error: code === 500 ? "خطای داخلی سرور" : code === 413 ? "حجم درخواست زیاد است" : "درخواست نامعتبر است" });
 });
 
 const PORT = process.env.PORT || 3000;
