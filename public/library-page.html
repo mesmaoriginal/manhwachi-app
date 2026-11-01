@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="کتابخانه‌ی مانهواچی؛ مرور و جستجوی همه‌ی مانهوا و مانگاهای ترجمه‌شده‌ی فارسی با امتیاز و ژانر.">
     <title>کتابخانه مانهواچی</title>
     <style>
         :root {
@@ -488,6 +489,7 @@
             }
         }
     </style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body>
 
@@ -588,6 +590,7 @@
         }
 
         // تابع تولید کدهای HTML کارت مانهوا
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         function createCardHTML(slug, manhwa) {
             const title = manhwa.title_fa || manhwa.title_en || 'بدون عنوان';
             const firstGenre = manhwa.genres && manhwa.genres.length > 0 ? manhwa.genres[0] : 'نامشخص';
@@ -595,19 +598,19 @@
             const description = manhwa.description ? manhwa.description.trim() : 'توضیحاتی برای این مانهوا ثبت نشده است.';
 
             return `
-                <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${slug}">
-                    <img src="manhwas/${slug}/${manhwa.cover_image}" alt="${title}" class="card-cover" onerror="this.onerror=null;this.src='${defaultCover(title)}';this.style.objectFit='contain';this.style.padding='30px'">
+                <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${encodeURIComponent(slug)}">
+                    <img loading="lazy" decoding="async" src="manhwas/${encodeURIComponent(slug)}/${encodeURIComponent(manhwa.cover_image || '')}" alt="${esc(title)}" class="card-cover" onerror="this.onerror=null;this.src='${defaultCover(title)}';this.style.objectFit='contain';this.style.padding='30px'">
                     
-                    <div class="card-ui manhwa-title">${title}</div>
+                    <div class="card-ui manhwa-title">${esc(title)}</div>
                     
                     <div class="card-ui bottom-info">
-                        <span class="genre">${firstGenre}</span>
-                        <span class="origin">${origin}</span>
+                        <span class="genre">${esc(firstGenre)}</span>
+                        <span class="origin">${esc(origin)}</span>
                     </div>
                     <div class="card-ui rating">⭐ ${manhwa.score || '0.0'}</div>
 
                     <div class="red-overlay">
-                        <p class="synopsis">${description}</p>
+                        <p class="synopsis">${esc(description)}</p>
                         <div class="click-again-hint">دوباره کلیک کنید تا وارد صفحه شوید</div>
                     </div>
 
@@ -731,5 +734,6 @@
 
         loadManhwas();
     </script>
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

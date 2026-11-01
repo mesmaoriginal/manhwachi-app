@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="مانهواهای فارسی بر اساس ژانر؛ بهترین مانهواهای اکشن، عاشقانه، فانتزی و بیشتر را در مانهواچی بخوانید.">
     <title>کتابخانه مانهواچی</title>
     <style>
         :root {
@@ -422,6 +423,7 @@
             .pagination-btn { min-width: 32px; height: 32px; font-size: 0.8rem; border-radius: 8px;}
         }
     </style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body>
 
@@ -484,6 +486,7 @@
             return params.get('genre'); // برای مثال: "عاشقانه" یا "Romance"
         }
 
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         async function loadManhwas() {
             try {
                 const targetGenre = getGenreFromURL();
@@ -493,7 +496,7 @@
                 }
 
                 // آپدیت عنوان صفحه متناسب با ژانر انتخاب شده
-                pageTitle.innerHTML = `📖 مانهواهای ژانر ${targetGenre}`;
+                pageTitle.textContent = `📖 مانهواهای ژانر ${targetGenre}`;
                 document.title = `مانهواهای ژانر ${targetGenre} - مانهواچی`;
 
                 const response = await fetch('data/data.json');
@@ -517,7 +520,7 @@
                     .sort((a, b) => parseFloat(b.score || 0) - parseFloat(a.score || 0));
 
                 if (manhwaList.length === 0) {
-                    grid.innerHTML = `<p style="color: var(--text-muted); text-align: center; width: 100%; margin-top: 40px;">هنوز مانهوایی در ژانر "${targetGenre}" ثبت نشده است.</p>`;
+                    grid.innerHTML = `<p style="color: var(--text-muted); text-align: center; width: 100%; margin-top: 40px;">هنوز مانهوایی در ژانر "${esc(targetGenre)}" ثبت نشده است.</p>`;
                     pagination.style.display = 'none';
                     return;
                 }
@@ -562,22 +565,22 @@
             const description = manhwa.description ? manhwa.description.trim() : 'توضیحاتی برای این مانهوا ثبت نشده است.';
             
             // اصلاح آدرس پوشه مانهوا و عکس کاور مطابق درخواست قبلی شما
-            const coverSrc = `manhwas/${slug}/${manhwa.cover_image}`;
+            const coverSrc = `manhwas/${encodeURIComponent(slug)}/${encodeURIComponent(manhwa.cover_image || "")}`;
 
             return `
-                <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${slug}">
-                    <img src="${coverSrc}" alt="${manhwa.title_fa}" class="card-cover" onerror="this.src='https://picsum.photos/400/600?random=${slug}'">
+                <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${encodeURIComponent(slug)}">
+                    <img loading="lazy" decoding="async" src="${coverSrc}" alt="${esc(manhwa.title_fa)}" class="card-cover" onerror="this.src='https://picsum.photos/400/600?random=${encodeURIComponent(slug)}'">
                     
-                    <div class="card-ui manhwa-title">${manhwa.title_fa || manhwa.title_en}</div>
+                    <div class="card-ui manhwa-title">${esc(manhwa.title_fa || manhwa.title_en)}</div>
                     
                     <div class="card-ui bottom-info">
-                        <span class="genre">${firstGenre}</span>
-                        <span class="origin">${manhwa.origin || 'کره'}</span>
+                        <span class="genre">${esc(firstGenre)}</span>
+                        <span class="origin">${esc(manhwa.origin || 'کره')}</span>
                     </div>
                     <div class="card-ui rating">⭐ ${manhwa.score || '0.0'}</div>
 
                     <div class="red-overlay">
-                        <p class="synopsis">${description}</p>
+                        <p class="synopsis">${esc(description)}</p>
                         <div class="click-again-hint">دوباره کلیک کنید تا وارد صفحه شوید</div>
                     </div>
 
@@ -682,5 +685,6 @@
 
         loadManhwas();
     </script>
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

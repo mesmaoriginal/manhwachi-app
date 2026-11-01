@@ -1,0 +1,35 @@
+/* ⚡ بهینه‌سازی‌های سبک برای گوشی‌های ضعیف‌تر — بدون تغییر محسوس ظاهر
+   (بعد از home.css لود می‌شود تا قاعده‌های آن را روی موبایل سبک‌تر کند) */
+
+/* backdrop-filter روی ده‌ها کارت/نشان کوچک لیست‌ها، روی گوشی باعث لگ اسکرول می‌شود.
+   پس‌زمینه‌ی نیمه‌شفاف خودِ المان‌ها باقی می‌ماند و فقط محو‌کردنِ پشت‌صفحه برداشته می‌شود. */
+@media (max-width: 900px) {
+  .badge-access,
+  .badge-chapter-box,
+  .manhwa-title,
+  .telegram-icon,
+  .instagram-icon,
+  .home-page .dots,
+  #todaysList .comic-genre,
+  #topRatedList > li:first-child .num {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .badge-chapter-box { background: rgba(0, 0, 0, 0.5); }
+  .home-page .dots { background: rgba(0, 0, 0, 0.35); }
+  .telegram-icon, .instagram-icon { background: rgba(255, 255, 255, 0.22); }
+  #todaysList .comic-genre { background: rgba(0, 0, 0, 0.45); }
+}
+
+/* احترام به تنظیم «کاهش حرکت» سیستم‌عامل (و سبک‌تر شدن روی دستگاه‌های ضعیف) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* تصاویر کارت‌ها: جلوگیری از پرش چیدمان و رندر سبک‌تر */
+img { content-visibility: auto; }

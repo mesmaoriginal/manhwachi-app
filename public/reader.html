@@ -12,9 +12,10 @@
     <meta name="full-screen" content="yes" />
     <meta name="x5-fullscreen" content="true" />
     <title id="dynamic-title">خواندن چپتر - مانهواچی</title>
-    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="/css/vendor/inter.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap">
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
     <link rel="preconnect" href="https://s3.parspack.net" crossorigin />
     <link rel="dns-prefetch" href="https://s3.parspack.net" />
@@ -79,6 +80,12 @@
         /* ===== زوم با دابل‌تپ روی تصویر ===== */
         .manhwa-panel img { transition: transform 0.25s ease; transform-origin: center center; }
         .manhwa-panel img.zoomed { transform: scale(2); cursor: zoom-out; }
+
+        /* ===== حالت آفلاین امن: صفحه‌ها روی canvas کشیده می‌شوند (نه <img>) ===== */
+        .manhwa-panel canvas { display: block; width: 100%; height: auto; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: pan-y; }
+        #reader.mode-vertical .manhwa-panel.mc-off { aspect-ratio: var(--ar, auto); }
+        #reader.mode-vertical .manhwa-panel.mc-off canvas { height: 100%; }
+        #reader.mode-paged .manhwa-panel canvas { max-height: 100%; width: auto; max-width: 100%; margin: 0 auto; touch-action: none; }
 
         .reader-toast {
             position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -209,6 +216,7 @@
                     <span id="auto-text" class="hidden md:inline text-xs">اسکرول خودکار</span>
                 </button>
                 <button onclick="toggleFullscreen()" id="fullscreen-btn" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">fullscreen</span></button>
+                <button id="offline-btn" class="hidden flex items-center gap-0.5 p-1.5 md:p-2 hover:text-red-400 transition-colors" title="دانلود برای خواندن آفلاین"><span class="material-symbols-outlined text-lg md:text-xl" id="offline-icon">download</span><span id="offline-label" class="text-[10px] font-mono"></span></button>
                 <button onclick="toggleSettings()" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">settings</span></button>
             </div>
         </div>
@@ -365,6 +373,7 @@
 </div>
     <script src="/js/vendor/supabase.min.js"></script>
     <script src="/js/supabase.js"></script>
+    <script src="/offline.js"></script>
     <script>
         let slug = "the-forgotten-field";
         let chNum = null;
@@ -511,10 +520,154 @@
             });
         }
 
+        // ===== حالت آفلاین امن (offline.js) =====
+        async function getOfflineSession() {
+            try {
+                const r = await Promise.race([db.auth.getSession(), new Promise(res => setTimeout(() => res(null), 2500))]);
+                const s = r && r.data && r.data.session;
+                if (s && s.user) { MCOffline.rememberUid(s.user.id); return { uid: s.user.id, token: s.access_token }; }
+            } catch (e) {}
+            const uid = window.MCOffline && MCOffline.lastUid();
+            return uid ? { uid, token: null } : null;
+        }
+
+        async function renderOfflineChapter(panelsContainer) {
+            if (!window.MCOffline || !MCOffline.supported()) return false;
+            const sess = await getOfflineSession();
+            if (!sess) return false;
+            let handle;
+            try {
+                handle = await MCOffline.open(sess.uid, slug, chNum, sess.token);
+            } catch (e) {
+                if (e.code === 'EXPIRED') {
+                    hideChapterLoader();
+                    panelsContainer.innerHTML = `<div class="text-center py-24 px-6 w-full text-gray-300"><span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">timer_off</span>${e.message}</div>`;
+                    return true;
+                }
+                return false;
+            }
+            if (!handle) return false;
+            totalPanels = handle.n;
+            document.getElementById('total-pages').textContent = totalPanels;
+            showToast('📴 این چپتر از حافظه‌ی آفلاین باز شد', [], 2500);
+            await MCOffline.render(panelsContainer, handle, { onError: (e) => console.error(e) });
+            hideChapterLoader();
+            setTimeout(restoreScrollPosition, 350);
+            return true;
+        }
+
+        async function offlineStubData() {
+            if (!window.MCOffline || !MCOffline.supported()) throw new Error('no data');
+            const sess = await getOfflineSession();
+            if (!sess) throw new Error('no data');
+            const items = (await MCOffline.list(sess.uid)).filter(i => i.slug === slug);
+            if (!items.length) throw new Error('no data');
+            return { [slug]: { title_fa: items[0].title, episodes: items.map(i => ({ num: i.ch, free: true })) } };
+        }
+
+        async function setupOfflineButton() {
+            const btn = document.getElementById('offline-btn');
+            if (!btn || !window.MCOffline || !MCOffline.supported()) return;
+            btn.classList.remove('hidden');
+            const icon = document.getElementById('offline-icon');
+            const label = document.getElementById('offline-label');
+            let busy = false;
+            async function refresh() {
+                const s = await getOfflineSession();
+                const saved = s ? await MCOffline.has(s.uid, slug, chNum) : false;
+                icon.textContent = saved ? 'download_done' : 'download';
+                btn.classList.toggle('text-green-400', saved);
+                btn.title = saved ? 'ذخیره‌شده برای آفلاین (برای حذف بزنید)' : 'دانلود برای خواندن آفلاین';
+                return { s, saved };
+            }
+            await refresh();
+            btn.onclick = async () => {
+                if (busy) return;
+                const { s, saved } = await refresh();
+                if (saved) {
+                    if (confirm('این چپتر از حافظه‌ی آفلاین حذف شود؟')) {
+                        await MCOffline.remove(s.uid, slug, chNum);
+                        await refresh();
+                        showToast('از حافظه‌ی آفلاین حذف شد', [], 2000);
+                    }
+                    return;
+                }
+                if (!s || !s.token || !navigator.onLine) {
+                    showToast('برای دانلود باید آنلاین و وارد حساب باشید', [], 3000);
+                    if (navigator.onLine && typeof openAuthModal === 'function') openAuthModal('login');
+                    return;
+                }
+                const acc = await fetchAccess(s.token);
+                if (acc && !acc.canOffline) {
+                    showToast('👑 دانلود آفلاین فقط برای اشتراک پرمیوم است', [{ label: 'مشاهده پلن‌ها', primary: true, onClick: () => { location.href = '/vip.html'; } }], 6000);
+                    return;
+                }
+                busy = true;
+                icon.textContent = 'hourglass_top';
+                try {
+                    await MCOffline.download({
+                        slug, ch: chNum, title: (manhwaData && manhwaData.title_fa) || slug,
+                        uid: s.uid, accessToken: s.token,
+                        onProgress: (d, n) => { label.textContent = Math.round((d / n) * 100) + '%'; }
+                    });
+                    showToast('✅ برای خواندن آفلاین ذخیره شد', [], 2500);
+                } catch (e) {
+                    showToast(e.message || 'دانلود ناموفق بود', [], 4500);
+                } finally {
+                    busy = false;
+                    label.textContent = '';
+                    await refresh();
+                }
+            };
+            const s0 = await getOfflineSession();
+            if (s0 && s0.token) MCOffline.renewAll(s0.uid, s0.token).catch(() => {});
+        }
+
+        // ===== قفل زمانی: رایگان تا ۲۴ ساعت اول (بدون اشتراک) / اشتراک هفتگی تا ۱ روز اول (چپتر اشتراکی) =====
+        let lockTimer = null;
+        function fmtRemaining(sec) {
+            sec = Math.max(0, Math.floor(sec));
+            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = sec % 60;
+            const p = (n) => String(n).padStart(2, '0');
+            return `${p(h)}:${p(m)}:${p(x)}`.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+        function renderTimedLock(container, result) {
+            const early = result.code === 'EARLY_LOCKED';
+            const until = result.unlocksAt ? new Date(result.unlocksAt).getTime() : Date.now() + (result.remainingSeconds || 0) * 1000;
+            container.innerHTML = `
+                <div class="text-center py-24 px-6 w-full max-w-md mx-auto">
+                    <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">schedule</span>
+                    <h2 class="text-xl font-bold mb-2">${early ? 'این قسمت هنوز برای اشتراک هفتگی باز نشده' : 'این قسمت تازه منتشر شده'}</h2>
+                    <p class="text-gray-400 text-sm leading-7 mb-4">${early
+                        ? 'با اشتراک هفتگی، قسمت‌های اشتراکی تا ۱ روز اول قفل هستند. با اشتراک ماهانه یا سه‌ماهه (استاندارد یا پرمیوم) از همان لحظه‌ی انتشار بخوانید.'
+                        : 'قسمت‌های رایگان تا ۲۴ ساعت اول فقط برای دارندگان اشتراک باز هستند. با خرید اشتراک همین حالا بخوانید یا تا باز شدن قفل صبر کنید.'}</p>
+                    <div class="text-3xl font-black tracking-widest text-amber-400 mb-6" id="lock-countdown" dir="ltr">--:--:--</div>
+                    <a href="/vip.html" class="inline-block px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">${early ? 'ارتقای اشتراک' : 'خرید اشتراک'}</a>
+                </div>`;
+            clearInterval(lockTimer);
+            const tick = () => {
+                const el = document.getElementById('lock-countdown');
+                const left = (until - Date.now()) / 1000;
+                if (!el) { clearInterval(lockTimer); return; }
+                if (left <= 0) { clearInterval(lockTimer); location.reload(); return; }
+                el.textContent = fmtRemaining(left);
+            };
+            tick();
+            lockTimer = setInterval(tick, 1000);
+        }
+
+        async function fetchAccess(token) {
+            try {
+                const r = await fetch('/api/access/me', { headers: token ? { Authorization: 'Bearer ' + token } : {}, cache: 'no-store' });
+                return r.ok ? await r.json() : null;
+            } catch (e) { return null; }
+        }
+
         async function loadChapterPanels() {
             const panelsContainer = document.getElementById('reader');
             panelsContainer.innerHTML = '';
             startChapterLoader();
+            if (!navigator.onLine && await renderOfflineChapter(panelsContainer)) return;
 
             let authHeader = {};
             try {
@@ -533,9 +686,12 @@
                 const result = await res.json();
 
                 if (!res.ok) {
+                    if (res.status >= 500 && await renderOfflineChapter(panelsContainer)) return;
                     hideChapterLoader();
                     panelsContainer.innerHTML = '';
-                    if (result.code === 'AUTH_REQUIRED') {
+                    if (result.code === 'FREE_LOCKED' || result.code === 'EARLY_LOCKED') {
+                        renderTimedLock(panelsContainer, result);
+                    } else if (result.code === 'AUTH_REQUIRED') {
                         panelsContainer.innerHTML = `
                             <div class="text-center py-24 px-6">
                                 <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">lock</span>
@@ -546,8 +702,8 @@
                         panelsContainer.innerHTML = `
                             <div class="text-center py-24 px-6">
                                 <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">workspace_premium</span>
-                                <h2 class="text-xl font-bold mb-2">این قسمت مخصوص کاربران VIP است</h2>
-                                <a href="/vip.html" class="inline-block mt-4 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">ارتقا به VIP</a>
+                                <h2 class="text-xl font-bold mb-2">این قسمت مخصوص دارندگان اشتراک است</h2>
+                                <a href="/vip.html" class="inline-block mt-4 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">خرید اشتراک</a>
                             </div>`;
                     } else {
                         panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">${result.error || 'خطایی رخ داد.'}</div>`;
@@ -601,6 +757,7 @@
                 });
             } catch (err) {
                 console.error(err);
+                if ((err instanceof TypeError || !navigator.onLine) && await renderOfflineChapter(panelsContainer)) return;
                 hideChapterLoader();
                 panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">خطا در بارگذاری تصاویر. لطفاً دوباره تلاش کنید.</div>`;
             }
@@ -608,8 +765,13 @@
 
         async function initReader() {
             try {
-                const res = await fetch('/data/data.json');
-                const data = await res.json();
+                let data;
+                try {
+                    const res = await fetch('/data/data.json');
+                    data = await res.json();
+                } catch (e) {
+                    data = await offlineStubData(); // آفلاین و بدون کش data.json
+                }
                 manhwaData = data[slug];
 
                 if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) { hideChapterLoader(); return; }
@@ -632,6 +794,7 @@
                 totalPanels = 0;
 
                 await loadChapterPanels();
+                setupOfflineButton();
 
                 const sortedEpisodes = [...manhwaData.episodes].sort((a, b) => Number(a.num) - Number(b.num));
                 const currentIndex = sortedEpisodes.findIndex(e => Number(e.num) === chNum);

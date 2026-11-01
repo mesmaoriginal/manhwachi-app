@@ -381,13 +381,14 @@ async function loadTopRated() {
     if (!list) return;
     list.innerHTML = "";
 
+    let topHtml = "";
     topFive.forEach((item, index) => {
       const coverSrc = `manhwas/${item.slug}/${item.cover_image}`;
       const genresFormatted = item.genres 
         ? item.genres.map(genre => genreNames[genre] || genre).join(" • ") 
         : "نامشخص";
 
-      list.innerHTML += `
+      topHtml += `
         <li>
           <a href="https://manhwachi.ir/comic/${item.slug}">
             <div class="row">
@@ -397,7 +398,7 @@ async function loadTopRated() {
                 </span>
               </div>
               <div class="col pic">
-                <img src="${coverSrc}" width="100%" alt="${item.title_fa || item.title_en}" onerror="this.onerror=null;this.src='https://picsum.photos/150/220?random=${index}'">
+                <img src="${coverSrc}" width="100%" loading="lazy" decoding="async" alt="${item.title_fa || item.title_en}" onerror="this.onerror=null;this.src='https://picsum.photos/150/220?random=${index}'">
               </div>
               <div class="col info">
                 <p class="subj">
@@ -413,6 +414,7 @@ async function loadTopRated() {
           </a>
         </li>`;
     });
+    list.innerHTML = topHtml;
   } catch (error) {
     console.error("خطا در بارگذاری برترین مانهواها:", error);
   }

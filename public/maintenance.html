@@ -14,13 +14,30 @@
     <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
 
     <!-- CDN ها و فونت‌های قالب اصلی -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <script>
+      // اگر فایل کامپایل‌شده‌ی کامل Tailwind (با نشانه‌ی --mc-tw) نبود، مثل قبل از CDN لود می‌شود
+      (function () {
+        var ok = false;
+        try { ok = !!getComputedStyle(document.documentElement).getPropertyValue('--mc-tw').trim(); } catch (e) {}
+        window.__twLocal = ok;
+        window.__twFallback = function (cb) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+          if (cb) s.onload = cb;
+          document.head.appendChild(s);
+        };
+        
+      })();
+    </script>
+    <link rel="stylesheet" href="/css/vendor/montserrat.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400..800&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/inter.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+    <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+        <link rel="stylesheet" href="/css/vendor/fontawesome.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css'">
+    
     <script id="tailwind-config">
+        if (!window.__twLocal) window.__twFallback(function () {
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -39,6 +56,7 @@
                 }
             }
         }
+    });
     </script>
 
     <style>
@@ -83,7 +101,7 @@
                     Manhwa<span class="text-primary">Chi</span>
                 </span>
             </a>
-            <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="flex items-center gap-2 px-4 h-10 bg-sky-500/10 border border-sky-500/30 text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl text-xs font-bold transition-all duration-300">
+            <a href="https://telegram.me/Manhwachiofficial" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-4 h-10 bg-sky-500/10 border border-sky-500/30 text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl text-xs font-bold transition-all duration-300">
                 <span class="material-symbols-outlined text-base">send</span> کانال تلگرام
             </a>
         </div>
@@ -123,7 +141,7 @@
             <!-- لینک کانال تلگرام برای اطلاع‌رسانی -->
             <div class="mt-8 pt-6 border-t border-white/10">
                 <p class="text-xs text-text-muted mb-3">برای اطلاع سریع از پایان بروزرسانی در تلگرام همراه ما باشید:</p>
-                <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="inline-flex items-center gap-2 text-xs text-sky-400 font-semibold hover:underline">
+                <a href="https://telegram.me/Manhwachiofficial" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-xs text-sky-400 font-semibold hover:underline">
                     <i class="fa-brands fa-telegram text-base"></i>
                     کانال رسمی مانهواچی (@Manhwachiofficial)
                 </a>

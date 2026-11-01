@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>دانلودهای من (آفلاین) | مانهواچی</title>
+<link rel="stylesheet" href="/css/vendor/vazirmatn.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #09090b; color: #f4f4f5; font-family: 'Vazirmatn', system-ui, sans-serif; min-height: 100vh; }
+  header { position: sticky; top: 0; z-index: 5; background: rgba(0,0,0,.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(127,29,29,.35); }
+  .bar { max-width: 760px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .bar a { color: #f4f4f5; text-decoration: none; font-weight: 700; }
+  .badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #14532d; color: #bbf7d0; }
+  .badge.off { background: #78350f; color: #fde68a; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 80px; }
+  h1 { font-size: 20px; margin: 4px 0 6px; }
+  .sub { color: #a1a1aa; font-size: 13px; line-height: 1.9; margin-bottom: 18px; }
+  .group { background: #111113; border: 1px solid #27272a; border-radius: 16px; margin-bottom: 14px; overflow: hidden; }
+  .group h2 { font-size: 15px; margin: 0; padding: 12px 16px; border-bottom: 1px solid #27272a; background: #18181b; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #1f1f23; }
+  .row:last-child { border-bottom: 0; }
+  .meta { font-size: 12px; color: #a1a1aa; margin-top: 3px; }
+  .meta.warn { color: #fbbf24; }
+  .btns { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn { border: 0; border-radius: 12px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; }
+  .btn.read { background: #dc2626; color: #fff; }
+  .btn.read[aria-disabled="true"] { background: #3f3f46; color: #a1a1aa; pointer-events: none; }
+  .btn.del { background: #27272a; color: #fca5a5; }
+  .btn.all { background: transparent; border: 1px solid #3f3f46; color: #d4d4d8; }
+  .empty { text-align: center; color: #a1a1aa; padding: 60px 10px; line-height: 2; }
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; font-size: 12px; color: #a1a1aa; }
+  .note { margin-top: 22px; font-size: 12px; color: #71717a; line-height: 2; border-top: 1px solid #27272a; padding-top: 14px; }
+</style>
+</head>
+<body>
+<header><div class="bar"><a href="/">← مانهواچی</a><span id="net" class="badge">آنلاین</span></div></header>
+<main>
+  <h1>دانلودهای من</h1>
+  <p class="sub">چپترهای ذخیره‌شده برای خواندن بدون اینترنت. این فایل‌ها به‌صورت رمزشده و فقط داخل همین مرورگر ذخیره می‌شوند و قابل خروجی‌گرفتن نیستند.</p>
+  <div id="list"></div>
+  <div class="foot"><span id="usage"></span><button id="wipe" class="btn all" hidden>حذف همه</button></div>
+  <p class="note">دانلود آفلاین فقط برای اشتراک پرمیوم است. اعتبار هر چپتر آفلاین ۷ روز است و هر بار که آنلاین شوید و اشتراک پرمیوم شما معتبر باشد خودکار تمدید می‌شود. با خروج از حساب، همه‌ی دانلودها از این دستگاه پاک می‌شوند.</p>
+</main>
+<script src="/js/vendor/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/offline.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var uid = null, token = null;
+  function fa(n) { return String(n).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
+  function mb(b) { return fa((b / 1048576).toFixed(1)); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function netBadge() {
+    var on = navigator.onLine;
+    $('net').textContent = on ? 'آنلاین' : 'آفلاین';
+    $('net').className = 'badge' + (on ? '' : ' off');
+  }
+  addEventListener('online', function () { netBadge(); boot(); });
+  addEventListener('offline', netBadge);
+
+  async function getSessionSafe() {
+    try {
+      var c = window.supabaseClient;
+      if (!c) return null;
+      var r = await Promise.race([c.auth.getSession(), new Promise(function (res) { setTimeout(function () { res(null); }, 2500); })]);
+      return r && r.data && r.data.session || null;
+    } catch (e) { return null; }
+  }
+
+  async function draw() {
+    var box = $('list');
+    if (!window.MCOffline || !MCOffline.supported()) { box.innerHTML = '<div class="empty">مرورگر شما از ذخیره‌ی آفلاین امن پشتیبانی نمی‌کند.</div>'; return; }
+    if (!uid) { box.innerHTML = '<div class="empty">برای دیدن دانلودها باید وارد حساب شوید.<br>(اگر آفلاین هستید، ابتدا یک‌بار آنلاین وارد شوید.)</div>'; return; }
+    var items = await MCOffline.list(uid);
+    if (!items.length) {
+      box.innerHTML = '<div class="empty">هنوز چپتری دانلود نکرده‌اید.<br>داخل صفحه‌ی خواندن هر چپتر، دکمه‌ی دانلود را بزنید.</div>';
+      $('wipe').hidden = true;
+    } else {
+      var groups = {};
+      items.forEach(function (it) { (groups[it.slug] = groups[it.slug] || { title: it.title, rows: [] }).rows.push(it); });
+      box.innerHTML = Object.keys(groups).map(function (slug) {
+        var g = groups[slug];
+        return '<section class="group"><h2>' + esc(g.title) + '</h2>' + g.rows.map(function (it) {
+          var days = Math.max(0, Math.ceil((it.exp - Date.now()) / 86400e3));
+          var meta = it.expired
+            ? '<div class="meta warn">مجوز منقضی شده؛ برای تمدید آنلاین شوید</div>'
+            : '<div class="meta">' + fa(it.n) + ' صفحه • ' + mb(it.bytes) + ' مگابایت • اعتبار: ' + fa(days) + ' روز</div>';
+          var href = '/reader.html?slug=' + encodeURIComponent(it.slug) + '&ch=' + it.ch;
+          return '<div class="row"><div><div>چپتر ' + fa(it.ch) + '</div>' + meta + '</div><div class="btns">' +
+            '<a class="btn read" href="' + href + '"' + (it.expired && !navigator.onLine ? ' aria-disabled="true"' : '') + '>بخوان</a>' +
+            '<button class="btn del" data-slug="' + esc(it.slug) + '" data-ch="' + it.ch + '">حذف</button></div></div>';
+        }).join('') + '</section>';
+      }).join('');
+      $('wipe').hidden = false;
+    }
+    var u = await MCOffline.usage(uid);
+    var q = u.quota && u.quota.quota ? ' از ' + mb(u.quota.quota) + ' مگابایت فضای مجاز' : '';
+    $('usage').textContent = 'فضای مصرفی: ' + mb(u.bytes) + ' مگابایت' + q;
+  }
+
+  async function boot() {
+    netBadge();
+    var s = await getSessionSafe();
+    if (s && s.user) { uid = s.user.id; token = s.access_token; MCOffline.rememberUid(uid); }
+    else uid = MCOffline.lastUid(); // آفلاین: آخرین کاربر شناخته‌شده
+    if (uid && token && navigator.onLine) { try { await MCOffline.renewAll(uid, token); } catch (e) {} }
+    // دانلود آفلاین فقط برای پرمیوم است؛ کاربر غیرپرمیوم (آنلاین) توضیح و لینک خرید می‌بیند
+    if (token && navigator.onLine) {
+      try {
+        var r = await fetch('/api/access/me', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+        var acc = r.ok ? await r.json() : null;
+        if (acc && !acc.canOffline && !$('premiumNote')) {
+          var n = document.createElement('div');
+          n.id = 'premiumNote'; n.className = 'group';
+          n.style.cssText = 'padding:14px 16px;line-height:2;font-size:13px;color:#fde68a;border-color:#78350f';
+          n.innerHTML = '👑 دانلود آفلاین فقط برای اشتراک <b>پرمیوم</b> فعال است. ' + '<a href="/vip.html" style="color:#fff;font-weight:700">مشاهده پلن‌ها</a>';
+          $('list').parentNode.insertBefore(n, $('list'));
+        }
+      } catch (e) {}
+    }
+    draw();
+  }
+
+  $('list').addEventListener('click', async function (e) {
+    var b = e.target.closest('.del');
+    if (!b) return;
+    if (!confirm('این چپتر از دستگاه حذف شود؟')) return;
+    await MCOffline.remove(uid, b.dataset.slug, b.dataset.ch);
+    draw();
+  });
+  $('wipe').addEventListener('click', async function () {
+    if (!confirm('همه‌ی دانلودها از این دستگاه حذف شوند؟')) return;
+    var items = await MCOffline.list(uid);
+    for (var i = 0; i < items.length; i++) await MCOffline.remove(uid, items[i].slug, items[i].ch);
+    draw();
+  });
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -3,13 +3,31 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#120a1f" />
+<meta name="theme-color" content="#09090b" />
 <title>جستجوی مانهواچی | ManhwaChi</title>
 <meta name="description" content="جستجو در مانهوا، مانگا و مانها با ترجمه فارسی در مانهواچی." />
 <meta name="robots" content="noindex, follow" />
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link rel="icon" href="/ManhwaChi/favicon.ico" />
+<link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+<link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
+<link rel="stylesheet" href="/css/tailwind-core.css">
+    <script>
+      // اگر فایل کامپایل‌شده‌ی کامل Tailwind (با نشانه‌ی --mc-tw) نبود، مثل قبل از CDN لود می‌شود
+      (function () {
+        var ok = false;
+        try { ok = !!getComputedStyle(document.documentElement).getPropertyValue('--mc-tw').trim(); } catch (e) {}
+        window.__twLocal = ok;
+        window.__twFallback = function (cb) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.tailwindcss.com';
+          if (cb) s.onload = cb;
+          document.head.appendChild(s);
+        };
+        if (!ok) window.__twFallback();
+      })();
+    </script>
+<link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
 <style>
 :root{--bg:#09090b;--panel:#131317;--panel2:#1b1b21;--line:rgba(255,255,255,.08);--muted:#8b8b96;--red:#dc2626;--gold:#f5b84a}
 *{-webkit-tap-highlight-color:transparent}
@@ -71,26 +89,7 @@ mark{background:none;color:#f87171;font-weight:800}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:14px;background:var(--red);color:#fff;font-weight:700;font-size:.9rem;transition:.15s}
 .btn:hover{background:#b91c1c}
 </style>
-<!-- Halloween theme (same files as the main page) -->
-<link rel="stylesheet" href="/halloween.css?v=3" />
-<script src="/halloween.js?v=3" defer></script>
-<style>
-/* Halloween overrides for the search page's own colours */
-html.hw{--bg:#120a1f;--panel:rgba(30,18,56,.72);--panel2:#2a1a4a;--line:rgba(255,190,120,.16);--muted:#b9a8dc;--red:#ff8a2b;--gold:#ffd27a}
-html.hw .search-box,html.hw .icon-btn,html.hw .seg,html.hw #sort{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-html.hw .search-box:focus-within{box-shadow:0 0 0 4px rgba(255,138,43,.18),0 0 24px -6px rgba(255,138,43,.5)}
-html.hw .search-box input::placeholder{color:#8f7db8}
-html.hw .seg button[aria-pressed=true],html.hw .btn{background:linear-gradient(135deg,#ffb04a,#ff6a3d);color:#2a1200}
-html.hw .btn:hover{background:linear-gradient(135deg,#ffc069,#ff7a4d)}
-html.hw .chip:hover{border-color:rgba(255,138,43,.55)}
-html.hw .chip[aria-pressed=true]{background:rgba(255,138,43,.18);border-color:#ff8a2b;color:#fff}
-html.hw #sort option{background:#1a1030;color:#ececf0}
-html.hw .cover{background:#1a1030}
-html.hw .cover .ph{color:#4a3a78}
-html.hw .card:hover .cover{border-color:#ff8a2b;box-shadow:0 12px 30px -12px rgba(255,138,43,.6),0 0 0 1px rgba(167,139,250,.25)}
-html.hw .card:hover h3,html.hw mark{color:#ffc069}
-html.hw #clear:hover,html.hw .icon-btn:hover{background:rgba(255,138,43,.14);color:#ffc069}
-</style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body>
 
@@ -397,5 +396,6 @@ io.observe($('#more'));
 
 load();
 </script>
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

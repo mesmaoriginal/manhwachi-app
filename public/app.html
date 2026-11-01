@@ -7,9 +7,8 @@
 <meta name="description" content="اپلیکیشن اندروید مانهواچی؛ مانهوا و مانگا با ترجمه فارسی، همیشه توی جیبت.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="ManhwaChi/favicon.ico">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/montserrat.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400..800&amp;display=swap'">
 <style>
 :root{
   --bg:#000; --surface:#161616; --surface2:#1f1f1f;
@@ -166,6 +165,7 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:30px 0;color:var
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body>
 
@@ -307,5 +307,6 @@ $('dl').addEventListener('click', () => {
   t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2800);
 });
 </script>
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

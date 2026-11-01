@@ -6,14 +6,20 @@
     <meta name="robots" content="noindex, follow">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="همکاری با مانهواچی؛ برای ترجمه، تایپ‌ست و کلین‌کردن مانهوا به تیم ما بپیوندید.">
     <title>دعوت به همکاری | مانهواچی</title>
     <!-- Supabase -->
     <script src="/js/vendor/supabase.min.js"></script>
     <script src="/js/supabase.js"></script>
 
     <!-- Google Fonts & Font-Awesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/mc-shared.css?v=1">
+    <script src="/mc-ui.js?v=1" defer></script>
+    <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/fontawesome.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css'">
     
     <style>
         :root {
@@ -97,7 +103,7 @@
         /* Grid & Cards */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             margin-bottom: 35px;
         }
@@ -413,23 +419,11 @@
             box-shadow: none;
         }
     </style>
-    <!-- Halloween theme (same files as the main page) -->
-    <link rel="stylesheet" href="/halloween.css?v=3">
-    <script src="/halloween.js?v=3" defer></script>
-    <style>
-        /* Halloween overrides for this page's own colours */
-        html.hw{--primary-color:#ff8a2b;--primary-hover:#ffb04a;--primary-glow:rgba(255,138,43,.35);--bg-color:#120a1f;--card-bg:rgba(30,18,56,.75);--card-border:rgba(255,190,120,.18);--input-bg:#1a1030;--text-muted:#b9a8dc}
-        html.hw .header .badge-top{background:rgba(255,138,43,.12);border-color:rgba(255,138,43,.4)}
-        html.hw .header h1 span{background-image:linear-gradient(135deg,#ffd27a,#ff8a2b)}
-        html.hw .card:hover{border-color:rgba(255,138,43,.6)}
-        html.hw .badge{background:rgba(255,138,43,.14);color:#ffc069}
-        html.hw .card p.card-salary{color:#ffc069}
-        html.hw .form-group input:focus,html.hw .form-group textarea:focus,html.hw .form-group input.input-error{box-shadow:0 0 0 3px rgba(255,138,43,.18)}
-        html.hw .radio-btn input:checked + label{background:rgba(255,138,43,.14)}
-        html.hw .submit-btn{background:linear-gradient(135deg,#ffb04a,#ff6a3d);color:#2a1200}
-    </style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body>
+<a href="/" class="mc-back" style="position:fixed;top:16px;right:16px;z-index:40;background:rgba(20,20,28,.85)"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> مانهواچی</a>
+
 
 <div class="container">
     <div class="header">
@@ -714,7 +708,7 @@
 
         // اعتبارسنجی نام (حداقل دو حرف، فقط حروف فارسی/انگلیسی و فاصله)
         if (!/^[A-Za-zآ-یءa-zA-Z\s]{3,50}$/.test(fullName)) {
-            alert('لطفاً نام و نام خانوادگی معتبر وارد کن (فقط حروف، بدون عدد یا کاراکتر عجیب).');
+            mcToast('لطفاً نام و نام خانوادگی معتبر وارد کن (فقط حروف، بدون عدد یا کاراکتر عجیب).', 'error');
             fullNameInput.focus();
             return;
         }
@@ -743,10 +737,10 @@
             ]);
 
         if (error) {
-            alert('خطایی رخ داد: ' + error.message);
+            mcToast('خطایی رخ داد: ' + error.message, 'error');
             if (error.code === 'CAREERS_CLOSED') { closeModal(); loadCareersConfig(); } // سرور گفته بخش بسته شده
         } else {
-            alert('اطلاعات شما با موفقیت ثبت شد! به زودی با شما ارتباط می‌گیریم.');
+            mcToast('اطلاعات شما با موفقیت ثبت شد! به زودی با شما ارتباط می‌گیریم.', 'success', 5000);
             closeModal();
         }
 
@@ -755,5 +749,6 @@
     });
 </script>
 
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

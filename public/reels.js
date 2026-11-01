@@ -1,4 +1,8 @@
 (function () {   
+    // پیام‌ها با toast سایت نشون داده می‌شن؛ اگه mc-ui.js لود نشده بود، alert قدیمی
+    // 🔒 escape برای هر متنی که از کاربر/دیتابیس میاد و داخل innerHTML می‌ره (جلوگیری از XSS ذخیره‌شده)
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const note = (m, t) => (window.mcToast ? window.mcToast(m, t) : alert(m));
 
     let currentOffset = 0;
     const PAGE_SIZE = 10;
@@ -98,9 +102,9 @@
         const username = usernameInput.value.trim();
         const text = commentInput.value.trim();
 
-        if (!username) return alert("لطفاً نام خود را وارد کنید");
-        if (!text) return alert("نظر خود را بنویسید");
-        if (text.length > 500) return alert("نظر نمی‌تواند بیشتر از ۵۰۰ کاراکتر باشد");
+        if (!username) return note("لطفاً نام خود را وارد کنید", "error");
+        if (!text) return note("نظر خود را بنویسید", "error");
+        if (text.length > 500) return note("نظر نمی‌تواند بیشتر از ۵۰۰ کاراکتر باشد", "error");
         if (!currentReelId) return;
 
         const sendBtn = document.getElementById('submit-comment-btn');
@@ -147,13 +151,13 @@
                 }
             } else {
                 const errText = await res.text();
-                alert(errText.includes('۳ نظر') || errText.includes('limit') 
+                note(errText.includes('۳ نظر') || errText.includes('limit') 
                     ? 'شما فقط مجاز به ثبت ۳ نظر در این پست هستید!' 
-                    : 'خطا در ارسال نظر');
+                    : 'خطا در ارسال نظر', 'error');
             }
         } catch (err) {
             console.error(err);
-            alert('خطا در ارتباط با سرور');
+            note('خطا در ارتباط با سرور', 'error');
         } finally {
             if (sendBtn) sendBtn.disabled = false;
         }
@@ -196,14 +200,14 @@
             return `
                 <div class="comment-item flex gap-3 p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
                     <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-red-500/20">
-                        ${c.username[0]?.toUpperCase() || '؟'}
+                        ${esc(Array.from(String(c.username || ''))[0]?.toUpperCase() || '؟')}
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between gap-2">
-                            <p class="font-bold text-white text-sm truncate">${c.username}</p>
+                            <p class="font-bold text-white text-sm truncate">${esc(c.username)}</p>
                             <span class="text-[10px] text-gray-500 whitespace-nowrap">${toPersianDigits(dateStr)}</span>
                         </div>
-                        <p class="text-white/90 leading-relaxed text-sm mt-1 break-words">${c.text}</p>
+                        <p class="text-white/90 leading-relaxed text-sm mt-1 break-words">${esc(c.text)}</p>
                     </div>
                 </div>
             `;
@@ -303,31 +307,31 @@
             <div class="absolute z-20 w-full" style="bottom: 110px; direction: rtl; padding-inline: 20px;">
                 ${reel.manhwa_url ? `
                 <div class="mb-4">
-                    <button onclick="goToManhwa('${reel.manhwa_url}')" class="manhwa-card">
+                    <button onclick="goToManhwa(${esc(JSON.stringify(String(reel.manhwa_url)))})" class="manhwa-card">
                         <span class="material-symbols-outlined book-icon">auto_stories</span>
-                        <span class="title-reels">خواندن مانهوا <strong>${reel.manhwa_title}</strong></span>
+                        <span class="title-reels">خواندن مانهوا <strong>${esc(reel.manhwa_title)}</strong></span>
                         <span class="material-symbols-outlined arrow">chevron_right</span>
                     </button>
                 </div>
                 ` : ''}
                 <div class="flex items-center gap-3 mb-4">
                     <div class="creator-avatar-container">
-                        <img src="${reel.avatar_url || defaultAvatar(reel.creator)}" class="creator-avatar-img" onerror="this.onerror=null;this.src='${defaultAvatar(reel.creator)}'">
+                        <img loading="lazy" decoding="async" src="${esc(reel.avatar_url || defaultAvatar(reel.creator))}" class="creator-avatar-img" onerror="this.onerror=null;this.src='${esc(defaultAvatar(reel.creator))}'">
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-bold truncate text-white">${reel.creator}@</p>
-                        <p class="text-sm text-white/70">${reel.level || ''}</p>
+                        <p class="font-bold truncate text-white">${esc(reel.creator)}@</p>
+                        <p class="text-sm text-white/70">${esc(reel.level || '')}</p>
                     </div>
                     <button class="follow-btn" onclick="window.location.href='https://www.instagram.com/ManhwaChiOfficial'">دنبال کردن</button>
                 </div>
                 <div class="reel-description-wrapper mb-2">
                     <p class="reel-description collapsed text-white" id="desc-${reel.id}" onclick="toggleDescription('${reel.id}')">
-                        ${reel.description}
+                        ${esc(reel.description)}
                     </p>
-                    ${reel.description.length > 90 ? `<span class="more-text" id="more-text-${reel.id}" onclick="toggleDescription('${reel.id}')">... بیشتر</span>` : ""}
+                    ${String(reel.description || '').length > 90 ? `<span class="more-text" id="more-text-${reel.id}" onclick="toggleDescription('${reel.id}')">... بیشتر</span>` : ""}
                 </div>
                 <div class="flex gap-2 flex-wrap">
-                    ${(reel.tags || []).map(tag => `<span class="text-blue-400 text-sm">#${tag}</span>`).join('')}
+                    ${(reel.tags || []).map(tag => `<span class="text-blue-400 text-sm">#${esc(tag)}</span>`).join('')}
                 </div>
             </div>
         `;
@@ -576,7 +580,7 @@
 
     async function shareReel(url) {
         if (!url) {
-            alert('لینک اشتراک وجود ندارد');
+            note('لینک اشتراک وجود ندارد', 'error');
             return;
         }
         try {
@@ -587,7 +591,7 @@
                 });
             } else {
                 await navigator.clipboard.writeText(url);
-                alert('لینک کپی شد');
+                note('لینک کپی شد', 'success');
             }
         } catch (err) {
             console.error(err);
@@ -682,7 +686,12 @@
 
     function goToManhwa(url) {
         if (!url) return;
-        window.location.href = url;
+        // فقط آدرس داخلی یا http(s) مجازه (بلاک javascript: و مشابه)
+        try {
+            const u = new URL(url, window.location.origin);
+            if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
+            window.location.href = u.href;
+        } catch (e) { /* آدرس نامعتبر */ }
     }
 
     window.initReels = initReels;

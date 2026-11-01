@@ -184,6 +184,22 @@
                         <button type="submit" id="changePasswordBtn" class="btn btn--outline">تغییر رمز عبور</button>
                     </form>
                 </details>
+
+                <!-- دستگاه‌های من (هر حساب حداکثر ۲ دستگاه) -->
+                <details class="panel fold" id="devicesFold">
+                    <summary class="fold__summary">
+                        <span class="sec-head__icon"><span class="material-symbols-outlined">devices</span></span>
+                        <span class="fold__text">
+                            <b>دستگاه‌های من</b>
+                            <small>هر حساب فقط روی ۲ دستگاه فعال می‌ماند</small>
+                        </span>
+                        <span class="material-symbols-outlined fold__chev">expand_more</span>
+                    </summary>
+                    <div class="fold__body">
+                        <p class="field__hint" id="devicesHint">در حال بارگذاری...</p>
+                        <div id="devicesList" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"></div>
+                    </div>
+                </details>
             </div>
         </div>
 

@@ -3,20 +3,47 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow">
     <title>تایید پرداخت - مانهواچی</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <script src="/js/vendor/supabase.min.js"></script>
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/mc-shared.css?v=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" href="/css/tailwind-core.css">
+    <script>
+      // اگر فایل کامپایل‌شده‌ی کامل Tailwind (با نشانه‌ی --mc-tw) نبود، مثل قبل از CDN لود می‌شود
+      (function () {
+        var ok = false;
+        try { ok = !!getComputedStyle(document.documentElement).getPropertyValue('--mc-tw').trim(); } catch (e) {}
+        window.__twLocal = ok;
+        window.__twFallback = function (cb) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.tailwindcss.com';
+          if (cb) s.onload = cb;
+          document.head.appendChild(s);
+        };
+        if (!ok) window.__twFallback();
+      })();
+    </script>
+    <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+        <script src="/js/vendor/supabase.min.js"></script>
     <script src="js/supabase.js"></script>
     <style>
         body { background-color: #050505; color: #ffffff; font-family: 'Vazirmatn', sans-serif; }
     </style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <div class="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
         
+        <a href="/" class="mc-brand" style="justify-content:center;margin-bottom:20px" aria-label="مانهواچی">
+            <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" onerror="this.remove()" />
+            <span class="mc-brand__name">Manhwa<b>Chi</b></span>
+        </a>
+
         <!-- وضعیت در حال بارگذاری -->
         <div id="loadingState" class="py-8 space-y-4">
             <div class="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -160,5 +187,6 @@
 
     document.addEventListener('DOMContentLoaded', verifyPayment);
 </script>
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow">
     <title>پنل مدیریت کامنت‌ها | ManhwaChi Admin</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <script>
+    <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+        <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -18,6 +19,9 @@
             }
         }
     </script>
+    <link rel="stylesheet" href="/mc-shared.css?v=1">
+    <script src="/mc-ui.js"></script>
+    <script>window.alert=function(m){m=String(m);window.mcToast&&mcToast(m,/ناموفق|خطا|دسترسی/.test(m)?'error':'info');};</script>
 </head>
 <body class="bg-surface text-gray-200 font-sans min-h-screen p-4 md:p-8">
 
@@ -67,6 +71,7 @@
                 <div>
                     <p class="text-xs text-gray-400">کامنت‌های در انتظار</p>
                     <p id="statPending" class="text-2xl font-bold text-yellow-500 mt-1">0</p>
+                    <p id="statPendingSub" class="text-[11px] text-gray-500 mt-0.5"></p>
                 </div>
                 <span class="material-symbols-outlined text-yellow-500/20 text-4xl">hourglass_empty</span>
             </div>
@@ -92,17 +97,17 @@
                 <!-- Tabs -->
                 <div class="flex gap-2 border-b border-white/10 pb-2">
                     <button id="tabPending" onclick="switchTab('pending')" class="px-4 py-2 text-sm font-bold text-primary border-b-2 border-primary transition flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">pending_actions</span> در انتظار تایید
+                        <span class="material-symbols-outlined text-sm">pending_actions</span> در انتظار تایید <span id="countPending" class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded-full">0</span>
                     </button>
                     <button id="tabApproved" onclick="switchTab('approved')" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">verified</span> تایید شده‌ها
+                        <span class="material-symbols-outlined text-sm">verified</span> تایید شده‌ها <span id="countApproved" class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded-full">0</span>
                     </button>
                 </div>
 
                 <!-- Search Input -->
                 <div class="relative min-w-[260px]">
                     <span class="material-symbols-outlined absolute right-3 top-2.5 text-gray-500 text-sm">search</span>
-                    <input type="text" id="searchInput" oninput="renderComments()" placeholder="جستجو بر اساس نام، متن یا اسلاگ..." class="w-full bg-surface-container border border-white/10 rounded-xl pr-9 pl-4 py-2 text-xs text-white focus:outline-none focus:border-primary">
+                    <input type="text" id="searchInput" oninput="renderComments()" placeholder="جستجو در نام، متن، اسلاگ و ریپلای‌ها..." class="w-full bg-surface-container border border-white/10 rounded-xl pr-9 pl-4 py-2 text-xs text-white focus:outline-none focus:border-primary">
                 </div>
             </div>
         </div>
@@ -187,8 +192,8 @@
             }
 
             const [{ data: messages, error: mErr }, { data: replies, error: rErr }] = await Promise.all([
-                db.from('messages').select('*').order('created_at', { ascending: false }).limit(500),
-                db.from('replies').select('*').order('created_at', { ascending: true }).limit(2000)
+                db.from('messages').select('*').order('created_at', { ascending: false }).limit(2000),
+                db.from('replies').select('*').order('created_at', { ascending: true }).limit(5000)
             ]);
 
             if (mErr || rErr) {
@@ -201,105 +206,210 @@
 
             cachedMessages = messages || [];
             cachedReplies = replies || [];
-
+            buildIndexes();
             updateStats();
             renderComments();
         }
 
-        function updateStats() {
-            const pendingCount = cachedMessages.filter(m => !m.approved).length;
-            const approvedCount = cachedMessages.filter(m => m.approved).length;
+        // ---------- ایندکس‌ها: ساختار درختی نظر ← ریپلای کاربر ← پاسخ ادمین ----------
+        let msgMap = new Map();        // id -> message
+        let childrenMap = new Map();   // parent_message_id -> [message] (قدیمی به جدید)
+        let adminRepliesMap = new Map(); // message_id -> [reply]
 
-            document.getElementById('statPending').textContent = pendingCount;
+        function buildIndexes() {
+            msgMap = new Map(cachedMessages.map(m => [m.id, m]));
+            childrenMap = new Map();
+            [...cachedMessages].reverse().forEach(m => {
+                if (m.parent_message_id != null) {
+                    if (!childrenMap.has(m.parent_message_id)) childrenMap.set(m.parent_message_id, []);
+                    childrenMap.get(m.parent_message_id).push(m);
+                }
+            });
+            adminRepliesMap = new Map();
+            cachedReplies.forEach(r => {
+                if (!adminRepliesMap.has(r.message_id)) adminRepliesMap.set(r.message_id, []);
+                adminRepliesMap.get(r.message_id).push(r);
+            });
+        }
+
+        function descendantsOf(id, acc = []) {
+            (childrenMap.get(id) || []).forEach(c => { acc.push(c.id); descendantsOf(c.id, acc); });
+            return acc;
+        }
+
+        function updateStats() {
+            const pending = cachedMessages.filter(m => !m.approved);
+            const pendingReplies = pending.filter(m => m.parent_message_id != null).length;
+            const approvedCount = cachedMessages.length - pending.length;
+
+            document.getElementById('statPending').textContent = pending.length;
+            document.getElementById('statPendingSub').textContent = pendingReplies ? `(${pendingReplies} مورد ریپلای کاربر)` : '';
             document.getElementById('statApproved').textContent = approvedCount;
             document.getElementById('statReplies').textContent = cachedReplies.length;
+            document.getElementById('countPending').textContent = pending.length;
+            document.getElementById('countApproved').textContent = approvedCount;
+        }
+
+        // ---------- کمک‌ها ----------
+        function fmtDate(iso) {
+            const d = new Date(iso);
+            if (isNaN(d)) return '';
+            return d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) + ' - ' + d.toLocaleDateString('fa-IR');
+        }
+        function snippet(t, n = 220) {
+            t = String(t || '').replace(/\s+/g, ' ').trim();
+            return t.length > n ? t.slice(0, n) + '…' : t;
+        }
+        function includesQ(q, ...vals) {
+            return vals.some(v => v && String(v).toLowerCase().includes(q));
+        }
+        function threadMatches(q, root) {
+            if (includesQ(q, root.name, root.text, root.manhwa_slug)) return true;
+            if ((adminRepliesMap.get(root.id) || []).some(r => includesQ(q, r.reply_text, r.admin_name))) return true;
+            return (childrenMap.get(root.id) || []).some(c =>
+                includesQ(q, c.name, c.text) || (adminRepliesMap.get(c.id) || []).some(r => includesQ(q, r.reply_text, r.admin_name))
+            );
+        }
+
+        // کادم «این ریپلای روی چه نظری بوده»
+        function contextHtml(msg) {
+            if (msg.parent_message_id == null) return '';
+            const parent = msgMap.get(msg.parent_message_id);
+            if (!parent) {
+                return `<div class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-xl p-3 text-xs flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">link_off</span>
+                    نظر اصلی این ریپلای حذف شده است.</div>`;
+            }
+            const parentOk = !!parent.approved;
+            return `
+                <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-xs space-y-2">
+                    <div class="flex flex-wrap items-center gap-2 text-gray-400">
+                        <span class="material-symbols-outlined text-sm text-primary">subdirectory_arrow_left</span>
+                        <span>در پاسخ به نظرِ</span>
+                        <span class="font-bold text-white">${escapeHtml(parent.name || 'کاربر')}</span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] border ${parentOk ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'}">${parentOk ? 'تایید شده' : 'در انتظار تایید'}</span>
+                        ${parent.manhwa_slug ? `<span class="text-[10px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">${escapeHtml(parent.manhwa_slug)}</span>` : ''}
+                    </div>
+                    <p class="text-gray-300 leading-relaxed border-r-2 border-white/20 pr-3">${escapeHtml(snippet(parent.text))}</p>
+                    ${parentOk ? '' : `
+                        <div class="flex items-center justify-between gap-2 text-yellow-400">
+                            <span>تا نظر اصلی تایید نشود، این ریپلای در سایت دیده نمی‌شود.</span>
+                            <button onclick="approveOnly(${parent.id}, this)" class="px-3 py-1 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition">تایید نظر اصلی</button>
+                        </div>`}
+                </div>`;
+        }
+
+        function adminReplyHtml(reply) {
+            return `
+                <div class="bg-surface-container border border-white/5 rounded-xl p-3 text-xs space-y-1">
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="font-bold text-white flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-primary">shield</span>
+                            ${escapeHtml(reply.admin_name || 'ادمین')}
+                            <span class="text-[10px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">${escapeHtml(reply.admin_role || 'پاسخ')}</span>
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <span class="text-[10px] text-gray-500 font-mono" dir="ltr">${fmtDate(reply.created_at)}</span>
+                            <button onclick="editReply('${reply.id}')" title="ویرایش" class="text-gray-500 hover:text-white"><span class="material-symbols-outlined text-sm">edit</span></button>
+                            <button onclick="deleteReply('${reply.id}', this)" title="حذف پاسخ" class="text-gray-500 hover:text-red-400"><span class="material-symbols-outlined text-sm">delete</span></button>
+                        </span>
+                    </div>
+                    <p class="text-gray-300 pr-5 leading-relaxed whitespace-pre-line">${escapeHtml(reply.reply_text)}</p>
+                </div>`;
+        }
+
+        // یک نظر (اصلی یا ریپلای کاربر) همراه با پاسخ‌های ادمین به همان نظر و باکس پاسخ/دکمه‌ها
+        function messageBlock(msg, { isChild = false } = {}) {
+            const replies = adminRepliesMap.get(msg.id) || [];
+            const repliesHtml = replies.map(adminReplyHtml).join('');
+            return `
+                <div class="space-y-3">
+                    <div class="flex justify-between items-start gap-2 flex-wrap">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <span class="font-bold text-white ${isChild ? 'text-sm' : 'text-base'}">${escapeHtml(msg.name || 'کاربر')}</span>
+                            ${isChild ? `<span class="text-[10px] text-sky-300 bg-sky-500/10 border border-sky-500/30 px-2 py-0.5 rounded-md">ریپلای کاربر</span>` : ''}
+                            ${msg.manhwa_slug && !isChild ? `<span class="text-xs text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">اسلاگ: ${escapeHtml(msg.manhwa_slug)}</span>` : ''}
+                            ${msg.approved ? '' : `<span class="text-[10px] text-yellow-400 bg-yellow-500/10 border border-yellow-500/30 px-2 py-0.5 rounded-md">در انتظار تایید</span>`}
+                        </div>
+                        <span class="text-xs text-gray-500 font-mono" dir="ltr">${fmtDate(msg.created_at)}</span>
+                    </div>
+
+                    <p class="text-sm text-gray-200 leading-relaxed bg-surface-container/50 p-3 rounded-xl border border-white/5 whitespace-pre-line">${escapeHtml(msg.text)}</p>
+
+                    ${repliesHtml ? `<div class="space-y-2 border-r-2 border-primary/40 pr-3">${repliesHtml}</div>` : ''}
+
+                    <textarea id="reply-input-${msg.id}" rows="2" class="w-full bg-surface-container border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-primary placeholder:text-gray-600" placeholder="${isChild ? `پاسخ ادمین به ریپلای ${escapeHtml(msg.name || 'کاربر')} (اختیاری)...` : 'پاسخ ادمین به این نظر (اختیاری)...'}"></textarea>
+
+                    <div class="flex gap-2 justify-end flex-wrap">
+                        <button onclick="deleteComment(${msg.id}, this)" class="px-4 py-2 bg-red-950/40 text-red-400 border border-red-800/40 rounded-xl text-xs font-bold hover:bg-red-900/60 transition flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">delete</span> حذف
+                        </button>
+                        ${!msg.approved ? `
+                            <button onclick="approveOnly(${msg.id}, this)" class="px-4 py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold hover:bg-emerald-600 hover:text-white transition flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">check</span> فقط تایید
+                            </button>
+                            <button onclick="approveAndReply(${msg.id}, this)" class="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-red-700 transition flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">send</span> تایید و ارسال پاسخ
+                            </button>
+                        ` : `
+                            <button onclick="sendReplyOnly(${msg.id}, this)" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">send</span> ارسال پاسخ جدید
+                            </button>
+                        `}
+                    </div>
+                </div>`;
         }
 
         function renderComments() {
             const list = document.getElementById('adminCommentsList');
-            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-
-            // فیلتر بر اساس تب فعال
-            let filtered = cachedMessages.filter(m => currentTab === 'pending' ? !m.approved : m.approved);
-
-            // فیلتر بر اساس جستجو
-            if (searchQuery) {
-                filtered = filtered.filter(m => 
-                    (m.name && m.name.toLowerCase().includes(searchQuery)) ||
-                    (m.text && m.text.toLowerCase().includes(searchQuery)) ||
-                    (m.manhwa_slug && m.manhwa_slug.toLowerCase().includes(searchQuery))
-                );
-            }
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
 
             // حفظ پاسخ‌های نیمه‌نوشته هنگام رندر مجدد
             const drafts = {};
-            list.querySelectorAll('textarea[id^="reply-input-"]').forEach(t => {
-                if (t.value) drafts[t.id] = t.value;
-            });
+            list.querySelectorAll('textarea[id^="reply-input-"]').forEach(t => { if (t.value) drafts[t.id] = t.value; });
 
-            if (!filtered.length) {
+            const cards = [];
+
+            if (currentTab === 'pending') {
+                // هر نظر/ریپلای تاییدنشده یک کارت است؛ ریپلای‌ها کادم «در پاسخ به ...» دارند
+                cachedMessages.filter(m => !m.approved).forEach(m => {
+                    if (q) {
+                        const parent = msgMap.get(m.parent_message_id);
+                        if (!includesQ(q, m.name, m.text, m.manhwa_slug) && !(parent && includesQ(q, parent.name, parent.text, parent.manhwa_slug))) return;
+                    }
+                    const isChild = m.parent_message_id != null;
+                    cards.push(`<div class="bg-surface-elevated p-5 rounded-2xl border border-white/10 space-y-4 hover:border-white/20 transition shadow-sm">
+                        ${contextHtml(m)}
+                        ${messageBlock(m, { isChild })}
+                    </div>`);
+                });
+            } else {
+                // تایید شده‌ها: هر رشته (نظر اصلی + ریپلای‌ها + پاسخ‌های ادمین) یک کارت
+                cachedMessages.filter(m => {
+                    if (!m.approved) return false;
+                    if (m.parent_message_id == null) return true;
+                    const p = msgMap.get(m.parent_message_id);
+                    return !p || !p.approved; // ریپلای تاییدشده‌ای که نظر اصلی‌اش تایید/موجود نیست جدا نشان داده می‌شود
+                }).forEach(root => {
+                    if (q && !threadMatches(q, root)) return;
+                    const kids = childrenMap.get(root.id) || [];
+                    const kidsHtml = kids.map(k => `
+                        <div class="bg-black/30 border border-white/10 rounded-xl p-4">${messageBlock(k, { isChild: true })}</div>`).join('');
+                    cards.push(`<div class="bg-surface-elevated p-5 rounded-2xl border border-white/10 space-y-4 hover:border-white/20 transition shadow-sm">
+                        ${contextHtml(root)}
+                        ${messageBlock(root, { isChild: root.parent_message_id != null })}
+                        ${kidsHtml ? `<div class="space-y-3 border-r-2 border-sky-500/30 pr-3 mr-1">
+                            <p class="text-[11px] text-gray-500 flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span>ریپلای‌های کاربران (${kids.length})</p>
+                            ${kidsHtml}</div>` : ''}
+                    </div>`);
+                });
+            }
+
+            if (!cards.length) {
                 list.innerHTML = `<p class="text-center py-12 text-gray-500">هیچ نظری در این بخش یافت نشد.</p>`;
                 return;
             }
-
-            list.innerHTML = '';
-            filtered.forEach(msg => {
-                const repliesForMsg = cachedReplies.filter(r => r.message_id === msg.id);
-
-                const repliesHtml = repliesForMsg.map(reply => `
-                    <div class="bg-surface-container border border-white/5 rounded-xl p-3 text-xs space-y-1">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-white flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-xs text-primary">shield</span>
-                                ${escapeHtml(reply.admin_name || 'ادمین')} 
-                                <span class="text-[10px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">${escapeHtml(reply.admin_role || 'پاسخ')}</span>
-                            </span>
-                            <span class="text-[10px] text-gray-500 font-mono" dir="ltr">${new Date(reply.created_at).toLocaleDateString('fa-IR')}</span>
-                        </div>
-                        <p class="text-gray-300 pr-5 leading-relaxed">${escapeHtml(reply.reply_text)}</p>
-                    </div>
-                `).join('');
-
-                const card = document.createElement('div');
-                card.className = "bg-surface-elevated p-5 rounded-2xl border border-white/10 space-y-4 hover:border-white/20 transition shadow-sm";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="font-bold text-white text-base">${escapeHtml(msg.name)}</span>
-                            <span class="text-xs text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md mr-2">اسلاگ: ${escapeHtml(msg.manhwa_slug)}</span>
-                        </div>
-                        <span class="text-xs text-gray-500 font-mono" dir="ltr">${new Date(msg.created_at).toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'})} - ${new Date(msg.created_at).toLocaleDateString('fa-IR')}</span>
-                    </div>
-
-                    <p class="text-sm text-gray-200 leading-relaxed bg-surface-container/50 p-3 rounded-xl border border-white/5">${escapeHtml(msg.text)}</p>
-                    
-                    ${repliesHtml ? `<div class="space-y-2 pt-2 border-r-2 border-primary/40 pr-3">${repliesHtml}</div>` : ''}
-
-                    <div class="pt-3 border-t border-white/5 space-y-3">
-                        <textarea id="reply-input-${msg.id}" rows="2" class="w-full bg-surface-container border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-primary placeholder:text-gray-600" placeholder="پاسخ ادمین به این نظر (اختیاری)..."></textarea>
-                        
-                        <div class="flex gap-2 justify-end flex-wrap">
-                            <button onclick="deleteComment(${msg.id})" class="px-4 py-2 bg-red-950/40 text-red-400 border border-red-800/40 rounded-xl text-xs font-bold hover:bg-red-900/60 transition flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">delete</span> حذف
-                            </button>
-
-                            ${!msg.approved ? `
-                                <button onclick="approveOnly(${msg.id})" class="px-4 py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold hover:bg-emerald-600 hover:text-white transition flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">check</span> فقط تایید کامنت
-                                </button>
-                                <button onclick="approveAndReply(${msg.id})" class="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-red-700 transition flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">send</span> تایید و ارسال پاسخ
-                                </button>
-                            ` : `
-                                <button onclick="sendReplyOnly(${msg.id})" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">send</span> ارسال پاسخ جدید
-                                </button>
-                            `}
-                        </div>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
+            list.innerHTML = cards.join('');
 
             Object.entries(drafts).forEach(([id, val]) => {
                 const t = document.getElementById(id);
@@ -307,69 +417,112 @@
             });
         }
 
-        // ۱. فقط تایید نظر بدون ارسال پاسخ
-        window.approveOnly = async function(msgId) {
-            const { error } = await db.from('messages').update({ approved: true }).eq('id', msgId);
-            if (error) return alert("خطا در تایید نظر: " + error.message);
-            loadDashboardData();
+        // ---------- عملیات ----------
+        function busy(btn, on) {
+            if (!btn) return;
+            btn.disabled = on;
+            btn.classList.toggle('opacity-50', on);
+            btn.classList.toggle('pointer-events-none', on);
         }
 
-        // ۲. تایید نظر + ارسال پاسخ ادمین همزمان
-        window.approveAndReply = async function(msgId) {
-            const replyText = document.getElementById(`reply-input-${msgId}`).value.trim();
-            if (!replyText) return alert("لطفا متن پاسخ را وارد کنید یا از دکمه «فقط تایید کامنت» استفاده کنید.");
+        async function insertAdminReply(msgId, text) {
+            // message_id همان نظری است که ادمین مستقیم به آن جواب می‌دهد (نظر اصلی یا ریپلای کاربر)
+            return db.from('replies').insert({ message_id: msgId, reply_text: text });
+        }
 
-            // اول پاسخ ثبت می‌شود؛ اگر خطا داد، کامنت تایید نمی‌شود و متن از بین نمی‌رود
-            const { error: replyErr } = await db.from('replies').insert({
-                message_id: msgId,
-                reply_text: replyText
-            });
-            if (replyErr) return alert("خطا در ثبت پاسخ: " + replyErr.message);
+        window.approveOnly = async function(msgId, btn) {
+            busy(btn, true);
+            const { error } = await db.from('messages').update({ approved: true }).eq('id', msgId);
+            if (error) { busy(btn, false); return alert("خطا در تایید نظر: " + error.message); }
+            await loadDashboardData();
+        }
+
+        window.approveAndReply = async function(msgId, btn) {
+            const input = document.getElementById(`reply-input-${msgId}`);
+            const replyText = input.value.trim();
+            if (!replyText) return alert("لطفا متن پاسخ را وارد کنید یا از دکمه «فقط تایید» استفاده کنید.");
+
+            busy(btn, true);
+            // اول پاسخ ثبت می‌شود؛ اگر خطا داد، نظر تایید نمی‌شود و متن از بین نمی‌رود
+            const { error: replyErr } = await insertAdminReply(msgId, replyText);
+            if (replyErr) { busy(btn, false); return alert("خطا در ثبت پاسخ: " + replyErr.message); }
+            input.value = '';
 
             const { error: updateErr } = await db.from('messages').update({ approved: true }).eq('id', msgId);
-            if (updateErr) {
-                loadDashboardData();
-                return alert("پاسخ ثبت شد ولی تایید نظر ناموفق بود: " + updateErr.message);
-            }
-
-            loadDashboardData();
+            await loadDashboardData();
+            if (updateErr) alert("پاسخ ثبت شد ولی تایید نظر ناموفق بود: " + updateErr.message);
         }
 
-        // ۳. ارسال پاسخ جدید برای کامنت‌هایی که قبلاً تایید شده‌اند
-        window.sendReplyOnly = async function(msgId) {
-            const replyText = document.getElementById(`reply-input-${msgId}`).value.trim();
+        window.sendReplyOnly = async function(msgId, btn) {
+            const input = document.getElementById(`reply-input-${msgId}`);
+            const replyText = input.value.trim();
             if (!replyText) return alert("لطفا متن پاسخ را بنویسید.");
 
-            const { error: replyErr } = await db.from('replies').insert({
-                message_id: msgId,
-                reply_text: replyText
-            });
-
-            if (replyErr) return alert("خطا در ثبت پاسخ: " + replyErr.message);
-
-            document.getElementById(`reply-input-${msgId}`).value = '';
-            loadDashboardData();
+            busy(btn, true);
+            const { error: replyErr } = await insertAdminReply(msgId, replyText);
+            if (replyErr) { busy(btn, false); return alert("خطا در ثبت پاسخ: " + replyErr.message); }
+            input.value = '';
+            await loadDashboardData();
         }
 
-        // ۴. حذف نظر
-        window.deleteComment = async function(msgId) {
-            if (!confirm("آیا از حذف این نظر اطمینان دارید؟")) return;
-            const { error } = await db.from('messages').delete().eq('id', msgId);
-            if (error) return alert("خطا در حذف نظر: " + error.message);
-            loadDashboardData();
+        window.editReply = async function(replyId) {
+            const r = cachedReplies.find(x => String(x.id) === String(replyId));
+            if (!r) return;
+            const text = prompt("ویرایش پاسخ:", r.reply_text);
+            if (text === null) return;
+            if (!text.trim()) return alert("متن پاسخ نمی‌تواند خالی باشد.");
+            const { error } = await db.from('replies').update({ reply_text: text.trim() }).eq('id', r.id);
+            if (error) return alert("خطا در ویرایش پاسخ: " + error.message);
+            await loadDashboardData();
+        }
+
+        window.deleteReply = async function(replyId, btn) {
+            if (!confirm("این پاسخ ادمین حذف شود؟")) return;
+            busy(btn, true);
+            const { error } = await db.from('replies').delete().eq('id', replyId);
+            if (error) { busy(btn, false); return alert("خطا در حذف پاسخ: " + error.message); }
+            await loadDashboardData();
+        }
+
+        // حذف نظر: ریپلای‌های کاربران و پاسخ‌های ادمینِ وابسته هم پاک می‌شوند تا داده‌ی یتیم نماند
+        window.deleteComment = async function(msgId, btn) {
+            const kids = descendantsOf(msgId);
+            const allIds = [msgId, ...kids];
+            const adminCount = allIds.reduce((n, id) => n + (adminRepliesMap.get(id) || []).length, 0);
+            let warn = "آیا از حذف این نظر اطمینان دارید؟";
+            if (kids.length || adminCount) warn += `\n\nهمراه آن ${kids.length} ریپلای کاربر و ${adminCount} پاسخ ادمین هم حذف می‌شود.`;
+            if (!confirm(warn)) return;
+
+            busy(btn, true);
+            try {
+                for (const id of allIds) {
+                    const { error } = await db.from('replies').delete().eq('message_id', id);
+                    if (error) throw error;
+                }
+                for (const id of [...kids].reverse().concat(msgId)) {
+                    const { error } = await db.from('messages').delete().eq('id', id);
+                    if (error) throw error;
+                }
+            } catch (error) {
+                busy(btn, false);
+                await loadDashboardData();
+                return alert("خطا در حذف نظر: " + error.message);
+            }
+            await loadDashboardData();
         }
 
         function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            if (text === null || text === undefined) return '';
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        // سرور محلی Realtime ندارد؛ به‌جای آن هر ۳۰ ثانیه (فقط وقتی تب دیده می‌شود) به‌روز می‌شود
+        // سرور محلی Realtime ندارد؛ هر ۳۰ ثانیه (فقط وقتی تب دیده می‌شود و ادمین مشغول نوشتن نیست) به‌روز می‌شود
         let pollTimer = null;
         function setupRealtime() {
             if (pollTimer) return;
             pollTimer = setInterval(() => {
-                if (!document.hidden) loadDashboardData();
+                const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
+                if (!document.hidden && !typing) loadDashboardData();
             }, 30000);
         }
 

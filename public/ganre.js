@@ -1,6 +1,5 @@
 (function () { 
-    window.tailwind = window.tailwind || {};
-    window.tailwind.config = {
+    tailwind.config = {
         darkMode: "class",
         theme: {
             extend: {

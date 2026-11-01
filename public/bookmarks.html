@@ -3,13 +3,38 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="نشان‌شده‌های شما در مانهواچی.">
     <title>نشان‌شده‌ها | ManhwaChi</title>
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/mc-shared.css?v=1" />
+    <meta name="theme-color" content="#000000" />
+    <style>body{font-family:var(--mc-font);-webkit-font-smoothing:antialiased}</style>
     
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <script>
+      // اگر فایل کامپایل‌شده‌ی کامل Tailwind (با نشانه‌ی --mc-tw) نبود، مثل قبل از CDN لود می‌شود
+      (function () {
+        var ok = false;
+        try { ok = !!getComputedStyle(document.documentElement).getPropertyValue('--mc-tw').trim(); } catch (e) {}
+        window.__twLocal = ok;
+        window.__twFallback = function (cb) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+          if (cb) s.onload = cb;
+          document.head.appendChild(s);
+        };
+        
+      })();
+    </script>
+    <link rel="stylesheet" href="/css/vendor/montserrat.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400..800&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+    
     <script id="tailwind-config">
+        if (!window.__twLocal) window.__twFallback(function () {
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -26,19 +51,9 @@
                 }
             }
         }
+    });
     </script>
-    <!-- Halloween theme (same files as the main page) -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/halloween.css?v=3">
-    <script src="/halloween.js?v=3" defer></script>
-    <style>
-        body{font-family:'Vazirmatn','Inter',sans-serif}
-        html.hw .bg-surface-elevated{background-color:#1a1030!important}
-        html.hw .border-white\/10{border-color:rgba(255,190,120,.18)!important}
-        html.hw .hover\:text-primary:hover{color:#ff8a2b!important}
-        html.hw .group:hover{border-color:rgba(255,138,43,.6);box-shadow:0 12px 30px -12px rgba(255,138,43,.55)}
-        html.hw .text-text-muted{color:#b9a8dc!important}
-    </style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
 <body class="bg-surface text-on-surface font-body min-h-screen flex flex-col justify-between">
 
@@ -46,7 +61,7 @@
     <header class="sticky top-0 z-50 w-full bg-surface/85 backdrop-blur-xl border-b border-white/10">
         <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
             <a href="/" class="flex items-center gap-3">
-                <img src="MANHWACHI/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto" />
+                <img src="/ManhwaChi/LOGO-main-white.webp" onerror="this.remove()" alt="ManhwaChi Logo" class="h-8 w-auto" />
                 <span class="font-bold text-xl text-white font-['Montserrat']">Manhwa<span class="text-primary">Chi</span></span>
             </a>
             
@@ -71,7 +86,7 @@
             <span class="material-symbols-outlined text-6xl text-text-muted mb-4">bookmark_border</span>
             <h2 class="text-xl font-bold mb-2">هیچ مانهوایی نشان‌گذاری نشده است</h2>
             <p class="text-text-muted text-sm mb-6">شما می‌توانید مانهواهای مورد علاقه خود را ذخیره کنید تا بعداً سریع‌تر دسترسی داشته باشید.</p>
-            <a href="/archive.html" class="px-6 py-3 bg-primary text-white rounded-2xl font-bold text-sm hover:opacity-90 transition">مشاهده آرشیو</a>
+            <a href="/library-page.html" class="px-6 py-3 bg-primary text-white rounded-2xl font-bold text-sm hover:opacity-90 transition">مشاهده آرشیو</a>
         </div>
     </main>
 
@@ -97,15 +112,15 @@
                 card.className = 'relative bg-surface-elevated rounded-2xl overflow-hidden border border-white/10 group';
                 
                 card.innerHTML = `
-                    <a href="/manga.html?slug=${item.slug}" class="block aspect-[3/4] relative overflow-hidden">
-                        <img src="${item.cover}" alt="${item.title_en}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <a href="/comic/${encodeURIComponent(item.slug)}" class="block aspect-[3/4] relative overflow-hidden">
+                        <img loading="lazy" decoding="async" src="${item.cover}" alt="${item.title_en}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                     </a>
                     <button onclick="removeBookmark('${item.slug}')" class="absolute top-2 left-2 w-9 h-9 rounded-xl bg-black/60 backdrop-blur-md text-white hover:text-primary flex items-center justify-center transition">
                         <span class="material-symbols-outlined text-xl">delete</span>
                     </button>
                     <div class="p-3">
-                        <a href="/manga.html?slug=${item.slug}" class="font-bold text-sm text-white line-clamp-1 hover:text-primary transition">${item.title_fa || item.title_en}</a>
+                        <a href="/comic/${encodeURIComponent(item.slug)}" class="font-bold text-sm text-white line-clamp-1 hover:text-primary transition">${item.title_fa || item.title_en}</a>
                         <p class="text-xs text-text-muted font-['Montserrat'] mt-1 truncate">${item.title_en}</p>
                     </div>
                 `;
@@ -122,5 +137,6 @@
 
         window.onload = renderBookmarks;
     </script>
+<script src="/mc-polish.js?v=1" defer></script>
 </body>
 </html>

@@ -1,0 +1,245 @@
+/* =====================================================================
+   ManhwaChi — لایه‌ی زیباسازی (mc-polish.css)
+   مینیمال، مشکی/قرمز، سبک و روان.
+   قاعده‌ها:
+   - فقط transform و opacity انیمیت می‌شوند (بدون انیمیشن box-shadow / blur)
+   - روی گوشی ضعیف و حالت «کاهش حرکت» همه‌چیز خودکار ساده می‌شود
+   - این فایل باید «بعد از» mc-shared.css و home.css لود شود
+   حذفش = برگشت کامل به ظاهر قبلی
+   ===================================================================== */
+
+:root{
+  --mp-ease: cubic-bezier(.22,1,.36,1);       /* نرم و کشیده، برای ورودی‌ها */
+  --mp-ease-io: cubic-bezier(.65,0,.35,1);    /* برای رفت‌وبرگشت‌ها */
+  --mp-hair: rgba(255,255,255,.08);
+  --mp-hair-2: rgba(255,255,255,.14);
+  --mp-card: #0e0e0f;
+  --mp-r-sm: 10px;
+  --mp-r-md: 16px;
+  --mp-r-lg: 22px;
+}
+
+/* ---------- پایه ---------- */
+html{ scroll-behavior:smooth; }
+body{ background:#000; }
+::selection{ background:rgba(220,38,38,.6); }
+
+/* ---------- ورود صفحه (یک بار، فقط یک لحظه‌ی هماهنگ) ---------- */
+@keyframes mpRise{ from{opacity:0; transform:translate3d(0,14px,0)} to{opacity:1; transform:none} }
+@keyframes mpDrop{ from{opacity:0; transform:translate3d(0,-100%,0)} to{opacity:1; transform:none} }
+@keyframes mpFade{ from{opacity:0} to{opacity:1} }
+
+html.mp-ready header.sticky,
+html.mp-ready .mc-header{ animation:mpDrop .7s var(--mp-ease) both; }
+
+/* ---------- هدر ---------- */
+header.sticky, .mc-header{
+  background:rgba(8,8,8,.72) !important;
+  border-bottom:1px solid var(--mp-hair) !important;
+}
+header.sticky .rounded-2xl[class*="bg-[#1E1E1E]"],
+.mc-back{
+  background:transparent !important;
+  border:1px solid var(--mp-hair-2) !important;
+  transition:transform .25s var(--mp-ease), border-color .25s, color .25s, background .25s !important;
+}
+header.sticky .rounded-2xl[class*="bg-[#1E1E1E]"]:hover,
+.mc-back:hover{
+  background:rgba(220,38,38,.1) !important;
+  border-color:rgba(220,38,38,.55) !important;
+}
+header.sticky .rounded-2xl[class*="bg-[#1E1E1E]"]:active,
+.mc-back:active{ transform:scale(.92) !important; }
+
+/* خط زیرِ لینک‌های منو: از راست (جهت فارسی) کشیده می‌شود */
+.nav-link::after{
+  height:1.5px !important;
+  transform-origin:right center;
+  transition:width .35s var(--mp-ease) !important;
+}
+
+/* ---------- خط پیشرفت اسکرول (تنها «عنصر ویژه»ی لایه) ---------- */
+#mp-progress{
+  position:fixed; top:0; right:0; left:0; height:2px; z-index:10040;
+  pointer-events:none; transform-origin:right center; transform:scaleX(0);
+  background:linear-gradient(270deg,#DC2626,#ff6b5e);
+  will-change:transform;
+}
+
+/* ---------- عنوان بخش‌ها ---------- */
+.title{ border-top:0 !important; margin-top:18px; }
+.title a{
+  font-weight:800; letter-spacing:-.01em; font-size:1.08rem !important;
+  transition:transform .3s var(--mp-ease), color .25s;
+}
+.title a:hover{ color:#fff; transform:translateX(-4px); }
+/* جایگزین آیکون اسپرایت قدیمی: یک خط قرمز کوتاه که هنگام دیده‌شدن کشیده می‌شود */
+.title a::after{
+  background:#DC2626 !important; background-image:none !important;
+  width:3px !important; height:16px !important; border-radius:3px;
+  right:0 !important; top:50% !important; margin-top:-8px;
+  transform:scaleY(0); transform-origin:center;
+  transition:transform .6s var(--mp-ease) .15s;
+}
+.title.mp-in a::after, html:not(.mp-js) .title a::after{ transform:scaleY(1); }
+.title.v2 a::after{ display:none !important; }
+.lst_type1, .toprated_list{ border-bottom:0 !important; }
+
+/* ---------- کارت‌های «آخرین آپدیت‌ها» ---------- */
+#todaysList .comic-card{
+  border:1px solid var(--mp-hair) !important;
+  box-shadow:none !important;
+  background:var(--mp-card) !important;
+  border-radius:var(--mp-r-lg) !important;
+  transition:transform .5s var(--mp-ease), border-color .3s !important;
+}
+#todaysList .comic-card:hover{
+  transform:translate3d(0,-5px,0) !important;
+  border-color:rgba(239,68,68,.55) !important;
+  box-shadow:none !important;
+}
+#todaysList .comic-card:active{ transform:scale(.97) !important; transition-duration:.12s !important; }
+#todaysList .comic-pic img{ transition:transform 1s var(--mp-ease) !important; }
+#todaysList .comic-card:hover .comic-pic img{ transform:scale(1.06) !important; }
+.comic-card:hover .comic-title{ color:#fff !important; }
+
+.badge-access{ border-radius:999px !important; letter-spacing:0 !important; font-weight:700 !important; }
+.badge-chapter-box{ border-radius:12px !important; }
+
+/* ---------- لیست «بهترین‌ها» ---------- */
+#topRatedList > li > a{
+  border:1px solid var(--mp-hair);
+  border-radius:var(--mp-r-md);
+  box-shadow:none !important;
+  transition:transform .4s var(--mp-ease), border-color .3s, background .3s;
+}
+#topRatedList > li > a:hover{
+  transform:translate3d(-4px,0,0);
+  border-color:rgba(220,38,38,.45);
+  background:rgba(220,38,38,.05);
+}
+#topRatedList > li > a:active{ transform:scale(.985); transition-duration:.1s; }
+
+/* ---------- کارت‌های شبکه‌ای (کتابخانه، ژانر، نشان‌شده‌ها) ---------- */
+.manhwa-card{
+  border-radius:var(--mp-r-md) !important;
+  box-shadow:none !important;
+  border:1px solid var(--mp-hair);
+  transition:transform .45s var(--mp-ease), border-color .3s !important;
+}
+.manhwa-card:hover:not(.preview-mode){ transform:translate3d(0,-4px,0) !important; border-color:rgba(239,68,68,.5); }
+.manhwa-card:active{ transform:scale(.97) !important; }
+.card-cover{ transition:transform .9s var(--mp-ease) !important; }
+.manhwa-card:hover .card-cover{ transform:scale(1.05); }
+
+/* کارت‌های صفحه‌ی جستجو */
+.cards .card{ transition:transform .45s var(--mp-ease) !important; }
+.cards .card:hover{ transform:translate3d(0,-4px,0); }
+.cards .card:active{ transform:scale(.97); }
+
+/* ---------- اسلایدر ---------- */
+.slider-nav{
+  background:rgba(0,0,0,.35) !important;
+  border:1px solid var(--mp-hair-2) !important;
+  transition:transform .3s var(--mp-ease), background .25s, border-color .25s !important;
+}
+.slider-nav:hover{ background:rgba(220,38,38,.85) !important; border-color:transparent !important; }
+.dot{ height:4px !important; transition:width .5s var(--mp-ease), background .3s !important; }
+.dot.is-active{ box-shadow:none !important; background:#fff !important; }
+
+/* ---------- بنرها (تلگرام / اینستاگرام / دعوت به همکاری) ---------- */
+.telegram-banner-link, .instagram-banner-link{
+  box-shadow:none !important;
+  transition:transform .45s var(--mp-ease);
+}
+.telegram-banner-link{ background:linear-gradient(135deg,#1f8fc7,#1668c7) !important; }
+.instagram-banner-link{ background:linear-gradient(135deg,#e6683c,#dc2743 55%,#bc1888) !important; }
+.telegram-banner-link:hover, .instagram-banner-link:hover{ transform:translate3d(0,-3px,0); }
+.telegram-icon, .instagram-icon{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+.telegram-btn, .instagram-btn{ transition:transform .3s var(--mp-ease) !important; }
+.telegram-btn:active, .instagram-btn:active{ transform:scale(.94) !important; }
+
+.mw-btn-glow{
+  background:#DC2626 !important; border-color:transparent !important;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  box-shadow:none !important;
+  transition:transform .35s var(--mp-ease), background .25s !important;
+}
+.mw-btn-glow:hover{ background:#b91c1c !important; transform:translate3d(0,-2px,0); }
+.mw-btn-glow:active{ transform:scale(.95); }
+
+/* ---------- دکمه‌ها و فرم‌ها (سراسری) ---------- */
+button, [role="button"], .mc-dlg__btn{ transition:transform .2s var(--mp-ease), background-color .2s, border-color .2s, color .2s; }
+button:not(:disabled):active, [role="button"]:active{ transform:scale(.96); }
+
+input:not([type=checkbox]):not([type=radio]):not([type=range]),
+textarea, select{
+  transition:border-color .25s, background-color .25s;
+}
+input:not([type=checkbox]):not([type=radio]):not([type=range]):focus,
+textarea:focus, select:focus{
+  border-color:rgba(220,38,38,.7) !important;
+  box-shadow:0 0 0 3px rgba(220,38,38,.14) !important;
+  outline:none !important;
+}
+
+/* ---------- منوی کشویی ---------- */
+#mobileDrawer{ transition:transform .55s var(--mp-ease) !important; border-left:1px solid var(--mp-hair) !important; }
+#drawerOverlay{ -webkit-backdrop-filter:blur(4px) !important; backdrop-filter:blur(4px) !important; }
+.drawer-item{ transition:transform .35s var(--mp-ease), background .25s, border-color .25s !important; }
+/* آیتم‌های منو پشت‌سرهم وارد می‌شوند (فقط هنگام باز شدن) */
+@keyframes mpDrawerItem{ from{opacity:0; transform:translate3d(18px,0,0)} to{opacity:1; transform:none} }
+.drawer-open #mobileDrawer nav > *{ animation:mpDrawerItem .5s var(--mp-ease) both; }
+.drawer-open #mobileDrawer nav > *:nth-child(1){ animation-delay:.08s }
+.drawer-open #mobileDrawer nav > *:nth-child(2){ animation-delay:.13s }
+.drawer-open #mobileDrawer nav > *:nth-child(3){ animation-delay:.18s }
+.drawer-open #mobileDrawer nav > *:nth-child(4){ animation-delay:.23s }
+.drawer-open #mobileDrawer nav > *:nth-child(5){ animation-delay:.28s }
+.drawer-open #mobileDrawer nav > *:nth-child(n+6){ animation-delay:.33s }
+
+/* ---------- نوار پایین موبایل ---------- */
+.bottom-nav{
+  background:rgba(10,10,10,.92) !important;
+  border:1px solid var(--mp-hair-2) !important;
+  transition:transform .5s var(--mp-ease) !important;
+}
+.nav-item.active .nav-icon{ filter:none !important; }
+.nav-item.active .nav-text{ font-size:13px !important; }
+.nav-item{ position:relative; }
+.nav-item.active::after{
+  content:""; position:absolute; bottom:5px; width:4px; height:4px; border-radius:50%; background:#DC2626;
+  animation:mpFade .4s both;
+}
+
+/* ---------- ورود تدریجی عناصر هنگام دیده‌شدن (فقط یک بار برای هر عنصر) ---------- */
+html.mp-js [data-mp]{ opacity:0; transform:translate3d(0,16px,0); }
+html.mp-js [data-mp].mp-in{
+  opacity:1; transform:none;
+  transition:opacity .7s var(--mp-ease), transform .8s var(--mp-ease);
+  transition-delay:calc(var(--mp-i,0) * 45ms);
+}
+/* بعد از پایان ورود، transition حذف می‌شود تا hover کارت‌ها دست‌نخورده بماند */
+html.mp-js [data-mp].mp-done{ transition:none; transition-delay:0s; opacity:1; transform:none; }
+
+/* ---------- تایید/پیام‌ها ---------- */
+.mc-toast{ border-radius:14px !important; }
+.mc-dlg__box{ border-radius:22px !important; box-shadow:none !important; border-color:var(--mp-hair-2) !important; }
+
+/* ---------- جابه‌جایی نرم بین صفحه‌ها (مرورگرهای جدید؛ بقیه بدون تغییر) ---------- */
+@view-transition{ navigation:auto; }
+::view-transition-old(root){ animation:mpFade .18s reverse both; }
+::view-transition-new(root){ animation:mpRise .38s var(--mp-ease) both; }
+
+/* ---------- حالت سبک: گوشی ضعیف / ذخیره‌ی داده ---------- */
+html.mp-lite [data-mp]{ opacity:1 !important; transform:none !important; transition:none !important; }
+html.mp-lite #mp-progress{ display:none; }
+html.mp-lite .comic-pic img, html.mp-lite .card-cover{ transition:none !important; }
+html.mp-lite header.sticky, html.mp-lite .mc-header{ animation:none !important; }
+
+@media (prefers-reduced-motion:reduce){
+  html.mp-js [data-mp]{ opacity:1 !important; transform:none !important; transition:none !important; }
+  #mp-progress{ display:none; }
+  ::view-transition-old(root), ::view-transition-new(root){ animation:none; }
+  header.sticky, .mc-header{ animation:none !important; }
+  .drawer-open #mobileDrawer nav > *{ animation:none !important; }
+}

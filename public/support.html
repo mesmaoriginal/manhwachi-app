@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>پشتیبانی و تیکت | مانهواچی</title>
+<link rel="stylesheet" href="/css/vendor/vazirmatn.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #09090b; color: #f4f4f5; font-family: 'Vazirmatn', system-ui, sans-serif; min-height: 100vh; }
+  header { position: sticky; top: 0; z-index: 5; background: rgba(0,0,0,.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(127,29,29,.35); }
+  .bar { max-width: 760px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .bar a { color: #f4f4f5; text-decoration: none; font-weight: 700; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 80px; }
+  h1 { font-size: 20px; margin: 4px 0 6px; }
+  h2 { font-size: 15px; margin: 24px 0 10px; }
+  .sub { color: #a1a1aa; font-size: 13px; line-height: 1.9; margin-bottom: 18px; }
+  .card { background: #111113; border: 1px solid #27272a; border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+  label { display: block; font-size: 12px; color: #a1a1aa; margin: 12px 0 6px; }
+  input, textarea { width: 100%; background: #09090b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14px; }
+  input:focus, textarea:focus { outline: 0; border-color: #dc2626; }
+  textarea { min-height: 120px; resize: vertical; line-height: 1.9; }
+  .btn { border: 0; border-radius: 12px; padding: 10px 18px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; background: #dc2626; color: #fff; margin-top: 14px; }
+  .btn[disabled] { opacity: .5; cursor: default; }
+  .msg { font-size: 13px; margin-top: 10px; min-height: 20px; }
+  .msg.err { color: #fca5a5; } .msg.ok { color: #86efac; }
+  .meta { font-size: 12px; color: #71717a; margin-top: 6px; }
+  .body { font-size: 14px; line-height: 2; white-space: pre-wrap; word-break: break-word; }
+  .reply { margin-top: 10px; padding: 10px 12px; background: #14532d33; border: 1px solid #14532d; border-radius: 12px; font-size: 13px; line-height: 2; white-space: pre-wrap; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 999px; background: #27272a; color: #d4d4d8; margin-inline-start: 8px; }
+  .tag.ok { background: #14532d; color: #bbf7d0; } .tag.bad { background: #7f1d1d; color: #fecaca; } .tag.wait { background: #78350f; color: #fde68a; }
+  .gate { text-align: center; padding: 34px 10px; line-height: 2.1; color: #d4d4d8; }
+</style>
+<link rel="stylesheet" href="/mc-polish.css?v=1">
+</head>
+<body>
+<header><div class="bar"><a href="/">← مانهواچی</a><a href="/profile.html" style="font-weight:400;font-size:13px;color:#a1a1aa">پروفایل</a></div></header>
+<main>
+  <h1>پشتیبانی و تیکت</h1>
+  <p class="sub">سؤال یا مشکلی دارید؟ برای همه‌ی کاربران (با یا بدون اشتراک) فعال است. پاسخ همین‌جا در فهرست تیکت‌ها نمایش داده می‌شود.</p>
+  <div id="root"></div>
+</main>
+<script src="/js/vendor/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function fa(s) { return String(s).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
+  function when(iso) { try { return fa(new Date(iso).toLocaleDateString('fa-IR')); } catch (e) { return ''; } }
+  function node(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  async function token() {
+    try {
+      var r = await window.supabaseClient.auth.getSession();
+      return r && r.data && r.data.session ? r.data.session.access_token : null;
+    } catch (e) { return null; }
+  }
+  async function api(method, url, body) {
+    var t = await token();
+    if (!t) { var e = new Error('برای استفاده از این بخش باید وارد حساب شوید.'); e.code = 'AUTH_REQUIRED'; throw e; }
+    var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: body ? JSON.stringify(body) : undefined });
+    var j = {}; try { j = await res.json(); } catch (e) {}
+    if (!res.ok) { var err = new Error(j.error || ('خطا ' + res.status)); err.code = j.code; throw err; }
+    return j;
+  }
+  function gate(box, html, linkHref, linkText) {
+    box.textContent = '';
+    var g = node('div', 'gate', html);
+    if (linkHref) { var a = node('a', 'btn', linkText); a.href = linkHref; g.appendChild(document.createElement('br')); g.appendChild(a); }
+    box.appendChild(g);
+  }
+  var root = $('root');
+  var STATUS = { open: ['در انتظار پاسخ', 'wait'], answered: ['پاسخ داده شد', 'ok'], closed: ['بسته شد', ''] };
+
+  function ticketCard(t) {
+    var c = node('div', 'card');
+    var h = node('div', null);
+    h.appendChild(node('b', null, t.subject));
+    var st = STATUS[t.status] || STATUS.open;
+    h.appendChild(node('span', 'tag ' + st[1], st[0]));
+    c.appendChild(h);
+    c.appendChild(node('div', 'body', t.message));
+    c.appendChild(node('div', 'meta', when(t.created_at)));
+    if (t.reply) c.appendChild(node('div', 'reply', 'پاسخ پشتیبانی:\n' + t.reply));
+    return c;
+  }
+
+  async function load() {
+    root.textContent = '';
+    var list;
+    try { list = await api('GET', '/api/support/tickets'); }
+    catch (e) {
+      if (e.code === 'AUTH_REQUIRED') return gate(root, 'برای ارسال تیکت ابتدا وارد حساب کاربری شوید.', '/', 'بازگشت به سایت');
+      return gate(root, e.message);
+    }
+    var form = node('div', 'card');
+    form.innerHTML = '<label for="s">موضوع</label><input id="s" maxlength="120" placeholder="مثلاً: مشکل در پرداخت">' +
+      '<label for="m">پیام شما</label><textarea id="m" maxlength="2000" placeholder="مشکل را کامل توضیح دهید"></textarea>' +
+      '<button class="btn" id="send">ارسال تیکت</button><div class="msg" id="msg"></div>';
+    root.appendChild(form);
+    $('send').onclick = async function () {
+      var btn = $('send'), msg = $('msg');
+      btn.disabled = true; msg.className = 'msg'; msg.textContent = '';
+      try {
+        await api('POST', '/api/support/tickets', { subject: $('s').value, message: $('m').value });
+        load();
+      } catch (e) { msg.className = 'msg err'; msg.textContent = e.message; btn.disabled = false; }
+    };
+    root.appendChild(node('h2', null, 'تیکت‌های من'));
+    if (!list.length) root.appendChild(node('div', 'sub', 'هنوز تیکتی ارسال نکرده‌اید.'));
+    list.forEach(function (t) {
+      root.appendChild(ticketCard(t));
+      if (t.unread) api('POST', '/api/support/tickets/' + t.id + '/read').catch(function () {});
+    });
+  }
+  load();
+})();
+</script>
+<script src="/mc-polish.js?v=1" defer></script>
+</body>
+</html>

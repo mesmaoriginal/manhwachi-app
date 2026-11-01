@@ -215,6 +215,9 @@
     f.features = el('textarea', { value: (p.features || []).join('\n') });
     f.enabled = el('input', { type: 'checkbox', checked: !!p.enabled });
     f.hero = el('input', { type: 'checkbox', checked: !!p.hero });
+    f.tier = el('select', {}, [el('option', { value: 'standard', text: 'استاندارد' }), el('option', { value: 'premium', text: 'پرمیوم (دانلود آفلاین + درخواست مانهوا)' })]);
+    f.tier.value = p.tier === 'premium' ? 'premium' : 'standard';
+    f.lockDays = textInput(p.lockDays || 0, 3, { inputMode: 'numeric', dir: 'ltr' });
 
     card.appendChild(el('div', { class: 'plan-head' }, [
       el('h2', { text: p.title || 'پلن جدید', style: 'margin:0' }),
@@ -225,6 +228,10 @@
       el('label', { class: 'check' }, [f.hero, document.createTextNode('کارت پیشنهادی (برجسته)')])
     ]);
     card.appendChild(checks);
+    card.appendChild(el('div', { class: 'row' }, [
+      field('نوع اشتراک', f.tier, 'پرمیوم: دانلود آفلاین و درخواست مانهوا فعال می‌شود.'),
+      field('قفل چپترهای اشتراکی (روز)', f.lockDays, 'فقط استاندارد: چند روزِ اول انتشار، چپترهای اشتراکی قفل بمانند. استاندارد ۱ هفته‌ای = ۱، بقیه = ۰.')
+    ]));
     card.appendChild(el('div', { class: 'row' }, [field('عنوان پلن', f.title), field('توضیح کوتاه', f.sub)]));
     card.appendChild(el('div', { class: 'row' }, [
       field('قیمت فروش (تومان)', f.price, 'مبلغ واقعی پرداخت. به زیبال به‌صورت ریال (×۱۰) ارسال می‌شود.'),
@@ -246,6 +253,8 @@
     var f = card._p;
     return {
       key: f.key.value.trim(),
+      tier: f.tier.value,
+      lockDays: f.tier.value === 'premium' ? 0 : (toLatin(f.lockDays.value) || 0),
       enabled: f.enabled.checked,
       hero: f.hero.checked,
       title: f.title.value,
@@ -402,7 +411,7 @@
   $('tabCareers').addEventListener('click', function () { setTab('careers'); });
 
   $('addPlan').addEventListener('click', function () {
-    var card = planCard({ key: '', enabled: true, hero: false, title: '', sub: '', price: '', oldPrice: '', chip: '', badge: '', features: [], buyLabel: '', days: 0, months: 1 }, true);
+    var card = planCard({ key: '', tier: 'standard', lockDays: 0, enabled: true, hero: false, title: '', sub: '', price: '', oldPrice: '', chip: '', badge: '', features: [], buyLabel: '', days: 0, months: 1 }, true);
     $('plans').appendChild(card);
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });

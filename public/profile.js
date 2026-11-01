@@ -1,3 +1,7 @@
+// پنجره‌ی تأیید هماهنگ با سایت (mc-ui.js)؛ اگه لود نشده بود confirm قدیمی
+// (var، نه const: این اسکریپت موقع هر بار باز شدن پروفایل دوباره تزریق می‌شه)
+var askConfirm = (m, o) => (typeof window.mcConfirm === 'function' ? window.mcConfirm(m, o) : Promise.resolve(window.confirm(m)));
+
 
         var currentUser = null;
         var profileLoadFailed = false; // اگر خواندن پروفایل خطا بده، دیگه اجازه نمی‌دیم فرم ذخیره، آواتار رو با مقدار خالی پاک کنه
@@ -254,7 +258,7 @@ async function loadUserProfileInner() {
     // دریافت اطلاعات پروفایل
     const { data: profile, error } = await withRetry(() => client
         .from('profiles')
-        .select('full_name, avatar_url, is_vip, vip_until')
+        .select('full_name, avatar_url, is_vip, vip_until, vip_tier')
         .eq('id', user.id)
         .maybeSingle());
 
@@ -300,6 +304,8 @@ async function loadUserProfileInner() {
     const vipUntilDate = profile?.vip_until ? new Date(profile.vip_until) : null;
     const isVip = profile?.is_vip && (!vipUntilDate || vipUntilDate > now);
     const isExpired = !isVip && vipUntilDate && vipUntilDate <= now;
+    const isPremium = !!isVip && profile?.vip_tier === 'premium';
+    const tierLabel = isPremium ? 'اشتراک پرمیوم 👑' : 'اشتراک استاندارد';
 
     // مقدار پیش‌فرض: شمارشگر روزها مخفی است مگر این‌که بعداً پر شود
     if (vipDaysWrap) {
@@ -321,7 +327,7 @@ async function loadUserProfileInner() {
             else if (daysLeft <= 7) urgency = 'is-warning';
 
             if (vipStatusText) {
-                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">اشتراک ویژه شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
+                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">${tierLabel} شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
             }
             if (vipDaysWrap) {
                 vipDaysWrap.classList.remove('hidden');
@@ -335,7 +341,7 @@ async function loadUserProfileInner() {
             }
         } else {
             if (vipStatusText) {
-                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">اشتراک ویژه شما فعال است</span> اعتبار: <span class="mono">نامحدود</span>`;
+                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">${tierLabel} شما فعال است</span> اعتبار: <span class="mono">نامحدود</span>`;
             }
         }
 
@@ -357,6 +363,29 @@ async function loadUserProfileInner() {
             vipStatusText.innerText = "شما در حال حاضر حساب معمولی دارید. با تهیه اشتراک VIP به آرشیو اختصاصی دسترسی پیدا کنید.";
         }
     }
+
+    // لینک‌های خدمات: پشتیبانی برای همه؛ دانلود آفلاین و درخواست مانهوا فقط پرمیوم
+    try {
+        const host = vipStatusText && vipStatusText.parentElement;
+        if (host && !document.getElementById('svcLinks')) {
+            const box = document.createElement('div');
+            box.id = 'svcLinks';
+            box.className = 'mt-3 flex flex-wrap gap-2 text-[11px]';
+            const mkLink = (href, text, on) => {
+                const a = document.createElement('a');
+                a.href = on ? href : '/vip.html';
+                a.textContent = on ? text : text + ' (پرمیوم)';
+                a.className = 'px-3 py-1.5 rounded-lg border ' + (on ? 'border-white/15 text-zinc-200 hover:bg-white/10' : 'border-white/5 text-zinc-500 hover:text-zinc-300');
+                return a;
+            };
+            box.append(
+                mkLink('/support.html', 'پشتیبانی و تیکت', true),
+                mkLink('/manhwa-request.html', 'درخواست مانهوا 👑', isPremium),
+                mkLink('/offline.html', 'دانلودهای آفلاین 👑', isPremium)
+            );
+            host.appendChild(box);
+        }
+    } catch (e) { console.error(e); }
 
     // بارگذاری بوکمارک‌ها و کامنت‌های خود کاربر
     loadUserBookmarks(client);
@@ -406,7 +435,7 @@ async function loadUserBookmarks(client) {
         return `
             <div class="shelf-item group" data-title="${escapeHtml(title.toLowerCase())}">
                 <a href="/manga.php?slug=${encodeURIComponent(b.manhwa_slug)}" class="block aspect-[3/4] bg-zinc-800">
-                    ${cover ? `<img src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" />` : ''}
+                    ${cover ? `<img loading="lazy" decoding="async" src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" />` : ''}
                 </a>
                 <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2">
                     <p class="text-[11px] font-bold text-white truncate">${escapeHtml(title)}</p>
@@ -496,7 +525,7 @@ async function loadUserComments(client) {
 async function deleteOwnComment(commentId) {
     const client = getSupabaseClient();
     if (!client || !currentUser) return;
-    if (!confirm('این دیدگاه حذف بشه؟')) return;
+    if (!(await askConfirm('این دیدگاه حذف بشه؟', { confirmText: 'حذف' }))) return;
 
     const { error } = await client
         .from('messages')
@@ -581,7 +610,7 @@ function loadReadingHistory() {
         return `
             <div class="shelf-item group" data-title="${title.toLowerCase()}">
                 <a href="${h.url}" class="block aspect-[3/4] bg-zinc-800">
-                    ${cover ? `<img src="${escapeHtml(cover)}" alt="${title}" class="w-full h-full object-cover" />` : ''}
+                    ${cover ? `<img loading="lazy" decoding="async" src="${escapeHtml(cover)}" alt="${title}" class="w-full h-full object-cover" />` : ''}
                 </a>
                 <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2">
                     <p class="text-[11px] font-bold text-white truncate">${title}</p>
@@ -630,8 +659,8 @@ function removeReadingHistoryItem(slug) {
     showToast('از تاریخچه حذف شد', 'success');
 }
 
-function clearReadingHistory() {
-    if (!confirm('کل تاریخچه‌ی خواندن روی این گوشی پاک بشه؟')) return;
+async function clearReadingHistory() {
+    if (!(await askConfirm('کل تاریخچه‌ی خواندن روی این گوشی پاک بشه؟', { confirmText: 'پاک کن' }))) return;
     localStorage.removeItem(READING_HISTORY_KEY);
     loadReadingHistory();
     showToast('تاریخچه خواندن پاک شد', 'success');
@@ -830,7 +859,7 @@ function clearReadingHistory() {
         // حذف کامل عکس پروفایل (هم از Storage و هم از جدول profiles)
         async function removeAvatar() {
             if (!currentUser) return;
-            if (!confirm('عکس پروفایل حذف بشه؟')) return;
+            if (!(await askConfirm('عکس پروفایل حذف بشه؟', { confirmText: 'حذف' }))) return;
 
             const client = getSupabaseClient();
             const msgBox = document.getElementById('msgBox');
@@ -948,10 +977,101 @@ function clearReadingHistory() {
             }
         }
 
+        // ==================== دستگاه‌های من ====================
+        // سرور هر حساب را به ۲ دستگاه محدود می‌کند (lib/deviceLimit.js). اینجا لیست دستگاه‌ها و خارج‌کردن آن‌ها است.
+        function fmtDeviceTime(iso) {
+            try { return new Date(iso).toLocaleString('fa-IR', { dateStyle: 'medium', timeStyle: 'short' }); } catch { return ''; }
+        }
+
+        async function deviceApi(method, path, body) {
+            const client = getSupabaseClient();
+            const { data } = await client.auth.getSession();
+            const token = data && data.session && data.session.access_token;
+            if (!token) throw new Error('وارد حساب نشده‌اید.');
+            const res = await fetch(path, {
+                method,
+                headers: Object.assign({ Authorization: 'Bearer ' + token, 'X-Requested-With': 'mc' }, body ? { 'Content-Type': 'application/json' } : {}),
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(json.error || 'خطا در ارتباط با سرور');
+            return json;
+        }
+
+        async function loadDevices() {
+            const list = document.getElementById('devicesList');
+            const hint = document.getElementById('devicesHint');
+            if (!list || !hint) return;
+            try {
+                const out = await deviceApi('GET', '/api/devices');
+                list.textContent = '';
+                hint.textContent = `حساب شما روی ${out.devices.length} از ${out.max} دستگاه مجاز فعال است. اگر دستگاهی را نمی‌شناسید، آن را خارج کنید و رمز عبور را عوض کنید.`;
+                out.devices.forEach((d) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px';
+                    const info = document.createElement('div');
+                    const t = document.createElement('b');
+                    t.textContent = d.label + (d.current ? ' (همین دستگاه)' : '');
+                    const sub = document.createElement('small');
+                    sub.style.cssText = 'display:block;opacity:.7;margin-top:2px';
+                    sub.textContent = 'آخرین فعالیت: ' + fmtDeviceTime(d.last_seen_at) + (d.ip_hint ? ' · ' + d.ip_hint : '');
+                    info.appendChild(t); info.appendChild(sub);
+                    row.appendChild(info);
+                    if (!d.current) {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'btn btn--outline';
+                        b.textContent = 'خروج این دستگاه';
+                        b.onclick = () => revokeDevice(d.id, b);
+                        row.appendChild(b);
+                    }
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                hint.textContent = 'بارگذاری دستگاه‌ها ممکن نشد: ' + e.message;
+            }
+        }
+
+        async function revokeDevice(id, btn) {
+            const ok = window.mcConfirm
+                ? await window.mcConfirm('این دستگاه از حساب شما خارج شود؟', { confirmText: 'خروج دستگاه', cancelText: 'انصراف' })
+                : confirm('این دستگاه از حساب شما خارج شود؟');
+            if (!ok) return;
+            btn.disabled = true;
+            try {
+                await deviceApi('POST', '/api/devices/revoke', { id });
+                showToast('دستگاه از حساب خارج شد', 'success');
+                loadDevices();
+            } catch (e) {
+                showToast(e.message, 'error');
+                btn.disabled = false;
+            }
+        }
+
+        // اگر همین دستگاه از جای دیگری از حساب خارج شده باشد، نشست محلی پاک می‌شود (بدون تماس /logout تا بقیه‌ی دستگاه‌ها دست نخورند)
+        async function checkSessionRevoked() {
+            try {
+                const client = getSupabaseClient();
+                if (!client) return;
+                const { data } = await client.auth.getSession();
+                const token = data && data.session && data.session.access_token;
+                if (!token) return;
+                const r = await fetch('/api/devices', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+                if (r.status !== 401) return;
+                const j = await r.json().catch(() => ({}));
+                if (j.code !== 'session_revoked') return;
+                Object.keys(localStorage).forEach((k) => { if (/^sb-.*-auth-token/.test(k)) localStorage.removeItem(k); });
+                showToast('این دستگاه از حساب خارج شده است. دوباره وارد شوید.', 'error');
+                setTimeout(() => { window.location.href = '/'; }, 1500);
+            } catch (e) { /* خطای شبکه: بی‌صدا رد شو */ }
+        }
+        setInterval(() => { if (!document.hidden) checkSessionRevoked(); }, 120000);
+
         // خروج از حساب
         async function handleLogout() {
             const client = getSupabaseClient();
             if (client) {
+                try { localStorage.removeItem('mc_off_uid'); indexedDB.deleteDatabase('mc-offline-v1'); } catch (e) {}
                 await client.auth.signOut();
             }
             window.location.href = '/';
@@ -964,5 +1084,6 @@ function clearReadingHistory() {
             loadReadingHistory();
             setupAvatarDropZone();
             loadUserProfile();
+            loadDevices();
         }
-        onReady(initProfilePage);
+        window.initProfilePage = initProfilePage;
