@@ -362,3 +362,13 @@
   .poster-card:hover::after { opacity: 1; transform: none; }
   .poster-card:hover h4 { bottom: 46px; }
 }
+
+/* ===== کلاس‌های سفارشی صفحه‌ی ژانر (مستقل از Tailwind کامپایل‌شده) ===== */
+.px-margin-mobile { padding-left: 16px; padding-right: 16px; }
+.space-y-stack-lg > :not([hidden]) ~ :not([hidden]) { margin-top: 32px; }
+.mb-stack-md { margin-bottom: 16px; }
+.gap-gutter { gap: 12px; }
+.font-headline-lg-mobile { font-family: Vazirmatn, Vazir, system-ui, sans-serif; }
+.text-headline-lg-mobile { font-size: 22px; line-height: 30px; font-weight: 800; }
+.font-title-md { font-family: Vazirmatn, Vazir, system-ui, sans-serif; font-weight: 600; }
+.text-on-surface { color: #e2e2e2; }

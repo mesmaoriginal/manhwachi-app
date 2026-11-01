@@ -51,94 +51,164 @@
     </script>
     <style>
         :root{
-            --void:#050505;
-            --panel:#0c0c0d;
-            --line: rgba(255,255,255,.09);
-            --blood:#8b0000;
-            --ember:#ff3b30;
-            --gold:#e8b64a;
+            --void:#050505; --panel:#0e0e10; --panel2:#151518;
+            --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+            --red:#DC2626; --ember:#ff3b30; --blood:#8b0000; --gold:#e8b64a;
+            --muted:#a1a1aa; --dim:#71717a;
         }
-        *{ font-variant-numeric: tabular-nums; }
-        body {
-            background-color: var(--void);
-            color: #f5f5f4;
-            font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
-            position: relative;
+        *{ font-variant-numeric: tabular-nums; box-sizing:border-box; }
+        .hidden{ display:none !important; }
+        body{
+            background:var(--void); color:#f5f5f4;
+            font-family:"Vazirmatn", system-ui, -apple-system, sans-serif;
+            position:relative; margin:0;
         }
-        /* بافت هاف‌تون مانگا در پس‌زمینه صفحه */
+        /* درخشش ملایم بالای صفحه (به‌جای بافت نقطه‌ای شلوغ قبلی) */
         body::before{
-            content:"";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            background-image: radial-gradient(rgba(139,0,0,.35) 1px, transparent 1.3px);
-            background-size: 14px 14px;
-            mask-image: radial-gradient(ellipse 70% 55% at 50% 15%, black 0%, transparent 70%);
-            -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 15%, black 0%, transparent 70%);
-            opacity: .5;
+            content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+            background:
+              radial-gradient(60% 40% at 50% 0%, rgba(220,38,38,.20), transparent 70%),
+              radial-gradient(40% 30% at 85% 10%, rgba(232,182,74,.07), transparent 70%);
         }
-        main, header, footer { position: relative; z-index: 1; }
+        main, header, footer{ position:relative; z-index:1; }
 
-        /* کارت با حاشیه پنلی سبک قاب کمیک */
-        .panel-card{
-            background: linear-gradient(180deg, var(--panel), #060607);
-            border: 1.5px solid var(--line);
-            box-shadow: 0 1px 0 rgba(255,255,255,.04) inset;
-        }
-        .panel-card:hover{ border-color: rgba(139,0,0,.55); }
+        .v-wrap{ width:100%; max-width:980px; margin:0 auto; padding:44px 16px 56px; flex:1; }
 
-        /* کارت پیشنهادی با قاب دو لایه و بریدگی بلیت */
-        .panel-card--hero{
-            border: 2px solid var(--ember);
-            box-shadow: 0 0 0 1px rgba(255,59,48,.15), 0 25px 60px -20px rgba(139,0,0,.55);
+        /* ---------- هیرو ---------- */
+        .v-hero{ text-align:center; max-width:560px; margin:0 auto 30px; }
+        .v-badge{
+            display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:999px;
+            background:rgba(232,182,74,.10); border:1px solid rgba(232,182,74,.35);
+            color:var(--gold); font-size:12px; font-weight:700;
         }
-        .ticket-notch{
-            position: absolute;
-            top: 50%;
-            width: 22px; height: 22px;
-            background: var(--void);
-            border-radius: 999px;
-            transform: translateY(-50%);
-            z-index: 2;
+        .v-badge .material-symbols-outlined{ font-size:18px; }
+        .v-title{ font-size:clamp(1.6rem,5vw,2.4rem); font-weight:800; line-height:1.4; margin:18px 0 10px; }
+        .v-title em{ font-style:normal; background:linear-gradient(90deg,var(--ember),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .v-lead{ color:var(--muted); font-size:.92rem; line-height:2; margin:0; }
+        .v-promo{
+            display:inline-flex; align-items:center; gap:6px; margin-top:18px; padding:6px 14px; border-radius:999px;
+            background:rgba(255,59,48,.10); border:1px solid rgba(255,59,48,.38); color:var(--ember); font-size:12px; font-weight:700;
         }
-        .ticket-notch::after{
-            content:"";
-            position:absolute; inset:0;
-            border-radius:999px;
-            box-shadow: 0 0 0 2px var(--ember) inset;
-        }
+        .v-promo .material-symbols-outlined{ font-size:16px; }
 
-        .price-num{
-            font-weight: 800;
-            letter-spacing: -0.01em;
-            font-variation-settings: "wght" 800;
-        }
+        @keyframes floatUp{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+        .crown-float{ animation:floatUp 3.2s ease-in-out infinite; }
 
-        .halftone-burst{
-            background-image: radial-gradient(rgba(255,255,255,.9) 1px, transparent 1.2px);
-            background-size: 6px 6px;
-        }
+        /* ---------- بنر وضعیت ---------- */
+        .v-banner{ max-width:560px; margin:0 auto 26px; border-radius:16px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; text-align:right; }
+        .v-banner .material-symbols-outlined{ font-size:28px; flex:none; }
+        .v-banner h4{ margin:0 0 4px; font-size:.9rem; font-weight:700; }
+        .v-banner p{ margin:0; font-size:.78rem; line-height:1.9; color:#d4d4d8; }
+        .v-banner a{ display:inline-block; margin-top:6px; font-size:.78rem; font-weight:700; text-decoration:none; }
+        .v-banner--ok{ background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.35); }
+        .v-banner--ok h4,.v-banner--ok .material-symbols-outlined,.v-banner--ok a{ color:#34d399; }
+        .v-banner--wait{ background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.35); }
+        .v-banner--wait h4,.v-banner--wait .material-symbols-outlined{ color:#fbbf24; }
 
-        @keyframes floatUp{
-            0%,100%{ transform: translateY(0); }
-            50%{ transform: translateY(-6px); }
+        /* ---------- تب انتخاب نوع پلن ---------- */
+        .v-tabs{
+            display:flex; width:fit-content; max-width:100%; margin:0 auto 10px; padding:4px; gap:4px;
+            background:var(--panel2); border:1px solid var(--line); border-radius:16px;
         }
-        .crown-float{ animation: floatUp 3.2s ease-in-out infinite; }
+        .v-tab{
+            appearance:none; border:0; background:transparent; color:var(--muted); cursor:pointer;
+            font:700 .86rem/1 "Vazirmatn",system-ui,sans-serif; padding:12px 24px; border-radius:12px;
+            display:inline-flex; align-items:center; gap:6px; transition:background .2s,color .2s;
+        }
+        .v-tab:hover{ color:#fff; }
+        .v-tab[aria-selected="true"]{ background:linear-gradient(135deg,var(--red),var(--blood)); color:#fff; box-shadow:0 6px 18px -6px rgba(220,38,38,.6); }
+        .v-tab[data-tier="premium"][aria-selected="true"]{ background:linear-gradient(135deg,#f0c35f,#b8862b); color:#1a1204; box-shadow:0 6px 18px -6px rgba(232,182,74,.5); }
+        .v-tabsub{ text-align:center; color:var(--dim); font-size:.78rem; margin:0 0 26px; min-height:1.4em; }
 
-        @media (prefers-reduced-motion: reduce){
-            .crown-float{ animation: none; }
-            .panel-card, .panel-card--hero { transition: none !important; }
+        /* ---------- کارت‌های پلن ---------- */
+        .v-grid{ display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); align-items:stretch; }
+        .v-grid[data-count="1"]{ max-width:340px; margin-inline:auto; }
+        .v-grid[data-count="2"]{ max-width:660px; margin-inline:auto; }
+        .v-card{
+            position:relative; display:flex; flex-direction:column; padding:26px 22px 22px;
+            background:linear-gradient(180deg,var(--panel2),var(--panel)); border:1px solid var(--line); border-radius:22px;
+            transition:transform .25s cubic-bezier(.16,1,.3,1), border-color .25s, box-shadow .25s;
         }
+        .v-card:hover{ transform:translateY(-4px); border-color:var(--line2); }
+        .v-card--hero{
+            border-color:rgba(255,59,48,.55);
+            background:linear-gradient(180deg,rgba(139,0,0,.22),var(--panel) 55%);
+            box-shadow:0 22px 50px -26px rgba(220,38,38,.65);
+        }
+        .v-card--hero:hover{ border-color:var(--ember); }
+        .v-ribbon{
+            position:absolute; top:-12px; right:50%; transform:translateX(50%); white-space:nowrap;
+            background:linear-gradient(90deg,var(--ember),var(--blood)); color:#fff; font-size:11px; font-weight:800;
+            padding:5px 14px; border-radius:999px; box-shadow:0 8px 20px -8px rgba(220,38,38,.8);
+        }
+        .v-name{ margin:0 0 4px; font-size:1.02rem; font-weight:800; color:#fff; }
+        .v-sub{ margin:0 0 18px; font-size:.76rem; color:var(--dim); line-height:1.8; min-height:1.4em; }
+        .v-price{ display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+        .v-price b{ font-size:2rem; font-weight:800; letter-spacing:-.01em; color:#fff; line-height:1.2; }
+        .v-price small{ font-size:.78rem; color:var(--dim); }
+        .v-price s{ font-size:.78rem; color:#52525b; margin-inline-start:2px; }
+        .v-chip{
+            align-self:flex-start; margin:2px 0 4px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:8px;
+            color:#34d399; background:rgba(16,185,129,.10); border:1px solid rgba(16,185,129,.30);
+        }
+        .v-card--hero .v-chip, .v-card--gold .v-chip{ color:var(--gold); background:rgba(232,182,74,.10); border-color:rgba(232,182,74,.30); }
+        .v-sep{ height:1px; background:var(--line); margin:16px 0; border:0; }
+        .v-feat{ list-style:none; margin:0 0 22px; padding:0; display:flex; flex-direction:column; gap:12px; font-size:.8rem; color:#d4d4d8; }
+        .v-feat li{ display:flex; align-items:center; gap:8px; line-height:1.6; }
+        .v-feat .material-symbols-outlined{ font-size:18px; color:#34d399; flex:none; }
+        .v-card--hero .v-feat .material-symbols-outlined{ color:var(--ember); }
+        .v-buy{
+            margin-top:auto; width:100%; padding:14px; border-radius:14px; cursor:pointer; color:#fff;
+            font:800 .88rem/1 "Vazirmatn",system-ui,sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;
+            background:#1c1c20; border:1px solid var(--line2); transition:background .2s, transform .1s, filter .2s;
+        }
+        .v-buy:hover{ background:var(--blood); border-color:var(--blood); }
+        .v-buy:active{ transform:scale(.97); }
+        .v-card--hero .v-buy{ background:linear-gradient(90deg,var(--ember),var(--blood)); border-color:transparent; box-shadow:0 12px 26px -12px rgba(220,38,38,.8); }
+        .v-card--hero .v-buy:hover{ filter:brightness(1.12); }
+        .v-spin{ animation:vspin 1s linear infinite; font-size:18px; }
+        @keyframes vspin{ to{ transform:rotate(360deg) } }
 
-        .plans-grid{ display:grid; gap:1.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-        .plans-grid[data-count="1"]{ max-width:340px; margin-inline:auto; }
-        .plans-grid[data-count="2"]{ max-width:680px; margin-inline:auto; }
-        .plans-grid:empty{ display:none; }
-        :focus-visible{
-            outline: 2px solid var(--ember);
-            outline-offset: 2px;
+        /* ---------- وضعیت بارگذاری / خطا ---------- */
+        .v-state{ max-width:460px; margin:0 auto; padding:34px 24px; text-align:center; background:var(--panel2); border:1px solid var(--line); border-radius:20px; }
+        .v-state .material-symbols-outlined{ font-size:44px; color:var(--dim); margin-bottom:10px; }
+        .v-state h2{ margin:0 0 8px; font-size:1.05rem; font-weight:800; }
+        .v-state p{ margin:0; font-size:.84rem; color:var(--muted); line-height:1.9; }
+        .v-state button{ margin-top:18px; padding:10px 24px; border-radius:12px; background:#1c1c20; border:1px solid var(--line2); color:#fff; font:700 .84rem "Vazirmatn",sans-serif; cursor:pointer; }
+        .v-state button:hover{ background:var(--blood); }
+
+        /* ---------- مقایسه‌ی امکانات (جمع‌شونده) ---------- */
+        .v-compare{ max-width:760px; margin:40px auto 0; background:var(--panel2); border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+        .v-compare summary{
+            list-style:none; cursor:pointer; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;
+            font-size:.88rem; font-weight:700; color:#e4e4e7;
         }
+        .v-compare summary::-webkit-details-marker{ display:none; }
+        .v-compare summary .material-symbols-outlined{ transition:transform .25s; color:var(--dim); }
+        .v-compare[open] summary .material-symbols-outlined{ transform:rotate(180deg); }
+        .v-compare[open] summary{ border-bottom:1px solid var(--line); }
+        .v-tablewrap{ overflow-x:auto; }
+        .v-table{ width:100%; min-width:520px; border-collapse:collapse; font-size:.76rem; text-align:center; color:#d4d4d8; }
+        .v-table th{ padding:12px 10px; font-weight:600; color:var(--dim); }
+        .v-table th.gold{ color:var(--gold); }
+        .v-table td{ padding:12px 10px; border-top:1px solid rgba(255,255,255,.05); }
+        .v-table td:first-child, .v-table th:first-child{ text-align:right; padding-right:20px; color:#e4e4e7; }
+        .v-table .y{ color:#34d399; font-weight:700; }
+        .v-table .n{ color:#52525b; }
+
+        .v-trust{ display:flex; align-items:center; justify-content:center; gap:6px; margin:30px 0 0; font-size:.72rem; color:#52525b; }
+        .v-trust .material-symbols-outlined{ font-size:16px; }
+
+        @media (max-width:520px){
+            .v-wrap{ padding-top:30px; }
+            .v-tab{ padding:11px 18px; }
+            .v-card{ padding:24px 18px 18px; }
+        }
+        @media (prefers-reduced-motion:reduce){
+            .crown-float,.v-spin{ animation:none; }
+            .v-card,.v-tab,.v-buy{ transition:none !important; }
+        }
+        :focus-visible{ outline:2px solid var(--ember); outline-offset:2px; }
     </style>
 <link rel="stylesheet" href="/mc-polish.css?v=1">
 </head>
@@ -159,67 +229,57 @@
     </header>
 
     <!-- بخش اصلی معرفی پلن‌ها -->
-    <main class="max-w-5xl mx-auto px-4 py-14 sm:py-16 flex-1">
+    <main class="v-wrap">
 
-        
         <!-- بنر وضعیت اشتراک (با JS پر می‌شود) -->
-        <div id="vipStatusBanner" class="hidden max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3"></div>
-        <div class="text-center max-w-xl mx-auto mb-14">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-vip-gold/10 border border-vip-gold/40 text-vip-gold text-xs font-bold mb-5">
-                <span class="material-symbols-outlined text-base crown-float">workspace_premium</span>
-                ارتقا به حساب ویژه
-            </div>
-            <h1 class="text-3xl sm:text-4xl md:text-[2.75rem] font-extrabold mb-3.5 leading-tight">
-                دسترسی نامحدود به تمامی چپترها
-            </h1>
-            <p class="text-zinc-400 text-sm sm:text-[15px] leading-relaxed">
-                با تهیه اشتراک VIP مانهواچی، بدون محدودیت و زودتر از همه به چپترهای جدید دسترسی داشته باشید.
-            </p>
-            <div id="promoChip" class="hidden inline-flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-ember/10 border border-ember/40 text-ember text-[11px] font-bold">
-                <span class="material-symbols-outlined text-sm">local_fire_department</span>
+        <div id="vipStatusBanner" class="hidden"></div>
+
+        <div class="v-hero">
+            <span class="v-badge"><span class="material-symbols-outlined crown-float">workspace_premium</span>ارتقا به حساب ویژه</span>
+            <h1 class="v-title">دسترسی نامحدود به <em>تمام چپترها</em></h1>
+            <p class="v-lead">با اشتراک VIP مانهواچی بدون محدودیت و زودتر از همه، چپترهای جدید را بخوانید.</p>
+            <div id="promoChip" class="v-promo hidden">
+                <span class="material-symbols-outlined">local_fire_department</span>
                 <span id="promoText"></span>
             </div>
         </div>
 
         <!-- وضعیت بارگذاری / بسته بودن / خطا (قیمت‌ها از سرور می‌آیند: /api/vip/config) -->
-        <div id="plansState" class="hidden max-w-xl mx-auto panel-card rounded-2xl p-8 text-center"></div>
+        <div id="plansState" class="v-state hidden"></div>
 
-        <!-- کارت‌های پلن اشتراک (با JS از تنظیمات سرور ساخته می‌شود) -->
-        <div id="plansGrid" class="space-y-14"></div>
+        <!-- انتخاب نوع پلن + کارت‌ها (با JS از تنظیمات سرور ساخته می‌شود) -->
+        <div id="plansGrid"></div>
 
         <!-- مقایسه‌ی امکانات (قانون دسترسی: lib/accessPolicy.js) -->
-        <section class="max-w-3xl mx-auto mt-14" aria-label="مقایسه امکانات پلن‌ها">
-            <h2 class="text-center text-base font-bold text-white mb-5">مقایسه‌ی امکانات</h2>
-            <div class="panel-card rounded-2xl overflow-x-auto">
-                <table class="w-full text-xs text-zinc-300 text-center min-w-[520px]">
+        <details class="v-compare">
+            <summary>مقایسه‌ی کامل امکانات پلن‌ها <span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+            <div class="v-tablewrap">
+                <table class="v-table">
                     <thead>
-                        <tr class="text-zinc-400 border-b border-white/10">
-                            <th class="p-3 text-right font-medium">امکانات</th>
-                            <th class="p-3 font-medium">بدون اشتراک</th>
-                            <th class="p-3 font-medium">استاندارد ۱ هفته</th>
-                            <th class="p-3 font-medium">استاندارد ۱ و ۳ ماه</th>
-                            <th class="p-3 font-medium text-vip-gold">پرمیوم</th>
+                        <tr>
+                            <th>امکانات</th>
+                            <th>بدون اشتراک</th>
+                            <th>استاندارد ۱ هفته</th>
+                            <th>استاندارد ۱ و ۳ ماه</th>
+                            <th class="gold">پرمیوم</th>
                         </tr>
                     </thead>
-                    <tbody class="[&_tr]:border-b [&_tr]:border-white/5">
-                        <tr><td class="p-3 text-right">چپترهای رایگان</td><td class="p-3">۲۴ ساعت بعد از انتشار</td><td class="p-3 text-green-400">فوری</td><td class="p-3 text-green-400">فوری</td><td class="p-3 text-green-400">فوری</td></tr>
-                        <tr><td class="p-3 text-right">چپترهای اشتراکی</td><td class="p-3 text-zinc-500">ندارد</td><td class="p-3">۱ روز بعد از انتشار</td><td class="p-3 text-green-400">فوری</td><td class="p-3 text-green-400">فوری</td></tr>
-                        <tr><td class="p-3 text-right">دانلود آفلاین</td><td class="p-3 text-zinc-500">—</td><td class="p-3 text-zinc-500">—</td><td class="p-3 text-zinc-500">—</td><td class="p-3 text-green-400">✓</td></tr>
-                        <tr><td class="p-3 text-right">درخواست مانهوا</td><td class="p-3 text-zinc-500">—</td><td class="p-3 text-zinc-500">—</td><td class="p-3 text-zinc-500">—</td><td class="p-3 text-green-400">✓</td></tr>
-                        <tr><td class="p-3 text-right">پشتیبانی و تیکت</td><td class="p-3">✓</td><td class="p-3">✓</td><td class="p-3">✓</td><td class="p-3">✓</td></tr>
+                    <tbody>
+                        <tr><td>چپترهای رایگان</td><td>۲۴ ساعت بعد از انتشار</td><td class="y">فوری</td><td class="y">فوری</td><td class="y">فوری</td></tr>
+                        <tr><td>چپترهای اشتراکی</td><td class="n">ندارد</td><td>۱ روز بعد از انتشار</td><td class="y">فوری</td><td class="y">فوری</td></tr>
+                        <tr><td>دانلود آفلاین</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+                        <tr><td>درخواست مانهوا</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+                        <tr><td>پشتیبانی و تیکت</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
                     </tbody>
                 </table>
             </div>
-        </section>
+        </details>
 
-        <p class="text-center text-[11px] text-zinc-600 mt-10 flex items-center justify-center gap-1.5">
-            <span class="material-symbols-outlined text-sm">verified_user</span>
-            پرداخت امن، لغو در هر زمان از تنظیمات حساب کاربری
-        </p>
+        <p class="v-trust"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span>پرداخت امن، لغو در هر زمان از تنظیمات حساب کاربری</p>
 
     </main>
 
-    <footer class="border-t border-zinc-900 py-6 text-center text-xs text-zinc-600">
+    <footer style="border-top:1px solid #18181b;padding:22px 16px;text-align:center;font-size:.72rem;color:#52525b">
         پرداخت‌های مانهواچی به صورت امن از طریق درگاه زی‌بال انجام می‌شوند.
     </footer>
 
@@ -258,49 +318,33 @@
 
         function buildPlanCard(plan) {
             const hero = !!plan.hero;
-            const card = mk('div', (hero
-                ? 'panel-card--hero relative rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 md:scale-[1.04] md:my-1'
-                : 'panel-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1'));
+            const card = mk('div', 'v-card' + (hero ? ' v-card--hero' : '') + (plan.tier === 'premium' ? ' v-card--gold' : ''));
 
-            if (hero) {
-                const nr = mk('span', 'ticket-notch -right-[11px]');
-                const nl = mk('span', 'ticket-notch -left-[11px]');
-                card.append(nr, nl);
-            }
-            if (plan.badge) {
-                card.appendChild(mk('div', 'absolute -top-3.5 right-1/2 translate-x-1/2 bg-ember text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-950/50', plan.badge));
-            }
+            if (plan.badge) card.appendChild(mk('div', 'v-ribbon', plan.badge));
 
-            const top = mk('div');
-            top.appendChild(mk('h3', hero ? 'text-base font-bold text-white mb-1.5 mt-1' : 'text-base font-bold text-zinc-200 mb-1.5', plan.title));
-            top.appendChild(mk('p', 'text-xs mb-7 ' + (hero ? 'text-zinc-400' : 'text-zinc-500'), plan.sub || ''));
+            card.appendChild(mk('h3', 'v-name', plan.title));
+            card.appendChild(mk('p', 'v-sub', plan.sub || ''));
 
-            const hasOld = plan.oldPrice && plan.oldPrice > plan.price;
-            const priceRow = mk('div', (hasOld || plan.chip ? 'mb-2' : 'mb-7') + ' flex items-baseline gap-2 flex-wrap');
-            priceRow.appendChild(mk('span', 'price-num text-3xl text-white', faMoney(plan.price)));
-            priceRow.appendChild(mk('span', 'text-xs text-zinc-500', 'تومان'));
-            if (hasOld) priceRow.appendChild(mk('span', 'text-xs text-zinc-600 line-through', faMoney(plan.oldPrice)));
-            top.appendChild(priceRow);
+            const price = mk('div', 'v-price');
+            price.appendChild(mk('b', null, faMoney(plan.price)));
+            price.appendChild(mk('small', null, 'تومان'));
+            if (plan.oldPrice && plan.oldPrice > plan.price) price.appendChild(mk('s', null, faMoney(plan.oldPrice)));
+            card.appendChild(price);
+            if (plan.chip) card.appendChild(mk('div', 'v-chip', plan.chip));
 
-            if (plan.chip) {
-                top.appendChild(mk('div', 'inline-flex items-center gap-1 mb-6 text-[10px] font-bold px-2 py-0.5 rounded-md ' + (hero
-                    ? 'text-vip-gold bg-vip-gold/10 border border-vip-gold/30'
-                    : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/30'), plan.chip));
-            }
+            card.appendChild(mk('hr', 'v-sep'));
 
-            const ul = mk('ul', 'space-y-3.5 text-xs text-zinc-300 mb-9');
+            const ul = mk('ul', 'v-feat');
             (plan.features || []).forEach(f => {
-                const li = mk('li', 'flex items-center gap-2');
-                li.appendChild(icon('check', (hero ? 'text-ember' : 'text-green-400') + ' text-base'));
-                li.appendChild(document.createTextNode(' ' + f));
+                const li = mk('li');
+                li.appendChild(icon('check_circle'));
+                li.appendChild(mk('span', null, f));
                 ul.appendChild(li);
             });
-            top.appendChild(ul);
-            card.appendChild(top);
+            card.appendChild(ul);
 
-            const btn = mk('button', hero
-                ? 'w-full py-3.5 bg-gradient-to-r from-ember to-primary-red hover:brightness-110 font-bold rounded-xl text-sm transition-all shadow-lg shadow-red-950/50 active:scale-95 flex items-center justify-center gap-2'
-                : 'w-full py-3.5 bg-zinc-800/80 hover:bg-primary-red border border-white/10 font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2');
+            const btn = mk('button', 'v-buy');
+            btn.type = 'button';
             btn.appendChild(mk('span', null, plan.buyLabel || ('خرید ' + plan.title)));
             btn.addEventListener('click', () => startPayment(plan.key, btn));
             card.appendChild(btn);
@@ -310,15 +354,65 @@
         function showPlansState(iconName, title, text, withRetry) {
             const box = document.getElementById('plansState');
             box.textContent = '';
-            const ic = icon(iconName, 'text-5xl text-zinc-500 mb-3');
-            box.append(ic, mk('h2', 'text-lg font-bold text-white mb-2', title));
-            if (text) box.appendChild(mk('p', 'text-sm text-zinc-400 leading-relaxed', text));
+            box.append(icon(iconName), mk('h2', null, title));
+            if (text) box.appendChild(mk('p', null, text));
             if (withRetry) {
-                const b = mk('button', 'mt-5 px-6 py-2.5 bg-zinc-800 hover:bg-primary-red border border-white/10 rounded-xl text-sm font-bold transition-all', 'تلاش دوباره');
+                const b = mk('button', null, 'تلاش دوباره');
+                b.type = 'button';
                 b.addEventListener('click', loadPlans);
                 box.appendChild(b);
             }
             box.classList.remove('hidden');
+        }
+
+        const TIER_GROUPS = [
+            { tier: 'standard', label: 'استاندارد', sub: 'دسترسی به چپترهای رایگان و اشتراکی' },
+            { tier: 'premium', label: 'پرمیوم', crown: true, sub: 'همه‌ی امکانات استاندارد + دانلود آفلاین + درخواست مانهوا' },
+        ];
+
+        // یک بار فقط یک گروه از پلن‌ها نشون داده می‌شه تا صفحه شلوغ نباشه
+        function renderPlans(plans) {
+            const grid = document.getElementById('plansGrid');
+            grid.textContent = '';
+            const groups = TIER_GROUPS
+                .map(g => Object.assign({}, g, { list: plans.filter(p => (p.tier || 'standard') === g.tier) }))
+                .filter(g => g.list.length);
+
+            // تب پیش‌فرض: گروهی که پلن پیشنهادی (hero) داره
+            const heroGroup = groups.find(g => g.list.some(p => p.hero)) || groups[0];
+            let active = (window.__vipTier && groups.some(g => g.tier === window.__vipTier)) ? window.__vipTier : heroGroup.tier;
+
+            const tabs = mk('div', 'v-tabs');
+            tabs.setAttribute('role', 'tablist');
+            const sub = mk('p', 'v-tabsub');
+            const body = mk('div');
+
+            function show(tier) {
+                active = tier; window.__vipTier = tier;
+                const g = groups.find(x => x.tier === tier);
+                tabs.querySelectorAll('.v-tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tier === tier)));
+                sub.textContent = g.sub;
+                body.textContent = '';
+                const inner = mk('div', 'v-grid');
+                inner.dataset.count = String(g.list.length);
+                g.list.forEach(p => inner.appendChild(buildPlanCard(p)));
+                body.appendChild(inner);
+            }
+
+            if (groups.length > 1) {
+                groups.forEach(g => {
+                    const t = mk('button', 'v-tab');
+                    t.type = 'button'; t.dataset.tier = g.tier;
+                    t.setAttribute('role', 'tab');
+                    if (g.crown) t.appendChild(icon('workspace_premium'));
+                    t.appendChild(mk('span', null, g.label));
+                    t.addEventListener('click', () => show(g.tier));
+                    tabs.appendChild(t);
+                });
+                grid.appendChild(tabs);
+            }
+            grid.append(sub, body);
+            show(active);
         }
 
         let __loadedOnce = false;
@@ -348,22 +442,7 @@
                     document.getElementById('promoText').textContent = cfg.promo;
                     promo.classList.remove('hidden');
                 }
-                const groups = [
-                    { tier: 'standard', title: 'پلن‌های استاندارد', sub: 'دسترسی به چپترهای رایگان و اشتراکی' },
-                    { tier: 'premium', title: 'پلن‌های پرمیوم 👑', sub: 'همه‌ی امکانات استاندارد + دانلود آفلاین + درخواست مانهوا' },
-                ];
-                groups.forEach(g => {
-                    const list = cfg.plans.filter(p => (p.tier || 'standard') === g.tier);
-                    if (!list.length) return;
-                    const sec = mk('section');
-                    sec.appendChild(mk('h2', 'text-center text-lg font-extrabold text-white mb-1', g.title));
-                    sec.appendChild(mk('p', 'text-center text-xs text-zinc-500 mb-8', g.sub));
-                    const inner = mk('div', 'plans-grid md:items-stretch');
-                    inner.dataset.count = String(list.length);
-                    list.forEach(p => inner.appendChild(buildPlanCard(p)));
-                    sec.appendChild(inner);
-                    grid.appendChild(sec);
-                });
+                renderPlans(cfg.plans);
             } catch (e) {
                 console.error(e);
                 grid.textContent = '';
@@ -412,7 +491,7 @@
             if (btnElement) {
                 btnElement.disabled = true;
                 originalText = btnElement.innerHTML;
-                btnElement.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> در حال اتصال...`;
+                btnElement.innerHTML = `<span class="material-symbols-outlined v-spin">progress_activity</span> در حال اتصال...`;
             }
 
             try {
@@ -463,22 +542,22 @@
                     window.__vipActive = true; window.__vipUntil = until;
                     try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
                     const days = until ? Math.max(1, Math.ceil((until - Date.now()) / 86400000)) : null;
-                    box.className = 'max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/40';
+                    box.className = 'v-banner v-banner--ok';
                     box.innerHTML = `
-                        <span class="material-symbols-outlined text-3xl text-emerald-400 shrink-0">verified</span>
-                        <div class="min-w-0">
-                            <p class="font-bold text-emerald-300 text-sm mb-1">اشتراک VIP شما فعال است ✓</p>
-                            <p class="text-xs text-zinc-300 leading-relaxed">${until ? `تا <b>${faDate(until)}</b> (حدود ${days.toLocaleString('fa-IR')} روز دیگر) به همه‌ی چپترها دسترسی دارید.` : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
-                            <a href="/" class="inline-block mt-2 text-xs font-bold text-emerald-400 hover:text-emerald-300">شروع خواندن ←</a>
+                        <span class="material-symbols-outlined">verified</span>
+                        <div>
+                            <h4>اشتراک VIP شما فعال است ✓</h4>
+                            <p>${until ? `تا <b>${faDate(until)}</b> (حدود ${days.toLocaleString('fa-IR')} روز دیگر) به همه‌ی چپترها دسترسی دارید.` : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
+                            <a href="/">شروع خواندن ←</a>
                         </div>`;
                 } else if (recentlyPaid) {
                     window.__paymentPending = true;
-                    box.className = 'max-w-xl mx-auto mb-10 rounded-2xl p-4 text-right flex items-start gap-3 bg-amber-500/10 border border-amber-500/40';
+                    box.className = 'v-banner v-banner--wait';
                     box.innerHTML = `
-                        <span class="material-symbols-outlined text-3xl text-amber-400 shrink-0 animate-spin">progress_activity</span>
-                        <div class="min-w-0">
-                            <p class="font-bold text-amber-300 text-sm mb-1">پرداخت شما در حال بررسی است</p>
-                            <p class="text-xs text-zinc-300 leading-relaxed">اگر پول از حسابتان کم شده، اشتراک تا چند دقیقه‌ی دیگر خودکار فعال می‌شود. <b>دوباره پرداخت نکنید.</b> می‌توانید این صفحه را رفرش کنید.</p>
+                        <span class="material-symbols-outlined v-spin">progress_activity</span>
+                        <div>
+                            <h4>پرداخت شما در حال بررسی است</h4>
+                            <p>اگر پول از حسابتان کم شده، اشتراک تا چند دقیقه‌ی دیگر خودکار فعال می‌شود. <b>دوباره پرداخت نکنید.</b> می‌توانید این صفحه را رفرش کنید.</p>
                         </div>`;
                 } else { return; }
                 box.classList.remove('hidden');

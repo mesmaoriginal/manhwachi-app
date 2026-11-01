@@ -1,93 +1,6 @@
 (function () { 
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                "colors": {
-                    "error": "#ffb4ab",
-                    "tertiary-container": "#e2b6a2",
-                    "outline-variant": "#3c4a3c",
-                    "error-container": "#93000a",
-                    "on-primary-container": "#5a0000ff",
-                    "tertiary-fixed-dim": "#e9bda9",
-                    "on-secondary-fixed": "#1c1b1b",
-                    "inverse-surface": "#e2e2e2",
-                    "on-tertiary-fixed": "#2d1509",
-                    "on-background": "#e2e2e2",
-                    "primary-fixed-dim": "#e41e1eff",
-                    "surface-tint": "#e41e1eff",
-                    "on-secondary-fixed-variant": "#474746",
-                    "inverse-on-surface": "#303030",
-                    "secondary-fixed-dim": "#c8c6c5",
-                    "on-tertiary-container": "#664637",
-                    "background": "#000000ff",
-                    "surface-container-lowest": "#0e0e0e",
-                    "primary": "#DC2626",
-                    "outline": "#859584",
-                    "on-primary-fixed": "#210000ff",
-                    "surface-bright": "#393939",
-                    "surface-container-low": "#1b1b1b",
-                    "on-secondary-container": "#b7b5b4",
-                    "surface-container-highest": "#353535",
-                    "surface-container-high": "#2a2a2a",
-                    "on-surface-variant": "#bacbb8",
-                    "surface-variant": "#353535",
-                    "on-primary-fixed-variant": "#530000ff",
-                    "on-error": "#690005",
-                    "on-tertiary": "#452a1c",
-                    "on-error-container": "#ffdad6",
-                    "on-surface": "#e2e2e2",
-                    "secondary": "#c8c6c5",
-                    "on-tertiary-fixed-variant": "#5f4030",
-                    "surface": "#131313",
-                    "secondary-container": "#474746",
-                    "on-secondary": "#313030",
-                    "tertiary-fixed": "#ffdbcb",
-                    "inverse-primary": "#6e0000ff",
-                    "surface-container": "#1f1f1f",
-                    "secondary-fixed": "#e5e2e1",
-                    "on-primary": "#390000ff",
-                    "tertiary": "#ffd2bd",
-                    "surface-dim": "#131313",
-                    "primary-container": "#dc0000ff",
-                    "primary-fixed": "#ff6767ff"
-                },
-                "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
-                },
-                "spacing": {
-                    "margin-mobile": "16px",
-                    "base": "4px",
-                    "stack-md": "16px",
-                    "stack-sm": "8px",
-                    "gutter": "12px",
-                    "stack-lg": "32px",
-                    "margin-tablet": "24px"
-                },
-                fontFamily: {
-                    "body-lg": ["Vazir", "Inter", "sans-serif"],
-                    "title-md": ["Vazir", "Inter", "sans-serif"],
-                    "headline-lg-mobile": ["Vazir", "Montserrat", "sans-serif"],
-                    "headline-lg": ["Vazir", "Montserrat", "sans-serif"],
-                    "body-sm": ["Vazir", "Inter", "sans-serif"],
-                    "label-caps": ["Vazir", "Inter", "sans-serif"],
-                    "display-lg": ["Vazir", "Montserrat", "sans-serif"]
-                },
-                "fontSize": {
-                    "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
-                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
-                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
-                    "headline-lg": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
-                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
-                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
-                }
-            },
-        },
-    };
+    // نکته: تنظیمات Tailwind از اینجا حذف شد (روی صفحه‌ی اصلی Tailwind کامپایل‌شده است و آبجکت tailwind وجود ندارد).
+    // کلاس‌های سفارشی این صفحه در ganre.css تعریف شده‌اند.
 
     // این مپینگ به کدهای سیستم اجازه میده هم با نام انگلیسی و هم فارسی ژانرها ارتباط برقرار کنه
     const genreTranslation = {
@@ -272,5 +185,6 @@
         ]);
     }
 
-    init();
+    // لودر صفحه (index.html) بعد از هر بار نمایش صفحه، initGenres را صدا می‌زند
+    window.initGenres = init;
 })();
