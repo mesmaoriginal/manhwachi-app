@@ -14,27 +14,36 @@
     <title id="dynamic-title">خواندن چپتر - مانهواچی</title>
     <link rel="stylesheet" href="/css/vendor/inter.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;display=swap'">
     <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap">
-        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" media="print" onload="this.media='all'">
+    <script>
+      // Tailwind: اول فایل کامپایل‌شده‌ی لوکال (/css/tailwind.css). اگه نبود/خراب بود، CDN به‌صورت غیر-بلاک‌کننده لود می‌شه.
+      window.__twFallback = function () {
+        if (window.__twFallbackDone) return;
+        window.__twFallbackDone = true;
+        var s = document.createElement('script');
+        s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+        s.onload = function () {
+          tailwind.config = { darkMode: 'class', theme: { extend: { colors: {
+            'blood-glow': 'rgba(139, 0, 0, 0.6)', 'void-black': '#050505', 'primary': '#ffb4a8', 'primary-container': '#8b0000'
+          } } } };
+        };
+        document.head.appendChild(s);
+      };
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          var probe = document.createElement('div');
+          probe.className = 'hidden';
+          document.body.appendChild(probe);
+          var ok = getComputedStyle(probe).display === 'none';
+          probe.remove();
+          if (!ok) window.__twFallback();
+        }, 300);
+      });
+    </script>
+    <link rel="stylesheet" href="/css/tailwind.css?v=1" onerror="window.__twFallback()" />
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
     <link rel="preconnect" href="https://s3.parspack.net" crossorigin />
     <link rel="dns-prefetch" href="https://s3.parspack.net" />
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            content: ["*"],
-            theme: {
-                extend: {
-                    colors: {
-                        "blood-glow": "rgba(139, 0, 0, 0.6)",
-                        "void-black": "#050505",
-                        "primary": "#ffb4a8",
-                        "primary-container": "#8b0000",
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         body { background-color: #050505; overflow-x: hidden; user-select: none; scroll-behavior: smooth; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -209,6 +218,50 @@
         .pm-later { margin-top: 10px; width: 100%; padding: 10px; font-size: .8rem; color: #71717a; }
         .pm-later:hover { color: #d4d4d8; }
         @media (prefers-reduced-motion: reduce) { .pm-crown { animation: none; } .pm-card, .pm-overlay { transition: none; } }
+
+        /* ===== پایه‌ی موبایل ===== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { min-height: 100vh; min-height: 100dvh; font-family: 'Vazirmatn', 'Vazir', Tahoma, system-ui, sans-serif; }
+        #reader { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; }
+
+        /* ===== پشتیبان حداقلی: اگر Tailwind (لوکال و CDN) لود نشد، صفحه نشکند ===== */
+        #top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(0,0,0,.95); border-bottom: 1px solid rgba(127,29,29,.3); }
+        #top-nav > div:first-child { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; }
+        #top-nav > div:first-child > div { display: flex; align-items: center; gap: 4px; min-width: 0; }
+        #bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: rgba(0,0,0,.95); border-top: 1px solid rgba(127,29,29,.3); }
+        #bottom-nav > div { display: flex; justify-content: space-around; align-items: center; height: 4rem; }
+        #top-nav button, #bottom-nav button { background: transparent; color: #e5e5e5; border: 0; padding: 6px; font: inherit; cursor: pointer; }
+        #top-nav h1 { margin: 0; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw; }
+        #top-nav p { margin: 0; font-size: 10px; color: #9ca3af; }
+        #progress-bar { height: 2px; background: #dc2626; }
+        #episodeModal.hidden, #settings-panel.hidden { display: none; }
+        #episodeModal, #settings-panel { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.92); }
+        #settings-panel { display: flex; flex-direction: column; }
+        #footer-container { text-align: center; padding: 64px 24px 96px; }
+
+        /* ===== صفحه‌های قفل/خطا (بدون وابستگی به Tailwind) ===== */
+        #reader.is-locked, #reader.is-locked.mode-vertical, #reader.is-locked.mode-paged {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; height: auto; min-height: 100vh; min-height: 100dvh;
+            overflow: visible; scroll-snap-type: none;
+            padding: calc(3.5rem + env(safe-area-inset-top)) 16px calc(5rem + env(safe-area-inset-bottom));
+        }
+        #reader.is-locked ~ #footer-container { display: none !important; }
+        .lk-card { width: 100%; max-width: 420px; margin: 0 auto; text-align: center; direction: rtl; box-sizing: border-box;
+            padding: 30px 20px 22px; border-radius: 24px; color: #fff;
+            background: linear-gradient(180deg, #131313, #0a0a0a); border: 1px solid rgba(139,0,0,.35);
+            box-shadow: 0 20px 60px -24px rgba(139,0,0,.5); }
+        .lk-ico { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
+            background: rgba(245,158,11,.12); color: #f59e0b; }
+        .lk-ico svg { width: 36px; height: 36px; }
+        .lk-title { font-size: 1.1rem; font-weight: 800; margin: 0 0 10px; line-height: 1.8; }
+        .lk-desc { font-size: .88rem; line-height: 2; color: #a1a1aa; margin: 0 0 18px; }
+        .lk-timer { font-size: 1.9rem; font-weight: 900; letter-spacing: .1em; color: #fbbf24; margin: 0 0 20px; direction: ltr; font-variant-numeric: tabular-nums; }
+        .lk-btn { display: flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; min-height: 48px;
+            padding: 12px 16px; border-radius: 16px; font-weight: 800; font-size: .95rem; color: #fff; background: #dc2626;
+            border: 0; text-decoration: none; cursor: pointer; font-family: inherit; }
+        .lk-btn:active { transform: scale(.98); }
+        .lk-btn.alt { background: #18181b; border: 1px solid #27272a; color: #e4e4e7; margin-top: 10px; }
     </style>
 </head>
 <body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
@@ -695,19 +748,51 @@
             const p = (n) => String(n).padStart(2, '0');
             return `${p(h)}:${p(m)}:${p(x)}`.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
         }
-        function renderTimedLock(container, result) {
+        const LK_ICONS = {
+            lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>',
+            clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+            crown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 8l4 4 4-7 4 7 4-4-2 10H6L4 8z"/></svg>',
+            warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/></svg>'
+        };
+        function lkEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function loginHref() { return '/?action=login&next=' + encodeURIComponent(location.pathname + location.search); }
+
+        // حالت «قفل/خطا»: هدر دیده می‌شه، فوتر «چپتر به پایان رسید» مخفی می‌شه، کارت وسط صفحه می‌شینه
+        function enterLockedLayout() {
+            const r = document.getElementById('reader');
+            r.classList.add('is-locked');
+            document.body.classList.remove('ui-hidden');
+            isUIHidden = false;
+            window.scrollTo(0, 0);
+        }
+        function renderLock(container, o) {
+            enterLockedLayout();
+            const btns = (o.buttons || []).map(b => b.href
+                ? `<a class="lk-btn${b.alt ? ' alt' : ''}" href="${lkEsc(b.href)}">${lkEsc(b.label)}</a>`
+                : `<button type="button" class="lk-btn${b.alt ? ' alt' : ''}" data-act="${lkEsc(b.act)}">${lkEsc(b.label)}</button>`).join('');
+            container.innerHTML = `
+                <div class="lk-card" role="alert">
+                    <div class="lk-ico">${LK_ICONS[o.icon] || LK_ICONS.lock}</div>
+                    <h2 class="lk-title">${lkEsc(o.title)}</h2>
+                    ${o.desc ? `<p class="lk-desc">${lkEsc(o.desc)}</p>` : ''}
+                    ${o.timer ? '<div class="lk-timer" id="lock-countdown" dir="ltr">--:--:--</div>' : ''}
+                    ${btns}
+                </div>`;
+            container.querySelectorAll('[data-act="reload"]').forEach(b => b.onclick = () => location.reload());
+            container.querySelectorAll('[data-act="back"]').forEach(b => b.onclick = () => { location.href = `/comic/${slug}`; });
+        }
+        function renderTimedLock(container, result, isGuest) {
             const early = result.code === 'EARLY_LOCKED';
             const until = result.unlocksAt ? new Date(result.unlocksAt).getTime() : Date.now() + (result.remainingSeconds || 0) * 1000;
-            container.innerHTML = `
-                <div class="text-center py-24 px-6 w-full max-w-md mx-auto">
-                    <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">schedule</span>
-                    <h2 class="text-xl font-bold mb-2">${early ? 'این قسمت هنوز برای اشتراک هفتگی باز نشده' : 'این قسمت تازه منتشر شده'}</h2>
-                    <p class="text-gray-400 text-sm leading-7 mb-4">${early
-                        ? 'با اشتراک هفتگی، قسمت‌های اشتراکی تا ۱ روز اول قفل هستند. با اشتراک ماهانه یا سه‌ماهه (استاندارد یا پرمیوم) از همان لحظه‌ی انتشار بخوانید.'
-                        : 'قسمت‌های رایگان تا ۲۴ ساعت اول فقط برای دارندگان اشتراک باز هستند. با خرید اشتراک همین حالا بخوانید یا تا باز شدن قفل صبر کنید.'}</p>
-                    <div class="text-3xl font-black tracking-widest text-amber-400 mb-6" id="lock-countdown" dir="ltr">--:--:--</div>
-                    <a href="/vip.html" class="inline-block px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">${early ? 'ارتقای اشتراک' : 'خرید اشتراک'}</a>
-                </div>`;
+            const buttons = [{ href: '/vip.html', label: early ? 'ارتقای اشتراک' : 'خرید اشتراک' }];
+            if (isGuest) buttons.push({ href: loginHref(), label: 'اشتراک دارم؛ ورود به حساب', alt: true });
+            renderLock(container, {
+                icon: 'clock', timer: true, buttons,
+                title: early ? 'این قسمت هنوز برای اشتراک هفتگی باز نشده' : 'این قسمت تازه منتشر شده',
+                desc: early
+                    ? 'با اشتراک هفتگی، قسمت‌های اشتراکی تا ۱ روز اول قفل هستند. با اشتراک ماهانه یا سه‌ماهه (استاندارد یا پرمیوم) از همان لحظه‌ی انتشار بخوانید.'
+                    : 'قسمت‌های رایگان تا ۲۴ ساعت اول فقط برای دارندگان اشتراک باز هستند. با خرید اشتراک همین حالا بخوانید یا تا باز شدن قفل صبر کنید.'
+            });
             clearInterval(lockTimer);
             const tick = () => {
                 const el = document.getElementById('lock-countdown');
@@ -730,6 +815,7 @@
         async function loadChapterPanels() {
             const panelsContainer = document.getElementById('reader');
             panelsContainer.innerHTML = '';
+            panelsContainer.classList.remove('is-locked');
             startChapterLoader();
             if (!navigator.onLine && await renderOfflineChapter(panelsContainer)) return;
 
@@ -753,24 +839,26 @@
                     if (res.status >= 500 && await renderOfflineChapter(panelsContainer)) return;
                     hideChapterLoader();
                     panelsContainer.innerHTML = '';
+                    const isGuest = !authHeader.Authorization;
                     if (result.code === 'FREE_LOCKED' || result.code === 'EARLY_LOCKED') {
-                        renderTimedLock(panelsContainer, result);
+                        renderTimedLock(panelsContainer, result, isGuest);
                     } else if (result.code === 'AUTH_REQUIRED') {
-                        panelsContainer.innerHTML = `
-                            <div class="text-center py-24 px-6">
-                                <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">lock</span>
-                                <h2 class="text-xl font-bold mb-2">برای خواندن این قسمت باید اشتراک بخرید</h2>
-                                <a href="/vip.html" class="inline-block mt-4 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">خرید اشتراک</a>
-                            </div>`;
+                        renderLock(panelsContainer, {
+                            icon: 'lock', title: 'برای خواندن این قسمت وارد حساب شوید',
+                            desc: 'این قسمت فقط برای کاربران واردشده (و دارندگان اشتراک) قابل خواندن است. وارد حساب خود شوید یا اشتراک تهیه کنید.',
+                            buttons: [{ href: loginHref(), label: 'ورود / ثبت‌نام' }, { href: '/vip.html', label: 'خرید اشتراک', alt: true }]
+                        });
                     } else if (result.code === 'VIP_REQUIRED') {
-                        panelsContainer.innerHTML = `
-                            <div class="text-center py-24 px-6">
-                                <span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">workspace_premium</span>
-                                <h2 class="text-xl font-bold mb-2">این قسمت مخصوص دارندگان اشتراک است</h2>
-                                <a href="/vip.html" class="inline-block mt-4 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">خرید اشتراک</a>
-                            </div>`;
+                        renderLock(panelsContainer, {
+                            icon: 'crown', title: 'این قسمت مخصوص دارندگان اشتراک است',
+                            desc: 'با تهیه‌ی اشتراک به تمام قسمت‌های اشتراکی دسترسی پیدا می‌کنید.',
+                            buttons: [{ href: '/vip.html', label: 'خرید اشتراک' }].concat(isGuest ? [{ href: loginHref(), label: 'اشتراک دارم؛ ورود به حساب', alt: true }] : [])
+                        });
                     } else {
-                        panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">${result.error || 'خطایی رخ داد.'}</div>`;
+                        renderLock(panelsContainer, {
+                            icon: 'warn', title: result.error || 'خطایی رخ داد.',
+                            buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }]
+                        });
                     }
                     return;
                 }
@@ -778,7 +866,7 @@
                 let urls = result.urls || [];
                 if (urls.length === 0) {
                     hideChapterLoader();
-                    panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.</div>`;
+                    renderLock(panelsContainer, { icon: 'warn', title: 'تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }] });
                     return;
                 }
 
@@ -823,7 +911,7 @@
                 console.error(err);
                 if ((err instanceof TypeError || !navigator.onLine) && await renderOfflineChapter(panelsContainer)) return;
                 hideChapterLoader();
-                panelsContainer.innerHTML = `<div class="text-center py-20 text-gray-400">خطا در بارگذاری تصاویر. لطفاً دوباره تلاش کنید.</div>`;
+                renderLock(panelsContainer, { icon: 'warn', title: 'خطا در بارگذاری تصاویر', desc: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }] });
             }
         }
 
@@ -838,7 +926,7 @@
                 }
                 manhwaData = data[slug];
 
-                if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) { hideChapterLoader(); return; }
+                if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) { hideChapterLoader(); renderLock(document.getElementById('reader'), { icon: 'warn', title: 'این قسمت پیدا نشد', desc: 'ممکن است آدرس اشتباه باشد یا قسمت حذف شده باشد.', buttons: [{ href: '/', label: 'بازگشت به صفحه‌ی اصلی' }] }); return; }
 
                 if (chNum === null) {
                     const hasZero = manhwaData.episodes.some(e => Number(e.num) === 0);
@@ -846,7 +934,7 @@
                 }
 
                 const episode = manhwaData.episodes.find(e => Number(e.num) === chNum);
-                if (!episode) { hideChapterLoader(); return; }
+                if (!episode) { hideChapterLoader(); renderLock(document.getElementById('reader'), { icon: 'warn', title: 'این قسمت پیدا نشد', desc: 'ممکن است آدرس اشتباه باشد یا قسمت حذف شده باشد.', buttons: [{ href: '/', label: 'بازگشت به صفحه‌ی اصلی' }] }); return; }
 
                 document.title = `خواندن مانهوا ${manhwaData.title_fa} چپتر ${chNum} - مانهواچی`;
                 document.getElementById('nav-manhwa-title').textContent = manhwaData.title_fa;
@@ -883,6 +971,7 @@
             } catch (err) {
                 console.error(err);
                 hideChapterLoader();
+                renderLock(document.getElementById('reader'), { icon: 'warn', title: 'خطا در بارگذاری صفحه', desc: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }] });
             }
         }
 
@@ -1349,7 +1438,7 @@
             try { await db.rpc('increment_manhwa_views', { p_slug: slug }); } catch (err) { console.error(err); }
         }
 
-        window.onload = () => {
+        const __mcBoot = () => {
             loadSettings();
 
             setReadingMode(readerSettings.readingMode);
@@ -1376,6 +1465,7 @@
             document.getElementById('image-width').addEventListener('input', e => setImageWidth(Number(e.target.value)));
             document.getElementById('page-jump-input').addEventListener('keydown', e => { if (e.key === 'Enter') jumpToPage(); });
         };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __mcBoot); else __mcBoot();
     </script>
 </body>
 </html>
