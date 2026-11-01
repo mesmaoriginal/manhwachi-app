@@ -864,6 +864,20 @@
             <button id="showMoreBtn" class="w-full mt-8 py-4 border border-white rounded-2xl font-medium " style="border-color: rgb(255 255 255 / 27%); color: #ffffffa6;">نمایش قسمت‌های بیشتر</button>
         </section>
 
+        <% if (manhwa && episodes.length) { %>
+        <!-- 🔎 لینک داخلی قابل‌خزش به صفحه‌ی ایندکس‌شونده‌ی هر چپتر (/comic/<slug>/chapter-N) -->
+        <section class="mt-8 px-5 lg:max-w-7xl lg:mx-auto lg:px-8" aria-label="فهرست چپترها">
+            <details style="border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px 16px;background:rgba(255,255,255,.03)">
+                <summary style="cursor:pointer;font-weight:600;color:#e2e2e2;font-size:14px">فهرست همه‌ی چپترهای مانهوا <%= title_fa || title_en %></summary>
+                <nav style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+                    <% episodes.slice().sort(function (a, b) { return Number(b.num) - Number(a.num); }).forEach(function (ep) { %>
+                    <a href="/comic/<%= encodeURIComponent(slug) %>/chapter-<%= ep.num %>" style="padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-size:12px;color:#cbb8b8">چپتر <%= ep.num %></a>
+                    <% }); %>
+                </nav>
+            </details>
+        </section>
+        <% } %>
+
         <!-- Similar Manhwas Section -->
         <section id="similarSection" class="mt-12 px-5 lg:max-w-7xl lg:mx-auto lg:px-8 hidden">
             <div class="flex items-center justify-between mb-5">

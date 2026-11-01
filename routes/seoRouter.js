@@ -155,13 +155,13 @@ function renderHome(readHtml, homeFile) {
 }
 
 // ---------- قالب صفحات ژانر ----------
-function layout({ ttl, desc, canonical, robots, body, ld, image }) {
+function layout({ ttl, desc, canonical, robots, body, ld, image, css, ogType }) {
   const img = image || DEFAULT_OG;
   return `<!DOCTYPE html>
 <html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(ttl)}</title><meta name="description" content="${esc(desc)}"><meta name="robots" content="${robots || "index, follow, max-image-preview:large"}">
 <link rel="canonical" href="${canonical}">
-<meta property="og:type" content="website"><meta property="og:site_name" content="${BRAND}"><meta property="og:title" content="${esc(ttl)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="fa_IR"><meta property="og:image" content="${img}">
+<meta property="og:type" content="${ogType || 'website'}"><meta property="og:site_name" content="${BRAND}"><meta property="og:title" content="${esc(ttl)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="fa_IR"><meta property="og:image" content="${img}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(ttl)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${img}">
 <link rel="icon" href="/ManhwaChi/favicon.ico"><link rel="icon" type="image/png" sizes="192x192" href="/ManhwaChi/favicon-192x192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -181,13 +181,106 @@ main{max-width:1100px;margin:auto;padding:24px 16px 64px}h1{font-size:24px;color
 .gg a:hover{border-color:rgba(220,38,38,.5)}.gg b{display:block;color:#fff}.gg small{color:#8c8c8c}
 .crumb{font-size:12px;color:#8c8c8c;margin-bottom:12px}.crumb a:hover{color:#fff}
 footer{border-top:1px solid rgba(255,255,255,.1);padding:24px 16px;text-align:center;color:#8c8c8c;font-size:12px}
-</style>${ld || ""}</head><body>
+${css || ""}</style>${ld || ""}</head><body>
 <header><div class="bar"><a href="/"><img src="/ManhwaChi/LOGO-main-white.webp" alt="${BRAND}" width="120" height="30"></a>
 <nav aria-label="منوی اصلی"><a href="/">خانه</a><a href="/library-page.html">آرشیو مانهوا</a><a href="/genres">ژانرها</a><a href="/blog">وبلاگ</a><a href="/search.html">جستجو</a></nav></div></header>
 <main>${body}</main><footer>© ${BRAND} | Manhwachi — خواندن آنلاین مانهوا و مانگا با ترجمه فارسی</footer></body></html>`;
 }
 const card = (it) => `<a class="card" href="/comic/${encodeURIComponent(it.slug)}"><img src="${coverUrl(it)}" alt="مانهوا ${esc(title(it))}" loading="lazy" decoding="async" width="300" height="400"><h2>${esc(title(it))}</h2>${score(it) ? `<small>★ ${esc(it.score || it.rating)}</small>` : ""}</a>`;
 const crumbs = (items) => ({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map(([n, u], i) => ({ "@type": "ListItem", position: i + 1, name: n, item: u })) });
+
+
+// ---------- صفحه‌ی قابل‌ایندکس هر چپتر: /comic/<slug>/chapter-<n> ----------
+// reader.html عمداً noindex است (SPA، بدون عنوان و محتوای اختصاصی). این صفحه‌ی سبک و SSR،
+// برای جستجوهایی مثل «مانهوا X چپتر N» ایندکس می‌شود و کاربر را با یک دکمه به خواننده می‌برد.
+const CH_CSS = `
+.hero{display:flex;gap:18px;align-items:flex-start;margin:14px 0 22px}.hero img{width:130px;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#1b1b1b;flex:none}
+.hero .meta{flex:1;min-width:0}.badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.15);color:#cbb8b8;margin-left:6px}
+.badge.free{color:#22c55e;border-color:rgba(34,197,94,.4)}.badge.vip{color:#fbbf24;border-color:rgba(251,191,36,.4)}
+.cta{display:inline-block;margin-top:14px;padding:12px 30px;border-radius:12px;background:#DC2626;color:#fff;font-weight:700;font-size:16px}.cta:hover{background:#b91c1c}
+.pn{display:flex;gap:10px;justify-content:space-between;margin:22px 0;flex-wrap:wrap}.pn a{flex:1;min-width:140px;text-align:center;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);font-size:14px;color:#e2e2e2}.pn a:hover{border-color:#DC2626}
+.sec{margin-top:30px}.sec h2{font-size:17px;color:#fff;margin-bottom:10px}.sec p{color:#b8b8b8;font-size:14px}
+.chl{display:flex;flex-wrap:wrap;gap:8px}.chl a{padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-size:13px;color:#cbb8b8}.chl a:hover,.chl a.on{border-color:#DC2626;color:#fff;background:rgba(220,38,38,.15)}
+@media(max-width:520px){.hero img{width:96px}h1{font-size:20px}}
+`;
+const CH_PER_MAP = 40000;
+const chapterUrls = (c) => {
+  if (c.chUrls) return c.chUrls;
+  const out = [];
+  for (const it of c.list) for (const { n, ep } of chaptersOf(it)) out.push([`${SITE}${chUrl(it.slug, n)}`, isoDate(ep.date)]);
+  return (c.chUrls = out);
+};
+const chUrl = (slug, n) => `/comic/${encodeURIComponent(slug)}/chapter-${n}`;
+const thumbUrl = (slug, n) => `/manhwas/${encodeURIComponent(slug)}/chapterPictures/chapterpicture${n}.png`;
+
+function chaptersOf(it) {
+  // چپترهای یکتا بر اساس شماره، صعودی
+  const m = new Map();
+  for (const ep of it.episodes || []) {
+    const n = Number(ep.num);
+    if (Number.isFinite(n) && n >= 0 && !m.has(n)) m.set(n, ep);
+  }
+  return [...m.entries()].sort((a, b) => a[0] - b[0]).map(([n, ep]) => ({ n, ep }));
+}
+
+function renderChapter(c, it, n) {
+  const list = chaptersOf(it);
+  const i = list.findIndex((x) => x.n === n);
+  if (i < 0) return null;
+  const { ep } = list[i];
+  const prev = list[i - 1], next = list[i + 1];
+  const nameFa = it.title_fa || it.title_en || it.slug;
+  const nameEn = it.title_en && it.title_fa && it.title_en !== it.title_fa ? it.title_en : "";
+  const canonical = `${SITE}${chUrl(it.slug, n)}`;
+  const seriesUrl = `${SITE}/comic/${encodeURIComponent(it.slug)}`;
+  const iso = isoDate(ep.date);
+  const free = !!ep.free;
+  const genres = (Array.isArray(it.genres) ? it.genres : []).map((g) => ({ name: faOf(keyOf(g)), slug: slugOf(keyOf(g)) }));
+  const lastN = list[list.length - 1].n;
+  const cover = it.cover_image ? SITE + coverUrl(it) : undefined;
+
+  const ttls = [
+    `مانهوا ${nameFa} چپتر ${n} | خواندن آنلاین | ${BRAND}`,
+    `${nameFa} چپتر ${n} | ${BRAND}`,
+  ];
+  const ttl = ttls.find((t) => t.length <= 62) || trimTo(ttls[1], 62);
+  const raw = String(it.description || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  const lead = `خواندن آنلاین چپتر ${n} مانهوا ${nameFa}${nameEn ? ` (${nameEn})` : ""} با ترجمه فارسی`;
+  const desc = trimTo(raw ? `${lead}؛ ${raw}` : `${lead} در ${BRAND}.`, 158);
+
+  // چپترهای اطراف (حداکثر ۱۲ مورد) + دو چپتر ابتدایی/آخر برای لینک‌سازی داخلی
+  const from = Math.max(0, Math.min(i - 5, list.length - 12)), around = list.slice(from, from + 12);
+  const keep = new Map();
+  [list[0], ...around, list[list.length - 1]].forEach((x) => keep.set(x.n, x));
+  const chips = [...keep.values()].sort((a, b) => b.n - a.n)
+    .map((x) => `<a href="${chUrl(it.slug, x.n)}"${x.n === n ? ' class="on" aria-current="page"' : ""}>چپتر ${x.n}</a>`).join("");
+
+  // مانهواهای مرتبط: هم‌ژانر با بیشترین امتیاز
+  const g0 = genres[0] && c.genres.get(genres[0].slug);
+  const related = g0 ? g0.items.filter((x) => x.slug !== it.slug).slice(0, 6) : [];
+
+  const body = `<nav class="crumb" aria-label="مسیر"><a href="/">خانه</a> › <a href="/comic/${encodeURIComponent(it.slug)}">${esc(nameFa)}</a> › چپتر ${n}</nav>
+<h1>مانهوا <span>${esc(nameFa)}</span> چپتر ${n}</h1>
+<div class="hero">${it.cover_image ? `<img src="${coverUrl(it)}" alt="مانهوا ${esc(nameFa)}" width="130" height="173" decoding="async" fetchpriority="high">` : ""}
+<div class="meta"><p class="intro">${esc(lead)}.${ep.date ? ` تاریخ انتشار: ${esc(ep.date)}.` : ""} ${lastN === n ? "این آخرین چپتر منتشرشده است." : `آخرین چپتر منتشرشده: ${lastN}.`}</p>
+<span class="badge ${free ? "free" : "vip"}">${free ? "رایگان" : "اشتراکی"}</span>${genres.slice(0, 3).map((g) => `<a class="badge" href="/genre/${encodeURIComponent(g.slug)}">${esc(g.name)}</a>`).join("")}
+<div><a class="cta" href="/reader.html?slug=${encodeURIComponent(it.slug)}&amp;ch=${n}" rel="nofollow">خواندن چپتر ${n}</a></div></div></div>
+<div class="pn">${next ? `<a href="${chUrl(it.slug, next.n)}" rel="next">‹ چپتر ${next.n}</a>` : "<span></span>"}<a href="/comic/${encodeURIComponent(it.slug)}">همه‌ی چپترهای ${esc(nameFa)}</a>${prev ? `<a href="${chUrl(it.slug, prev.n)}" rel="prev">چپتر ${prev.n} ›</a>` : "<span></span>"}</div>
+${raw ? `<section class="sec"><h2>درباره‌ی مانهوا ${esc(nameFa)}</h2><p>${esc(trimTo(raw, 420))}</p></section>` : ""}
+<section class="sec"><h2>چپترهای دیگر ${esc(nameFa)}</h2><div class="chl">${chips}</div></section>
+${related.length ? `<section class="sec"><h2>مانهواهای مشابه</h2><div class="grid">${related.map(card).join("")}</div></section>` : ""}`;
+
+  const issue = {
+    "@type": "ComicIssue", "@id": canonical + "#issue", name: `${nameFa} چپتر ${n}`, issueNumber: n, url: canonical, inLanguage: "fa-IR",
+    isPartOf: { "@type": "ComicSeries", "@id": seriesUrl + "#series", name: nameFa, url: seriesUrl },
+    datePublished: iso || undefined, image: cover, genre: genres.map((g) => g.name),
+    isAccessibleForFree: free, publisher: { "@id": SITE + "/#org" },
+  };
+  const ld = jsonLd(crumbs([["خانه", SITE + "/"], [nameFa, seriesUrl], [`چپتر ${n}`, canonical]])) +
+    jsonLd({ "@context": "https://schema.org", ...issue });
+
+  return layout({ ttl, desc, canonical, body, ld, image: cover, css: CH_CSS, ogType: "article" });
+}
 
 module.exports = function createSeoRouter(opts = {}) {
   const publicDir = opts.publicDir || path.join(__dirname, "..", "public");
@@ -273,13 +366,35 @@ module.exports = function createSeoRouter(opts = {}) {
     }));
   });
 
+
+  // ---------- صفحه‌ی چپتر ----------
+  r.get("/comic/:slug/:chap", (req, res, next) => {
+    const m = /^chapter-(\d{1,5})$/.exec(req.params.chap);
+    if (!m) return next();
+    const c = index();
+    const raw = String(req.params.slug || "");
+    const it = c.list.find((x) => x.slug === raw) || c.list.find((x) => x.slug.toLowerCase() === raw.toLowerCase());
+    const notFound = (why) => res.status(404).set("X-Robots-Tag", "noindex").type("html").send(layout({
+      ttl: `چپتر پیدا نشد | ${BRAND}`, desc: why, canonical: `${SITE}/`, robots: "noindex, follow",
+      body: `<h1>چپتر پیدا نشد</h1><p class="intro">${esc(why)} <a class="red" href="${it ? "/comic/" + encodeURIComponent(it.slug) : "/"}">${it ? "بازگشت به صفحه‌ی مانهوا" : "بازگشت به خانه"}</a></p>`,
+    }));
+    if (!it) return notFound("این مانهوا وجود ندارد.");
+    const n = parseInt(m[1], 10);
+    // آدرس استاندارد: slug دقیق + عدد بدون صفر ابتدایی
+    if (it.slug !== raw || String(n) !== m[1]) return res.redirect(301, chUrl(it.slug, n));
+    const html = renderChapter(c, it, n);
+    if (!html) return notFound("این چپتر هنوز منتشر نشده یا وجود ندارد.");
+    res.set("Cache-Control", "public, max-age=300").type("html").send(html);
+  });
+
   // ---------- sitemap ها ----------
   const xml = (res, body, ttl = 3600) => res.set("Cache-Control", `public, max-age=${ttl}`).type("application/xml; charset=utf-8").send(`<?xml version="1.0" encoding="UTF-8"?>\n${body}\n`);
 
   r.get("/sitemap.xml", (req, res) => {
     const c = index();
     const newest = c.list.map((x) => x.lastmod).filter(Boolean).sort().pop();
-    const maps = [`${SITE}/sitemap-manhwa.xml`, `${SITE}/sitemap-pages.xml`, ...extraSitemaps];
+    const chunks = Math.max(1, Math.ceil(chapterUrls(c).length / CH_PER_MAP));
+    const maps = [`${SITE}/sitemap-manhwa.xml`, `${SITE}/sitemap-pages.xml`, ...Array.from({ length: chunks }, (_, k) => `${SITE}/sitemap-chapters-${k + 1}.xml`), ...extraSitemaps];
     xml(res, `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${maps.map((u, i) => `  <sitemap><loc>${esc(u)}</loc>${i === 0 && newest ? `<lastmod>${newest}</lastmod>` : ""}</sitemap>`).join("\n")}\n</sitemapindex>`);
   });
 
@@ -291,6 +406,16 @@ module.exports = function createSeoRouter(opts = {}) {
       return `  <url><loc>${esc(loc)}</loc>${it.lastmod ? `<lastmod>${it.lastmod}</lastmod>` : ""}${img}</url>`;
     });
     xml(res, `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${items.join("\n")}\n</urlset>`);
+  });
+
+
+  // sitemap چپترها (هر فایل حداکثر ۴۰٬۰۰۰ آدرس؛ سقف گوگل ۵۰٬۰۰۰ است)
+  r.get("/sitemap-chapters-:k.xml", (req, res) => {
+    const all = chapterUrls(index());
+    const k = parseInt(req.params.k, 10);
+    const part = all.slice((k - 1) * CH_PER_MAP, k * CH_PER_MAP);
+    if (!(k >= 1) || (!part.length && k > 1)) return res.status(404).type("text/plain").send("not found");
+    xml(res, `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${part.map(([u, m]) => `  <url><loc>${esc(u)}</loc>${m ? `<lastmod>${m}</lastmod>` : ""}</url>`).join("\n")}\n</urlset>`);
   });
 
   r.get("/sitemap-pages.xml", (req, res) => {
