@@ -110,6 +110,14 @@ app.use(
           "https://*.supabase.co", // اتصال به دیتابیس Supabase
           "https://www.google-analytics.com", // ارسال دیتای Google Analytics/gtag
           "https://region1.google-analytics.com",
+          // Service Worker (sw.js) خودش این CDNها را fetch می‌کند و fetch داخل SW تابع connect-src است.
+          // بدون این‌ها tailwind/فونت از طریق SW بلاک می‌شود («tailwind is not defined»). همان لیست CDN_OK در sw.js:
+          "https://cdn.tailwindcss.com",
+          "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com",
+          "https://fonts.googleapis.com",
+          "https://fonts.gstatic.com",
+          "https://code.jquery.com",
         ],
         // ویدیوهای داخل مطالب وبلاگ (بلوک «ویدیو»): بدون این خط iframe یوتیوب/آپارات بلاک می‌شود
         frameSrc: ["'self'", "https://www.youtube-nocookie.com", "https://www.aparat.com"],
