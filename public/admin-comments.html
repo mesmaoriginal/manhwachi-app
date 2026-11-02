@@ -113,8 +113,12 @@
 
     <script src="/js/vendor/supabase.min.js"></script>
     <script>
+        if (typeof supabase === 'undefined') {
+            document.body.insertAdjacentHTML('afterbegin', '<div style="background:#7f1d1d;color:#fff;padding:12px;text-align:center;font-family:sans-serif">فایل /js/vendor/supabase.min.js روی سرور پیدا نشد؛ بدون آن این صفحه کار نمی‌کند. (public/js/vendor/supabase.min.js را آپلود کنید)</div>');
+            throw new Error('supabase.min.js not loaded');
+        }
         const { createClient } = supabase;
-        const db = createClient('https://manhwachi.ir', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
+        const db = createClient(window.location.origin, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
 
         let currentAdmin = null;
         let currentTab = 'pending';
