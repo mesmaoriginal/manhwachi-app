@@ -553,6 +553,33 @@
         /* ===== نشان زمان‌باز‌شدن چپتر (جایگزین ایموجی 🔒) ===== */
         .lock-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); color: #fbbf24; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
         .lock-pill .material-symbols-outlined { font-size: 15px; }
+
+        /* =====================================================================
+           چیدمان دسکتاپ بدون وابستگی به tailwind.css
+           (اگر فایل کامپایل‌شده کلاس‌های lg: را نداشته باشد هم صفحه درست دیده می‌شود)
+           ===================================================================== */
+        @media (min-width: 1024px) {
+            .hero-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2.5rem; row-gap: 1.75rem; align-items: start; max-width: 80rem; margin-inline: auto; padding: 2.5rem 2rem 0; }
+            .hero-section { display: contents; }
+            .hero-section .glass-scrim { display: none; }
+            .hero-grid #dynamic-cover { position: sticky; top: 6rem; grid-column: 9 / span 4; grid-row: 1 / span 4; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; border-radius: 1.5rem; transform: none; }
+            .hero-grid .hero-info { position: static; grid-column: 1 / span 8; grid-row: 1; padding: .25rem 0 1.5rem; }
+            .hero-grid .hero-desc { grid-column: 1 / span 8; grid-row: 2; padding: 0; margin: 0; }
+            .hero-grid .hero-actions { position: static; grid-column: 1 / span 8; grid-row: 3; padding: 0; margin: .5rem 0 0; }
+            .hero-grid .hero-actions > div { max-width: 32rem; }
+            .hero-grid .hero-stats { grid-column: 1 / span 8; grid-row: 4; padding: 0; margin: .5rem 0 0; }
+            .hero-grid .hero-stats > div { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; max-width: 42rem; }
+            .hero-grid .hero-desc .manhwa-card { background: transparent; padding: 0; border: 0; border-radius: 0; }
+            .hero-grid .hero-desc h2 { display: none; }
+            main > section { max-width: 80rem; margin-inline: auto; padding-inline: 2rem; }
+            main > section#commentsAnchor { max-width: 56rem; }
+            main > section.telegram-banner { padding-inline: 2rem; }
+            #episodeList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+            #episodeList > * { margin: 0; }
+        }
+        @media (min-width: 1280px) {
+            #episodeList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
     </style>
     <link rel="stylesheet" href="/app-promo.css?v=1">
 <link rel="stylesheet" href="/mc-shared.css?v=1">
@@ -668,10 +695,10 @@
              Note: page is dir="rtl", so in a CSS grid, column line 1 is on the RIGHT and the last line is on the LEFT.
              The info block explicitly takes columns 1-8 (right side) and the cover explicitly takes columns 9-12 (left side),
              so the layout is correct regardless of grid auto-placement/order quirks under RTL. -->
-        <div class="lg:max-w-7xl lg:mx-auto lg:px-8 lg:pt-10 lg:grid lg:grid-cols-12 lg:gap-x-10 lg:gap-y-7 lg:items-start">
+        <div class="hero-grid lg:max-w-7xl lg:mx-auto lg:px-8 lg:pt-10 lg:grid lg:grid-cols-12 lg:gap-x-10 lg:gap-y-7 lg:items-start">
 
         <!-- Hero Section (cover image + title/genre/meta overlay) -->
-        <section class="relative w-full h-[520px] md:h-[620px] overflow-hidden lg:contents">
+        <section class="hero-section relative w-full h-[520px] md:h-[620px] overflow-hidden lg:contents">
             <img id="dynamic-cover" fetchpriority="high" decoding="async" class="w-full object-cover object-top scale-105 lg:static lg:col-start-9 lg:col-span-4 lg:row-start-1 lg:row-span-4 lg:h-auto lg:aspect-[3/4] lg:scale-100 lg:rounded-3xl lg:shadow-2xl lg:shadow-black/60 lg:sticky lg:top-24"
                  src="<%= cover_url %>"
                  alt="<%= title_fa ? ('مانهوا ' + title_fa + ' - ' + title_en) : title_en %>"/>
@@ -714,7 +741,7 @@
         </section>
 
         <!-- Action buttons -->
-        <section class="px-5 -mt-6 relative z-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-3 lg:px-0 lg:mt-2">
+        <section class="hero-actions px-5 -mt-6 relative z-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-3 lg:px-0 lg:mt-2">
             <div class="flex gap-3 lg:max-w-lg">
                 <button id="readBtn" class="flex-1 bg-primary text-on-primary h-12 rounded-xl font-medium text-base flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-primary/25">
                     <span>شروع خواندن</span>
@@ -735,7 +762,7 @@
         </section>
 
         <!-- Stats (type / translated chapters) -->
-        <section class="px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-4 lg:px-0 lg:mt-2">
+        <section class="hero-stats px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-4 lg:px-0 lg:mt-2">
             <div class="grid grid-cols-2 gap-4 mb-5 lg:grid-cols-none lg:grid-flow-col lg:auto-cols-fr lg:max-w-2xl">
                 <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5">
                     <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">collections_bookmark</span>نوع</div>
@@ -756,7 +783,7 @@
         </section>
 
         <!-- Description: right under the title on desktop (positioned via lg:row-start-2 regardless of DOM order, so it can sit here in the DOM to keep the correct mobile stacking order: actions -> stats -> description) -->
-        <section class="px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-2 lg:px-0 lg:mt-0">
+        <section class="hero-desc px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-2 lg:px-0 lg:mt-0">
             <div class="bg-surface-elevated p-5 md:p-7 rounded-2xl border border-white/5 manhwa-card lg:bg-transparent lg:p-0 lg:border-0 lg:rounded-none">
                 <h2 class="text-base font-medium mb-4 text-white flex items-center gap-2 lg:hidden"><span class="material-symbols-outlined text-primary">menu_book</span>خلاصه داستان</h2>
                 <div id="descriptionWrapper" class="relative">
