@@ -111,12 +111,13 @@ function pager(d,fn){const last=Math.max(1,Math.ceil(d.total/d.per));const id='p
   setTimeout(()=>{const a=$('#'+id+'a'),b=$('#'+id+'b');a&&(a.onclick=()=>fn(d.page-1));b&&(b.onclick=()=>fn(d.page+1))});
   return '<div class="row"><button id="'+id+'a" '+(d.page<=1?'disabled':'')+'>‹ قبلی</button><span class="mut">صفحه '+d.page+' از '+last+' — '+fmt(d.total)+' مورد</span><button id="'+id+'b" '+(d.page>=last?'disabled':'')+'>بعدی ›</button></div>'}
 const svc=u=>u.banned_until&&Date.parse(u.banned_until)>Date.now()?'<span class="tag r">مسدود</span>':'';
-const vipTag=u=>u.is_vip?(u.vip_until&&Date.parse(u.vip_until)<=Date.now()?'<span class="tag y">منقضی '+fd(u.vip_until).slice(0,10)+'</span>':'<span class="tag g">VIP '+(u.vip_until?'تا '+fd(u.vip_until).slice(0,10):'دائم')+'</span>'):'<span class="mut">—</span>';
+const tierName=u=>u.vip_tier==='premium'?'پرمیوم 👑':'استاندارد';
+const vipTag=u=>u.is_vip?(u.vip_until&&Date.parse(u.vip_until)<=Date.now()?'<span class="tag y">منقضی '+fd(u.vip_until).slice(0,10)+'</span>':'<span class="tag g">'+tierName(u)+' '+(u.vip_until?'تا '+fd(u.vip_until).slice(0,10):'دائم')+'</span>'):'<span class="mut">—</span>';
 
 /* ---------- نمای کلی ---------- */
 async function overview(){const [d,s]=await Promise.all([api('/api/overview'),api('/api/stats')]),c=d.counts,sy=d.system;
   $('#m').innerHTML='<div class="top"><h2>نمای کلی</h2><span class="sp" style="flex:1"></span><button id="rf">↻ تازه‌سازی</button></div>'
-  +'<div class="grid">'+stat('کاربران',fmt(c.users))+stat('VIP فعال',fmt(c.vip_active),'ok')+stat('VIP منقضی',fmt(c.vip_expired),'warn')+stat('پرداخت‌ها',fmt(c.payments))+stat('نظر منتظر تایید',fmt(c.messages_pending),c.messages_pending?'warn':'')+stat('کامنت ریلز منتظر',fmt(c.reel_comments_pending),c.reel_comments_pending?'warn':'')+stat('بدون پروفایل',fmt(c.users_without_profile),c.users_without_profile?'warn':'')+stat('گزارش مشکل چپتر',fmt(c.reports))+stat('امتیازها',fmt(c.ratings))+stat('نشان‌ها',fmt(c.bookmarks))+stat('ریلز',fmt(c.reels))+'</div>'
+  +'<div class="grid">'+stat('کاربران',fmt(c.users))+stat('VIP فعال',fmt(c.vip_active),'ok')+stat('استاندارد',fmt(c.vip_standard),'ok')+stat('پرمیوم 👑',fmt(c.vip_premium),'ok')+stat('VIP منقضی',fmt(c.vip_expired),'warn')+stat('پرداخت‌ها',fmt(c.payments))+stat('نظر منتظر تایید',fmt(c.messages_pending),c.messages_pending?'warn':'')+stat('کامنت ریلز منتظر',fmt(c.reel_comments_pending),c.reel_comments_pending?'warn':'')+stat('بدون پروفایل',fmt(c.users_without_profile),c.users_without_profile?'warn':'')+stat('گزارش مشکل چپتر',fmt(c.reports))+stat('امتیازها',fmt(c.ratings))+stat('نشان‌ها',fmt(c.bookmarks))+stat('ریلز',fmt(c.reels))+'</div>'
   +'<div class="two"><div class="card"><b>ثبت‌نام (۳۰ روز اخیر)</b><div style="margin-top:10px">'+bars(s.signups_per_day,'c','', r=>r.c+' نفر')+'</div></div>'
   +'<div class="card"><b>کاربران فعال بر اساس آخرین ورود</b><div style="margin-top:10px">'+bars(s.logins_per_day,'c','bl',r=>r.c+' نفر')+'</div></div>'
   +'<div class="card"><b>پرداخت‌ها (تعداد)</b><div style="margin-top:10px">'+bars(s.payments_per_day,'c','gr',r=>r.c+' پرداخت · '+fmt(r.s))+'</div></div></div>'
@@ -131,7 +132,7 @@ async function overview(){const [d,s]=await Promise.all([api('/api/overview'),ap
   $('#bk').onclick=async()=>{try{const r=await api('/api/backup',{method:'POST',body:'{}'});toast('بکاپ ساخته شد ('+r.mb+' MB)','s');view('ov')}catch(e){toast(e.message,'e')}}}
 
 /* ---------- کاربران ---------- */
-const FILTERS=[['','همه'],['vip','VIP فعال'],['vip_soon','در آستانه‌ی انقضا'],['vip_expired','VIP منقضی'],['unconfirmed','ایمیل تایید نشده'],['no_profile','بدون پروفایل'],['banned','مسدود'],['inactive','غیرفعال ۹۰+ روز']];
+const FILTERS=[['','همه'],['vip','VIP فعال'],['vip_standard','استاندارد'],['vip_premium','پرمیوم'],['vip_soon','در آستانه‌ی انقضا'],['vip_expired','VIP منقضی'],['unconfirmed','ایمیل تایید نشده'],['no_profile','بدون پروفایل'],['banned','مسدود'],['inactive','غیرفعال ۹۰+ روز']];
 async function users(a={}){const st=Object.assign({q:'',page:1,filter:'',sort:'created_at',dir:'desc'},store.get('us',{}),a);store.set('us',{filter:st.filter,sort:st.sort,dir:st.dir});
   const d=await api('/api/users?'+qstr(st)),go=o=>users({...st,...o});
   const cols=[['email','ایمیل'],['','شماره'],['full_name','نام'],['vip_until','اشتراک'],['','ایمیل تایید'],['last_sign_in_at','آخرین ورود'],['created_at','ثبت‌نام']];
@@ -152,6 +153,7 @@ async function detail(id){const d=await api('/api/user/'+id),a=d.auth,p=d.profil
   +'<div class="two"><div class="card"><b>حساب</b><div style="height:8px"></div>'+kv({id:a.id,email:a.email,phone:a.phone,'رمز دارد':a.has_password?'بله':'خیر',ایمیل_تایید:a.email_confirmed_at,ثبت‌نام:a.created_at,آخرین_ورود:a.last_sign_in_at,'نشست‌های فعال':d.sessions,متادیتا:a.raw_user_meta_data})+'</div>'
   +'<div class="card"><b>اشتراک (VIP)</b><div style="height:8px"></div>'+(p?kv({نام:p.full_name,is_vip:p.is_vip,vip_until:p.vip_until,vip_tier:p.vip_tier,vip_plan_key:p.vip_plan_key}):'<p class="warn">پروفایل ندارد</p>')
   +'<div class="row"><button class="pri" data-d="30">+۳۰ روز</button><button data-d="90">+۹۰ روز</button><button data-d="180">+۱۸۰ روز</button><button data-d="365">+۳۶۵ روز</button></div>'
+  +'<div class="row"><span class="mut">نوع اشتراک:</span><select id="vt"><option value="standard"'+(p&&p.vip_tier==='premium'?'':' selected')+'>استاندارد</option><option value="premium"'+(p&&p.vip_tier==='premium'?' selected':'')+'>پرمیوم</option></select></div>'
   +'<div class="row"><input type="date" id="vd"><button id="v1">فعال تا این تاریخ</button><button class="dng" id="v0">غیرفعال کردن</button></div><span class="mut" style="font-size:12px">«+روز» از تاریخ انقضای فعلی (در صورت معتبر بودن) یا از امروز حساب می‌شود.</span></div></div>'
   +'<h3>عملیات حساب</h3><div class="row"><button id="ce" '+(a.email_confirmed_at?'disabled':'')+'>تایید ایمیل</button><button id="rs">خروج از همه‌ی دستگاه‌ها</button><button class="'+(banned?'pri':'dng')+'" id="bn">'+(banned?'رفع مسدودیت':'مسدود کردن کاربر')+'</button></div>'
   +'<div class="grid">'+stat('امتیازها',d.ratings)+stat('نشان‌ها',d.bookmarks)+stat('گزارش‌های چپتر',d.reports)+(d.team?stat('عضو تیم',esc(d.team.display_name||'✔')):'')+'</div>'
@@ -162,8 +164,8 @@ async function detail(id){const d=await api('/api/user/'+id),a=d.auth,p=d.profil
   const act=async(path,body,msg)=>{try{await api(path,{method:'POST',body:JSON.stringify(body)});toast(msg,'s');detail(id)}catch(e){toast(e.message,'e')}};
   const base=()=>{const cur=p&&p.vip_until&&Date.parse(p.vip_until)>Date.now()?Date.parse(p.vip_until):Date.now();return cur};
   $('#bk').onclick=()=>view('us');$('#cp').onclick=()=>copy(a.id);
-  $$('[data-d]').forEach(b=>b.onclick=()=>act('/api/user/'+id+'/vip',{until:new Date(base()+ +b.dataset.d*864e5).toISOString()},'اشتراک تمدید شد'));
-  $('#v1').onclick=()=>$('#vd').value?act('/api/user/'+id+'/vip',{until:$('#vd').value+'T23:59:59Z'},'ثبت شد'):toast('تاریخ را انتخاب کنید','e');
+  $$('[data-d]').forEach(b=>b.onclick=()=>act('/api/user/'+id+'/vip',{until:new Date(base()+ +b.dataset.d*864e5).toISOString(),tier:$('#vt').value},'اشتراک تمدید شد'));
+  $('#v1').onclick=()=>$('#vd').value?act('/api/user/'+id+'/vip',{until:$('#vd').value+'T23:59:59Z',tier:$('#vt').value},'ثبت شد'):toast('تاریخ را انتخاب کنید','e');
   $('#v0').onclick=async()=>{if(await confirmBox('VIP این کاربر خاموش شود؟','خاموش شود',true))act('/api/user/'+id+'/vip',{until:null},'VIP خاموش شد')};
   $('#ce').onclick=()=>act('/api/user/'+id+'/confirm-email',{},'ایمیل تایید شد');
   $('#rs').onclick=async()=>{if(await confirmBox('کاربر از همه‌ی دستگاه‌ها خارج شود؟','خروج بده'))act('/api/user/'+id+'/revoke-sessions',{},'نشست‌ها باطل شد')};
