@@ -249,79 +249,6 @@
         }
         .comment-animate { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .description-text { max-height: 132px; }
-        .description-text.expanded { max-height: 2000px; }
-        .description-fade.hidden-fade { opacity: 0; }
-        #descriptionToggleBtn.flex-visible { display: flex; }
-
-        .telegram-banner{
-            margin:28px 0;
-            padding:0 18px;
-        }
-        .telegram-banner-link{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:16px;
-            width:100%;
-            padding:18px 22px;
-            border-radius:22px;
-            text-decoration:none;
-            color:#fff;
-            background:linear-gradient(135deg,#229ED9,#1668c7);
-            box-shadow: 0 12px 35px rgba(34,158,217,.28), inset 0 1px rgba(255,255,255,.15);
-            position:relative;
-            overflow:hidden;
-        }
-        .telegram-banner-link::before{
-            content:"";
-            position:absolute;
-            top:-70px;
-            right:-40px;
-            width:180px;
-            height:180px;
-            background:rgba(255,255,255,.12);
-            border-radius:50%;
-        }
-        #copyTelegramBtn {
-            border:none;
-            cursor:pointer;
-            font-family:inherit;
-        }
-        .telegram-icon{
-            width:64px;
-            height:64px;
-            flex-shrink:0;
-            border-radius:50%;
-            background:rgba(255,255,255,.15);
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            backdrop-filter:blur(8px);
-        }
-        .telegram-icon img{ width:38px; height:38px; }
-        .telegram-content{ flex:1; margin:0 10px; }
-        .telegram-title{ font-size:16px; font-weight:600; margin-bottom:5px; }
-        .telegram-subtitle{ font-size:14px; opacity:.95; }
-        .telegram-btn{
-            background:#fff;
-            color:#1b84d6;
-            padding:12px 22px;
-            border-radius:14px;
-            font-weight:700;
-            transition:.25s;
-            white-space:nowrap;
-        }
-        .telegram-banner-link:hover .telegram-btn{ transform:scale(1.06); }
-        
-        @media(max-width:700px){
-            .telegram-banner-link{ padding:16px; }
-            .telegram-icon{ width:52px; height:52px; }
-            .telegram-icon img{ width:30px; height:30px; }
-            .telegram-title{ font-size:15px; }
-            .telegram-subtitle{ font-size:13px; }
-            .telegram-btn{ padding:10px 16px; font-size:13px; }
-        }
 
         #mobile-drawer { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
         #drawer-overlay { transition: opacity 0.3s ease, visibility 0.3s ease; }
@@ -358,188 +285,6 @@
         #mobileDrawer a[href*="telegram"] .text-sm { font-size: 13px; }
         #mobileDrawer a[href*="telegram"] .material-symbols-outlined.text-2xl { font-size: 22px; }
 
-        /* =====================================================================
-           Desktop redesign (>= 1024px) — mobile / tablet layout is untouched
-           ===================================================================== */
-        .desktop-backdrop { display: none; }
-
-        @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes backdropDrift {
-            from { transform: scale(1.15) translate3d(0, 0, 0); }
-            to   { transform: scale(1.26) translate3d(-1.5%, 1.8%, 0); }
-        }
-
-        @media (min-width: 1024px) {
-            main.manhwa-main { position: relative; isolation: isolate; }
-
-            /* --- blurred cover backdrop that fades out toward the bottom --- */
-            .desktop-backdrop {
-                display: block;
-                position: absolute;
-                z-index: -1;
-                top: -64px; left: 0; right: 0;
-                height: 920px;
-                overflow: hidden;
-                pointer-events: none;
-                -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.85) 38%, rgba(0,0,0,.35) 72%, transparent 100%);
-                        mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.85) 38%, rgba(0,0,0,.35) 72%, transparent 100%);
-                animation: backdropIn 1.4s ease-out both;
-            }
-            .desktop-backdrop img {
-                width: 100%; height: 100%;
-                object-fit: cover;
-                object-position: center 22%;
-                filter: blur(14px) saturate(1.25) brightness(.9);
-                opacity: .34;
-                transform: scale(1.15);
-                animation: backdropDrift 40s ease-in-out infinite alternate;
-                will-change: transform;
-            }
-            .desktop-backdrop::after {
-                content: "";
-                position: absolute; inset: 0;
-                background:
-                    radial-gradient(ellipse 55% 50% at 22% 26%, rgba(220,38,38,.24), transparent 70%),
-                    radial-gradient(ellipse 80% 70% at 50% 0%, transparent 45%, rgba(0,0,0,.55) 100%),
-                    linear-gradient(to right, rgba(0,0,0,.6), transparent 20%, transparent 80%, rgba(0,0,0,.6));
-            }
-
-            /* --- cover --- */
-            main #dynamic-cover {
-                border: 1px solid rgba(255,255,255,.14);
-                box-shadow: 0 30px 70px -20px rgba(0,0,0,.85), 0 0 80px -15px rgba(220,38,38,.45);
-                transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
-            }
-            main #dynamic-cover:hover {
-                transform: translateY(-6px) scale(1.015);
-                box-shadow: 0 40px 90px -20px rgba(0,0,0,.9), 0 0 110px -10px rgba(220,38,38,.6);
-            }
-
-            /* --- title block --- */
-            main #manhwaTitle { letter-spacing: -.02em; line-height: 1.1; }
-            main .hero-info { position: relative; border-bottom-color: transparent; padding-bottom: 30px; }
-            main .hero-info::after {
-                content: "";
-                position: absolute; bottom: 0; right: 0; left: 0; height: 1px;
-                background: linear-gradient(to left, rgba(220,38,38,.75), rgba(255,255,255,.1) 45%, transparent);
-            }
-            main #type > * {
-                padding: 7px 18px;
-                font-size: 12.5px;
-                border: 1px solid rgba(255,255,255,.1);
-                transition: background-color .25s ease, border-color .25s ease, transform .25s ease;
-            }
-            main #type > span:first-child { border-color: rgba(255,255,255,.22); box-shadow: 0 0 22px rgba(220,38,38,.5); }
-            main #type > a:hover { border-color: rgba(220,38,38,.6); transform: translateY(-2px); }
-            main .hero-info > div:last-child { gap: 12px; flex-wrap: wrap; }
-            main .hero-info > div:last-child > * {
-                padding: 6px 14px;
-                border-radius: 999px;
-                background: rgba(255,255,255,.06);
-                border: 1px solid rgba(255,255,255,.09);
-                -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-            }
-
-            /* --- description as a glass card --- */
-            main .manhwa-card {
-                padding: 22px 28px 20px;
-                background: rgba(16,12,12,.6);
-                -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
-                border: 1px solid rgba(255,255,255,.08);
-                border-radius: 24px;
-                box-shadow: 0 24px 60px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.05);
-            }
-            main #dynamic-description { color: #d9cccc; font-size: 16px; line-height: 2; }
-            main .description-text { max-height: 160px; }
-            main .description-text.expanded { max-height: 2000px; }
-            main #descriptionFade { background-image: linear-gradient(to top, rgba(18,13,13,.96), transparent); }
-
-            /* --- action buttons --- */
-            main #readBtn {
-                position: relative; overflow: hidden;
-                height: 56px; font-size: 17px; border-radius: 16px;
-                background-image: linear-gradient(135deg, #ef4444 0%, #dc2626 45%, #991b1b 100%);
-                box-shadow: 0 10px 30px -8px rgba(220,38,38,.65), inset 0 1px 0 rgba(255,255,255,.25);
-                transition: transform .25s ease, box-shadow .25s ease;
-            }
-            main #readBtn::after {
-                content: ""; position: absolute; top: 0; bottom: 0; left: -80%; width: 55%;
-                background: linear-gradient(100deg, transparent, rgba(255,255,255,.3), transparent);
-                transform: skewX(-20deg);
-                transition: left .8s ease;
-                pointer-events: none;
-            }
-            main #readBtn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(220,38,38,.85), inset 0 1px 0 rgba(255,255,255,.3); }
-            main #readBtn:hover::after { left: 135%; }
-            main #readBtn:active { transform: scale(.97); }
-            main #bookmarkBtn, main #shareBtn {
-                width: 56px; height: 56px; border-radius: 16px;
-                -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-            }
-            main #shareBtn { background-color: rgba(220,38,38,.06); transition: background-color .25s ease, transform .2s ease; }
-            main #shareBtn:hover { background-color: rgba(220,38,38,.2); }
-
-            /* --- stat cards --- */
-            main .stat-card {
-                position: relative; overflow: hidden;
-                background-image: linear-gradient(145deg, rgba(34,26,26,.78), rgba(14,12,12,.78));
-                -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-                border: 1px solid rgba(255,255,255,.08);
-                transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
-            }
-            main .stat-card::before {
-                content: ""; position: absolute; top: 0; right: 0; width: 64px; height: 2px;
-                background: linear-gradient(to left, #dc2626, transparent);
-            }
-            main .stat-card:hover {
-                transform: translateY(-3px);
-                border-color: rgba(220,38,38,.4);
-                box-shadow: 0 14px 34px -14px rgba(220,38,38,.5);
-            }
-
-            /* --- sections --- */
-            main .telegram-banner { padding: 0 32px; }
-            main .section-title { font-size: 22px; position: relative; padding-right: 16px; }
-            main .section-title::before {
-                content: ""; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-                width: 4px; height: 26px; border-radius: 4px;
-                background: linear-gradient(to bottom, #ef4444, #7f1d1d);
-                box-shadow: 0 0 14px rgba(220,38,38,.7);
-            }
-            main #sortBtn {
-                padding: 8px 16px; border-radius: 999px;
-                background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
-                transition: background-color .25s ease, border-color .25s ease;
-            }
-            main #sortBtn:hover { background: rgba(220,38,38,.15); border-color: rgba(220,38,38,.45); }
-
-            /* --- episode cards --- */
-            main .episode-card {
-                position: relative; overflow: hidden;
-                background-image: linear-gradient(145deg, rgba(30,25,25,.85), rgba(16,14,14,.85));
-                border: 1px solid rgba(255,255,255,.06);
-                transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease, background-image .3s ease;
-            }
-            main .episode-card::before {
-                content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 3px;
-                background: linear-gradient(to bottom, #ef4444, #7f1d1d);
-                opacity: 0; transition: opacity .3s ease;
-            }
-            main .episode-card:hover {
-                transform: translateY(-4px);
-                background-image: linear-gradient(145deg, rgba(44,32,32,.92), rgba(24,19,19,.92));
-                border-color: rgba(220,38,38,.4);
-                box-shadow: 0 16px 36px -16px rgba(220,38,38,.5);
-            }
-            main .episode-card:hover::before { opacity: 1; }
-            main .episode-card .chapter-cover-img { transition: transform .5s ease; }
-            main .episode-card:hover .chapter-cover-img { transform: scale(1.1); }
-        }
-
-        @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
-            .desktop-backdrop, .desktop-backdrop img { animation: none; }
-        }
-
         /* ===== فهرست چپترها (لینک‌های قابل‌خزش) هماهنگ با کارت‌های سایت ===== */
         .chapter-index { border: 1px solid rgba(255,255,255,.08); border-radius: 20px; background: #161616; overflow: hidden; }
         .chapter-index summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; font-size: 14px; font-weight: 500; color: #e2e2e2; }
@@ -554,31 +299,93 @@
         .lock-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); color: #fbbf24; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
         .lock-pill .material-symbols-outlined { font-size: 15px; }
 
-        /* =====================================================================
-           چیدمان دسکتاپ بدون وابستگی به tailwind.css
-           (اگر فایل کامپایل‌شده کلاس‌های lg: را نداشته باشد هم صفحه درست دیده می‌شود)
-           ===================================================================== */
-        @media (min-width: 1024px) {
-            .hero-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2.5rem; row-gap: 1.75rem; align-items: start; max-width: 80rem; margin-inline: auto; padding: 2.5rem 2rem 0; }
-            .hero-section { display: contents; }
-            .hero-section .glass-scrim { display: none; }
-            .hero-grid #dynamic-cover { position: sticky; top: 6rem; grid-column: 9 / span 4; grid-row: 1 / span 4; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; border-radius: 1.5rem; transform: none; }
-            .hero-grid .hero-info { position: static; grid-column: 1 / span 8; grid-row: 1; padding: .25rem 0 1.5rem; }
-            .hero-grid .hero-desc { grid-column: 1 / span 8; grid-row: 2; padding: 0; margin: 0; }
-            .hero-grid .hero-actions { position: static; grid-column: 1 / span 8; grid-row: 3; padding: 0; margin: .5rem 0 0; }
-            .hero-grid .hero-actions > div { max-width: 32rem; }
-            .hero-grid .hero-stats { grid-column: 1 / span 8; grid-row: 4; padding: 0; margin: .5rem 0 0; }
-            .hero-grid .hero-stats > div { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; max-width: 42rem; }
-            .hero-grid .hero-desc .manhwa-card { background: transparent; padding: 0; border: 0; border-radius: 0; }
-            .hero-grid .hero-desc h2 { display: none; }
-            main > section { max-width: 80rem; margin-inline: auto; padding-inline: 2rem; }
-            main > section#commentsAnchor { max-width: 56rem; }
-            main > section.telegram-banner { padding-inline: 2rem; }
-            #episodeList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-            #episodeList > * { margin: 0; }
+
+        /* ===================== طراحی مینیمال جدید ===================== */
+        @property --fade { syntax: '<length>'; inherits: false; initial-value: 0px; }
+        :root { --ln: rgba(255,255,255,.08); }
+        main.manhwa-main { position: relative; isolation: isolate; }
+        .mx-backdrop { position: absolute; z-index: -1; inset: -64px 0 auto 0; height: 640px; overflow: hidden; pointer-events: none;
+            -webkit-mask-image: linear-gradient(#000 15%, transparent); mask-image: linear-gradient(#000 15%, transparent); }
+        .mx-backdrop img { width: 100%; height: 100%; object-fit: cover; filter: blur(40px) saturate(1.3); opacity: .3; transform: scale(1.3); }
+        .mx-hero { display: grid; grid-template-areas: "cover" "info"; gap: 26px; max-width: 72rem; margin: 0 auto; padding: 28px 20px 0; }
+        .mx-cover { grid-area: cover; justify-self: center; width: min(58vw, 240px); aspect-ratio: 3/4; object-fit: cover; object-position: top;
+            border-radius: 18px; border: 1px solid var(--ln); box-shadow: 0 28px 60px -26px #000; }
+        .mx-info { grid-area: info; min-width: 0; text-align: center; }
+        #type { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; direction: rtl; }
+        #type > * { padding: 4px 12px; border-radius: 99px; font-size: 12px; color: rgba(255,255,255,.72); border: 1px solid var(--ln); transition: .2s; }
+        #type > span:first-child { color: #fecaca; background: rgba(220,38,38,.16); border-color: rgba(220,38,38,.3); }
+        #type > a:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+        #manhwaTitle { font-size: clamp(28px, 6vw, 46px); font-weight: 600; line-height: 1.15; letter-spacing: -.02em; color: #fff; cursor: pointer; text-align: center; }
+        #faSubtitle { margin-top: 8px; font-size: 14px; color: rgba(255,255,255,.55); }
+        .mx-meta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 18px; margin-top: 16px; font-size: 13px; color: #9a9a9a; }
+        .mx-meta > * { display: inline-flex; align-items: center; gap: 4px; }
+        .mx-meta .material-symbols-outlined { font-size: 17px; }
+        .mx-actions { display: flex; gap: 10px; margin: 22px auto 0; max-width: 420px; }
+        #readBtn { flex: 1; height: 50px; border-radius: 14px; background: #dc2626; color: #fff; font-size: 15px; font-weight: 500; transition: transform .2s, background .2s; }
+        #readBtn:hover { background: #ef4444; } #readBtn:active { transform: scale(.97); }
+        .mx-icon { width: 50px; height: 50px; border-radius: 14px; border: 1px solid rgba(255,255,255,.14); color: #fff; background: rgba(255,255,255,.03); display: grid; place-items: center; transition: .2s; }
+        .mx-icon:hover { border-color: rgba(255,255,255,.35); } .mx-icon:active { transform: scale(.95); }
+        .mx-icon.is-on { background: #dc2626; border-color: #dc2626; }
+        .mx-stats { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; margin-top: 26px; border-block: 1px solid var(--ln); }
+        .mx-stat { padding: 14px 8px; text-align: center; } .mx-stat + .mx-stat { border-inline-start: 1px solid var(--ln); }
+        .mx-stat small { display: block; font-size: 11.5px; color: #8c8c8c; margin-bottom: 4px; }
+        .mx-stat b { font-size: 15px; font-weight: 500; color: #fff; }
+        .mx-desc { margin-top: 22px; }
+        .mx-desc-text { font-size: 15px; line-height: 1.95; color: #bdb3b3; text-align: start; max-height: calc(1.95em * 4); overflow: hidden; --fade: 0px;
+            -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent);
+            transition: max-height .6s cubic-bezier(.4,0,.2,1), --fade .6s ease; }
+        .mx-desc-text.is-clamped { --fade: 58px; } .mx-desc-text.expanded { --fade: 0px; }
+        #descriptionToggleBtn { display: none; align-items: center; gap: 2px; margin: 6px auto 0; font-size: 13px; color: #9a9a9a; transition: color .2s; }
+        #descriptionToggleBtn.show { display: flex; } #descriptionToggleBtn:hover { color: #fff; }
+        #descriptionToggleIcon { font-size: 20px; transition: transform .4s; } #descriptionToggleBtn.open #descriptionToggleIcon { transform: rotate(180deg); }
+        .mx-sec { max-width: 72rem; margin: 56px auto 0; padding: 0 20px; } .mx-sec-sm { margin-top: 20px; }
+        #commentsAnchor { max-width: 52rem; }
+        .mx-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #fff; }
+        #sortBtn { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #9a9a9a; transition: color .2s; } #sortBtn:hover { color: #fff; }
+        #sortBtn .material-symbols-outlined { font-size: 18px; }
+        .mx-note { align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; color: #fbbf24; }
+        .mx-note .material-symbols-outlined { font-size: 18px; }
+        .mx-eps { display: grid; gap: 10px; }
+        .mx-list.has-more .mx-eps { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 120px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 120px), transparent); }
+        .mx-ep { display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 16px; background: rgba(255,255,255,.03); border: 1px solid var(--ln); transition: background .25s, border-color .25s; }
+        .mx-ep.episode-card:hover { transform: none; background-color: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); }
+        .mx-thumb { width: 76px; height: 52px; border-radius: 11px; overflow: hidden; position: relative; flex: none; background: #1a1a1a; }
+        .mx-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; } .mx-ep:hover .mx-thumb img { transform: scale(1.07); }
+        .mx-thumb .hidden { display: none; }
+        .chapter-cover-fallback { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 600; color: #fff; background: #222; }
+        .mx-lock { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.62); color: #fbbf24; } .mx-lock .material-symbols-outlined { font-size: 22px; }
+        .mx-ep-b { flex: 1; min-width: 0; } .mx-ep-t { font-size: 14.5px; font-weight: 500; color: #fff; } .mx-ep-d { font-size: 12px; color: #7d7d7d; margin-top: 3px; }
+        .mx-st { font-size: 12px; font-weight: 500; white-space: nowrap; } .mx-st.free { color: #4ade80; } .mx-st.paid { color: #fbbf24; }
+        .new-badge { animation: none; box-shadow: none; top: 4px; right: 4px; padding: 2px 7px; font-size: 9.5px; }
+        @keyframes mxIn { from { opacity: 0; transform: translateY(12px); } }
+        .mx-enter { animation: mxIn .6s cubic-bezier(.2,.7,.2,1) both; }
+        #showMoreBtn { display: flex; align-items: center; gap: 4px; margin: -20px auto 0; position: relative; padding: 9px 20px; border-radius: 99px; font-size: 13px; color: #ddd;
+            background: rgba(20,20,20,.85); border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: .2s; }
+        #showMoreBtn:hover { border-color: rgba(255,255,255,.35); color: #fff; } #showMoreBtn[hidden] { display: none; } #showMoreBtn .material-symbols-outlined { font-size: 19px; }
+        .chapter-index { background: transparent; border-radius: 16px; }
+        .telegram-banner { max-width: 72rem; margin: 40px auto 0; padding: 0 20px; }
+        .telegram-banner-link { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--ln); background: rgba(255,255,255,.03); color: #fff; }
+        .telegram-icon { width: 40px; height: 40px; flex: none; border-radius: 50%; background: rgba(34,158,217,.16); display: grid; place-items: center; } .telegram-icon img { width: 22px; height: 22px; }
+        .telegram-content { flex: 1; min-width: 160px; } .telegram-title { font-size: 14px; font-weight: 500; } .telegram-subtitle { font-size: 12.5px; color: #9a9a9a; margin-top: 2px; }
+        .mx-tg-btns { display: flex; gap: 8px; }
+        .telegram-btn { padding: 8px 16px; border-radius: 12px; font-size: 12.5px; font-weight: 500; white-space: nowrap; border: 1px solid rgba(255,255,255,.14); background: transparent; color: #fff; cursor: pointer; font-family: inherit; transition: .2s; }
+        a.telegram-btn { background: #fff; color: #000; border-color: #fff; } .telegram-btn:hover { opacity: .85; }
+        @media (max-width: 560px) { .mx-tg-btns { width: 100%; } .telegram-btn { flex: 1; text-align: center; } }
+        #similarList > a { background: transparent; border: 0; border-radius: 14px; } #similarList > a > div:first-child { border-radius: 14px; }
+        #messagesList > div { background: transparent; border: 0; border-bottom: 1px solid var(--ln); border-radius: 0; padding: 20px 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+        #commentsAnchor .mx-form { background: rgba(255,255,255,.03); border: 1px solid var(--ln); border-radius: 20px; box-shadow: none; }
+        #messageText { border-radius: 14px; background: rgba(255,255,255,.03); }
+        @media (min-width: 900px) {
+            .mx-hero { grid-template-columns: 1fr 300px; grid-template-areas: "info cover"; gap: 64px; padding: 52px 32px 0; align-items: start; }
+            .mx-cover { width: 100%; position: sticky; top: 96px; border-radius: 22px; }
+            .mx-info { text-align: start; padding-top: 6px; }
+            #type, .mx-meta { justify-content: flex-start; } #manhwaTitle { text-align: right; } .mx-actions { margin-inline: 0; } .mx-stats { max-width: 34rem; }
+            .mx-desc-text { font-size: 16px; max-height: calc(1.95em * 5); } #descriptionToggleBtn { margin-inline: 0; }
+            .mx-sec, .telegram-banner { padding: 0 32px; } .mx-eps { grid-template-columns: repeat(2, 1fr); }
         }
-        @media (min-width: 1280px) {
-            #episodeList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        @media (min-width: 1200px) { .mx-eps { grid-template-columns: repeat(3, 1fr); } }
+
         }
     </style>
     <link rel="stylesheet" href="/app-promo.css?v=1">
@@ -686,123 +493,64 @@
     </aside>
 
     <main class="pb-20 manhwa-main">
-        <!-- Desktop-only: blurred, fading cover backdrop (hidden on mobile via CSS) -->
-        <div class="desktop-backdrop" aria-hidden="true">
-            <img src="<%= cover_url %>" alt="" decoding="async" referrerpolicy="no-referrer" />
-        </div>
+        <div class="mx-backdrop" aria-hidden="true"><img src="<%= cover_url %>" alt="" decoding="async" referrerpolicy="no-referrer" /></div>
 
-        <!-- Hero + Info Wrapper: on tablet/desktop this becomes a 2-column grid (cover left, info right).
-             Note: page is dir="rtl", so in a CSS grid, column line 1 is on the RIGHT and the last line is on the LEFT.
-             The info block explicitly takes columns 1-8 (right side) and the cover explicitly takes columns 9-12 (left side),
-             so the layout is correct regardless of grid auto-placement/order quirks under RTL. -->
-        <div class="hero-grid lg:max-w-7xl lg:mx-auto lg:px-8 lg:pt-10 lg:grid lg:grid-cols-12 lg:gap-x-10 lg:gap-y-7 lg:items-start">
-
-        <!-- Hero Section (cover image + title/genre/meta overlay) -->
-        <section class="hero-section relative w-full h-[520px] md:h-[620px] overflow-hidden lg:contents">
-            <img id="dynamic-cover" fetchpriority="high" decoding="async" class="w-full object-cover object-top scale-105 lg:static lg:col-start-9 lg:col-span-4 lg:row-start-1 lg:row-span-4 lg:h-auto lg:aspect-[3/4] lg:scale-100 lg:rounded-3xl lg:shadow-2xl lg:shadow-black/60 lg:sticky lg:top-24"
-                 src="<%= cover_url %>"
+        <div class="mx-hero">
+            <img id="dynamic-cover" class="mx-cover" fetchpriority="high" decoding="async" src="<%= cover_url %>"
                  alt="<%= title_fa ? ('مانهوا ' + title_fa + ' - ' + title_en) : title_en %>"/>
 
-            <div class="absolute inset-0 glass-scrim lg:hidden"></div>
-
-            <div class="hero-info absolute bottom-0 left-0 right-0 px-5 pb-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-1 lg:px-0 lg:pb-6 lg:pt-1 lg:border-b lg:border-white/10">
-                <div id="mainname" style="width: 100%; direction: ltr;">
-                    <div id="type" class="flex gap-2 mb-3 lg:flex-wrap" style="direction: ltr;">
-                        <span class="px-3.5 py-1 bg-primary text-on-primary text-xs font-medium rounded-full"><%= origin %></span>
-                        <% (typeof genre_links !== 'undefined' && genre_links.length ? genre_links : genres.map(function(g){ return { name: g, slug: null }; })).forEach(function(g) { %>
-                            <% if (g.slug) { %>
-                            <a href="/genre/<%= encodeURIComponent(g.slug) %>" class="px-3.5 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-medium rounded-full hover:bg-primary/40 transition-colors"><%= g.name %></a>
-                            <% } else { %>
-                            <span class="px-3.5 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-medium rounded-full"><%= g.name %></span>
-                            <% } %>
+            <div class="mx-info">
+                <div id="mainname" style="width:100%; direction:ltr;">
+                    <div id="type">
+                        <span><%= origin %></span>
+                        <% (typeof genre_links !== 'undefined' && genre_links.length ? genre_links : genres.map(function(g) { return { name: g, slug: null }; })).forEach(function(g) { %>
+                            <% if (g.slug) { %><a href="/genre/<%= encodeURIComponent(g.slug) %>"><%= g.name %></a>
+                            <% } else { %><span><%= g.name %></span><% } %>
                         <% }); %>
                     </div>
-                    <h1 id="manhwaTitle"
-                        class="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight cursor-pointer max-w-[70%] lg:max-w-full"
-                        style="direction: ltr; font-family: Montserrat, sans-serif; text-shadow: 0 0 8px rgba(220,38,38,0.9), 0 0 22px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.35);">
-                        <%= title_en %>
-                    </h1>
-                    <% if (title_fa) { %>
-                    <p id="faSubtitle" style="direction: rtl; text-align: left; font-family: Vazirmatn, sans-serif; margin-top: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.62);">مانهوا <%= title_fa %></p>
-                    <% } %>
+                    <h1 id="manhwaTitle" style="direction:ltr; font-family:Montserrat, sans-serif;"><%= title_en %></h1>
+                    <% if (title_fa) { %><p id="faSubtitle">مانهوا <%= title_fa %></p><% } %>
                 </div>
-                <div class="flex items-center gap-4 mt-4 lg:mt-6 text-sm lg:text-base">
-                    <div class="flex items-center gap-1">
-                        <span class="material-symbols-outlined text-primary text-yellow-500">star</span>
-                        <span id="dynamic-score" class="font-bold"><%= score %></span>
-                    </div>
-                    <span>توسط <span id="dynamic-scans" class="text-primary font-medium"><%= scans_by %></span></span>
-                    <span id="viewCount" class="flex items-center gap-1">
-                        <span class="material-symbols-outlined">visibility</span>
-                        <span id="viewNumber">0</span> بازدید
-                    </span>
-                </div>
-            </div>
-        </section>
 
-        <!-- Action buttons -->
-        <section class="hero-actions px-5 -mt-6 relative z-10 lg:static lg:col-start-1 lg:col-span-8 lg:row-start-3 lg:px-0 lg:mt-2">
-            <div class="flex gap-3 lg:max-w-lg">
-                <button id="readBtn" class="flex-1 bg-primary text-on-primary h-12 rounded-xl font-medium text-base flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-primary/25">
-                    <span>شروع خواندن</span>
-                </button>
-                <button id="bookmarkBtn" aria-label="نشان کردن" class="w-12 h-12 border border-primary/70 text-primary rounded-xl flex items-center justify-center active:scale-95 transition-all">
-                    <span class="material-symbols-outlined text-2xl">bookmark_add</span>
-                </button>
-                <button id="shareBtn" aria-label="اشتراک‌گذاری" class="w-12 h-12 border border-primary/70 text-primary rounded-xl flex items-center justify-center active:scale-95 transition-all relative">
-                    <svg id="shareIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/>
-                        <line x1="8.6" y1="10.6" x2="15.4" y2="6.4" stroke="currentColor" stroke-width="2"/>
-                        <line x1="8.6" y1="13.4" x2="15.4" y2="17.6" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                </button>
-            </div>
-        </section>
+                <div class="mx-meta">
+                    <span><span class="material-symbols-outlined" style="color:#eab308">star</span><b id="dynamic-score" style="color:#fff;font-weight:500"><%= score %></b></span>
+                    <span>توسط <span id="dynamic-scans" style="color:#e5e5e5"><%= scans_by %></span></span>
+                    <span id="viewCount"><span class="material-symbols-outlined">visibility</span><span id="viewNumber">0</span> بازدید</span>
+                </div>
 
-        <!-- Stats (type / translated chapters) -->
-        <section class="hero-stats px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-4 lg:px-0 lg:mt-2">
-            <div class="grid grid-cols-2 gap-4 mb-5 lg:grid-cols-none lg:grid-flow-col lg:auto-cols-fr lg:max-w-2xl">
-                <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5">
-                    <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">collections_bookmark</span>نوع</div>
-                    <div id="dynamic-type-label" class="text-base font-semibold text-white"><%= type %></div>
+                <div class="mx-actions">
+                    <button id="readBtn">شروع خواندن</button>
+                    <button id="bookmarkBtn" class="mx-icon" aria-label="نشان کردن"><span class="material-symbols-outlined">bookmark_add</span></button>
+                    <button id="shareBtn" class="mx-icon" aria-label="اشتراک‌گذاری">
+                        <svg id="shareIcon" width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/>
+                            <line x1="8.6" y1="10.6" x2="15.4" y2="6.4" stroke="currentColor" stroke-width="1.8"/><line x1="8.6" y1="13.4" x2="15.4" y2="17.6" stroke="currentColor" stroke-width="1.8"/>
+                        </svg>
+                    </button>
                 </div>
-                <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5">
-                    <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">format_list_numbered</span>چپترهای ترجمه شده</div>
-                    <div id="dynamic-chapters-count" class="text-base font-semibold text-white"><%= episodes.length %></div>
-                </div>
+
                 <% var _releaseDate = (typeof release_date !== 'undefined' && release_date) ? release_date : ((manhwa && manhwa.release_date) ? manhwa.release_date : ''); %>
-                <% if (_releaseDate) { %>
-                <div class="stat-card bg-surface-elevated rounded-2xl p-4 border border-white/5 col-span-2 lg:col-span-1">
-                    <div class="flex items-center gap-2 text-text-muted text-sm mb-2"><span class="material-symbols-outlined text-primary">calendar_month</span>تاریخ پخش</div>
-                    <div id="dynamic-release-date" class="text-base font-semibold text-white"><%= _releaseDate %></div>
+                <div class="mx-stats">
+                    <div class="mx-stat"><small>نوع</small><b id="dynamic-type-label"><%= type %></b></div>
+                    <div class="mx-stat"><small>چپترهای ترجمه‌شده</small><b id="dynamic-chapters-count"><%= episodes.length %></b></div>
+                    <% if (_releaseDate) { %><div class="mx-stat"><small>تاریخ پخش</small><b id="dynamic-release-date"><%= _releaseDate %></b></div><% } %>
                 </div>
-                <% } %>
-            </div>
-        </section>
 
-        <!-- Description: right under the title on desktop (positioned via lg:row-start-2 regardless of DOM order, so it can sit here in the DOM to keep the correct mobile stacking order: actions -> stats -> description) -->
-        <section class="hero-desc px-5 md:px-8 mt-10 lg:col-start-1 lg:col-span-8 lg:row-start-2 lg:px-0 lg:mt-0">
-            <div class="bg-surface-elevated p-5 md:p-7 rounded-2xl border border-white/5 manhwa-card lg:bg-transparent lg:p-0 lg:border-0 lg:rounded-none">
-                <h2 class="text-base font-medium mb-4 text-white flex items-center gap-2 lg:hidden"><span class="material-symbols-outlined text-primary">menu_book</span>خلاصه داستان</h2>
-                <div id="descriptionWrapper" class="relative">
-                    <p id="dynamic-description" class="description-text text-on-surface-variant leading-relaxed text-[15.5px] lg:text-base text-balance overflow-hidden transition-[max-height] duration-500 ease-in-out">
-                        <%= (manhwa && manhwa.description) ? manhwa.description : '' %>
-                    </p>
-                    <div id="descriptionFade" class="description-fade absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface-shadow to-transparent pointer-events-none transition-opacity duration-500 lg:from-surface"></div>
+                <div class="mx-desc">
+                    <div id="descriptionWrapper">
+                        <p id="dynamic-description" class="mx-desc-text"><%= (manhwa && manhwa.description) ? manhwa.description : '' %></p>
+                    </div>
+                    <button id="descriptionToggleBtn">
+                        <span id="descriptionToggleText">توضیحات بیشتر</span>
+                        <span id="descriptionToggleIcon" class="material-symbols-outlined">expand_more</span>
+                    </button>
                 </div>
-                <button id="descriptionToggleBtn" class="hidden mt-4 items-center gap-1.5 text-primary text-sm font-medium hover:text-red-400 active:scale-95 transition-all">
-                    <span id="descriptionToggleText">توضیحات بیشتر</span>
-                    <span id="descriptionToggleIcon" class="material-symbols-outlined text-lg">expand_more</span>
-                </button>
             </div>
-        </section>
         </div>
-        <!-- End Hero + Info Wrapper -->
+
 
         <!-- Telegram Banner -->
-        <section class="telegram-banner lg:max-w-7xl lg:mx-auto">
+        <section class="telegram-banner">
             <div class="telegram-banner-link">
                 <div class="telegram-icon">
                     <img src="/file/icons8-telegram-app-96.png" alt="Telegram">
@@ -811,7 +559,7 @@
                     <div class="telegram-title">برای دسترسی سریع‌تر به چپترهای جدید</div>
                     <div class="telegram-subtitle">عضو کانال <strong>مانهواچی</strong> شوید</div>
                 </div>
-                <div class="flex flex-col gap-2">
+                <div class="mx-tg-btns">
                     <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="telegram-btn text-center">عضو شدن</a>
                     <button id="copyTelegramBtn" class="telegram-btn">کپی لینک</button>
                 </div>
@@ -819,18 +567,18 @@
         </section>
 
         <!-- Episodes List Section -->
-        <section class="mt-10 px-5 lg:max-w-7xl lg:mx-auto lg:px-8">
-            <div class="flex justify-between items-center mb-5">
+        <section class="mx-sec">
+            <div class="mx-head">
                 <h3 class="section-title text-xl font-semibold">قسمت‌ها</h3>
-                <button id="sortBtn" class="text-white flex items-center gap-1 text-sm font-medium transition-colors ">جدیدترین اول <span class="material-symbols-outlined">swap_vert</span></button>
+                <button id="sortBtn" >جدیدترین اول <span class="material-symbols-outlined">swap_vert</span></button>
             </div>
 
-            <div id="subscriptionBanner" class="mb-5 <%= has_locked ? 'flex' : 'hidden' %> items-center gap-3 bg-amber-500/10 border border-amber-500/25 text-amber-400 rounded-2xl px-5 py-3.5 text-sm font-semibold">
+            <div id="subscriptionBanner" class="mx-note <%= has_locked ? 'flex' : 'hidden' %>">
                 <span class="material-symbols-outlined text-xl">workspace_premium</span>
                 این مانهوا اشتراکی است
             </div>
             
-            <div class="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4" id="episodeList">
+            <div class="mx-list <%= episodes.length > 4 ? 'has-more' : '' %>" id="episodeWrap"><div class="mx-eps" id="episodeList">
                 <%
                 // تبدیل تاریخ شمسی (مثلا 1405/06/24) به میلادی برای محاسبه «جدید بودن» چپتر
                 function ejsJalaliToGregorian(jy, jm, jd) {
@@ -878,36 +626,25 @@
                     var ep_link = "/reader.html?slug=" + encodeURIComponent(slug) + "&ch=" + ep_num;
                     var ep_is_new = ejsIsEpisodeNew(ep);
                 %>
-                <a href="<%= ep_link %>" data-free="<%= is_free ? '1' : '0' %>" data-num="<%= ep_num %>" class="flex items-center gap-4 p-4 rounded-2xl episode-card bg-surface-elevated">
-                    <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
-                        <img src="/manhwas/<%= encodeURIComponent(slug) %>/chapterPictures/chapterpicture<%= ep_num %>.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep <%= ep_num %>" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                        <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#<%= ep_num %></span></div>
-                        <% if (!is_free) { %>
-                        <div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>
-                        <% } %>
-                        <% if (ep_is_new) { %>
-                        <span class="new-badge">جدید</span>
-                        <% } %>
+                <a href="<%= ep_link %>" data-free="<%= is_free ? '1' : '0' %>" data-num="<%= ep_num %>" class="mx-ep episode-card">
+                    <div class="mx-thumb">
+                        <img src="/manhwas/<%= encodeURIComponent(slug) %>/chapterPictures/chapterpicture<%= ep_num %>.png" class="chapter-cover-img" alt="Ep <%= ep_num %>" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="chapter-cover-fallback hidden">#<%= ep_num %></div>
+                        <% if (!is_free) { %><div class="mx-lock chapter-lock-overlay"><span class="material-symbols-outlined">lock</span></div><% } %>
+                        <% if (ep_is_new) { %><span class="new-badge">جدید</span><% } %>
                     </div>
-                    <div class="flex-1">
-                        <p class="font-semibold text-white">چپتر <%= ep_num %></p>
-                        <p class="text-xs text-text-muted mt-1"><%= ep.date || '' %></p>
-                    </div>
-                    <% if (is_free) { %>
-                        <span class="text-sm font-bold text-green-500">رایگان</span>
-                    <% } else { %>
-                        <span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>
-                    <% } %>
+                    <div class="mx-ep-b"><p class="mx-ep-t">چپتر <%= ep_num %></p><p class="mx-ep-d"><%= ep.date || '' %></p></div>
+                    <span class="mx-st <%= is_free ? 'free' : 'paid' %>"><%= is_free ? 'رایگان' : 'اشتراکی' %></span>
                 </a>
                 <% }); %>
-            </div>
+            </div></div>
 
-            <button id="showMoreBtn" class="w-full mt-8 py-4 border border-white rounded-2xl font-medium " style="border-color: rgb(255 255 255 / 27%); color: #ffffffa6;">نمایش قسمت‌های بیشتر</button>
+            <button id="showMoreBtn" <%= episodes.length > 4 ? '' : 'hidden' %>><span id="showMoreText">نمایش قسمت‌های بیشتر</span><span class="material-symbols-outlined">expand_more</span></button>
         </section>
 
         <% if (manhwa && episodes.length) { %>
         <!-- 🔎 لینک داخلی قابل‌خزش به صفحه‌ی ایندکس‌شونده‌ی هر چپتر (/comic/<slug>/chapter-N) -->
-        <section class="mt-8 px-5 lg:max-w-7xl lg:mx-auto lg:px-8" aria-label="فهرست چپترها">
+        <section class="mx-sec mx-sec-sm" aria-label="فهرست چپترها">
             <details class="chapter-index">
                 <summary>فهرست همه‌ی چپترهای مانهوا <%= title_fa || title_en %></summary>
                 <nav>
@@ -920,7 +657,7 @@
         <% } %>
 
         <!-- Similar Manhwas Section -->
-        <section id="similarSection" class="mt-12 px-5 lg:max-w-7xl lg:mx-auto lg:px-8 hidden">
+        <section id="similarSection" class="mx-sec hidden">
             <div class="flex items-center justify-between mb-5">
                 <h3 class="section-title text-xl font-semibold flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">auto_awesome</span>
@@ -937,7 +674,7 @@
         <div data-mhp="strip"></div>
 
         <!-- Comments Section -->
-        <section id="commentsAnchor" class="mt-12 px-5 lg:max-w-4xl lg:mx-auto lg:px-8">
+        <section id="commentsAnchor" class="mx-sec">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="section-title text-xl font-semibold">نظرات <span id="commentCount" class="text-on-surface-variant text-lg font-normal">(۰)</span></h3>
                 <span class="text-sm text-text-muted">جدیدترین</span>
@@ -956,7 +693,7 @@
                 </button>
             </div>
 
-            <div class="bg-surface-elevated border border-white/5 rounded-3xl p-6 shadow-xl">
+            <div class="mx-form p-6">
                 <div id="commentAuthorArea" class="mb-5"></div>
                 <form id="messageForm" class="space-y-5">
                     <div>
@@ -1233,6 +970,7 @@
 
         let allEpisodes = [];
         let visibleCount = 4;
+        let renderedCount = 4; // چپترهای رندرشده در سرور؛ فقط چپترهای تازه‌اضافه‌شده انیمیشن می‌گیرند
         let isNewestFirst = true;
 
         // ===== سرویس ذخیره‌سازی وضعیت «خوانده‌شده» چپترها (برای برداشتن نشان «جدید») =====
@@ -1368,50 +1106,45 @@
             if (!isNewestFirst) sortedEpisodes.reverse();
 
             const visibleEpisodes = sortedEpisodes.slice(0, visibleCount);
-            visibleEpisodes.forEach(ep => {
+            visibleEpisodes.forEach((ep, idx) => {
                 const a = document.createElement('a');
                 let isFree = ep.free;
                 a.href = `/reader.html?slug=${encodeURIComponent(MANHWA_SLUG)}&ch=${encodeURIComponent(ep.num)}`;
                 a.dataset.free = isFree ? '1' : '0';
                 a.dataset.num = ep.num;
 
-                a.className = `flex items-center gap-4 p-4 rounded-2xl episode-card bg-surface-elevated`;
+                a.className = 'mx-ep episode-card' + (idx >= renderedCount ? ' mx-enter' : '');
+                if (idx >= renderedCount) a.style.animationDelay = Math.min((idx - renderedCount) * 45, 600) + 'ms';
                 const lockAt = lockMap[ep.num] || 0;
                 const timeLocked = lockAt > Date.now();
                 let statusHTML = timeLocked
                     ? `<span class="lock-pill"><span class="material-symbols-outlined">schedule</span>${lockLabel(lockAt)}</span>`
-                    : (isFree
-                        ? `<span class="text-sm font-bold text-green-500">رایگان</span>`
-                        : `<span class="block text-left text-amber-400 text-sm font-medium">اشتراکی</span>`);
+                    : `<span class="mx-st ${isFree ? 'free' : 'paid'}">${isFree ? 'رایگان' : 'اشتراکی'}</span>`;
 
                 const isNew = isChapterNew(ep);
                 a.innerHTML = `
-                    <div class="w-20 h-14 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
-                        <img src="/manhwas/${encodeURIComponent(MANHWA_SLUG)}/chapterPictures/chapterpicture${ep.num}.png" class="w-full h-full object-cover chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                        <div class="chapter-cover-fallback hidden absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900"><span class="text-white font-bold text-lg">#${ep.num}</span></div>
-                        ${((!isFree && !currentUserSubscribed) || timeLocked) ? `<div class="chapter-lock-overlay absolute inset-0 bg-black/60 flex items-center justify-center"><span class="material-symbols-outlined text-amber-400 text-2xl">lock</span></div>` : ''}
+                    <div class="mx-thumb">
+                        <img src="/manhwas/${encodeURIComponent(MANHWA_SLUG)}/chapterPictures/chapterpicture${ep.num}.png" class="chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="chapter-cover-fallback hidden">#${ep.num}</div>
+                        ${((!isFree && !currentUserSubscribed) || timeLocked) ? `<div class="mx-lock chapter-lock-overlay"><span class="material-symbols-outlined">lock</span></div>` : ''}
                         ${isNew ? `<span class="new-badge">جدید</span>` : ''}
                     </div>
-                    <div class="flex-1">
-                        <p class="font-semibold text-white">چپتر ${ep.num}</p>
-                        <p class="text-xs text-text-muted mt-1">${escapeHtml(ep.date || '')}</p>
-                    </div>
+                    <div class="mx-ep-b"><p class="mx-ep-t">چپتر ${ep.num}</p><p class="mx-ep-d">${escapeHtml(ep.date || '')}</p></div>
                     ${statusHTML}
                 `;
                 container.appendChild(a);
             });
 
-            const showMoreBtn = document.getElementById('showMoreBtn');
+            renderedCount = visibleEpisodes.length;
             const remaining = allEpisodes.length - visibleCount;
-            if (remaining <= 0) {
-                showMoreBtn.textContent = "همه قسمت‌ها نمایش داده شد";
-                showMoreBtn.disabled = true;
-            } else {
-                showMoreBtn.textContent = `نمایش ${Math.min(25, remaining)} قسمت بیشتر`;
-            }
+            const showMoreBtn = document.getElementById('showMoreBtn');
+            document.getElementById('episodeWrap').classList.toggle('has-more', remaining > 0);
+            showMoreBtn.hidden = remaining <= 0;
+            document.getElementById('showMoreText').textContent = `نمایش ${Math.min(25, Math.max(remaining, 0)).toLocaleString('fa-IR')} قسمت بیشتر`;
         }
 
         document.getElementById('showMoreBtn').addEventListener('click', () => {
+            if (!allEpisodes.length) return;
             visibleCount += 25;
             if (visibleCount > allEpisodes.length) visibleCount = allEpisodes.length;
             renderEpisodes();
@@ -1485,15 +1218,11 @@
                 if (isPersian) {
                     titleElement.textContent = persianTitle || englishTitle;
                     titleElement.style.fontFamily = "Vazirmatn, sans-serif";
-                    typeElement.style.direction = "rtl";
                     titleElement.style.direction = "rtl";
-                    mainname.style.direction = "rtl";
                 } else {
                     titleElement.textContent = englishTitle;
                     titleElement.style.fontFamily = "Montserrat, sans-serif";
                     titleElement.style.direction = "ltr";
-                    typeElement.style.direction = "ltr";
-                    mainname.style.direction = "ltr";
                 }
             });
         }
@@ -1539,10 +1268,10 @@
                         const shareIcon = document.getElementById('shareIcon');
                         const originalSvg = shareIcon.outerHTML;
                         shareIcon.outerHTML = '<svg id="shareIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                        shareBtn.classList.add('bg-primary', 'text-white');
+                        shareBtn.classList.add('is-on');
                         setTimeout(() => {
                             document.getElementById('shareIcon').outerHTML = originalSvg;
-                            shareBtn.classList.remove('bg-primary', 'text-white');
+                            shareBtn.classList.remove('is-on');
                         }, 1800);
                     }
                 } catch (err) {
@@ -1553,31 +1282,26 @@
 
         (function initDescriptionToggle() {
             const p = document.getElementById('dynamic-description');
-            const fade = document.getElementById('descriptionFade');
             const btn = document.getElementById('descriptionToggleBtn');
             const text = document.getElementById('descriptionToggleText');
-            const icon = document.getElementById('descriptionToggleIcon');
-            if (!p || !btn || !fade) return;
-
-            requestAnimationFrame(() => {
-                if (p.scrollHeight > p.clientHeight + 4) {
-                    btn.classList.remove('hidden');
-                    btn.classList.add('flex-visible');
-                } else {
-                    fade.classList.add('hidden-fade');
-                }
-            });
-
+            if (!p || !btn) return;
             let expanded = false;
+            const measure = () => {
+                if (expanded) return;
+                const over = p.scrollHeight > p.clientHeight + 4;
+                p.classList.toggle('is-clamped', over);
+                btn.classList.toggle('show', over);
+            };
+            requestAnimationFrame(measure);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+            window.addEventListener('resize', measure);
             btn.addEventListener('click', () => {
                 expanded = !expanded;
                 p.classList.toggle('expanded', expanded);
-                fade.classList.toggle('hidden-fade', expanded);
+                p.style.maxHeight = expanded ? p.scrollHeight + 'px' : '';
+                btn.classList.toggle('open', expanded);
                 text.textContent = expanded ? 'نمایش کمتر' : 'توضیحات بیشتر';
-                icon.textContent = expanded ? 'expand_less' : 'expand_more';
-                if (!expanded) {
-                    document.getElementById('descriptionWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
+                if (!expanded) document.getElementById('descriptionWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
         })();
 
@@ -2028,13 +1752,8 @@
             let isBookmarked = readLocal().some(b => b.slug === MANHWA_SLUG);
 
             function updateBookmarkButtonUI() {
-                if (isBookmarked) {
-                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-2xl text-white" style="font-variation-settings: 'FILL' 1;">bookmark</span>`;
-                    bookmarkBtn.className = "w-12 h-12 bg-primary border border-primary rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-lg shadow-primary/50";
-                } else {
-                    bookmarkBtn.innerHTML = `<span class="material-symbols-outlined text-2xl text-primary">bookmark_add</span>`;
-                    bookmarkBtn.className = "w-12 h-12 border border-primary/70 text-primary bg-transparent rounded-xl flex items-center justify-center active:scale-95 transition-all hover:bg-primary/10";
-                }
+                bookmarkBtn.classList.toggle('is-on', isBookmarked);
+                bookmarkBtn.innerHTML = `<span class="material-symbols-outlined" style="font-variation-settings:'FILL' ${isBookmarked ? 1 : 0}">${isBookmarked ? 'bookmark' : 'bookmark_add'}</span>`;
             }
             updateBookmarkButtonUI();
 
