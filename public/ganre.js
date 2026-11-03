@@ -110,9 +110,9 @@
             const fallbackCover = `https://ui-avatars.com/api/?name=${encodeURIComponent((m.title_fa || m.title_en || 'م').charAt(0))}&background=1b1b1b&color=DC2626&bold=true&size=256`;
 
             return `
-            <a href="https://manhwachi.ir/comic/${m.slug}" class="poster-card flex-none w-40 snap-start">
+            <a href="/comic/${m.slug}" class="poster-card flex-none w-40 snap-start">
                 <div class="poster-frame relative aspect-[3/4] rounded-lg overflow-hidden mb-2">
-                    <img src="manhwas/${m.slug}/${m.cover_image}" class="w-full h-full object-cover"
+                    <img src="/manhwas/${m.slug}/${m.cover_image}" class="w-full h-full object-cover"
                          loading="lazy" alt="${m.title_fa || m.title_en}"
                          onerror="this.onerror=null;this.src='${fallbackCover}';this.classList.add('object-contain','p-6')">
                     <span class="poster-rank">${index + 1}</span>
