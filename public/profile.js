@@ -169,12 +169,12 @@ function showProfileLoadError(message) {
     const msgBox = document.getElementById('msgBox');
     if (!msgBox) return;
     msgBox.innerHTML = `${escapeHtml(message)} <button type="button" onclick="retryLoadProfile()" class="underline font-bold mr-1">تلاش دوباره</button>`;
-    msgBox.className = "msg msg--error";
+    msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
 }
 
 function retryLoadProfile() {
     const msgBox = document.getElementById('msgBox');
-    if (msgBox) { msgBox.className = 'hidden msg'; msgBox.innerText = ''; }
+    if (msgBox) { msgBox.className = 'hidden p-3 rounded-xl text-xs'; msgBox.innerText = ''; }
     loadUserProfile();
 }
 
@@ -315,7 +315,7 @@ async function loadUserProfileInner() {
 
     if (isVip) {
         if (vipBadge) vipBadge.classList.remove('hidden');
-        if (vipIcon) vipIcon.className = "material-symbols-outlined vip-icon vip-icon--on";
+        if (vipIcon) vipIcon.className = "material-symbols-outlined text-emerald-400 text-3xl";
 
         if (vipUntilDate) {
             const endDate = vipUntilDate.toLocaleDateString('fa-IR');
@@ -327,7 +327,7 @@ async function loadUserProfileInner() {
             else if (daysLeft <= 7) urgency = 'is-warning';
 
             if (vipStatusText) {
-                vipStatusText.innerHTML = `<span class="vip-status-title vip-status-title--ok">${tierLabel} شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
+                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">${tierLabel} شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
             }
             if (vipDaysWrap) {
                 vipDaysWrap.classList.remove('hidden');
@@ -341,22 +341,22 @@ async function loadUserProfileInner() {
             }
         } else {
             if (vipStatusText) {
-                vipStatusText.innerHTML = `<span class="vip-status-title vip-status-title--ok">${tierLabel} شما فعال است</span> اعتبار: <span class="mono">نامحدود</span>`;
+                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">${tierLabel} شما فعال است</span> اعتبار: <span class="mono">نامحدود</span>`;
             }
         }
 
         if (vipActionBtn) {
             vipActionBtn.innerText = "تمدید اشتراک VIP";
-            vipActionBtn.className = "vip-action vip-action--ok";
+            vipActionBtn.className = "w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black font-bold text-xs transition-all text-center shadow-lg shadow-emerald-950/30 block";
         }
     } else if (isExpired) {
-        if (vipIcon) vipIcon.className = "material-symbols-outlined vip-icon vip-icon--off";
+        if (vipIcon) vipIcon.className = "material-symbols-outlined text-red-500 text-3xl";
         if (vipStatusText) {
-            vipStatusText.innerHTML = `<span class="vip-status-title vip-status-title--bad">اشتراک ویژه‌ی شما به پایان رسیده</span> تاریخ انقضا: <span class="mono">${vipUntilDate.toLocaleDateString('fa-IR')}</span>`;
+            vipStatusText.innerHTML = `<span class="text-red-400 font-bold block mb-1">اشتراک ویژه‌ی شما به پایان رسیده</span> تاریخ انقضا: <span class="mono">${vipUntilDate.toLocaleDateString('fa-IR')}</span>`;
         }
         if (vipActionBtn) {
             vipActionBtn.innerText = "تمدید اشتراک VIP";
-            vipActionBtn.className = "vip-action";
+            vipActionBtn.className = "w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center block";
         }
     } else {
         if (vipStatusText) {
@@ -370,12 +370,12 @@ async function loadUserProfileInner() {
         if (host && !document.getElementById('svcLinks')) {
             const box = document.createElement('div');
             box.id = 'svcLinks';
-            box.className = 'svc-links';
+            box.className = 'mt-3 flex flex-wrap gap-2 text-[11px]';
             const mkLink = (href, text, on) => {
                 const a = document.createElement('a');
                 a.href = on ? href : '/vip.html';
                 a.textContent = on ? text : text + ' (پرمیوم)';
-                a.className = 'svc-link' + (on ? '' : ' is-locked');
+                a.className = 'px-3 py-1.5 rounded-lg border ' + (on ? 'border-white/15 text-zinc-200 hover:bg-white/10' : 'border-white/5 text-zinc-500 hover:text-zinc-300');
                 return a;
             };
             box.append(
@@ -791,7 +791,7 @@ async function clearReadingHistory() {
             const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
             if (!allowedTypes.includes(file.type)) {
                 msgBox.innerText = "فقط فایل‌های تصویری (JPG, PNG, WEBP, GIF) مجاز هستند.";
-                msgBox.className = "msg msg--error";
+                msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
                 event.target.value = '';
                 return;
             }
@@ -799,14 +799,14 @@ async function clearReadingHistory() {
             const MAX_RAW_SIZE = 15 * 1024 * 1024; // ۱۵ مگابایت — سقفی برای فایل خام قبل از فشرده‌سازی
             if (file.size > MAX_RAW_SIZE) {
                 msgBox.innerText = "حجم فایل خیلی زیاده. لطفاً عکس کوچک‌تری انتخاب کن.";
-                msgBox.className = "msg msg--error";
+                msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
                 event.target.value = '';
                 return;
             }
 
             try {
                 msgBox.innerText = "در حال آماده‌سازی عکس...";
-                msgBox.className = "msg";
+                msgBox.className = "p-3 rounded-xl text-xs bg-zinc-800/60 text-zinc-300 border border-zinc-700/50 block mb-4";
 
                 // GIF را دست‌نخورده می‌فرستیم تا انیمیشنش خراب نشه؛ بقیه فرمت‌ها فشرده می‌شن
                 const isGif = file.type === 'image/gif';
@@ -845,12 +845,12 @@ async function clearReadingHistory() {
                 document.getElementById('avatarUrlInput').value = publicUrl;
 
                 msgBox.innerText = "عکس پروفایل با موفقیت تغییر کرد.";
-                msgBox.className = "msg msg--ok";
+                msgBox.className = "p-3 rounded-xl text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 block mb-4";
 
             } catch (err) {
                 console.error(err);
                 msgBox.innerText = "خطا در آپلود عکس: " + (err.message || "لطفا مطمئن شوید باکت avatars ساخته شده است.");
-                msgBox.className = "msg msg--error";
+                msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
             } finally {
                 event.target.value = '';
             }
@@ -882,12 +882,12 @@ async function clearReadingHistory() {
                 document.getElementById('avatarUrlInput').value = '';
 
                 msgBox.innerText = "عکس پروفایل حذف شد.";
-                msgBox.className = "msg msg--ok";
+                msgBox.className = "p-3 rounded-xl text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 block mb-4";
 
             } catch (err) {
                 console.error(err);
                 msgBox.innerText = "خطا در حذف عکس: " + err.message;
-                msgBox.className = "msg msg--error";
+                msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
             } finally {
                 if (removeBtn) removeBtn.disabled = false;
             }
@@ -907,7 +907,7 @@ async function clearReadingHistory() {
             // در این حالت این فیلد رو نمی‌فرستیم تا آواتار واقعیِ روی سرور پاک نشه.
             if (profileLoadFailed) {
                 msgBox.innerText = "به‌خاطر خطای قبلی در لود پروفایل، فقط نام ذخیره می‌شه. لطفاً صفحه رو رفرش کن و دوباره امتحان کن.";
-                msgBox.className = "msg msg--warn";
+                msgBox.className = "p-3 rounded-xl text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 block mb-4";
             }
 
             saveBtn.disabled = true;
@@ -926,13 +926,13 @@ async function clearReadingHistory() {
                 if (error) throw error;
 
                 msgBox.innerText = "اطلاعات با موفقیت به‌روزرسانی شد.";
-                msgBox.className = "msg msg--ok";
+                msgBox.className = "p-3 rounded-xl text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 block mb-4";
                 document.getElementById('dispUsername').innerText = newName;
                 if (newAvatarUrl) showAvatar(newAvatarUrl);
 
             } catch (err) {
                 msgBox.innerText = "خطا در بروزرسانی اطلاعات: " + err.message;
-                msgBox.className = "msg msg--error";
+                msgBox.className = "p-3 rounded-xl text-xs bg-red-500/10 text-red-400 border border-red-500/30 block mb-4";
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerText = "ذخیره تغییرات";

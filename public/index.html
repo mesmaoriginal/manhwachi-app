@@ -171,6 +171,7 @@
         .app {
             width: 100%;
             height: 100vh;
+            height: 100dvh; /* در موبایل نوار آدرس مرورگر جا نخوره */
             background: rgb(0, 0, 0);
             overflow: hidden;
             display: flex;
@@ -206,9 +207,9 @@
             width: 70%;
             max-width: 420px; 
             height: 60px;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(14, 14, 16, 0.92);
             border-radius: 9999px;
-            border: 1px solid rgb(255, 255, 255);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -265,15 +266,13 @@
             color: #ffffff;
         }
 
+        /* حالت فعال: فقط رنگ و وزن عوض می‌شه؛ اندازه ثابت می‌مونه تا نوار نپره */
         .nav-item.active .nav-icon {
-            transform: scale(1.12) translateY(-2px);
-            filter: brightness(1.1) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+            filter: brightness(1.1);
         }
 
         .nav-item.active .nav-text {
-            font-size: 14.5px;
             font-weight: 700;
-            transform: translateY(-2px);
             color: #fff;
         }
 
@@ -282,8 +281,8 @@
             color: #ddd;
         }
 
-        .nav-item:hover:not(.active) .nav-icon {
-            transform: scale(1.12);
+        .nav-item:active .nav-icon {
+            transform: scale(0.92);
         }
 
 
@@ -601,23 +600,7 @@
 
 
                 
-                <div class="spider-container">
-                <div class="left-legs">
-                    <div class="leg1"><div class="leg1"><div class="leg1"><div class="leg1"></div></div></div></div>
-                    <div class="leg2"><div class="leg2"><div class="leg2"><div class="leg2"></div></div></div></div>
-                    <div class="leg3"><div class="leg3"><div class="leg3"><div class="leg3"></div></div></div></div>
-                    <div class="leg4"><div class="leg4"><div class="leg4"><div class="leg4"></div></div></div></div>
-                </div>
-                <div class="right-legs">
-                    <div class="leg1"><div class="leg1"><div class="leg1"><div class="leg1"></div></div></div></div>
-                    <div class="leg2"><div class="leg2"><div class="leg2"><div class="leg2"></div></div></div></div>
-                    <div class="leg3"><div class="leg3"><div class="leg3"><div class="leg3"></div></div></div></div>
-                    <div class="leg4"><div class="leg4"><div class="leg4"><div class="leg4"></div></div></div></div>
-                </div>
-                </div>
-
-            
-                        <section class="slider" id="slider" aria-roledescription="carousel" aria-label="اسلایدر محصولات">
+                <section class="slider" id="slider" aria-roledescription="carousel" aria-label="اسلایدر محصولات">
                             <div class="track" id="track"></div>
 
                             <button type="button" class="slider-nav slider-nav-prev" id="sliderPrevBtn" aria-label="اسلاید قبلی">
@@ -642,56 +625,6 @@
                                     <!-- آیتم‌ها توسط جاوااسکریپت جایگذاری می‌شوند -->
                                 </ul>
                             </div>
-                        <div class="mw-banner-wrapper">
-                            <div class="mw-banner-container">
-                                <div class="mw-banner-content">
-                                    
-                                    
-                        
-                                    <!-- تیتر اصلی با استایل قرمز درخشان -->
-                                    <h2 class="mw-banner-title">
-                                        دعوت <br>
-                                        <span>به همکاری</span><br>
-                                        با مانهواچی!
-                                    </h2>
-                        
-                                    <!-- زیرعنوان -->
-                                    <p class="mw-banner-subtitle">به تیم ما بپیوندید</p>
-                                    
-                        
-                                    <!-- دکمه درخواست مدرن -->
-                                    <div class="mw-banner-action">
-                                        <a href="Careers.html" class="mw-btn-glow">
-                                            <span>همین حالا درخواست دهید</span>
-                                            <svg class="mw-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                                            </svg>
-                                        </a>
-                                    </div>
-                        
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Telegram Banner -->
-                        <section class="telegram-banner">
-                            <div class="telegram-banner-link">
-                                <div class="telegram-icon">
-                                    <img src="file/icons8-telegram-app-96.png" alt="Telegram">
-                                </div>
-                                <div class="telegram-content">
-                                    <div class="telegram-title">برای دسترسی سریع به چپترهای جدید</div>
-                                    <div class="telegram-subtitle">عضو کانال <strong>مانهواچی</strong> شوید</div>
-                                </div>
-                                <div class="banner-btn-group">
-                                    <a href="https://telegram.me/Manhwachiofficial" target="_blank" rel="noopener noreferrer" class="telegram-btn">عضو شدن</a>
-                                    <button id="copyTelegramBtn" class="telegram-btn">کپی لینک</button>
-                                </div>
-                            </div>
-                        </section>
-
-
-
-                            
                         <h2 class="title">
                             <a href="/library-page.html">بهترین‌ها</a>
                         </h2>
@@ -701,21 +634,23 @@
 
                             </ul>
                         </div>
-                        <!-- Instagram Banner -->
-            <section class="instagram-banner">
-                <div class="instagram-banner-link">
-                    <div class="banner-btn-group">
-                        <a href="https://www.instagram.com/ManhwaChiOfficial" target="_blank" rel="noopener noreferrer" class="instagram-btn">فالو کردن</a>
-                        <button id="copyInstagramBtn" class="instagram-btn">کپی آیدی</button>
-                    </div>
-                    <div class="instagram-content">
-                        <div class="instagram-title">معرفی مانهوا و ادیت‌های خفن</div>
-                        <div class="instagram-subtitle">پیج <strong>اینستاگرام</strong> ما را دنبال کنید</div>
-                    </div>
-                    <div class="instagram-icon">
-                        <img src="file/icons8-instagram-96.png" alt="Instagram">
-                    </div>
-                </div>
+                        <!-- لینک‌های ارتباطی: جایگزین سه بنر بزرگ قبلی (تلگرام، اینستاگرام، همکاری) -->
+            <section class="hx-links" aria-label="ارتباط با مانهواچی">
+                <a class="hx-link hx-tg" href="https://telegram.me/Manhwachiofficial" target="_blank" rel="noopener noreferrer">
+                    <span class="hx-ico"><img src="file/icons8-telegram-app-96.png" alt="" width="24" height="24" loading="lazy"></span>
+                    <span class="hx-txt"><b>کانال تلگرام</b><small>اطلاع از چپترهای جدید</small></span>
+                    <span class="hx-go material-symbols-outlined" aria-hidden="true" translate="no">chevron_left</span>
+                </a>
+                <a class="hx-link hx-ig" href="https://www.instagram.com/ManhwaChiOfficial" target="_blank" rel="noopener noreferrer">
+                    <span class="hx-ico"><img src="file/icons8-instagram-96.png" alt="" width="24" height="24" loading="lazy"></span>
+                    <span class="hx-txt"><b>پیج اینستاگرام</b><small>معرفی مانهوا و ادیت</small></span>
+                    <span class="hx-go material-symbols-outlined" aria-hidden="true" translate="no">chevron_left</span>
+                </a>
+                <a class="hx-link hx-job" href="/Careers.html">
+                    <span class="hx-ico"><span class="material-symbols-outlined" aria-hidden="true" translate="no">group_add</span></span>
+                    <span class="hx-txt"><b>همکاری با تیم</b><small>به تیم ما بپیوندید</small></span>
+                    <span class="hx-go material-symbols-outlined" aria-hidden="true" translate="no">chevron_left</span>
+                </a>
             </section>
                     <div data-mhp="banner"></div>
                     

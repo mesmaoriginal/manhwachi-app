@@ -1,148 +1,216 @@
 /* =====================================================================
-   ManhwaChi — Profile (نسخه‌ی مینیمال)
-   هم‌زبان با صفحه‌ی مانهوا: سطح تخت، خط‌های ظریف، قرمز فقط برای عمل اصلی،
-   بدون درخشش، بدون بالا‌رفتن کارت روی hover.
-   کلاس‌هایی که profile.js و profile.html می‌سازند همه حفظ شده‌اند.
+   ManhwaChi — Profile
+   تم: همان تم سایت و اپ (مشکی، قرمز #dc2626، وزیرمتن)، موبایل‌محور
+   نکته: همه‌ی کلاس‌هایی که profile.js می‌سازد حفظ شده‌اند
+   (shelf-item, shelf-item__remove, bubble, stamp, empty-panel,
+    vip-countdown*, toast*, is-dragover, hidden)
    ===================================================================== */
 
 .profile {
-    --s1: #121212;
-    --s2: #1a1a1a;
-    --ln: rgba(255, 255, 255, 0.08);
-    --ln2: rgba(255, 255, 255, 0.14);
+    --s0: #08080a;
+    --s1: #111114;
+    --s2: #18181c;
+    --s3: #222228;
+    --line: rgba(255, 255, 255, 0.07);
+    --line2: rgba(255, 255, 255, 0.13);
     --red: #dc2626;
     --red-hot: #ef4444;
-    --red-soft: rgba(220, 38, 38, 0.12);
+    --red-deep: #7f1d1d;
     --gold: #fbbf24;
-    --green: #4ade80;
+    --green: #34d399;
     --text: #f4f4f5;
     --dim: #a1a1aa;
-    --mute: #7a7a7a;
-    --r-lg: 18px;
-    --r-md: 12px;
+    --mute: #71717a;
 
-    max-width: 1200px;
+    max-width: 1040px;
     margin: 0 auto;
-    padding: 20px 16px 130px; /* فضای نوار پایین موبایل */
+    padding: 16px;
+    padding-bottom: 150px; /* فضای نوار پایین شناور */
     font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
     color: var(--text);
     line-height: 1.7;
 }
 
 .profile * { box-sizing: border-box; }
+
+/* کلاس hidden توسط JS روی خیلی از المان‌ها toggle می‌شود؛ باید همیشه برنده باشد */
 .profile .hidden { display: none !important; }
-.profile .col-span-full { grid-column: 1 / -1; }
-.profile .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+.profile .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.01em;
+}
+
 .profile .material-symbols-outlined { line-height: 1; }
 
-.profile .profile-enter { animation: profileEnter .35s ease both; }
-@keyframes profileEnter { from { opacity: 0; } to { opacity: 1; } }
+.profile .profile-enter { animation: profileEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes profileEnter {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
 /* ===================== هدر پروفایل ===================== */
 .profile .hero {
     position: relative;
-    border-radius: var(--r-lg);
-    border: 1px solid var(--ln);
+    overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid var(--line);
     background: var(--s1);
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
-.profile .hero__glow { display: none; }
+
+.profile .hero__glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(90% 120% at 100% 0%, rgba(220, 38, 38, 0.34), transparent 55%),
+        radial-gradient(70% 90% at 0% 110%, rgba(127, 29, 29, 0.32), transparent 60%);
+}
 
 .profile .hero__inner {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 16px;
-    padding: 28px 20px 24px;
+    gap: 20px;
+    padding: 32px 20px 24px;
 }
+
 .profile .hero__info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     min-width: 0;
 }
+
 .profile .hero__name-row {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
 }
+
 .profile .hero__name {
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 800;
     line-height: 1.4;
     color: #fff;
     overflow-wrap: anywhere;
 }
 
+@media (min-width: 600px) {
+    .profile .hero__inner {
+        flex-direction: row;
+        text-align: start;
+        gap: 28px;
+        padding: 34px 34px 30px;
+    }
+    .profile .hero__info { align-items: flex-start; }
+    .profile .hero__name-row { justify-content: flex-start; }
+}
+
 /* --- آواتار --- */
-.profile .avatar { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
+.profile .avatar {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    flex-shrink: 0;
+}
+
+.profile .avatar::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 200deg, #ef4444, #f59e0b, #dc2626, #7f1d1d, #ef4444);
+}
+
 .profile .avatar__frame {
+    position: relative;
     width: 100%;
     height: 100%;
     border-radius: 50%;
     background: var(--s2);
-    border: 1px solid var(--ln2);
+    border: 4px solid var(--s1);
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.profile .avatar__frame img { width: 100%; height: 100%; object-fit: cover; }
-.profile .avatar__fallback { font-size: 52px; color: var(--mute); }
+
+.profile .avatar__frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile .avatar__fallback {
+    font-size: 64px;
+    color: var(--red-hot);
+}
 
 .profile .avatar__btn {
     position: absolute;
     bottom: -2px;
     z-index: 2;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 3px solid var(--s1);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background .15s ease;
+    transition: transform 0.15s ease, background 0.15s ease;
 }
-.profile .avatar__btn .material-symbols-outlined { font-size: 16px; }
+.profile .avatar__btn .material-symbols-outlined { font-size: 18px; }
+.profile .avatar__btn:hover { transform: scale(1.1); }
 .profile .avatar__btn--edit   { inset-inline-end: -4px;   background: var(--red); color: #fff; }
 .profile .avatar__btn--edit:hover { background: var(--red-hot); }
-.profile .avatar__btn--remove { inset-inline-start: -4px; background: #2a2a2a; color: var(--dim); }
+.profile .avatar__btn--remove { inset-inline-start: -4px; background: var(--s3); color: var(--dim); }
 .profile .avatar__btn--remove:hover { background: var(--red); color: #fff; }
 
-/* --- نشان اشتراک --- */
+/* --- نشان اشتراک فعال --- */
 .profile .vip-pill {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px 3px 12px;
+    padding: 4px 10px 4px 12px;
     border-radius: 999px;
     font-size: 11.5px;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--green);
-    background: rgba(74, 222, 128, 0.1);
-    border: 1px solid rgba(74, 222, 128, 0.25);
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.3);
 }
-.profile .vip-pill .material-symbols-outlined { font-size: 15px; }
+.profile .vip-pill .material-symbols-outlined { font-size: 16px; }
 
 /* --- چیپ‌های تماس --- */
-.profile .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.profile .chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+@media (min-width: 600px) { .profile .chips { justify-content: flex-start; } }
+
 .profile .chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
+    padding: 6px 12px;
     border-radius: 999px;
-    border: 1px solid var(--ln);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
     font-size: 12px;
     color: var(--dim);
     max-width: 100%;
 }
-.profile .chip .material-symbols-outlined { font-size: 15px; color: var(--mute); }
+.profile .chip .material-symbols-outlined { font-size: 16px; color: var(--red-hot); }
 .profile .chip .mono { overflow: hidden; text-overflow: ellipsis; }
 
 /* --- متای عضویت --- */
@@ -151,8 +219,10 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 8px 14px;
+    gap: 10px 14px;
 }
+@media (min-width: 600px) { .profile .hero__meta { justify-content: flex-start; } }
+
 .profile .meta {
     display: inline-flex;
     align-items: center;
@@ -161,305 +231,288 @@
     font-size: 12.5px;
     color: var(--mute);
 }
-.profile .meta .material-symbols-outlined { font-size: 16px; }
-.profile .meta__strong { color: var(--dim); font-weight: 500; }
+.profile .meta .material-symbols-outlined { font-size: 17px; color: var(--red-hot); }
+.profile .meta__strong { color: var(--text); font-weight: 600; }
 .profile .meta__dim { color: var(--mute); }
 
 .profile .id-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 3px 12px;
+    padding: 5px 12px;
     border-radius: 999px;
-    border: 1px solid var(--ln);
-    background: transparent;
-    font-size: 12px;
-    color: var(--dim);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px dashed var(--line2);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text);
     cursor: pointer;
-    transition: border-color .15s ease, color .15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease;
 }
-.profile .id-pill .material-symbols-outlined { font-size: 14px; opacity: .6; }
-.profile .id-pill:hover { border-color: var(--ln2); color: #fff; }
-
-@media (min-width: 600px) {
-    .profile .hero__inner { flex-direction: row; text-align: start; gap: 28px; padding: 28px 32px; }
-    .profile .hero__info { align-items: flex-start; }
-    .profile .hero__name-row, .profile .chips, .profile .hero__meta { justify-content: flex-start; }
-    .profile .avatar { width: 112px; height: 112px; }
-    .profile .avatar__fallback { font-size: 60px; }
-    .profile .hero__name { font-size: 26px; }
-}
+.profile .id-pill .material-symbols-outlined { font-size: 15px; opacity: 0.6; }
+.profile .id-pill:hover { border-color: var(--red); color: #fca5a5; }
 
 /* ===================== دسترسی سریع ===================== */
 .profile .stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
+
 .profile .stat {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 8px;
-    border-radius: var(--r-lg);
+    gap: 10px;
+    padding: 14px 12px;
+    border-radius: 20px;
     background: var(--s1);
-    border: 1px solid var(--ln);
+    border: 1px solid var(--line);
     text-decoration: none;
-    text-align: center;
-    transition: border-color .15s ease, background .15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
 }
-.profile .stat:hover { border-color: var(--ln2); background: var(--s2); }
+.profile .stat:hover { border-color: rgba(220, 38, 38, 0.45); background: var(--s2); }
+.profile .stat:active { background: var(--s2); }
 
 .profile .stat__icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--red-soft);
-    color: #f87171;
+    flex-shrink: 0;
 }
-.profile .stat__icon .material-symbols-outlined { font-size: 20px; }
-/* رنگ‌های جداگانه حذف شد؛ یک لحن رنگی برای همه */
-.profile .stat__icon--gold,
-.profile .stat__icon--green { background: var(--red-soft); color: #f87171; }
+.profile .stat__icon--red   { background: rgba(220, 38, 38, 0.14);  color: #f87171; }
+.profile .stat__icon--gold  { background: rgba(251, 191, 36, 0.14); color: var(--gold); }
+.profile .stat__icon--green { background: rgba(52, 211, 153, 0.14); color: var(--green); }
 
 .profile .stat__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.profile .stat__text b { font-size: 12.5px; font-weight: 500; color: var(--text); }
-.profile .stat__text small { display: none; font-size: 12px; color: var(--mute); }
+.profile .stat__text b { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.profile .stat__text small { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
 
 @media (min-width: 640px) {
-    .profile .stat { flex-direction: row; text-align: start; gap: 14px; padding: 14px 18px; }
-    .profile .stat__text b { font-size: 14px; }
-    .profile .stat__text small { display: block; }
+    .profile .stat { flex-direction: row; align-items: center; gap: 14px; padding: 16px; }
+    .profile .stat__text b { font-size: 13.5px; }
 }
 
 /* ===================== چیدمان دو ستونه ===================== */
-.profile .split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
-.profile .stack { display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 900px) {
-    .profile .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 16px; margin-bottom: 16px; }
-    .profile .vip-card { position: sticky; top: 88px; }
-    .profile .stack { gap: 16px; }
+.profile .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
 }
+@media (min-width: 900px) {
+    .profile .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+}
+.profile .stack { display: flex; flex-direction: column; gap: 14px; }
 
 /* ===================== پنل پایه ===================== */
 .profile .panel {
     background: var(--s1);
-    border: 1px solid var(--ln);
-    border-radius: var(--r-lg);
-    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
 }
-.profile .shelf { margin-bottom: 12px; }
-.profile .shelf:last-child { margin-bottom: 0; }
-@media (min-width: 900px) { .profile .panel { padding: 24px; } .profile .shelf { margin-bottom: 16px; } }
 
-.profile .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.profile .shelf { margin-bottom: 14px; }
+.profile .shelf:last-child { margin-bottom: 0; }
+
+.profile .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
 .profile .sec-head--wrap { flex-wrap: wrap; }
 .profile .sec-head__end { margin-inline-start: auto; }
+
 .profile .sec-head__icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: var(--red-soft);
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: rgba(220, 38, 38, 0.14);
     color: #f87171;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
-.profile .sec-head__icon .material-symbols-outlined { font-size: 18px; }
-.profile .sec-head__title { font-size: 16px; font-weight: 600; color: #fff; }
+.profile .sec-head__icon .material-symbols-outlined { font-size: 20px; }
+.profile .sec-head__title { font-size: 15px; font-weight: 700; color: #fff; }
 
-/* ===================== کارت اشتراک ===================== */
+/* ===================== کارت اشتراک ویژه ===================== */
 .profile .vip-card {
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 20px;
-    border-radius: var(--r-lg);
-    border: 1px solid var(--ln);
-    background: var(--s1);
+    gap: 18px;
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    background:
+        radial-gradient(120% 80% at 100% 0%, rgba(251, 191, 36, 0.13), transparent 55%),
+        linear-gradient(170deg, #260f0f 0%, var(--s1) 65%);
 }
-@media (min-width: 900px) { .profile .vip-card { padding: 24px; } }
 
 .profile .vip-card__head { display: flex; align-items: center; gap: 12px; }
+
 .profile .vip-card__icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--ln);
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
-.profile .vip-icon { font-size: 24px; color: var(--mute); }
-.profile .vip-icon--on  { color: var(--green); }
-.profile .vip-icon--off { color: var(--red-hot); }
 
-.profile .vip-card__title { font-size: 16px; font-weight: 600; color: #fff; }
-.profile .vip-card__sub { font-size: 12px; color: var(--mute); }
-.profile .vip-card__status { font-size: 13px; line-height: 1.9; color: var(--dim); }
-.profile .vip-status-title { display: block; margin-bottom: 2px; font-weight: 600; }
-.profile .vip-status-title--ok  { color: var(--green); }
-.profile .vip-status-title--bad { color: #f87171; }
+.profile .vip-card__title { font-size: 16px; font-weight: 800; color: #fff; }
+.profile .vip-card__sub { font-size: 12px; color: var(--mute); margin-top: 1px; }
+.profile .vip-card__status { font-size: 12.5px; line-height: 1.9; color: var(--dim); }
 
-/* شمارشگر */
+/* شمارشگر روزهای باقی‌مانده */
 .profile .vip-countdown__row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
 .profile .vip-countdown__number {
-    font-size: 36px;
-    font-weight: 600;
+    font-size: 40px;
+    font-weight: 800;
     line-height: 1;
     color: var(--text);
     font-variant-numeric: tabular-nums;
 }
-.profile .vip-countdown__label { font-size: 12.5px; color: var(--dim); }
-.profile .vip-countdown__track { width: 100%; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
-.profile .vip-countdown__fill { height: 100%; border-radius: 999px; background: var(--green); transition: width .4s ease; }
-.profile .vip-countdown.is-warning .vip-countdown__number { color: var(--gold); }
-.profile .vip-countdown.is-warning .vip-countdown__fill { background: var(--gold); }
-.profile .vip-countdown.is-critical .vip-countdown__number { color: var(--red-hot); }
-.profile .vip-countdown.is-critical .vip-countdown__fill { background: var(--red); }
+.profile .vip-countdown__label { font-size: 12px; color: var(--dim); }
 
-/* دکمه‌ی اصلی کارت اشتراک (کلاس‌ها در profile.js هم عوض شده) */
-.profile .vip-action {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.profile .vip-countdown__track {
     width: 100%;
-    height: 46px;
-    border-radius: var(--r-md);
-    background: var(--red);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background .15s ease;
-}
-.profile .vip-action:hover { background: var(--red-hot); }
-.profile .vip-action--ok { background: transparent; color: var(--green); border: 1px solid rgba(74, 222, 128, 0.35); }
-.profile .vip-action--ok:hover { background: rgba(74, 222, 128, 0.1); }
-
-/* لینک‌های خدمات زیر کارت اشتراک */
-.profile .svc-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.profile .svc-link {
-    padding: 6px 12px;
+    height: 8px;
     border-radius: 999px;
-    border: 1px solid var(--ln);
-    font-size: 12px;
-    color: var(--dim);
-    text-decoration: none;
-    transition: border-color .15s ease, color .15s ease;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
 }
-.profile .svc-link:hover { border-color: var(--ln2); color: #fff; }
-.profile .svc-link.is-locked { color: var(--mute); }
+.profile .vip-countdown__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #34d399, #10b981);
+    transition: width 0.4s ease;
+}
+
+.profile .vip-countdown.is-warning .vip-countdown__number { color: var(--gold); }
+.profile .vip-countdown.is-warning .vip-countdown__fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+
+.profile .vip-countdown.is-critical .vip-countdown__number { color: var(--red-hot); }
+.profile .vip-countdown.is-critical .vip-countdown__fill {
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    animation: vipPulse 1.6s ease-in-out infinite;
+}
+@keyframes vipPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 /* ===================== فرم‌ها ===================== */
 .profile .form { display: flex; flex-direction: column; gap: 16px; }
-.profile .field { display: flex; flex-direction: column; gap: 6px; }
-.profile .field label { font-size: 13px; font-weight: 500; color: var(--dim); }
+.profile .field { display: flex; flex-direction: column; gap: 7px; }
+.profile .field label { font-size: 12.5px; font-weight: 600; color: var(--dim); }
 .profile .field__opt { color: var(--mute); font-weight: 400; }
-.profile .field__hint { font-size: 12px; color: var(--mute); }
+.profile .field__hint { font-size: 11.5px; color: var(--mute); }
 
 .profile .input {
     width: 100%;
-    height: 46px;
+    height: 48px;
     padding: 0 14px;
-    border-radius: var(--r-md);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--ln2);
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line2);
     color: var(--text);
     font: inherit;
     font-size: 14px;
-    transition: border-color .15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.profile .input::placeholder { color: #5b5b62; }
-.profile .input:focus { outline: none; border-color: var(--red); }
+.profile .input::placeholder { color: #52525b; }
+.profile .input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
+}
 .profile .input[dir="ltr"] { text-align: left; }
 
-.profile .form__actions { display: flex; gap: 10px; margin-top: 2px; }
+.profile .form__actions { display: flex; gap: 10px; margin-top: 4px; }
 
 .profile .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: 46px;
-    padding: 0 20px;
-    border-radius: var(--r-md);
+    height: 48px;
+    padding: 0 22px;
+    border-radius: 14px;
     border: 1px solid transparent;
     font: inherit;
-    font-size: 13.5px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    transition: filter 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 .profile .btn .material-symbols-outlined { font-size: 18px; }
-.profile .btn:active { transform: scale(.98); }
-.profile .btn:disabled { opacity: .6; cursor: wait; }
+.profile .btn:active { transform: scale(0.98); }
+.profile .btn:disabled { opacity: 0.6; cursor: wait; }
 
-.profile .btn--primary { flex: 1; color: #fff; background: var(--red); }
-.profile .btn--primary:hover { background: var(--red-hot); }
-.profile .btn--ghost { color: var(--dim); background: transparent; border-color: var(--ln2); }
-.profile .btn--ghost:hover { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
-.profile .btn--outline { color: var(--text); background: transparent; border-color: var(--ln2); }
-.profile .btn--outline:hover { border-color: rgba(255, 255, 255, 0.3); }
-
-/* پیام فرم (کلاس‌ها در profile.js عوض شده) */
-.profile .msg {
-    display: block;
-    padding: 11px 14px;
-    border-radius: var(--r-md);
-    font-size: 13px;
-    line-height: 1.8;
-    border: 1px solid var(--ln2);
-    color: var(--dim);
+.profile .btn--primary {
+    flex: 1;
+    color: #fff;
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    box-shadow: 0 8px 22px rgba(127, 29, 29, 0.45);
 }
-.profile .msg--error { color: #fca5a5; background: rgba(239, 68, 68, 0.08);  border-color: rgba(239, 68, 68, 0.3); }
-.profile .msg--ok    { color: var(--green); background: rgba(74, 222, 128, 0.08); border-color: rgba(74, 222, 128, 0.3); }
-.profile .msg--warn  { color: var(--gold);  background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.3); }
-.profile .msg button { text-decoration: underline; font-weight: 600; margin-inline-start: 6px; }
+.profile .btn--primary:hover { filter: brightness(1.12); }
 
-/* ===================== بخش‌های جمع‌شونده ===================== */
+.profile .btn--ghost {
+    color: var(--dim);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--line2);
+}
+.profile .btn--ghost:hover { color: #fff; background: rgba(255, 255, 255, 0.09); }
+
+.profile .btn--outline {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--line2);
+}
+.profile .btn--outline:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* ===================== امنیت حساب (جمع‌شونده) ===================== */
 .profile .fold { padding: 0; }
+
 .profile .fold__summary {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 20px;
+    padding: 18px 22px;
     cursor: pointer;
     list-style: none;
-    border-radius: var(--r-lg);
+    border-radius: 24px;
 }
 .profile .fold__summary::-webkit-details-marker { display: none; }
-.profile .fold__text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.profile .fold__text b { font-size: 15px; font-weight: 600; color: #fff; }
+
+.profile .fold__text { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+.profile .fold__text b { font-size: 15px; font-weight: 700; color: #fff; }
 .profile .fold__text small { font-size: 12px; color: var(--mute); }
-.profile .fold__chev { color: var(--mute); transition: transform .2s ease; }
+
+.profile .fold__chev { color: var(--mute); transition: transform 0.2s ease; }
 .profile .fold[open] .fold__chev { transform: rotate(180deg); }
-.profile .fold__body { padding: 16px 20px 20px; border-top: 1px solid var(--ln); }
-@media (min-width: 900px) {
-    .profile .fold__summary { padding: 18px 24px; }
-    .profile .fold__body { padding: 20px 24px 24px; }
+
+.profile .fold__body {
+    padding: 18px 22px 22px;
+    border-top: 1px solid var(--line);
 }
 
-/* دستگاه‌ها */
-.profile #devicesList > div { background: transparent; flex-wrap: wrap; }
-.profile #devicesList b { font-size: 13.5px; font-weight: 500; }
-.profile #devicesList .btn { height: 38px; padding: 0 14px; font-size: 12.5px; }
-
-/* ===================== قفسه‌ها ===================== */
+/* ===================== قفسه‌ها (بوکمارک و تاریخچه) ===================== */
 .profile .note {
     display: flex;
     align-items: flex-start;
     gap: 8px;
     margin-bottom: 14px;
-    font-size: 12.5px;
+    font-size: 12px;
     line-height: 1.8;
     color: var(--mute);
 }
@@ -469,12 +522,12 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--mute);
     background: none;
     border: none;
     cursor: pointer;
-    transition: color .15s ease;
+    transition: color 0.15s ease;
 }
 .profile .link-btn .material-symbols-outlined { font-size: 18px; }
 .profile .link-btn:hover { color: var(--red-hot); }
@@ -486,15 +539,15 @@
     width: 100%;
     max-width: 240px;
     height: 40px;
-    padding: 0 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--ln);
+    padding: 0 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line);
     color: var(--mute);
 }
 .profile .shelf-search--block { max-width: none; margin-bottom: 16px; }
 .profile .shelf-search .material-symbols-outlined { font-size: 18px; }
-.profile .shelf-search:focus-within { border-color: var(--ln2); }
+.profile .shelf-search:focus-within { border-color: rgba(220, 38, 38, 0.6); }
 .profile .shelf-search input {
     width: 100%;
     background: transparent;
@@ -506,32 +559,31 @@
 }
 .profile .shelf-search input::placeholder { color: var(--mute); }
 
-.profile .shelf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; }
-@media (min-width: 640px) { .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; } }
+.profile .shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 14px;
+}
 
-/* کارت مانهوا: به Tailwind وابسته نیست (aspect, absolute و گرادیان اینجا تعریف شده) */
 .profile .shelf-item {
     position: relative;
     overflow: hidden;
-    border-radius: 14px;
+    border-radius: 16px;
     background: var(--s2);
-    border: 1px solid var(--ln);
-    transition: border-color .15s ease;
+    border: 1px solid var(--line);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.profile .shelf-item:hover { border-color: var(--ln2); }
-.profile .shelf-item > a { display: block; aspect-ratio: 3 / 4; background: #1f1f1f; }
-.profile .shelf-item > a img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.profile .shelf-item > div {
-    position: absolute;
-    inset-inline: 0;
-    bottom: 0;
-    padding: 28px 10px 9px;
-    background: linear-gradient(to top, rgba(0, 0, 0, .9), transparent);
-    pointer-events: none;
+.profile .shelf-item:hover {
+    transform: translateY(-3px);
+    border-color: rgba(220, 38, 38, 0.5);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5);
 }
-.profile .shelf-item > div p { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.profile .shelf-item > div p:first-child { font-size: 12px; font-weight: 500; color: #fff; }
-.profile .shelf-item > div p + p { font-size: 11px; color: var(--dim); }
+.profile .shelf-item img { transition: transform 0.4s ease; }
+.profile .shelf-item:hover img { transform: scale(1.06); }
+
+/* نوار عنوان روی کاور (ساخته‌شده توسط JS) */
+.profile .shelf-item > div { padding: 28px 10px 10px; pointer-events: none; }
+.profile .shelf-item > div p:first-child { font-size: 12px; }
 
 .profile .shelf-item__remove {
     position: absolute;
@@ -541,66 +593,70 @@
     height: 28px;
     border: none;
     border-radius: 9px;
-    background: rgba(0, 0, 0, .7);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     opacity: 0;
-    transition: opacity .15s ease, background .15s ease;
+    transition: opacity 0.15s ease, background 0.15s ease;
 }
-.profile .shelf-item__remove .material-symbols-outlined { font-size: 16px; }
 .profile .shelf-item:hover .shelf-item__remove,
 .profile .shelf-item__remove:focus-visible { opacity: 1; }
 .profile .shelf-item__remove:hover { background: var(--red); }
 @media (hover: none) { .profile .shelf-item__remove { opacity: 1; } }
 
 /* ===================== دیدگاه‌ها ===================== */
-.profile .comments { display: flex; flex-direction: column; gap: 10px; }
-@media (min-width: 900px) { .profile .comments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+.profile .comments { display: flex; flex-direction: column; gap: 12px; }
 
 .profile .bubble {
+    position: relative;
     background: var(--s2);
-    border: 1px solid var(--ln);
-    border-radius: 14px;
-    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px 18px;
+    padding-inline-start: 22px;
+    transition: border-color 0.15s ease;
 }
-.profile .bubble > div:first-child {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
+.profile .bubble::before {
+    content: "";
+    position: absolute;
+    inset-block: 14px;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--red);
+    opacity: 0.8;
 }
-.profile .bubble > div:first-child > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.profile .bubble:hover { border-color: var(--line2); }
 .profile .bubble p { font-size: 13px !important; line-height: 1.9; }
 
 .profile .stamp {
     display: inline-flex;
     align-items: center;
-    padding: 2px 10px;
+    padding: 3px 10px;
     border-radius: 999px;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 700;
 }
-.profile .stamp--ok   { color: var(--green); background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25); }
-.profile .stamp--wait { color: var(--gold);  background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); }
+.profile .stamp--ok   { color: var(--green); background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); }
+.profile .stamp--wait { color: var(--gold);  background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); }
 
 /* ===================== حالت خالی ===================== */
 .profile .empty-panel {
-    padding: 28px 20px;
+    padding: 32px 20px;
     text-align: center;
-    border: 1px dashed var(--ln2);
-    border-radius: 14px;
+    border: 1px dashed var(--line2);
+    border-radius: 18px;
     color: var(--mute);
     font-size: 13px;
     line-height: 2;
 }
 
 /* ===================== drag & drop آواتار ===================== */
-.profile #avatarDropZone.is-dragover .avatar__frame { border-color: var(--red); }
+.profile #avatarDropZone.is-dragover::before { filter: brightness(1.4); }
 .profile #avatarDropZone.is-dragover::after {
     content: "رها کن";
     position: absolute;
@@ -610,52 +666,366 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(10, 10, 10, .8);
-    color: #fff;
+    background: rgba(8, 8, 10, 0.78);
+    color: var(--gold);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 800;
     pointer-events: none;
 }
+
+/* ===================== پیام فرم (msgBox) ===================== */
+.profile #msgBox { line-height: 1.8; }
 
 /* ===================== toast ===================== */
 .profile .toast-container {
     position: fixed;
     inset-inline: 16px;
-    bottom: calc(96px + env(safe-area-inset-bottom, 0px)); /* بالاتر از نوار پایین */
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* بالاتر از نوار پایین */
     z-index: 200;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     pointer-events: none;
 }
+
 .profile .toast {
     width: max-content;
     max-width: min(360px, 100%);
-    padding: 11px 16px;
-    border-radius: var(--r-md);
+    padding: 12px 16px;
+    border-radius: 14px;
     background: var(--s2);
-    border: 1px solid var(--ln2);
+    border: 1px solid var(--line2);
     border-inline-start: 3px solid var(--mute);
     font-size: 13px;
     color: var(--text);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
     opacity: 0;
-    transform: translateY(6px);
-    transition: opacity .2s ease, transform .2s ease;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
-.profile .toast.is-visible { opacity: 1; transform: none; }
+.profile .toast.is-visible { opacity: 1; transform: translateY(0); }
 .profile .toast--success { border-inline-start-color: var(--green); }
 .profile .toast--error   { border-inline-start-color: var(--red-hot); }
 .profile .toast--info    { border-inline-start-color: var(--gold); }
-@media (min-width: 1024px) { .profile .toast-container { bottom: 28px; } .profile { padding-bottom: 80px; } }
 
 /* ===================== دسترس‌پذیری ===================== */
 .profile a:focus-visible,
 .profile button:focus-visible,
 .profile input:focus-visible,
 .profile summary:focus-visible,
-.profile label:focus-visible { outline: 2px solid var(--red-hot); outline-offset: 2px; }
+.profile label:focus-visible {
+    outline: 2px solid var(--red-hot);
+    outline-offset: 2px;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .profile * { transition: none !important; animation: none !important; }
+}
+
+/* ==========================================================================
+   DESKTOP ONLY (>=1024px) — پروفایل (نسخه‌ی جمع‌وجور)  |  موبایل/تبلت دست‌نخورده
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  .profile { max-width: 1520px; padding: 24px clamp(20px, 2.5vw, 48px) 60px; }
+
+  .profile #mainProfileContent {
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 16px; align-items: stretch;
+  }
+  .profile .split { display: contents; }
+
+  .profile .hero             { grid-column: 1 / 9;  grid-row: 1; margin: 0; }
+  .profile .vip-card         { grid-column: 9 / 13; grid-row: 1; }
+  .profile .stats            { grid-column: 1 / -1; grid-row: 2; margin: 0; }
+  .profile .stack            { grid-column: 9 / 13; grid-row: 3 / 5; align-self: start;
+                               position: sticky; top: 80px; gap: 16px; }
+  .profile #bookmarksSection { grid-column: 1 / 9;  grid-row: 3; margin: 0; }
+  .profile #historySection   { grid-column: 1 / 9;  grid-row: 4; margin: 0; }
+  .profile #commentsSection  { grid-column: 1 / -1; grid-row: 5; margin: 0; }
+
+  /* ---------- هدر ---------- */
+  .profile .hero { border-radius: 26px; display: flex; }
+  .profile .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+    -webkit-mask-image: linear-gradient(to left, #000, transparent 70%);
+            mask-image: linear-gradient(to left, #000, transparent 70%);
+  }
+  .profile .hero__inner { width: 100%; align-items: center; padding: 28px 36px; gap: 28px; z-index: 1; }
+  .profile .avatar { width: 120px; height: 120px; }
+  .profile .avatar__btn { width: 34px; height: 34px; }
+  .profile .hero__info { gap: 10px; }
+  .profile .hero__name { font-size: 26px; }
+
+  /* ---------- کارت اشتراک ---------- */
+  .profile .vip-card {
+    display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
+    padding: 24px; border-radius: 26px;
+    background:
+      radial-gradient(110% 80% at 100% 0%, rgba(220,38,38,.28), transparent 60%),
+      linear-gradient(180deg, var(--s1), #0b0b0e);
+  }
+  .profile .vip-card__icon { width: 52px; height: 52px; }
+  .profile .vip-countdown__number { font-size: 42px; line-height: 1; }
+
+  /* ---------- دسترسی سریع ---------- */
+  .profile .stats { gap: 16px; }
+  .profile .stat {
+    position: relative; padding: 16px 22px; gap: 16px; border-radius: 22px;
+    background: linear-gradient(135deg, var(--s2), var(--s1));
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .profile .stat::after {
+    content: "‹"; margin-inline-start: auto; font-size: 26px; line-height: 1;
+    color: var(--mute); transition: transform .25s ease, color .25s ease;
+  }
+  .profile .stat:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.5); }
+  .profile .stat:hover::after { color: var(--red-hot); transform: translateX(-5px); }
+  .profile .stat__icon { width: 46px; height: 46px; border-radius: 16px; }
+  .profile .stat__icon .material-symbols-outlined { font-size: 24px; }
+
+  /* ---------- پنل‌ها ---------- */
+  .profile .panel { border-radius: 24px; padding: 22px; background: linear-gradient(180deg, var(--s1), #0c0c0f); }
+  .profile .fold { padding: 0; }
+  .profile .sec-head { margin-bottom: 18px; }
+
+  /* ---------- قفسه‌ها و دیدگاه‌ها ---------- */
+  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 14px; }
+  .profile .shelf-item { border-radius: 16px; }
+  .profile .comments { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+}
+
+/* ==========================================================================
+   DESKTOP POLISH (>=1024px) — پروفایل | موبایل/تبلت دست‌نخورده
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .profile { max-width: 1560px; }
+
+  .profile .hero { min-height: 210px; }
+  .profile .hero::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 45%, rgba(220,38,38,.12));
+  }
+  .profile .hero__inner { padding: 36px 48px; gap: 36px; }
+  .profile .avatar { width: 140px; height: 140px; }
+  .profile .hero__name { font-size: 32px; }
+
+  .profile .sec-head__title { font-size: 18px; font-weight: 800; }
+  .profile .panel { transition: border-color .3s ease, box-shadow .3s ease; }
+  .profile .panel:hover { border-color: var(--line2); box-shadow: 0 18px 36px -20px rgba(0,0,0,.9); }
+
+  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
+  .profile .shelf-item {
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 24px -14px rgba(0,0,0,.9);
+    transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease;
+  }
+  .profile .shelf-item:hover {
+    transform: translateY(-6px); border-color: rgba(239,68,68,.55);
+    box-shadow: 0 22px 38px -12px rgba(220,38,38,.35);
+  }
+  .profile .shelf-item img { transition: transform .7s cubic-bezier(.16,1,.3,1); }
+  .profile .shelf-item:hover img { transform: scale(1.07); }
+
+  .profile .bubble { transition: transform .25s ease, border-color .25s ease; }
+  .profile .bubble:hover { transform: translateY(-3px); border-color: var(--line2); }
+}
+
+/* ==========================================================================
+   DESKTOP PREMIUM (>=1024px) — پروفایل، هم‌سبک اسلایدر صفحه‌ی اصلی
+   فقط دسکتاپ؛ موبایل/تبلت دست‌نخورده. این بلاک باید آخر فایل بماند.
+   ========================================================================== */
+@media (min-width: 1024px) {
+
+  .profile { max-width: 1600px; padding-top: 32px; padding-bottom: 80px; }
+  .profile #mainProfileContent { gap: 22px; }
+  .profile .stack { top: 96px; gap: 22px; }
+
+  /* ---------- هدر (سینمایی مثل اسلایدر) ---------- */
+  .profile .hero {
+    min-height: 310px;
+    border-radius: 28px;
+    border-color: transparent;
+    background: linear-gradient(135deg, #1a0a0c 0%, #0e0e11 55%, #09090b 100%);
+    box-shadow: 0 30px 70px -22px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.07);
+  }
+  .profile .hero__glow {
+    background:
+      radial-gradient(70% 130% at 100% 0%, rgba(220,38,38,.42), transparent 60%),
+      radial-gradient(60% 100% at 0% 115%, rgba(127,29,29,.45), transparent 62%);
+    animation: profileAura 6s ease-in-out infinite alternate;
+  }
+  @keyframes profileAura { from { opacity: .75; } to { opacity: 1; } }
+
+  .profile .hero__inner { padding: 48px 60px; gap: 48px; }
+  .profile .hero__inner::after {
+    content: ""; position: absolute; bottom: 0; inset-inline: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(239,68,68,.7), transparent);
+    opacity: .6;
+  }
+  .profile .hero__info { gap: 14px; }
+  .profile .hero__name {
+    font-size: 42px; font-weight: 900; letter-spacing: -.01em;
+    text-shadow: 0 0 34px rgba(239,68,68,.35);
+  }
+
+  .profile .avatar { width: 176px; height: 176px; }
+  .profile .avatar::before {
+    inset: -6px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 0 46px rgba(239,68,68,.45);
+  }
+  .profile .avatar__frame { border-width: 6px; background: #0d0d10; }
+  .profile .avatar__fallback { font-size: 88px; }
+  .profile .avatar__btn { width: 42px; height: 42px; border-width: 4px; bottom: 2px; }
+  .profile .avatar__btn .material-symbols-outlined { font-size: 20px; }
+
+  .profile .vip-pill { padding: 6px 14px 6px 16px; font-size: 12.5px; box-shadow: 0 0 22px rgba(52,211,153,.18); }
+
+  .profile .chips { gap: 10px; }
+  .profile .chip {
+    padding: 9px 18px; font-size: 13px; color: #d4d4d8;
+    background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .profile .meta { font-size: 13.5px; }
+  .profile .id-pill { padding: 7px 16px; font-size: 13px; background: rgba(0,0,0,.45); }
+
+  /* ---------- کارت اشتراک ---------- */
+  .profile .vip-card {
+    padding: 32px; gap: 20px; border-radius: 28px;
+    border-color: rgba(251,191,36,.3);
+    background:
+      radial-gradient(90% 70% at 100% 0%, rgba(251,191,36,.2), transparent 60%),
+      radial-gradient(80% 60% at 0% 100%, rgba(220,38,38,.22), transparent 60%),
+      linear-gradient(180deg, #17120b, #0b0b0e);
+    box-shadow: 0 30px 70px -26px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .profile .vip-card::before {
+    content: ""; position: absolute; top: 0; inset-inline: 32px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(251,191,36,.8), transparent);
+  }
+  .profile .vip-card__icon {
+    width: 64px; height: 64px; border-radius: 20px;
+    background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.28);
+    box-shadow: 0 0 30px rgba(251,191,36,.15);
+  }
+  .profile .vip-card__title { font-size: 21px; font-weight: 900; }
+  .profile .vip-card__sub { font-size: 13px; }
+  .profile .vip-card__status { font-size: 13.5px; }
+  .profile .vip-countdown__number { font-size: 68px; font-weight: 900; }
+  .profile .vip-countdown__label { font-size: 13.5px; }
+  .profile .vip-countdown__track { height: 10px; }
+  .profile .vip-card > a {
+    padding-block: 15px; border-radius: 16px; font-size: 14px;
+    box-shadow: 0 14px 30px -10px rgba(220,38,38,.6);
+  }
+
+  /* ---------- دسترسی سریع ---------- */
+  .profile .stats { gap: 22px; }
+  .profile .stat {
+    padding: 22px 28px; gap: 18px; border-radius: 24px;
+    background: linear-gradient(135deg, #17171b, #0e0e11);
+    box-shadow: 0 18px 40px -26px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .profile .stat__icon { width: 58px; height: 58px; border-radius: 18px; }
+  .profile .stat__icon .material-symbols-outlined { font-size: 28px; }
+  .profile .stat__text b { font-size: 15.5px; }
+  .profile .stat__text small { font-size: 12.5px; }
+  .profile .stat:nth-child(1):hover { border-color: rgba(239,68,68,.55);  box-shadow: 0 20px 40px -16px rgba(220,38,38,.4); }
+  .profile .stat:nth-child(2):hover { border-color: rgba(251,191,36,.55); box-shadow: 0 20px 40px -16px rgba(251,191,36,.3); }
+  .profile .stat:nth-child(3):hover { border-color: rgba(52,211,153,.55); box-shadow: 0 20px 40px -16px rgba(52,211,153,.3); }
+
+  /* ---------- پنل‌ها ---------- */
+  .profile .panel {
+    padding: 30px; border-radius: 28px;
+    background: linear-gradient(180deg, #131317 0%, #0b0b0e 100%);
+    box-shadow: 0 24px 50px -28px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .profile .sec-head {
+    gap: 14px; margin-bottom: 24px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .profile .sec-head__icon {
+    width: 46px; height: 46px; border-radius: 15px;
+    background: linear-gradient(135deg, rgba(220,38,38,.28), rgba(220,38,38,.08));
+    border: 1px solid rgba(239,68,68,.25);
+  }
+  .profile .sec-head__icon .material-symbols-outlined { font-size: 23px; }
+  .profile .sec-head__title { font-size: 20px; font-weight: 900; }
+
+  .profile .fold__summary { padding: 24px 30px; border-radius: 28px; }
+  .profile .fold__text b { font-size: 17px; font-weight: 800; }
+  .profile .fold__text small { font-size: 12.5px; }
+  .profile .fold__body { padding: 24px 30px 30px; }
+
+  /* ---------- فرم‌ها ---------- */
+  .profile .form { gap: 20px; }
+  .profile .field label { font-size: 13px; }
+  .profile .input { height: 52px; border-radius: 16px; font-size: 14.5px; background: rgba(0,0,0,.45); }
+  .profile .btn { height: 52px; border-radius: 16px; font-size: 13.5px; }
+  .profile .btn--primary { box-shadow: 0 14px 30px -10px rgba(220,38,38,.6); }
+
+  /* ---------- قفسه‌ها ---------- */
+  .profile .note {
+    padding: 12px 16px; border-radius: 14px; font-size: 12.5px;
+    background: rgba(255,255,255,.03); border: 1px solid var(--line);
+  }
+  .profile .link-btn {
+    padding: 9px 18px; border-radius: 999px; font-size: 12.5px;
+    border: 1px solid var(--line2); background: rgba(255,255,255,.03);
+    transition: color .2s ease, background .2s ease, border-color .2s ease;
+  }
+  .profile .link-btn:hover { background: rgba(220,38,38,.12); border-color: rgba(239,68,68,.5); }
+
+  .profile .shelf-search { max-width: 300px; height: 44px; padding: 0 18px; border-radius: 999px; background: rgba(0,0,0,.45); }
+  .profile .shelf-search--block { max-width: none; margin-bottom: 22px; }
+  .profile .shelf-search:focus-within { border-color: var(--red); box-shadow: 0 0 0 4px rgba(220,38,38,.14); }
+
+  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 22px; }
+  .profile .shelf-item {
+    border-radius: 20px; border-color: rgba(255,255,255,.08);
+    box-shadow: 0 16px 30px -16px rgba(0,0,0,.95);
+  }
+  .profile .shelf-item:hover {
+    transform: translateY(-8px); border-color: rgba(239,68,68,.6);
+    box-shadow: 0 26px 44px -14px rgba(220,38,38,.4), 0 0 0 1px rgba(239,68,68,.25);
+  }
+  .profile .shelf-item > div {
+    padding: 56px 14px 14px;
+    background: linear-gradient(to top, rgba(0,0,0,.96) 0%, rgba(0,0,0,.6) 50%, transparent 100%);
+  }
+  .profile .shelf-item > div p:first-child { font-size: 13px; font-weight: 800; }
+  .profile .shelf-item > div p + p { font-size: 11px; margin-top: 2px; }
+  .profile .shelf-item__remove { width: 34px; height: 34px; top: 10px; inset-inline-start: 10px; border-radius: 11px; }
+
+  /* ---------- دیدگاه‌ها ---------- */
+  .profile .comments { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 18px; }
+  .profile .bubble {
+    padding: 22px 26px; padding-inline-start: 30px; border-radius: 22px;
+    background: linear-gradient(160deg, #1a1a1f, #121215);
+  }
+  .profile .bubble::before { inset-block: 20px; width: 4px; }
+  .profile .bubble p { font-size: 13.5px !important; }
+  .profile .bubble:hover { border-color: rgba(239,68,68,.35); box-shadow: 0 18px 34px -20px rgba(0,0,0,.95); }
+
+  .profile .empty-panel { padding: 56px 24px; border-radius: 22px; font-size: 14px; background: rgba(255,255,255,.02); }
+
+  /* ---------- toast (نوار پایین موبایل در دسکتاپ نیست) ---------- */
+  .profile .toast-container { bottom: 32px; }
+  .profile .toast { padding: 14px 20px; font-size: 13.5px; border-radius: 16px; }
+}
+
+/* ==========================================================================
+   DESKTOP FIX (>=1024px) — رفع تداخل ستون تنظیمات/امنیت با باکس‌های دیگر
+   ستون تنظیمات حالا تا انتهای صفحه امتداد دارد و ردیف‌ها با ارتفاعش بزرگ می‌شوند.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .profile .stack            { grid-row: 3 / 6; }
+  .profile #commentsSection  { grid-column: 1 / 9; grid-row: 5; }
+  .profile .comments         { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .profile { padding-bottom: 160px; }
+  .profile #mainProfileContent { padding-bottom: 40px; }
 }
