@@ -1,0 +1,83 @@
+/* home-fixes.css — بعد از home.css و بقیه‌ی استایل‌ها لود شود */
+
+/* ۱) ارتفاع درست روی موبایل (نوار آدرس مرورگر دیگر پایین صفحه را نمی‌برد) */
+html, body { height: 100%; }
+.app { height: 100vh; height: 100dvh; }
+
+/* ۲) نوار شناور پایین، آخر صفحه (فوتر) را نپوشاند */
+@media (max-width: 767px) {
+  .content { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ۳) متن‌های خیلی ریز خواناتر */
+.info-man, .sponsor-label, .sponsor-desc, .comic-genre, .comic-meta,
+.comic-score, .badge-access, .badge-chapter-num { font-size: 12px; }
+
+/* ۴) بنرها: فاصله‌ی کمتر تا صفحه شلوغ و کشیده نشود */
+@media (max-width: 767px) {
+  .telegram-banner, .instagram-banner { margin: 14px 0; }
+  .telegram-banner-link, .instagram-banner-link { max-width: 94%; }
+}
+
+/* ۵) فوکوس کیبورد و احترام به کاهش انیمیشن */
+a:focus-visible, button:focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* ================= بهبود ظاهر کلی ================= */
+:root { --mc-line: rgba(255,255,255,.08); --mc-accent: #DC2626; }
+
+/* خط‌های سفید و تند بین بخش‌ها نرم شود */
+.title { border-top: 1px solid var(--mc-line); }
+.title a { font-weight: 800; letter-spacing: 0; position: relative; padding-inline-start: 12px; }
+.title a::before {
+  content: ""; position: absolute; inset-inline-start: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 1.1em; border-radius: 3px; background: var(--mc-accent);
+}
+
+/* اسلایدر و کارت‌ها */
+.slider { border-radius: 22px; }
+.comic-card {
+  border-radius: 16px; border-color: var(--mc-line);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.comic-info { gap: 6px; padding: 10px; }
+.comic-title { font-size: 13.5px; }
+.badge-access { padding: 3px 9px; }
+
+/* لیست افقی: اسکرول نرم و چسبنده */
+.horizontal-scroll { scroll-snap-type: x proximity; scroll-padding-inline: 12px; -webkit-overflow-scrolling: touch; }
+.horizontal-scroll > li { scroll-snap-align: start; }
+
+/* لیست «بهترین‌ها» (فقط موبایل و تبلت؛ دسکتاپ طراحی خودش را دارد) */
+@media (max-width: 1023px) {
+  .lst_type2 { display: grid; gap: 8px; padding: 8px 12px 14px; }
+  .lst_type2 > li {
+    border-radius: 14px; background: rgba(255,255,255,.03);
+    border: 1px solid var(--mc-line); padding: 6px 10px;
+  }
+  .lst_type2 > li:first-child { background: linear-gradient(135deg, rgba(220,38,38,.16), rgba(255,255,255,.03)); border-color: rgba(220,38,38,.35); }
+}
+
+/* بنرهای تلگرام و اینستاگرام: نرم‌تر و کم‌حجم‌تر */
+.telegram-banner-link, .instagram-banner-link { box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.telegram-title, .instagram-title { font-weight: 800; font-size: 14px; line-height: 1.6; }
+.telegram-subtitle, .instagram-subtitle { font-size: 12px; opacity: .9; }
+
+/* هاور فقط روی دستگاه‌هایی که ماوس دارند */
+@media (hover: hover) {
+  .comic-card:hover { transform: translateY(-4px); border-color: rgba(220,38,38,.45); box-shadow: 0 14px 30px rgba(0,0,0,.5); }
+}
+@media (hover: none) { .comic-card:hover { transform: none; } }
+
+/* دسکتاپ: ریتم عمودی راحت‌تر */
+@media (min-width: 1024px) {
+  .telegram-banner, .instagram-banner { margin: 28px 0; }
+}
+::selection { background: rgba(220,38,38,.45); color: #fff; }
+
+/* تیترها: فاصله از لبه تا نوار قرمز بریده نشود */
+.title { padding-inline: 14px; }
+@media (min-width: 1024px) { .title { padding-inline: 0; } }
