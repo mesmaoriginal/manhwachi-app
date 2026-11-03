@@ -363,16 +363,72 @@
         #showMoreBtn { display: flex; align-items: center; gap: 4px; margin: -20px auto 0; position: relative; padding: 9px 20px; border-radius: 99px; font-size: 13px; color: #ddd;
             background: rgba(20,20,20,.85); border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: .2s; }
         #showMoreBtn:hover { border-color: rgba(255,255,255,.35); color: #fff; } #showMoreBtn[hidden] { display: none; } #showMoreBtn .material-symbols-outlined { font-size: 19px; }
-        .chapter-index { background: transparent; border-radius: 16px; }
-        .telegram-banner { max-width: 72rem; margin: 40px auto 0; padding: 0 20px; }
-        .telegram-banner-link { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--ln); background: rgba(255,255,255,.03); color: #fff; }
-        .telegram-icon { width: 40px; height: 40px; flex: none; border-radius: 50%; background: rgba(34,158,217,.16); display: grid; place-items: center; } .telegram-icon img { width: 22px; height: 22px; }
-        .telegram-content { flex: 1; min-width: 160px; } .telegram-title { font-size: 14px; font-weight: 500; } .telegram-subtitle { font-size: 12.5px; color: #9a9a9a; margin-top: 2px; }
-        .mx-tg-btns { display: flex; gap: 8px; }
-        .telegram-btn { padding: 8px 16px; border-radius: 12px; font-size: 12.5px; font-weight: 500; white-space: nowrap; border: 1px solid rgba(255,255,255,.14); background: transparent; color: #fff; cursor: pointer; font-family: inherit; transition: .2s; }
-        a.telegram-btn { background: #fff; color: #000; border-color: #fff; } .telegram-btn:hover { opacity: .85; }
-        @media (max-width: 560px) { .mx-tg-btns { width: 100%; } .telegram-btn { flex: 1; text-align: center; } }
-        #similarList > a { background: transparent; border: 0; border-radius: 14px; } #similarList > a > div:first-child { border-radius: 14px; }
+        /* ===== بنر تلگرام ===== */
+        .telegram-banner { max-width: 72rem; margin: 48px auto 0; padding: 0 20px; }
+        .telegram-banner-link { position: relative; overflow: hidden; isolation: isolate; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; padding: 22px 24px; border-radius: 26px; color: #fff;
+            border: 1px solid rgba(56,189,248,.22);
+            background: linear-gradient(135deg, rgba(14,165,233,.16) 0%, rgba(20,20,24,.9) 55%, rgba(220,38,38,.10) 100%);
+            box-shadow: 0 24px 50px -28px rgba(14,165,233,.55); transition: border-color .3s, transform .3s; }
+        .telegram-banner-link:hover { border-color: rgba(56,189,248,.45); transform: translateY(-2px); }
+        .tg-glow { position: absolute; z-index: -1; width: 260px; height: 260px; border-radius: 50%; inset-block-start: -120px; inset-inline-start: -80px; background: radial-gradient(closest-side, rgba(56,189,248,.35), transparent); pointer-events: none; }
+        .telegram-icon { width: 58px; height: 58px; flex: none; border-radius: 18px; color: #fff; display: grid; place-items: center;
+            background: linear-gradient(135deg, #38bdf8, #0284c7); box-shadow: 0 10px 26px -8px rgba(14,165,233,.8); transform: rotate(-6deg); transition: transform .35s cubic-bezier(.34,1.56,.64,1); }
+        .telegram-banner-link:hover .telegram-icon { transform: rotate(0) scale(1.08); }
+        .telegram-content { flex: 1; min-width: 200px; }
+        .telegram-title { font-size: 16px; font-weight: 600; line-height: 1.6; }
+        .telegram-subtitle { font-size: 13px; color: #a8b3bd; margin-top: 3px; line-height: 1.8; } .telegram-subtitle strong { color: #7dd3fc; font-weight: 600; }
+        .mx-tg-btns { display: flex; gap: 10px; }
+        .telegram-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; padding: 0 18px; border-radius: 14px; font-size: 13px; font-weight: 500; white-space: nowrap;
+            border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.04); color: #fff; cursor: pointer; font-family: inherit; transition: .2s; }
+        .telegram-btn .material-symbols-outlined { font-size: 18px; }
+        .telegram-btn:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.32); } .telegram-btn:active { transform: scale(.96); }
+        a.telegram-btn-main { background: linear-gradient(135deg, #38bdf8, #0284c7); border-color: transparent; color: #fff; box-shadow: 0 10px 24px -10px rgba(14,165,233,.9); }
+        a.telegram-btn-main:hover { filter: brightness(1.1); background: linear-gradient(135deg, #38bdf8, #0284c7); border-color: transparent; }
+        @media (max-width: 640px) { .telegram-banner-link { padding: 18px; } .mx-tg-btns { width: 100%; } .telegram-btn { flex: 1; } }
+
+        /* ===== مانهواهای مشابه ===== */
+        .sim-nav { display: none; gap: 8px; }
+        @media (hover: hover) and (min-width: 900px) { .sim-nav { display: flex; } }
+        .sim-arrow { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #ddd; border: 1px solid var(--ln); background: rgba(255,255,255,.03); transition: .2s; }
+        .sim-arrow:hover { border-color: rgba(220,38,38,.6); background: rgba(220,38,38,.14); color: #fff; } .sim-arrow:active { transform: scale(.93); }
+        .sim-list { display: flex; gap: 14px; overflow-x: auto; padding: 6px 2px 18px; scroll-snap-type: x proximity; }
+        .sim-card { flex: none; width: 150px; scroll-snap-align: start; display: block; border-radius: 18px; }
+        @media (min-width: 640px) { .sim-card { width: 178px; } .sim-list { gap: 18px; } }
+        .sim-cover { position: relative; aspect-ratio: 3/4.2; border-radius: 18px; overflow: hidden; background: #1a1a1a; border: 1px solid var(--ln);
+            box-shadow: 0 16px 34px -22px #000; transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .3s, box-shadow .3s; }
+        .sim-card:hover .sim-cover { transform: translateY(-6px); border-color: rgba(220,38,38,.55); box-shadow: 0 26px 44px -20px rgba(220,38,38,.45); }
+        .sim-cover img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform .6s ease; }
+        .sim-card:hover .sim-cover img { transform: scale(1.08); }
+        .sim-score { position: absolute; top: 9px; inset-inline-end: 9px; z-index: 2; display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 600; color: #fde68a;
+            background: rgba(0,0,0,.58); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); }
+        .sim-score .material-symbols-outlined { font-size: 14px; color: #fbbf24; font-variation-settings: 'FILL' 1; }
+        .sim-overlay { position: absolute; inset: auto 0 0 0; padding: 40px 12px 12px; background: linear-gradient(to top, rgba(0,0,0,.95) 12%, rgba(0,0,0,.6) 55%, transparent); }
+        .sim-overlay h4 { font-size: 13.5px; font-weight: 600; color: #fff; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color .2s; }
+        .sim-card:hover .sim-overlay h4 { color: #fca5a5; }
+        .sim-overlay p { margin-top: 2px; font-size: 10.5px; color: #9a9a9a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: Montserrat, sans-serif; }
+        .sim-genre { display: inline-block; margin-top: 7px; padding: 2px 9px; border-radius: 99px; font-size: 10.5px; color: #fecaca; background: rgba(220,38,38,.22); border: 1px solid rgba(220,38,38,.35); }
+
+        /* ===== بهبودهای کلی ظاهر ===== */
+        html { scroll-behavior: smooth; }
+        .mx-hero { position: relative; }
+        .mx-cover { box-shadow: 0 34px 70px -28px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.04), 0 0 80px -30px rgba(220,38,38,.45); transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+        @media (hover: hover) { .mx-cover:hover { transform: scale(1.02); } }
+        .mx-stats { border: 1px solid var(--ln); border-radius: 18px; background: rgba(255,255,255,.025); overflow: hidden; }
+        .mx-stat b { font-size: 16px; }
+        #readBtn { background: linear-gradient(135deg, #ef4444, #dc2626 60%, #b91c1c); box-shadow: 0 14px 30px -12px rgba(220,38,38,.75); }
+        #readBtn:hover { background: linear-gradient(135deg, #f87171, #ef4444 60%, #dc2626); }
+        .section-title { position: relative; padding-inline-start: 14px; }
+        .section-title::before { content: ""; position: absolute; inset-inline-start: 0; top: 50%; width: 4px; height: 20px; transform: translateY(-50%); border-radius: 4px; background: linear-gradient(#ef4444, #b91c1c); }
+        .mx-sec { margin-top: 48px; }
+        .mx-ep { border-radius: 18px; background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); }
+        .mx-ep.episode-card:hover { border-color: rgba(220,38,38,.45); box-shadow: 0 14px 30px -20px rgba(220,38,38,.6); }
+        .mx-thumb { width: 82px; height: 56px; }
+        .mx-st.free { padding: 3px 10px; border-radius: 99px; background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25); }
+        .mx-st.paid { padding: 3px 10px; border-radius: 99px; background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.25); }
+        .mx-note { padding: 10px 14px; border-radius: 14px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); }
+        #commentsAnchor .mx-form { background: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.015)); }
+        #messagesList > div:hover { border-color: transparent; }
+        ::selection { background: rgba(220,38,38,.45); color: #fff; }
         #messagesList > div { background: transparent; border: 0; border-bottom: 1px solid var(--ln); border-radius: 0; padding: 20px 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
         #commentsAnchor .mx-form { background: rgba(255,255,255,.03); border: 1px solid var(--ln); border-radius: 20px; box-shadow: none; }
         #messageText { border-radius: 14px; background: rgba(255,255,255,.03); }
@@ -385,26 +441,6 @@
             .mx-sec, .telegram-banner { padding: 0 32px; } .mx-eps { grid-template-columns: repeat(2, 1fr); }
         }
         @media (min-width: 1200px) { .mx-eps { grid-template-columns: repeat(3, 1fr); } }
-
-        /* ===== پرداخت نهایی: موبایل و آرام‌تر ===== */
-        a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #f87171; outline-offset: 2px; }
-        .mx-stat small { white-space: nowrap; }
-        @media (max-width: 899px) {
-            .mx-sec { margin-top: 44px; }
-            .mx-sec-sm { margin-top: 16px; }
-            .mx-backdrop { height: 460px; }
-            .mx-backdrop img { filter: blur(28px) saturate(1.2); opacity: .26; }
-            .telegram-banner { margin-top: 28px; }
-        }
-        @media (max-width: 380px) {
-            .mx-stat small { font-size: 10.5px; }
-            .mx-stat { padding-inline: 4px; }
-            .mx-actions { gap: 8px; }
-            .mx-icon { width: 46px; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .mx-enter, .comment-animate, .animate-fadeIn { animation: none; }
-        }
     </style>
     <link rel="stylesheet" href="/app-promo.css?v=1">
 <link rel="stylesheet" href="/mc-shared.css?v=1">
@@ -567,6 +603,24 @@
         </div>
 
 
+        <!-- Telegram Banner -->
+        <section class="telegram-banner">
+            <div class="telegram-banner-link">
+                <span class="tg-glow" aria-hidden="true"></span>
+                <div class="telegram-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3a1.3 1.3 0 0 0-1.35-.2L2.6 11.1c-1.2.5-1.2 1.2-.2 1.5l4.6 1.4 1.8 5.5c.2.6.4.8.8.8s.6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.5.2 1.7-.8l3-14.3c.3-1.2-.4-1.7-1.1-1.7zM8.8 13.4l9.2-5.8c.4-.3.8-.1.5.2l-7.6 6.9-.3 3.1-1.8-4.4z"/></svg>
+                </div>
+                <div class="telegram-content">
+                    <div class="telegram-title">چپترهای جدید، اول از همه در تلگرام</div>
+                    <div class="telegram-subtitle">به کانال <strong>مانهواچی</strong> بپیوند و اطلاع‌رسانی انتشار را از دست نده</div>
+                </div>
+                <div class="mx-tg-btns">
+                    <a href="https://telegram.me/Manhwachiofficial" target="_blank" rel="noopener" class="telegram-btn telegram-btn-main"><span class="material-symbols-outlined">send</span>عضویت در کانال</a>
+                    <button id="copyTelegramBtn" class="telegram-btn" type="button"><span class="material-symbols-outlined">content_copy</span><span id="copyTgText">کپی لینک</span></button>
+                </div>
+            </div>
+        </section>
+
         <!-- Episodes List Section -->
         <section class="mx-sec">
             <div class="mx-head">
@@ -643,46 +697,16 @@
             <button id="showMoreBtn" <%= episodes.length > 4 ? '' : 'hidden' %>><span id="showMoreText">نمایش قسمت‌های بیشتر</span><span class="material-symbols-outlined">expand_more</span></button>
         </section>
 
-        <% if (manhwa && episodes.length) { %>
-        <!-- 🔎 لینک داخلی قابل‌خزش به صفحه‌ی ایندکس‌شونده‌ی هر چپتر (/comic/<slug>/chapter-N) -->
-        <section class="mx-sec mx-sec-sm" aria-label="فهرست چپترها">
-            <details class="chapter-index">
-                <summary>فهرست همه‌ی چپترهای مانهوا <%= title_fa || title_en %></summary>
-                <nav>
-                    <% episodes.slice().sort(function (a, b) { return Number(b.num) - Number(a.num); }).forEach(function (ep) { %>
-                    <a href="/comic/<%= encodeURIComponent(slug) %>/chapter-<%= ep.num %>">چپتر <%= ep.num %></a>
-                    <% }); %>
-                </nav>
-            </details>
-        </section>
-        <% } %>
-
-        <!-- Telegram Banner -->
-        <section class="telegram-banner">
-            <div class="telegram-banner-link">
-                <div class="telegram-icon">
-                    <img src="/file/icons8-telegram-app-96.png" alt="Telegram">
-                </div>
-                <div class="telegram-content">
-                    <div class="telegram-title">برای دسترسی سریع‌تر به چپترهای جدید</div>
-                    <div class="telegram-subtitle">عضو کانال <strong>مانهواچی</strong> شوید</div>
-                </div>
-                <div class="mx-tg-btns">
-                    <a href="https://telegram.me/Manhwachiofficial" target="_blank" class="telegram-btn text-center">عضو شدن</a>
-                    <button id="copyTelegramBtn" class="telegram-btn">کپی لینک</button>
-                </div>
-            </div>
-        </section>
-
         <!-- Similar Manhwas Section -->
         <section id="similarSection" class="mx-sec hidden">
-            <div class="flex items-center justify-between mb-5">
-                <h3 class="section-title text-xl font-semibold flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">auto_awesome</span>
-                    مانهواهای مشابه
-                </h3>
+            <div class="mx-head">
+                <h3 class="section-title">مانهواهای مشابه</h3>
+                <div class="sim-nav">
+                    <button type="button" id="simNext" class="sim-arrow" aria-label="قبلی"><span class="material-symbols-outlined">chevron_right</span></button>
+                    <button type="button" id="simPrev" class="sim-arrow" aria-label="بعدی"><span class="material-symbols-outlined">chevron_left</span></button>
+                </div>
             </div>
-            <div id="similarList" class="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x"></div>
+            <div id="similarList" class="sim-list scrollbar-none"></div>
         </section>
 
         <% if (manhwa) { %>
@@ -1325,14 +1349,14 @@
 
         document.getElementById("copyTelegramBtn").addEventListener("click", async () => {
             const telegramLink = "https://telegram.me/Manhwachiofficial";
-            const btn = document.getElementById("copyTelegramBtn");
+            const label = document.getElementById("copyTgText");
             try {
                 await navigator.clipboard.writeText(telegramLink);
-                btn.textContent = "کپی شد ✓";
+                label.textContent = "کپی شد ✓";
             } catch (err) {
-                btn.textContent = "کپی نشد";
+                label.textContent = "کپی نشد";
             }
-            setTimeout(() => { btn.textContent = "کپی لینک"; }, 2000);
+            setTimeout(() => { label.textContent = "کپی لینک"; }, 2000);
         });
 
         function initComments() {
@@ -1552,31 +1576,32 @@
             similarItems.forEach(item => {
                 const card = document.createElement('a');
                 card.href = `/comic/${encodeURIComponent(item.slug)}`;
-                card.className = 'snap-start flex-shrink-0 w-36 sm:w-44 bg-surface-elevated border border-white/5 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 group';
+                card.className = 'sim-card';
+                const faTitle = escapeHtml(item.title_fa || item.title_en);
+                const firstGenre = (item.genres || [])[0];
 
                 card.innerHTML = `
-                    <div class="relative w-full h-48 sm:h-56 bg-zinc-800 overflow-hidden">
-                        <img src="/manhwas/${encodeURIComponent(item.slug)}/${item.cover_image}" 
-                             alt="${escapeHtml(item.title_fa || item.title_en)}" 
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                             loading="lazy"
-                             onerror="this.src='/ManhwaChi/favicon-192x192.png'" />
-                        <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-yellow-400 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs">star</span>
-                            <span>${item.score || 'N/A'}</span>
+                    <div class="sim-cover">
+                        <img src="/manhwas/${encodeURIComponent(item.slug)}/${item.cover_image}"
+                             alt="${faTitle}" loading="lazy" decoding="async"
+                             onerror="this.onerror=null;this.src='/ManhwaChi/favicon-192x192.png'" />
+                        <span class="sim-score"><span class="material-symbols-outlined">star</span>${escapeHtml(item.score || '—')}</span>
+                        <div class="sim-overlay">
+                            <h4 dir="rtl">${faTitle}</h4>
+                            <p dir="ltr">${escapeHtml(item.title_en || '')}</p>
+                            ${firstGenre ? `<span class="sim-genre">${escapeHtml(firstGenre)}</span>` : ''}
                         </div>
-                    </div>
-                    <div class="p-3">
-                        <h4 class="font-bold text-sm text-white line-clamp-1 group-hover:text-primary transition-colors" dir="rtl">
-                            ${escapeHtml(item.title_fa || item.title_en)}
-                        </h4>
-                        <p class="text-xs text-text-muted mt-1 line-clamp-1" dir="ltr">
-                            ${escapeHtml(item.title_en)}
-                        </p>
                     </div>
                 `;
                 similarList.appendChild(card);
             });
+
+            // دکمه‌های اسکرول افقی (RTL)
+            const step = () => Math.max(240, similarList.clientWidth * 0.8);
+            const simNext = document.getElementById('simNext');
+            const simPrev = document.getElementById('simPrev');
+            if (simNext) simNext.onclick = () => similarList.scrollBy({ left: step(), behavior: 'smooth' });
+            if (simPrev) simPrev.onclick = () => similarList.scrollBy({ left: -step(), behavior: 'smooth' });
 
             similarSection.classList.remove('hidden');
         }
