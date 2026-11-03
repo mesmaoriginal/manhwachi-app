@@ -148,9 +148,7 @@
         .glass-scrim {
             background: linear-gradient(to top, #000000 10%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
         }
-        .text-shadow-glow {
-            text-shadow: 0 0 20px rgb(220 38 38 / var(--tw-bg-opacity, 1));
-        }
+        .text-shadow-glow { text-shadow: none; }
         .episode-card {
             transition: all 0.3s ease;
         }
@@ -201,22 +199,9 @@
             position: relative;
             overflow: hidden;
         }
-        .manhwa-card::before {
-            content: "";
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            background: #dc2626;
-            opacity: 0.15;
-            filter: blur(120px);
-            top: -220px;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1f1f1f; }
-        ::-webkit-scrollbar-thumb { background: rgb(220 38 38 / var(--tw-bg-opacity, 1)); border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 10px; }
 
         .reply-box { margin-top:12px; padding:16px; background:#1f1f1f; border-radius:16px; border:1px solid rgba(255,255,255,0.08); }
         .reply-thread {
@@ -235,19 +220,18 @@
         }
 
         .admin-reply {
-            background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
-            border: 1px solid rgba(220, 38, 38, 0.25);
+            background: rgba(220, 38, 38, 0.06);
+            border: 1px solid rgba(220, 38, 38, 0.2);
             border-right: 3px solid #DC2626;
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 14px 16px;
-            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.05);
         }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .comment-animate { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .comment-animate { animation: fadeIn 0.25s ease; }
 
 
         #mobile-drawer { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -258,7 +242,6 @@
         .drawer-item:hover {
             background: rgba(220, 38, 38, 0.12);
             border-color: rgba(220, 38, 38, 0.3);
-            transform: translateX(-4px);
         }
         .nav-link { position: relative; }
         .nav-link::after {
@@ -385,8 +368,6 @@
             .mx-sec, .telegram-banner { padding: 0 32px; } .mx-eps { grid-template-columns: repeat(2, 1fr); }
         }
         @media (min-width: 1200px) { .mx-eps { grid-template-columns: repeat(3, 1fr); } }
-
-        }
     </style>
     <link rel="stylesheet" href="/app-promo.css?v=1">
 <link rel="stylesheet" href="/mc-shared.css?v=1">
