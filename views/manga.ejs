@@ -340,6 +340,7 @@
         #descriptionToggleIcon { font-size: 20px; transition: transform .4s; } #descriptionToggleBtn.open #descriptionToggleIcon { transform: rotate(180deg); }
         .mx-sec { max-width: 72rem; margin: 56px auto 0; padding: 0 20px; } .mx-sec-sm { margin-top: 20px; }
         #commentsAnchor { max-width: 52rem; }
+        .mx-head-r { display: flex; align-items: center; gap: 14px; }
         .mx-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .section-title { font-size: 18px; font-weight: 600; color: #fff; }
         #sortBtn { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #9a9a9a; transition: color .2s; } #sortBtn:hover { color: #fff; }
@@ -627,7 +628,10 @@
         <section class="mx-sec">
             <div class="mx-head">
                 <h3 class="section-title text-xl font-semibold">قسمت‌ها</h3>
-                <button id="sortBtn" >جدیدترین اول <span class="material-symbols-outlined">swap_vert</span></button>
+                <div class="mx-head-r">
+                    <button id="bulkDlBtn" class="mx-bulk" type="button" aria-haspopup="dialog" title="دانلود چند چپتر برای خواندن بدون اینترنت"><span class="mx-bulk-ic"></span>دانلود آفلاین</button>
+                    <button id="sortBtn" >جدیدترین اول <span class="material-symbols-outlined">swap_vert</span></button>
+                </div>
             </div>
 
             <div id="subscriptionBanner" class="mx-note <%= has_locked ? 'flex' : 'hidden' %>">
@@ -692,6 +696,7 @@
                     </div>
                     <div class="mx-ep-b"><p class="mx-ep-t">چپتر <%= ep_num %></p><p class="mx-ep-d"><%= ep.date || '' %></p></div>
                     <span class="mx-st <%= is_free ? 'free' : 'paid' %>"><%= is_free ? 'رایگان' : 'اشتراکی' %></span>
+                    <button type="button" class="mx-dl" data-dl="<%= ep_num %>" data-s="idle" aria-label="دانلود چپتر <%= ep_num %>"></button>
                 </a>
                 <% }); %>
             </div></div>
@@ -804,6 +809,9 @@
     <script src="/js/vendor/supabase.min.js"></script>
     <!-- مدال ورود/ثبت‌نام مشترک با صفحه‌ی اصلی (auth-modal.js) — باید قبل از اسکریپت اصلی بیاد -->
     <script src="/auth-modal.js?v=1"></script>
+    <!-- دانلود آفلاین (مخصوص پرمیوم): همان موتور ریدر، از داخل لیست قسمت‌ها -->
+    <script src="/offline.js"></script>
+    <script src="/offline-ui.js"></script>
     <script>
         const { createClient } = supabase;
         const db = createClient(window.location.origin, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bW51anlnc3dvdHN0dndsamF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTkwNTIsImV4cCI6MjA5NjY5NTA1Mn0.tag4oNAsqqzYkdz6cxANpn5zJJihvk1x4RkuEd8AL0E');
@@ -1192,11 +1200,13 @@
                     </div>
                     <div class="mx-ep-b"><p class="mx-ep-t">چپتر ${ep.num}</p><p class="mx-ep-d">${escapeHtml(ep.date || '')}</p></div>
                     ${statusHTML}
+                    <button type="button" class="mx-dl" data-dl="${ep.num}" data-s="idle" aria-label="دانلود چپتر ${ep.num}"></button>
                 `;
                 container.appendChild(a);
             });
 
             renderedCount = visibleEpisodes.length;
+            if (window.mcDlList) window.mcDlList.refresh();
             const remaining = allEpisodes.length - visibleCount;
             const showMoreBtn = document.getElementById('showMoreBtn');
             document.getElementById('episodeWrap').classList.toggle('has-more', remaining > 0);
@@ -1251,6 +1261,7 @@
         }
 
         document.getElementById('episodeList').addEventListener('click', (e) => {
+            if (e.target.closest('.mx-dl')) return; // دکمه‌ی دانلود (offline-ui.js) خودش مدیریت می‌کند
             const card = e.target.closest('a[data-num]');
             if (!card) return;
             e.preventDefault();
@@ -1915,6 +1926,50 @@
         } else {
             startPage();
         }
+    </script>
+
+    <script>
+        // ===== دانلود آفلاین از داخل صفحه‌ی مانگا (فقط پرمیوم؛ دسترسی واقعی را سرور چک می‌کند) =====
+        (function () {
+            if (!window.MCOffline || !window.MCOfflineUI) return;
+            async function getOfflineSession() {
+                try {
+                    const r = await Promise.race([db.auth.getSession(), new Promise(res => setTimeout(() => res(null), 2500))]);
+                    const s = r && r.data && r.data.session;
+                    if (s && s.user) { MCOffline.rememberUid(s.user.id); return { uid: s.user.id, token: s.access_token }; }
+                } catch (e) {}
+                const uid = MCOffline.lastUid();
+                return uid ? { uid, token: null } : null;
+            }
+            async function fetchAccess(token) {
+                try {
+                    const r = await fetch('/api/access/me', { headers: token ? { Authorization: 'Bearer ' + token } : {}, cache: 'no-store' });
+                    return r.ok ? await r.json() : null;
+                } catch (e) { return null; }
+            }
+            MCOffline.queue.configure(getOfflineSession);
+            MCOfflineUI.mount();
+            const bulkBtn = document.getElementById('bulkDlBtn');
+            if (bulkBtn) bulkBtn.querySelector('.mx-bulk-ic').innerHTML = MCOfflineUI.icon.html();
+            const wire = () => {
+                window.mcDlList = MCOfflineUI.bindList({
+                    root: '#episodeList',
+                    slug: MANHWA_SLUG,
+                    title: () => persianTitle || englishTitle || MANHWA_SLUG,
+                    episodes: () => allEpisodes,
+                    isRead: (n) => ChapterReadService.isRead(MANHWA_SLUG, n),
+                    getSession: getOfflineSession,
+                    checkAccess: fetchAccess,
+                    bulkBtn: '#bulkDlBtn',
+                    onNeedLogin: () => { MCOfflineUI.toast('برای دانلود باید وارد حساب شوید'); if (typeof openAuthModal === 'function') openAuthModal('login'); },
+                    onNeedPremium: () => { MCOfflineUI.toast('دانلود آفلاین مخصوص اشتراک پرمیوم است', 3200); setTimeout(() => { location.href = SUBSCRIPTION_PAGE_URL; }, 1600); },
+                });
+                window.mcDlList.refresh();
+                // دانلودِ نیمه‌کاره‌ی قبلی بی‌سروصدا ادامه پیدا می‌کند
+                getOfflineSession().then(s => { if (s && s.token) { MCOffline.renewAll(s.uid, s.token).catch(() => {}); MCOffline.queue.resume(); } });
+            };
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+        })();
     </script>
 
 
