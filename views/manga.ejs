@@ -444,6 +444,8 @@
     </style>
     <link rel="stylesheet" href="/app-promo.css?v=1">
 <link rel="stylesheet" href="/mc-shared.css?v=1">
+<link rel="stylesheet" href="/vip-flair.css?v=2">
+<script src="/vip-flair.js?v=2"></script>
 </head>
 
 <body class="bg-surface text-on-surface font-body min-h-screen">
@@ -858,7 +860,7 @@
             try {
                 const { data, error } = await db
                     .from('profiles')
-                    .select('is_vip, vip_until, full_name, avatar_url')
+                    .select('is_vip, vip_until, vip_tier, full_name, avatar_url')
                     .eq('id', currentUser.id)
                     .maybeSingle();
 
@@ -872,7 +874,8 @@
                 } else {
                     const notExpired = !data.vip_until || new Date(data.vip_until) > new Date();
                     currentUserSubscribed = !!data.is_vip && notExpired;
-                    currentProfile = { full_name: data.full_name, avatar_url: data.avatar_url };
+                    currentProfile = { full_name: data.full_name, avatar_url: data.avatar_url, tier: notExpired && data.is_vip ? (data.vip_tier === 'premium' ? 'premium' : 'vip') : '' };
+        if (window.MCVip) window.MCVip.remember(currentProfile.tier);
                 }
             } catch (err) {
                 console.error('خطا در بررسی وضعیت اشتراک:', err);
@@ -947,11 +950,12 @@
             if (!area) return;
             if (currentUser) {
                 const name = getDisplayName(currentUser);
+                const myVf = vfClasses(currentProfile?.tier || '');
                 area.innerHTML = `
                     <div class="flex items-center justify-between bg-surface-container rounded-2xl px-5 py-3.5 border border-white/10">
                         <div class="flex items-center gap-3">
-                            ${avatarHtml(name, currentProfile?.avatar_url, { size: 'w-9 h-9', text: 'text-sm', radius: 'rounded-xl' })}
-                            <span class="text-sm text-on-surface">نظر با نام <span class="font-bold text-white">${escapeHtml(name)}</span> ثبت می‌شه</span>
+                            ${avatarHtml(name, currentProfile?.avatar_url, { size: 'w-9 h-9', text: 'text-sm', radius: 'rounded-xl', extra: myVf.av })}
+                            <span class="text-sm text-on-surface">نظر با نام <span class="font-bold text-white ${myVf.name}">${escapeHtml(name)}</span> ${myVf.badge} ثبت می‌شه</span>
                         </div>
                     </div>`;
             } else {
@@ -1110,6 +1114,21 @@
         function getCommentAuthorAvatar(msg) {
             const p = msg && msg.user_id && globalProfilesMap[msg.user_id];
             return p ? p.avatar : '';
+        }
+
+        // سطح اشتراک نویسنده: 'premium' | 'vip' | ''
+        function getCommentAuthorTier(msg) {
+            const p = msg && msg.user_id && globalProfilesMap[msg.user_id];
+            return (p && p.tier) || '';
+        }
+        // کلاس‌های ظاهری بر اساس سطح (حلقه‌ی آواتار، اسم، کارت) + نشان
+        function vfClasses(tier) {
+            return {
+                av: tier ? `vf-av--${tier}` : '',
+                name: tier === 'premium' ? 'vf-name--premium' : '',
+                card: tier ? `vf-card--${tier}` : '',
+                badge: (window.MCVip && tier) ? window.MCVip.badge(tier) : ''
+            };
         }
 
         async function loadDynamicContent() {
@@ -1415,13 +1434,20 @@
                 const commentUserIds = [...new Set(messages.map(m => m.user_id).filter(Boolean))];
                 const profilesMap = {};
                 if (commentUserIds.length > 0) {
-                    let { data: profilesData, error: profilesError } = await db.from('profiles').select('id, full_name, avatar_url').in('id', commentUserIds);
+                    // سطح اشتراک (VIP/پرمیوم) برای نمایش نشان کنار اسم؛ اگر خواندنش ممکن نبود، بدون آن ادامه می‌دهیم
+                    let { data: profilesData, error: profilesError } = await db.from('profiles').select('id, full_name, avatar_url, is_vip, vip_until, vip_tier').in('id', commentUserIds);
+                    if (profilesError) {
+                        ({ data: profilesData, error: profilesError } = await db.from('profiles').select('id, full_name, avatar_url').in('id', commentUserIds));
+                    }
                     if (profilesError) {
                         // اگه به هر دلیل ستون آواتار قابل خواندن نبود، حداقل نام‌ها رو بگیر
                         console.error('خطا در دریافت آواتارها:', profilesError.message);
                         ({ data: profilesData } = await db.from('profiles').select('id, full_name').in('id', commentUserIds));
                     }
-                    (profilesData || []).forEach(p => { profilesMap[p.id] = { name: p.full_name, avatar: p.avatar_url || '' }; });
+                    (profilesData || []).forEach(p => {
+                        const active = !!p.is_vip && (!p.vip_until || new Date(p.vip_until) > new Date());
+                        profilesMap[p.id] = { name: p.full_name, avatar: p.avatar_url || '', tier: active ? (p.vip_tier === 'premium' ? 'premium' : 'vip') : '' };
+                    });
                 }
 
                 globalUserReplies = messages.filter(msg => msg.parent_message_id !== null);
@@ -1514,12 +1540,13 @@
                             </div>
                         `;
                     } else {
+                        const rvf = vfClasses(getCommentAuthorTier(reply));
                         return `
                             <div class="reply-thread my-3">
                                 <div class="flex justify-between items-center mb-1.5">
                                     <span class="font-semibold text-sm text-gray-200 flex items-center gap-2">
-                                        ${avatarHtml(getCommentAuthorName(reply), getCommentAuthorAvatar(reply), { size: 'w-6 h-6', text: 'text-[11px]', radius: 'rounded-lg' })}
-                                        ${escapeHtml(getCommentAuthorName(reply))}
+                                        ${avatarHtml(getCommentAuthorName(reply), getCommentAuthorAvatar(reply), { size: 'w-6 h-6', text: 'text-[11px]', radius: 'rounded-lg', extra: rvf.av })}
+                                        <span class="${rvf.name}">${escapeHtml(getCommentAuthorName(reply))}</span>${rvf.badge}
                                     </span>
                                     <span class="text-[11px] text-text-muted font-mono" dir="ltr">${replyDate}</span>
                                 </div>
@@ -1532,12 +1559,14 @@
                 const div = document.createElement('div');
                 div.className = 'bg-surface-elevated/70 backdrop-blur-md border border-white/10 hover:border-primary/30 rounded-3xl p-6 transition-all comment-animate shadow-sm';
                 const authorName = getCommentAuthorName(msg);
+                const vf = vfClasses(getCommentAuthorTier(msg));
+                if (vf.card) div.className += ' ' + vf.card;
                 div.innerHTML = `
                     <div class="flex gap-4">
-                        ${avatarHtml(authorName, getCommentAuthorAvatar(msg), { size: 'w-12 h-12', text: 'text-2xl', radius: 'rounded-2xl', extra: 'shadow-lg shadow-red-500/20' })}
+                        ${avatarHtml(authorName, getCommentAuthorAvatar(msg), { size: 'w-12 h-12', text: 'text-2xl', radius: 'rounded-2xl', extra: 'shadow-lg shadow-red-500/20 ' + vf.av })}
                         <div class="flex-1">
                             <div class="flex justify-between items-center">
-                                <p class="font-bold text-white text-base">${escapeHtml(authorName)}</p>
+                                <p class="font-bold text-white text-base flex items-center gap-2 flex-wrap"><span class="${vf.name}">${escapeHtml(authorName)}</span>${vf.badge}</p>
                                 <span class="text-xs text-text-muted font-mono" dir="ltr">${new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(msg.created_at).toLocaleDateString('fa-IR')}</span>
                             </div>
                             <p class="mt-2.5 text-[15.2px] leading-relaxed text-on-surface-variant">${escapeHtml(msg.text)}</p>
