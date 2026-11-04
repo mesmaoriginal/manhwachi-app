@@ -267,9 +267,7 @@ html.vf-t-premium #progress-bar {
 }
 /* دکمه‌ی دانلود آفلاین: برای پرمیوم طلایی و زنده (وقتی ذخیره شد سبز می‌ماند) */
 html.vf-t-premium #offline-btn:not(.text-green-400) { color: #f3c75f; }
-html.vf-t-premium #offline-btn:not(.text-green-400) .material-symbols-outlined {
-    filter: drop-shadow(0 0 6px rgba(232, 182, 74, 0.6));
-}
+html.vf-t-premium #offline-btn:not(.text-green-400) .mco-dl { filter: drop-shadow(0 0 6px rgba(232, 182, 74, 0.6)); }
 
 /* صفحه‌های دانلود آفلاین / درخواست مانهوا: عنوان طلایی برای پرمیوم */
 html.vf-t-premium.vf-gold-h1 h1 {

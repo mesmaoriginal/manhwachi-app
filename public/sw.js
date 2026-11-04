@@ -3,7 +3,7 @@
  *    صفحه‌های چپتر فقط به‌صورت رمزشده در IndexedDB (offline.js) نگه داشته می‌شوند.
  */
 'use strict';
-var VER = 'v3';
+var VER = 'v4';
 var SHELL = 'mc-shell-' + VER;
 var RUNTIME = 'mc-rt-' + VER;
 var COVERS = 'mc-cov-' + VER;

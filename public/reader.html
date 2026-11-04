@@ -303,7 +303,7 @@
                     <span id="auto-text" class="hidden md:inline text-xs">اسکرول خودکار</span>
                 </button>
                 <button onclick="toggleFullscreen()" id="fullscreen-btn" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">fullscreen</span></button>
-                <button id="offline-btn" class="flex items-center gap-0.5 p-1.5 md:p-2 hover:text-red-400 transition-colors" title="دانلود برای خواندن آفلاین"><span class="material-symbols-outlined text-lg md:text-xl" id="offline-icon">download</span><span id="offline-label" class="text-[10px] font-mono"></span></button>
+                <button id="offline-btn" class="flex items-center gap-0.5 p-1.5 md:p-2 hover:text-red-400 transition-colors" title="دانلود برای خواندن آفلاین"><span class="text-lg md:text-xl" id="offline-icon"></span><span id="offline-label" class="text-[10px] font-mono"></span></button>
                 <button onclick="toggleSettings()" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">settings</span></button>
             </div>
         </div>
@@ -688,7 +688,7 @@
             if (!window.MCOffline || !window.MCOfflineUI) return;
             // منوی دکمه، صف دانلود و نوار پیشرفت: همه در offline.js / offline-ui.js
             MCOffline.queue.configure(getOfflineSession);
-            MCOfflineUI.mount();
+            MCOfflineUI.mount({ quiet: true });
             const menu = MCOfflineUI.attachMenu({
                 btn,
                 icon: document.getElementById('offline-icon'),
