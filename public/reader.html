@@ -42,6 +42,8 @@
     </script>
     <link rel="stylesheet" href="/css/tailwind.css?v=1" onerror="window.__twFallback()" />
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
+<link rel="stylesheet" href="/vip-flair.css?v=2" />
+<script src="/vip-flair.js?v=2"></script>
     <link rel="preconnect" href="https://s3.parspack.net" crossorigin />
     <link rel="dns-prefetch" href="https://s3.parspack.net" />
     <style>
@@ -292,7 +294,7 @@
                 </button>
                 <div class="min-w-0">
                     <h1 id="nav-manhwa-title" class="text-xs md:text-base font-bold leading-tight truncate max-w-[42vw] md:max-w-xs">بارگذاری...</h1>
-                    <p class="text-[10px] md:text-xs text-gray-400 font-mono truncate">چپتر <span id="nav-ch-num">1</span> • <span id="current-page">1</span>/<span id="total-pages">0</span> <span id="pages-left-wrap" class="hidden md:inline text-gray-600">• <span id="pages-left"></span></span></p>
+                    <p class="text-[10px] md:text-xs text-gray-400 font-mono truncate"><span class="vf-reader-chip" title="عضو پرمیوم"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>پرمیوم</span>چپتر <span id="nav-ch-num">1</span> • <span id="current-page">1</span>/<span id="total-pages">0</span> <span id="pages-left-wrap" class="hidden md:inline text-gray-600">• <span id="pages-left"></span></span></p>
                 </div>
             </div>
             <div class="flex items-center gap-0.5 md:gap-4 shrink-0">
@@ -474,6 +476,7 @@
     <script src="/js/vendor/supabase.min.js"></script>
     <script src="/js/supabase.js"></script>
     <script src="/offline.js"></script>
+<script src="/offline-ui.js"></script>
     <script>
         let slug = "the-forgotten-field";
         let chNum = null;
@@ -681,63 +684,38 @@
         async function setupOfflineButton() {
             const btn = document.getElementById('offline-btn');
             if (!btn) return;
-            const offlineOk = !!(window.MCOffline && MCOffline.supported());
             btn.classList.remove('hidden');
-            const icon = document.getElementById('offline-icon');
-            const label = document.getElementById('offline-label');
-            let busy = false;
-            async function refresh() {
-                const s = offlineOk ? await getOfflineSession() : null;
-                const saved = (s && offlineOk) ? await MCOffline.has(s.uid, slug, chNum) : false;
-                icon.textContent = saved ? 'download_done' : 'download';
-                btn.classList.toggle('text-green-400', saved);
-                btn.title = saved ? 'ذخیره‌شده برای آفلاین (برای حذف بزنید)' : 'دانلود برای خواندن آفلاین';
-                return { s, saved };
-            }
-            await refresh();
-            btn.onclick = async () => {
-                if (busy) return;
-                const { s, saved } = await refresh();
-                if (saved) {
-                    if (confirm('این چپتر از حافظه‌ی آفلاین حذف شود؟')) {
-                        await MCOffline.remove(s.uid, slug, chNum);
-                        await refresh();
-                        showToast('از حافظه‌ی آفلاین حذف شد', [], 2000);
-                    }
-                    return;
+            if (!window.MCOffline || !window.MCOfflineUI) return;
+            // منوی دکمه، صف دانلود و نوار پیشرفت: همه در offline.js / offline-ui.js
+            MCOffline.queue.configure(getOfflineSession);
+            MCOfflineUI.mount();
+            const menu = MCOfflineUI.attachMenu({
+                btn,
+                icon: document.getElementById('offline-icon'),
+                label: document.getElementById('offline-label'),
+                ctx: () => ({
+                    slug, ch: chNum,
+                    title: (manhwaData && manhwaData.title_fa) || slug,
+                    episodes: (manhwaData && manhwaData.episodes) || [],
+                    getSession: getOfflineSession,
+                    checkAccess: fetchAccess,
+                    onNeedLogin: () => {
+                        showToast('برای دانلود باید وارد حساب شوید', [], 3000);
+                        if (typeof openAuthModal === 'function') openAuthModal('login');
+                    },
+                    onNeedPremium: () => showPremiumModal(),
+                    toast: (m) => showToast(m, [], 2500),
+                }),
+            });
+            try {
+                const s0 = MCOffline.supported() ? await getOfflineSession() : null;
+                if (s0 && s0.token) {
+                    MCOffline.renewAll(s0.uid, s0.token).catch(() => {});
+                    // دانلودِ نیمه‌کاره‌ی قبلی (مثلاً وسط دانلود به چپتر بعد رفته‌اید) بی‌سروصدا ادامه پیدا می‌کند
+                    await MCOffline.queue.resume();
+                    menu.autoRun();
                 }
-                if (!navigator.onLine) { showToast('برای دانلود باید آنلاین باشید', [], 3000); return; }
-                let sess = s;
-                if (!sess || !sess.token) {
-                    try { sess = await getOfflineSession(); } catch (e) {}
-                }
-                if (!sess || !sess.token) {
-                    showToast('برای دانلود باید وارد حساب شوید', [], 3000);
-                    if (typeof openAuthModal === 'function') openAuthModal('login');
-                    return;
-                }
-                const acc = await fetchAccess(sess.token);
-                if (acc && !acc.canOffline) { showPremiumModal(); return; }
-                if (!offlineOk) { showToast('مرورگر شما از دانلود آفلاین پشتیبانی نمی‌کند', [], 3500); return; }
-                busy = true;
-                icon.textContent = 'hourglass_top';
-                try {
-                    await MCOffline.download({
-                        slug, ch: chNum, title: (manhwaData && manhwaData.title_fa) || slug,
-                        uid: sess.uid, accessToken: sess.token,
-                        onProgress: (d, n) => { label.textContent = Math.round((d / n) * 100) + '%'; }
-                    });
-                    showToast('✅ برای خواندن آفلاین ذخیره شد', [], 2500);
-                } catch (e) {
-                    showToast(e.message || 'دانلود ناموفق بود', [], 4500);
-                } finally {
-                    busy = false;
-                    label.textContent = '';
-                    await refresh();
-                }
-            };
-            const s0 = offlineOk ? await getOfflineSession() : null;
-            if (s0 && s0.token) MCOffline.renewAll(s0.uid, s0.token).catch(() => {});
+            } catch (e) { /* ignore */ }
         }
 
         // ===== قفل زمانی: رایگان تا ۲۴ ساعت اول (بدون اشتراک) / اشتراک هفتگی تا ۱ روز اول (چپتر اشتراکی) =====
@@ -810,6 +788,24 @@
                 const r = await fetch('/api/access/me', { headers: token ? { Authorization: 'Bearer ' + token } : {}, cache: 'no-store' });
                 return r.ok ? await r.json() : null;
             } catch (e) { return null; }
+        }
+
+        // سطح اشتراک را از سرور می‌گیرد (فقط برای ظاهر)؛ دسترسی واقعی را سرور تعیین می‌کند
+        async function applyReaderTier() {
+            try {
+                if (!window.MCVip) return;
+                const s = await getOfflineSession();
+                if (!s || !s.token) { MCVip.remember(''); return; }
+                const acc = await fetchAccess(s.token);
+                if (!acc) return; // خطای موقت: همان حالت قبلی بماند
+                const tier = MCVip.tierFromAccess(acc);
+                MCVip.remember(tier);
+                if (tier === 'premium') {
+                    let seen = false;
+                    try { seen = !!localStorage.getItem('mc_vf_reader_hint'); localStorage.setItem('mc_vf_reader_hint', '1'); } catch (e) {}
+                    if (!seen) setTimeout(() => showToast('👑 دانلود آفلاین (آیکون بالا) مخصوص شماست', [], 4200), 2500);
+                }
+            } catch (e) { /* تزئینی است */ }
         }
 
         async function loadChapterPanels() {
@@ -947,6 +943,7 @@
 
                 await loadChapterPanels();
                 setupOfflineButton();
+                applyReaderTier();
 
                 const sortedEpisodes = [...manhwaData.episodes].sort((a, b) => Number(a.num) - Number(b.num));
                 const currentIndex = sortedEpisodes.findIndex(e => Number(e.num) === chNum);

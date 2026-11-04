@@ -1029,3 +1029,257 @@
   .profile { padding-bottom: 160px; }
   .profile #mainProfileContent { padding-bottom: 40px; }
 }
+
+/* ==========================================================================
+   PREMIUM / VIP — ظاهر پروفایل بر اساس سطح اشتراک
+   data-tier روی .hero و .vip-card: premium | vip | expired | free
+   (در انتهای فایل است تا روی استایل‌های دسکتاپ هم برنده شود)
+   ========================================================================== */
+.profile { --vf-gold: #f3c75f; --vf-gold-2: #e8b64a; --vf-gold-deep: #b9822a; }
+
+/* ---------- هدر: هاله، حلقه‌ی آواتار، تاج، اسم ---------- */
+.profile .hero[data-tier="premium"] {
+    border-color: rgba(232, 182, 74, 0.38);
+    box-shadow: 0 24px 60px -30px rgba(232, 182, 74, 0.35);
+}
+.profile .hero[data-tier="premium"] .hero__glow {
+    background:
+        radial-gradient(90% 120% at 100% 0%, rgba(232, 182, 74, 0.30), transparent 55%),
+        radial-gradient(70% 90% at 0% 110%, rgba(185, 130, 42, 0.28), transparent 60%);
+}
+.profile .hero[data-tier="premium"] .avatar::before {
+    background: conic-gradient(from 0deg, #f7d778, #b9822a, #fff3c4, #e8b64a, #8a5a14, #f7d778);
+    box-shadow: 0 0 30px rgba(232, 182, 74, 0.5);
+    animation: pfSpin 10s linear infinite;
+}
+.profile .hero[data-tier="premium"] .avatar::after {
+    content: "👑";
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    z-index: 3;
+    font-size: 26px;
+    line-height: 1;
+    transform: translateX(-50%) rotate(-10deg);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.65));
+    animation: pfCrown 3.2s ease-in-out infinite;
+}
+.profile .hero[data-tier="premium"] .hero__name {
+    background: linear-gradient(100deg, #f7d778 0%, #fff3c4 45%, #e8b64a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 18px rgba(232, 182, 74, 0.35));
+}
+.profile .hero[data-tier="vip"] .hero__glow {
+    background:
+        radial-gradient(90% 120% at 100% 0%, rgba(52, 211, 153, 0.20), transparent 55%),
+        radial-gradient(70% 90% at 0% 110%, rgba(220, 38, 38, 0.26), transparent 60%);
+}
+.profile .hero[data-tier="vip"] .avatar::before {
+    background: conic-gradient(from 200deg, #34d399, #10b981, #065f46, #34d399);
+    box-shadow: 0 0 26px rgba(52, 211, 153, 0.35);
+}
+@keyframes pfSpin { to { transform: rotate(360deg); } }
+@keyframes pfCrown {
+    0%, 100% { transform: translateX(-50%) rotate(-10deg) translateY(0); }
+    50%      { transform: translateX(-50%) rotate(-6deg) translateY(-3px); }
+}
+@media (min-width: 1024px) {
+    .profile .hero[data-tier="premium"] .avatar::after { font-size: 40px; top: -34px; }
+    .profile .hero[data-tier="premium"] .avatar::before { box-shadow: 0 0 52px rgba(232, 182, 74, 0.55); }
+    .profile .hero[data-tier="vip"] .avatar::before { box-shadow: 0 0 40px rgba(52, 211, 153, 0.35); }
+}
+
+/* نشان کنار اسم */
+.profile .vip-pill--premium {
+    color: #2a1a00;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(110deg, #e8b64a 0%, #f7d778 35%, #fff3c4 50%, #f7d778 65%, #e8b64a 100%);
+    background-size: 240% 100%;
+    animation: vfShine 4.5s linear infinite;
+    box-shadow: 0 0 22px rgba(232, 182, 74, 0.4);
+}
+
+/* ---------- کارت اشتراک ---------- */
+.profile .vip-card__headtext { flex: 1; min-width: 0; }
+.profile .vip-icon--gold  { color: var(--vf-gold); font-variation-settings: 'FILL' 1; text-shadow: 0 0 18px rgba(232, 182, 74, 0.6); }
+.profile .vip-icon--green { color: #34d399; font-variation-settings: 'FILL' 1; }
+
+.profile .vip-card__shine { display: none; }
+
+.profile .vip-card[data-tier="premium"] {
+    border-color: rgba(232, 182, 74, 0.45);
+    background:
+        radial-gradient(110% 80% at 100% 0%, rgba(232, 182, 74, 0.24), transparent 58%),
+        radial-gradient(90% 70% at 0% 100%, rgba(185, 130, 42, 0.18), transparent 60%),
+        linear-gradient(175deg, #1d1507 0%, #0d0c0a 70%);
+    box-shadow: 0 30px 70px -28px rgba(232, 182, 74, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.profile .vip-card[data-tier="premium"] .vip-card__shine {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 38%;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent, rgba(255, 244, 200, 0.12), transparent);
+    transform: skewX(-18deg);
+    animation: pfSheen 6s ease-in-out 1.5s infinite;
+}
+@keyframes pfSheen { 0%, 65% { left: -50%; } 100% { left: 140%; } }
+.profile .vip-card > *:not(.vip-card__shine) { position: relative; z-index: 1; }
+
+.profile .vip-card[data-tier="premium"] .vip-card__icon {
+    background: rgba(232, 182, 74, 0.14);
+    border-color: rgba(232, 182, 74, 0.45);
+    box-shadow: 0 0 30px rgba(232, 182, 74, 0.25);
+}
+.profile .vip-card[data-tier="premium"] .vip-card__title {
+    background: linear-gradient(100deg, #f7d778, #fff3c4 50%, #e8b64a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.profile .vip-card[data-tier="premium"] .vip-countdown__number { color: var(--vf-gold); text-shadow: 0 0 26px rgba(232, 182, 74, 0.4); }
+.profile .vip-card[data-tier="premium"] .vip-countdown.is-safe .vip-countdown__fill { background: linear-gradient(90deg, #b9822a, #f7d778); }
+
+.profile .vip-card[data-tier="vip"] {
+    border-color: rgba(52, 211, 153, 0.3);
+    background:
+        radial-gradient(110% 80% at 100% 0%, rgba(52, 211, 153, 0.15), transparent 58%),
+        linear-gradient(175deg, #0b1a15 0%, #0b0b0e 70%);
+}
+.profile .vip-card[data-tier="vip"] .vip-card__icon { background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.35); }
+.profile .vip-card[data-tier="vip"]::before { background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.7), transparent) !important; }
+
+/* وضعیت (تاریخ و یادآوری) */
+.profile .vip-status__line { display: block; }
+.profile .vip-status__line b { color: #fff; font-weight: 700; }
+.profile .vip-status__nudge {
+    display: block;
+    margin-top: 6px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: #fdba74;
+    background: rgba(251, 146, 60, 0.1);
+    border: 1px solid rgba(251, 146, 60, 0.25);
+}
+.profile .vip-status__nudge.is-critical { color: #fca5a5; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+
+/* ---------- امکانات ---------- */
+.profile .vip-perks { display: flex; flex-direction: column; gap: 8px; }
+.profile .perk {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    border-radius: 15px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+.profile a.perk:hover { transform: translateY(-1px); border-color: var(--line2); background: rgba(255, 255, 255, 0.06); }
+.profile a.perk:active { transform: scale(0.985); }
+
+.profile .perk__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--dim);
+}
+.profile .perk__icon .material-symbols-outlined { font-size: 20px; }
+.profile .perk__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.profile .perk__text b { font-size: 12.5px; font-weight: 700; color: #fff; }
+.profile .perk__text small { font-size: 11px; color: var(--mute); line-height: 1.6; }
+
+.profile .perk__state {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px 3px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 800;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.profile .perk__state .material-symbols-outlined { font-size: 13px; }
+.profile .perk__state--on   { color: #6ee7b7; background: rgba(52, 211, 153, 0.12); }
+.profile .perk__state--lock { color: var(--vf-gold); background: rgba(232, 182, 74, 0.1); }
+
+.profile .perk.is-locked { opacity: 0.6; }
+.profile .perk.is-locked:hover { opacity: 0.95; }
+
+/* فعال‌ها بر اساس سطح رنگ می‌گیرند */
+.profile .vip-card[data-tier="premium"] .perk.is-on { border-color: rgba(232, 182, 74, 0.28); background: rgba(232, 182, 74, 0.07); }
+.profile .vip-card[data-tier="premium"] .perk.is-on .perk__icon { color: #2a1a00; background: linear-gradient(135deg, #f7d778, #e8b64a); }
+.profile .vip-card[data-tier="vip"] .perk.is-on { border-color: rgba(52, 211, 153, 0.25); background: rgba(52, 211, 153, 0.06); }
+.profile .vip-card[data-tier="vip"] .perk.is-on .perk__icon { color: #6ee7b7; background: rgba(52, 211, 153, 0.14); }
+
+/* ---------- پیشنهاد ارتقا / قدردانی ---------- */
+.profile .vip-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 13px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.9;
+    color: #e4e4e7;
+    background: rgba(232, 182, 74, 0.08);
+    border: 1px dashed rgba(232, 182, 74, 0.35);
+}
+.profile .vip-note .material-symbols-outlined { font-size: 18px; color: var(--vf-gold); flex-shrink: 0; margin-top: 3px; font-variation-settings: 'FILL' 1; }
+.profile .vip-note b { color: var(--vf-gold); }
+.profile .vip-card[data-tier="premium"] .vip-note { border-style: solid; border-color: rgba(232, 182, 74, 0.22); }
+
+/* ---------- دکمه‌ی اصلی کارت ---------- */
+.profile .vip-card .vip-cta {
+    display: block;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+.profile .vip-card .vip-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.profile .vip-card .vip-cta:active { transform: scale(0.98); }
+.profile .vip-card .vip-cta--gold {
+    color: #2a1a00;
+    background: linear-gradient(110deg, #e8b64a, #f7d778 50%, #e8b64a);
+    box-shadow: 0 14px 30px -12px rgba(232, 182, 74, 0.6);
+}
+.profile .vip-card .vip-cta--green {
+    color: #6ee7b7;
+    background: rgba(52, 211, 153, 0.14);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    box-shadow: none;
+}
+.profile .vip-card .vip-cta--red {
+    color: #fff;
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    box-shadow: 0 14px 30px -12px rgba(220, 38, 38, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .profile .hero[data-tier="premium"] .avatar::before,
+    .profile .hero[data-tier="premium"] .avatar::after,
+    .profile .vip-card__shine,
+    .profile .vip-pill--premium { animation: none !important; }
+}

@@ -29,6 +29,9 @@
   var root = document.documentElement;
 
   if (force) { try { localStorage.removeItem(KEY); localStorage.removeItem('mc_app_launch'); } catch (e) {} }
+  // اعضای پرمیوم: نوار شناور، QR و پاپ‌آپ «اپ منتشر شد» نمایش داده نمی‌شود (لینک‌های ثابت هدر/منو می‌مانند)
+  var quiet = false;
+  try { var tr = JSON.parse(localStorage.getItem('mc_tier') || 'null'); quiet = !force && !!tr && tr.t === 'premium' && Date.now() - tr.at < 3 * 864e5; } catch (e) {}
   // فایل نصب فقط اندرویده؛ به کاربر آیفون چیزی نشون نمی‌دیم
   if (isIOS && !force) { root.classList.add('mhp-ios'); return; }
 
@@ -203,6 +206,7 @@
   }
 
   function start() {
+    if (quiet) return;
     if (launchEligible()) setTimeout(function () { showLaunch(function () { setTimeout(evaluate, 600); }); }, 1000);
     else setTimeout(evaluate, 1500);
   }

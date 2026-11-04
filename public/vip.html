@@ -23,6 +23,7 @@
         
       })();
     </script>
+    <link rel="stylesheet" href="/vip-flair.css?v=2">
     <link rel="icon" href="/ManhwaChi/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
     <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
@@ -102,6 +103,13 @@
         .v-banner a{ display:inline-block; margin-top:6px; font-size:.78rem; font-weight:700; text-decoration:none; }
         .v-banner--ok{ background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.35); }
         .v-banner--ok h4,.v-banner--ok .material-symbols-outlined,.v-banner--ok a{ color:#34d399; }
+        .v-banner--gold{ background:radial-gradient(120% 140% at 100% 0%, rgba(232,182,74,.2), transparent 60%), rgba(232,182,74,.06); border:1px solid rgba(232,182,74,.5); box-shadow:0 0 40px -14px rgba(232,182,74,.55); }
+        .v-banner--gold h4{ background:linear-gradient(100deg,#f7d778,#fff3c4 50%,#e8b64a); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-size:1rem; }
+        .v-banner--gold .material-symbols-outlined,.v-banner--gold a{ color:#f3c75f; }
+        .v-banner--gold .material-symbols-outlined{ font-variation-settings:'FILL' 1; filter:drop-shadow(0 0 10px rgba(232,182,74,.6)); }
+        .v-banner__perks{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+        .v-banner__perks span{ display:inline-flex; align-items:center; gap:4px; padding:3px 10px 3px 8px; border-radius:999px; font-size:.7rem; font-weight:700; color:#f3c75f; background:rgba(232,182,74,.1); border:1px solid rgba(232,182,74,.28); }
+        .v-banner__perks .material-symbols-outlined{ font-size:14px; }
         .v-banner--wait{ background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.35); }
         .v-banner--wait h4,.v-banner--wait .material-symbols-outlined{ color:#fbbf24; }
 
@@ -284,6 +292,7 @@
     </footer>
 
     <!-- Supabase CDN + JS -->
+    <script src="/vip-flair.js?v=2"></script>
     <script src="/js/vendor/supabase.min.js"></script>
     <script src="js/supabase.js"></script>
 
@@ -530,7 +539,7 @@
             try {
                 const { data: { session } } = await client.auth.getSession();
                 if (!session) return;
-                const { data: prof } = await client.from('profiles').select('is_vip, vip_until').eq('id', session.user.id).maybeSingle();
+                const { data: prof } = await client.from('profiles').select('is_vip, vip_until, vip_tier').eq('id', session.user.id).maybeSingle();
                 const until = prof?.vip_until ? new Date(prof.vip_until) : null;
                 const active = !!prof?.is_vip && (!until || until > new Date());
 
@@ -542,14 +551,42 @@
                     window.__vipActive = true; window.__vipUntil = until;
                     try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
                     const days = until ? Math.max(1, Math.ceil((until - Date.now()) / 86400000)) : null;
-                    box.className = 'v-banner v-banner--ok';
-                    box.innerHTML = `
-                        <span class="material-symbols-outlined">verified</span>
-                        <div>
-                            <h4>اشتراک VIP شما فعال است ✓</h4>
-                            <p>${until ? `تا <b>${faDate(until)}</b> (حدود ${days.toLocaleString('fa-IR')} روز دیگر) به همه‌ی چپترها دسترسی دارید.` : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
-                            <a href="/">شروع خواندن ←</a>
-                        </div>`;
+                    const isPremium = prof?.vip_tier === 'premium';
+                    window.__vipPremium = isPremium;
+                    const untilTxt = until ? `تا <b>${faDate(until)}</b> (حدود ${days.toLocaleString('fa-IR')} روز دیگر)` : '';
+                    if (isPremium) {
+                        // پرمیوم: بنر طلایی + امکانات فعال + یک بار جشن در هر دستگاه
+                        box.className = 'v-banner v-banner--gold vf-pop';
+                        box.innerHTML = `
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            <div>
+                                <h4>عضو پرمیوم مانهواچی هستید 👑</h4>
+                                <p>${until ? untilTxt + ' از همه‌ی امکانات ویژه بهره‌مندید.' : 'اشتراک شما محدودیت زمانی ندارد.'}</p>
+                                <div class="v-banner__perks">
+                                    <span><span class="material-symbols-outlined">lock_open</span>همه‌ی چپترها</span>
+                                    <span><span class="material-symbols-outlined">download_for_offline</span>دانلود آفلاین</span>
+                                    <span><span class="material-symbols-outlined">add_circle</span>درخواست مانهوا</span>
+                                </div>
+                                <a href="/">شروع خواندن ←</a>
+                            </div>`;
+                        try {
+                            const k = 'vip_page_celebrated_' + session.user.id;
+                            const mark = until ? String(until.getTime()) : 'forever';
+                            if (localStorage.getItem(k) !== mark) {
+                                localStorage.setItem(k, mark);
+                                if (window.MCVip) window.MCVip.confetti({ count: 80 });
+                            }
+                        } catch (e) {}
+                    } else {
+                        box.className = 'v-banner v-banner--ok';
+                        box.innerHTML = `
+                            <span class="material-symbols-outlined">verified</span>
+                            <div>
+                                <h4>اشتراک VIP شما فعال است ✓</h4>
+                                <p>${until ? untilTxt + ' به همه‌ی چپترها دسترسی دارید.' : 'اشتراک شما محدودیت زمانی ندارد.'} با <b>پرمیوم</b> دانلود آفلاین و درخواست مانهوا هم باز می‌شود.</p>
+                                <a href="/">شروع خواندن ←</a>
+                            </div>`;
+                    }
                 } else if (recentlyPaid) {
                     window.__paymentPending = true;
                     box.className = 'v-banner v-banner--wait';

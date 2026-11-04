@@ -101,7 +101,13 @@
     return j;
   }
 
-  // ───────────── دانلود ─────────────
+  // ───────────── دانلود (قابل‌ازسرگیری) ─────────────
+  // تا وقتی چپتر کامل نشده، رکوردش با incomplete:true در همان جدول می‌ماند (همراه مجوز و کلید).
+  // اگر دانلود قطع شد (بستن تب، رفتن به چپتر بعد، قطع اینترنت) دفعه‌ی بعد فقط صفحه‌های مانده گرفته می‌شود
+  // و مجوز تازه (که از سهمیه‌ی روزانه کم می‌کند) صادر نمی‌شود.
+  var RESTART_CODES = { PAGE_LIMIT: 1, LICENSE_INVALID: 1, CHAPTER_CHANGED: 1 };
+  function pagesRange(id) { return IDBKeyRange.bound(id + '|', id + '|\uffff'); }
+
   /**
    * opts: { slug, ch, title, uid, accessToken, onProgress(done,total), signal }
    */
@@ -110,25 +116,49 @@
     var uid = opts.uid, slug = opts.slug, ch = Number(opts.ch);
     var id = chId(uid, slug, ch);
     var existing = await idbGet('chapters', id);
-    if (existing && existing.exp > Date.now()) return { already: true };
+    if (existing && !existing.incomplete && existing.exp > Date.now()) return { already: true };
 
     try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ }
 
-    var lic = await apiJson('/license', { slug: slug, chapterNum: ch, did: deviceId() }, opts.accessToken, opts.signal);
-    var keyBytes = Uint8Array.from(atob(lic.key), function (c) { return c.charCodeAt(0); });
-    // کلید غیرقابل‌استخراج: از اینجا به بعد خود JS هم نمی‌تواند بایت‌های کلید را بخواند
-    var cryptoKey = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
-    keyBytes.fill(0);
+    var rec = null;
+    if (existing && existing.incomplete && existing.exp > Date.now() && existing.key && existing.did === deviceId()) rec = existing;
 
-    await delPagesOf(id);
-    var n = lic.n, done = 0, bytes = 0, dims = new Array(n), next = 0, failed = null;
-    if (opts.onProgress) opts.onProgress(0, n);
+    if (!rec) {
+      var lic = await apiJson('/license', { slug: slug, chapterNum: ch, did: deviceId() }, opts.accessToken, opts.signal);
+      var keyBytes = Uint8Array.from(atob(lic.key), function (c) { return c.charCodeAt(0); });
+      // کلید غیرقابل‌استخراج: از اینجا به بعد خود JS هم نمی‌تواند بایت‌های کلید را بخواند
+      var cryptoKey = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
+      keyBytes.fill(0);
+      await delPagesOf(id);
+      rec = {
+        id: id, uid: uid, slug: slug, ch: ch, title: opts.title || slug,
+        n: lic.n, dims: new Array(lic.n), bytes: 0, lid: lic.lid, token: lic.token, exp: lic.exp,
+        key: cryptoKey, did: deviceId(), incomplete: true, savedAt: Date.now(), lastSeen: Date.now(),
+      };
+      await idbPut('chapters', rec);
+    }
 
+    var n = rec.n;
+    var dims = rec.dims && rec.dims.length === n ? rec.dims : new Array(n);
+    rec.dims = dims;
+    // صفحه‌هایی که از دفعه‌ی قبل کامل ذخیره شده‌اند (هم خودِ صفحه هست هم ابعادش)
+    var haveKeys = (await tx('pages', 'readonly', function (st) { return st.getAllKeys(pagesRange(id)); })) || [];
+    var haveSet = {};
+    haveKeys.forEach(function (k) { haveSet[k] = 1; });
+    var todo = [];
+    var done = 0;
+    for (var p = 0; p < n; p++) {
+      if (haveSet[pgId(id, p)] && dims[p] && dims[p][0]) done++;
+      else todo.push(p);
+    }
+    if (opts.onProgress) opts.onProgress(done, n);
+
+    var next = 0, failed = null;
     async function fetchPage(i) {
       for (var attempt = 0; attempt < 4; attempt++) {
         if (opts.signal && opts.signal.aborted) throw OfflineError('ABORTED', 'لغو شد');
         try {
-          var res = await apiFetch('/page', { token: lic.token, i: i }, opts.accessToken, opts.signal);
+          var res = await apiFetch('/page', { token: rec.token, i: i }, opts.accessToken, opts.signal);
           if (res.ok) {
             var dim = (res.headers.get('X-Mc-Dim') || '').split('x');
             return { buf: await res.arrayBuffer(), w: +dim[0] || 0, h: +dim[1] || 0 };
@@ -151,41 +181,60 @@
 
     async function worker() {
       while (!failed) {
-        var i = next++;
-        if (i >= n) return;
+        var k = next++;
+        if (k >= todo.length) return;
+        var i = todo[k];
         try {
           var r = await fetchPage(i);
           await idbPut('pages', { id: pgId(id, i), data: r.buf });
           dims[i] = [r.w, r.h];
-          bytes += r.buf.byteLength;
+          rec.bytes = (rec.bytes || 0) + r.buf.byteLength;
+          await idbPut('chapters', rec); // پیشرفت ذخیره می‌شود تا قطع شدن چیزی را از بین نبرد
           done++;
           if (opts.onProgress) opts.onProgress(done, n);
         } catch (e) { failed = e; }
       }
     }
     await Promise.all([worker(), worker(), worker()]);
-    if (failed) { await delPagesOf(id).catch(function () {}); throw failed; }
 
-    // رکورد چپتر آخر نوشته می‌شود؛ تا قبل از آن چپتر «ناقص» است و خوانده نمی‌شود
-    await idbPut('chapters', {
-      id: id, uid: uid, slug: slug, ch: ch, title: opts.title || slug,
-      n: n, dims: dims, bytes: bytes, lid: lic.lid, token: lic.token, exp: lic.exp,
-      key: cryptoKey, savedAt: Date.now(), lastSeen: Date.now(),
-    });
+    if (failed) {
+      // مجوز/چپتر دیگر معتبر نیست: ناقص‌ها را دور بریز و یک‌بار از اول (با مجوز تازه) تلاش کن
+      if (RESTART_CODES[failed.code] && !opts._restarted) {
+        await remove(uid, slug, ch).catch(function () {});
+        var o2 = {}; for (var kk in opts) o2[kk] = opts[kk];
+        o2._restarted = true;
+        return download(o2);
+      }
+      throw failed; // نیمه‌کاره می‌ماند و دفعه‌ی بعد ادامه پیدا می‌کند
+    }
+
+    // چپتر فقط وقتی «کامل» حساب می‌شود که همه‌ی صفحه‌ها و ابعادشان ذخیره شده باشد
+    rec.incomplete = false;
+    rec.savedAt = Date.now();
+    rec.lastSeen = Date.now();
+    await idbPut('chapters', rec);
     try { localStorage.setItem('mc_off_uid', uid); } catch (e) { /* ignore */ }
-    return { already: false, bytes: bytes, n: n };
+    return { already: false, bytes: rec.bytes, n: n };
   }
 
   // ───────────── فهرست / حذف ─────────────
   async function list(uid) {
     var all = await idbAll('chapters');
-    return all.filter(function (r) { return r.uid === uid; }).map(function (r) {
-      return { slug: r.slug, ch: r.ch, title: r.title, n: r.n, bytes: r.bytes, exp: r.exp, savedAt: r.savedAt, expired: r.exp <= Date.now() };
+    cleanupPartials(all);
+    return all.filter(function (r) { return r.uid === uid && !r.incomplete; }).map(function (r) {
+      return { slug: r.slug, ch: r.ch, title: r.title, n: r.n, bytes: r.bytes, exp: r.exp, savedAt: r.savedAt, lastSeen: r.lastSeen, opened: !!r.opened, expired: r.exp <= Date.now() };
     }).sort(function (a, b) { return a.title === b.title ? a.ch - b.ch : (a.title < b.title ? -1 : 1); });
   }
   async function has(uid, slug, ch) {
     var r = await idbGet('chapters', chId(uid, slug, Number(ch)));
-    return !!r && r.exp > Date.now();
+    return !!r && !r.incomplete && r.exp > Date.now();
+  }
+  // نیمه‌کاره‌های منقضی/خیلی قدیمی (دیگر قابل ادامه نیستند) پاک می‌شوند
+  function cleanupPartials(all) {
+    var now = Date.now();
+    all.forEach(function (r) {
+      if (r.incomplete && (r.exp <= now || now - (r.savedAt || 0) > 2 * 86400e3)) remove(r.uid, r.slug, r.ch).catch(function () {});
+    });
   }
   async function remove(uid, slug, ch) {
     var id = chId(uid, slug, Number(ch));
@@ -207,7 +256,7 @@
   // ───────────── تمدید ─────────────
   async function renewAll(uid, accessToken, force) {
     if (!navigator.onLine || !accessToken) return;
-    var all = (await idbAll('chapters')).filter(function (r) { return r.uid === uid; });
+    var all = (await idbAll('chapters')).filter(function (r) { return r.uid === uid && !r.incomplete; });
     for (var k = 0; k < all.length; k++) {
       var r = all[k];
       if (!force && r.exp - Date.now() > RENEW_WHEN_LEFT_MS) continue;
@@ -226,7 +275,7 @@
   async function open(uid, slug, ch, accessToken) {
     var id = chId(uid, slug, Number(ch));
     var r = await idbGet('chapters', id);
-    if (!r) return null;
+    if (!r || r.incomplete) return null;
     var now = Date.now();
     // محافظ ساده در برابر عقب بردن ساعت دستگاه
     var clockBack = now < r.lastSeen - 5 * 60e3;
@@ -239,6 +288,7 @@
       throw OfflineError('EXPIRED', clockBack ? 'ساعت دستگاه نامعتبر است.' : 'مجوز آفلاین این چپتر منقضی شده است؛ یک‌بار آنلاین شوید.');
     }
     r.lastSeen = Math.max(r.lastSeen, now);
+    r.opened = true;
     idbPut('chapters', r).catch(function () {});
     return makeHandle(r);
   }
@@ -356,6 +406,161 @@
     return { bytes: bytes, count: items.length, quota: quota };
   }
 
+  // ───────────── صف دانلود ─────────────
+  // چند چپتر پشت‌سرهم، یکی‌یکی (سرور همزمانی را محدود کرده). صف در localStorage ذخیره می‌شود؛
+  // اگر کاربر وسطش به چپتر بعد رفت یا تب را بست، صفحه‌ی بعد (ریدر/کتابخانه) خودکار ادامه می‌دهد.
+  var QKEY = 'mc_off_queue';
+  var FATAL = { AUTH_REQUIRED: 1, PREMIUM_REQUIRED: 1, OFFLINE_DISABLED: 1, OFFLINE_UNAVAILABLE: 1, OFFLINE_DEVICE_LIMIT: 1, OFFLINE_DAILY_LIMIT: 1, UNSUPPORTED: 1, AUTH_UNAVAILABLE: 1 };
+  var queue = (function () {
+    var listeners = [];
+    var getSession = null;
+    var items = [];            // { slug, ch, title, status: wait|run|done|fail|skip, err }
+    var cur = null;            // { slug, ch, title, done, n }
+    var running = false, paused = false, error = null, ctl = null, finishedAt = 0, uid = null;
+
+    function snap() {
+      var wait = items.filter(function (i) { return i.status === 'wait'; });
+      return {
+        running: running, paused: paused, error: error, finishedAt: finishedAt,
+        current: cur ? { slug: cur.slug, ch: cur.ch, title: cur.title, done: cur.done, n: cur.n, pct: cur.n ? Math.round(cur.done / cur.n * 100) : 0 } : null,
+        waiting: wait.map(function (i) { return { slug: i.slug, ch: i.ch, title: i.title }; }),
+        completed: items.filter(function (i) { return i.status === 'done' || i.status === 'skip'; }).length,
+        saved: items.filter(function (i) { return i.status === 'done'; }).length,
+        failed: items.filter(function (i) { return i.status === 'fail'; }).map(function (i) { return { slug: i.slug, ch: i.ch, title: i.title, err: i.err }; }),
+        total: items.length,
+      };
+    }
+    function emit() { var st = snap(); listeners.slice().forEach(function (fn) { try { fn(st); } catch (e) { /* ignore */ } }); }
+    function persist() {
+      try {
+        var left = items.filter(function (i) { return i.status === 'wait' || i.status === 'run'; }).map(function (i) { return { slug: i.slug, ch: i.ch, title: i.title }; });
+        if (left.length && uid) localStorage.setItem(QKEY, JSON.stringify({ uid: uid, items: left }));
+        else localStorage.removeItem(QKEY);
+      } catch (e) { /* ignore */ }
+    }
+    function sess() { return getSession ? Promise.resolve(getSession()).catch(function () { return null; }) : Promise.resolve(null); }
+    function waitOnline() {
+      return new Promise(function (resolve) {
+        if (navigator.onLine) return resolve();
+        paused = true; emit();
+        function on() { removeEventListener('online', on); paused = false; resolve(); }
+        addEventListener('online', on);
+      });
+    }
+
+    async function loop() {
+      while (true) {
+        var it = items.find(function (i) { return i.status === 'wait'; });
+        if (!it) break;
+        await waitOnline();
+        var s = await sess();
+        if (!s || !s.uid || !s.token) { error = { code: 'AUTH_REQUIRED', message: 'برای دانلود باید وارد حساب شوید.' }; break; }
+        uid = s.uid;
+        if (await has(s.uid, it.slug, it.ch)) { it.status = 'skip'; persist(); emit(); continue; }
+        it.status = 'run';
+        cur = { slug: it.slug, ch: it.ch, title: it.title, done: 0, n: 0 };
+        ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        emit();
+        try {
+          await download({
+            slug: it.slug, ch: it.ch, title: it.title, uid: s.uid, accessToken: s.token, signal: ctl && ctl.signal,
+            onProgress: function (d, n) { cur.done = d; cur.n = n; emit(); },
+          });
+          it.status = 'done';
+        } catch (e) {
+          var code = e && e.code;
+          if (code === 'ABORTED') { it.status = 'wait'; break; }
+          if (FATAL[code]) { it.status = 'wait'; error = { code: code, message: e.message || 'دانلود متوقف شد.' }; break; }
+          if (!navigator.onLine) { it.status = 'wait'; continue; } // قطع شدن اینترنت: صبر می‌کنیم و همین را دوباره می‌گیریم
+          it.status = 'fail'; it.err = (e && e.message) || 'ناموفق';
+        }
+        cur = null; persist(); emit();
+      }
+    }
+
+    async function run() {
+      if (running) return;
+      running = true; error = null; emit();
+      var body = async function () { await loop(); };
+      try {
+        if (navigator.locks && navigator.locks.request) {
+          // هم‌زمان فقط یک تب صف را اجرا کند؛ اگر تبِ قبلی هنوز در حال بسته‌شدن است چند بار صبر می‌کنیم
+          var got = false;
+          for (var t = 0; t < 6 && !got; t++) {
+            await navigator.locks.request('mc-off-queue', { ifAvailable: true }, async function (lock) {
+              if (!lock) return;
+              got = true; await body();
+            });
+            if (!got) await sleep(1200);
+          }
+          if (!got) error = { code: 'BUSY_TAB', message: 'دانلود در تب دیگری در حال انجام است.' };
+        } else { await body(); }
+      } finally {
+        running = false; cur = null; ctl = null;
+        var anyLeft = items.some(function (i) { return i.status === 'wait'; });
+        if (error && FATAL[error.code]) { items = items.filter(function (i) { return i.status !== 'wait'; }); }
+        if (!anyLeft || error) { persist(); }
+        if (items.length && !items.some(function (i) { return i.status === 'wait'; })) finishedAt = Date.now();
+        emit();
+      }
+    }
+
+    return {
+      configure: function (fn) { getSession = fn; },
+      onChange: function (fn) { listeners.push(fn); try { fn(snap()); } catch (e) { /* ignore */ } return function () { listeners = listeners.filter(function (x) { return x !== fn; }); }; },
+      state: snap,
+      /** add([{slug,ch,title}]) — موارد تکراری/ذخیره‌شده نادیده گرفته می‌شوند */
+      add: async function (list) {
+        var s = await sess();
+        if (!s || !s.uid) { error = { code: 'AUTH_REQUIRED', message: 'برای دانلود باید وارد حساب شوید.' }; emit(); return false; }
+        uid = s.uid;
+        if (!running) { items = items.filter(function (i) { return i.status === 'wait'; }); finishedAt = 0; error = null; }
+        (list || []).forEach(function (x) {
+          var ch = Number(x.ch);
+          if (!x.slug || !isFinite(ch)) return;
+          if (items.some(function (i) { return i.slug === x.slug && i.ch === ch && (i.status === 'wait' || i.status === 'run'); })) return;
+          items.push({ slug: x.slug, ch: ch, title: x.title || x.slug, status: 'wait' });
+        });
+        persist(); emit();
+        run();
+        return true;
+      },
+      cancel: function () {
+        items = []; error = null; finishedAt = 0;
+        try { if (ctl) ctl.abort(); } catch (e) { /* ignore */ }
+        try { localStorage.removeItem(QKEY); } catch (e) { /* ignore */ }
+        emit();
+      },
+      retryFailed: function () {
+        items.forEach(function (i) { if (i.status === 'fail') { i.status = 'wait'; i.err = null; } });
+        persist(); emit(); run();
+      },
+      dismiss: function () { if (!running) { items = []; error = null; finishedAt = 0; emit(); } },
+      /** صف نیمه‌کاره‌ی دفعه‌ی قبل (فقط برای همین کاربر) را ادامه می‌دهد. چیزی برای ادامه نبود false. */
+      resume: async function () {
+        if (running) return false;
+        var raw = null;
+        try { raw = JSON.parse(localStorage.getItem(QKEY) || 'null'); } catch (e) { /* ignore */ }
+        if (!raw || !raw.items || !raw.items.length) return false;
+        var s = await sess();
+        if (!s || !s.uid || s.uid !== raw.uid) return false;
+        return this.add(raw.items);
+      },
+      pendingCount: function () {
+        try { var raw = JSON.parse(localStorage.getItem(QKEY) || 'null'); return raw && raw.items ? raw.items.length : 0; } catch (e) { return 0; }
+      },
+    };
+  })();
+
+  // ───────────── ترجیح «دانلود خودکار چپتر بعدی» ─────────────
+  function autoNext(v) {
+    try {
+      if (v === undefined) return localStorage.getItem('mc_off_auto') === '1';
+      if (v) localStorage.setItem('mc_off_auto', '1'); else localStorage.removeItem('mc_off_auto');
+      return !!v;
+    } catch (e) { return false; }
+  }
+
   // ───────────── سرویس‌ورکر + پاک‌سازی هنگام خروج ─────────────
   function registerSW() {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function () {});
@@ -364,7 +569,7 @@
     try {
       var c = window.supabaseClient;
       if (c && c.auth && c.auth.onAuthStateChange) {
-        c.auth.onAuthStateChange(function (event) { if (event === 'SIGNED_OUT') wipeAll(); });
+        c.auth.onAuthStateChange(function (event) { if (event === 'SIGNED_OUT') { queue.cancel(); wipeAll(); } });
       }
     } catch (e) { /* ignore */ }
   }
@@ -375,6 +580,7 @@
     supported: supported, deviceId: deviceId,
     download: download, list: list, has: has, remove: remove, wipeAll: wipeAll,
     renewAll: renewAll, open: open, render: render, usage: usage,
+    queue: queue, autoNext: autoNext,
     rememberUid: rememberUid, lastUid: lastUid,
   };
   if (supported()) {

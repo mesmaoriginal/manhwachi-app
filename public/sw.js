@@ -3,13 +3,13 @@
  *    صفحه‌های چپتر فقط به‌صورت رمزشده در IndexedDB (offline.js) نگه داشته می‌شوند.
  */
 'use strict';
-var VER = 'v2';
+var VER = 'v3';
 var SHELL = 'mc-shell-' + VER;
 var RUNTIME = 'mc-rt-' + VER;
 var COVERS = 'mc-cov-' + VER;
 var KEEP = [SHELL, RUNTIME, COVERS];
 
-var PRECACHE = ['/offline.html', '/reader.html', '/offline.js', '/js/supabase.js', '/js/vendor/supabase.min.js', '/data/data.json'];
+var PRECACHE = ['/offline.html', '/reader.html', '/offline.js', '/offline-ui.js', '/js/supabase.js', '/js/vendor/supabase.min.js', '/data/data.json'];
 var NEVER = /^\/(api|auth|rest|chapter-image|dbadmin|admin|panel|purchase|health)(\/|$)/;
 var CDN_OK = ['cdn.tailwindcss.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'code.jquery.com'];
 

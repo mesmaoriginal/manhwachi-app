@@ -292,20 +292,38 @@ async function loadUserProfileInner() {
         document.getElementById('avatarUrlInput').value = profile.avatar_url;
     }
 
-    // بررسی وضعیت VIP
-    const vipStatusText = document.getElementById('vipStatusText');
-    const vipIcon = document.getElementById('vipIcon');
-    const vipActionBtn = document.getElementById('vipActionBtn');
-    const vipBadge = document.getElementById('vipBadge');
-    const vipDaysWrap = document.getElementById('vipDaysWrap');
-    const vipDaysNumber = document.getElementById('vipDaysNumber');
-    const vipProgressBar = document.getElementById('vipProgressBar');
+    // =====================================================================
+    // وضعیت اشتراک: ظاهر کل پروفایل بر اساس سطح عوض می‌شود
+    //   premium (طلایی) | vip (استاندارد، سبز) | expired (منقضی) | free (بدون اشتراک)
+    // =====================================================================
+    const $id = (id) => document.getElementById(id);
+    const vipStatusText = $id('vipStatusText');
+    const vipIcon = $id('vipIcon');
+    const vipActionBtn = $id('vipActionBtn');
+    const vipBadge = $id('vipBadge');
+    const vipDaysWrap = $id('vipDaysWrap');
+    const vipDaysNumber = $id('vipDaysNumber');
+    const vipProgressBar = $id('vipProgressBar');
 
     const vipUntilDate = profile?.vip_until ? new Date(profile.vip_until) : null;
-    const isVip = profile?.is_vip && (!vipUntilDate || vipUntilDate > now);
-    const isExpired = !isVip && vipUntilDate && vipUntilDate <= now;
-    const isPremium = !!isVip && profile?.vip_tier === 'premium';
-    const tierLabel = isPremium ? 'اشتراک پرمیوم 👑' : 'اشتراک استاندارد';
+    const isVip = !!profile?.is_vip && (!vipUntilDate || vipUntilDate > now);
+    const isExpired = !isVip && !!vipUntilDate && vipUntilDate <= now;
+    const isPremium = isVip && profile?.vip_tier === 'premium';
+    const tier = isVip ? (isPremium ? 'premium' : 'vip') : (isExpired ? 'expired' : 'free');
+
+    const vipCardEl = $id('vipCard');
+    const heroEl = document.querySelector('.profile .hero');
+    if (vipCardEl) vipCardEl.dataset.tier = tier;
+    if (heroEl) heroEl.dataset.tier = tier;
+
+    const TIER_TEXT = {
+        premium: ['عضو پرمیوم مانهواچی', 'بالاترین سطح امکانات در اختیار شماست'],
+        vip:     ['عضو VIP مانهواچی', 'دسترسی ویژه‌ی شما فعال است'],
+        expired: ['اشتراک شما به پایان رسیده', 'با تمدید، همه‌ی امکانات دوباره باز می‌شود'],
+        free:    ['اشتراک ویژه', 'هنوز فعال نشده است']
+    };
+    if ($id('vipTitle')) $id('vipTitle').textContent = TIER_TEXT[tier][0];
+    if ($id('vipSub')) $id('vipSub').textContent = TIER_TEXT[tier][1];
 
     // مقدار پیش‌فرض: شمارشگر روزها مخفی است مگر این‌که بعداً پر شود
     if (vipDaysWrap) {
@@ -313,79 +331,122 @@ async function loadUserProfileInner() {
         vipDaysWrap.classList.remove('is-safe', 'is-warning', 'is-critical');
     }
 
+    let daysLeft = null;
     if (isVip) {
-        if (vipBadge) vipBadge.classList.remove('hidden');
-        if (vipIcon) vipIcon.className = "material-symbols-outlined text-emerald-400 text-3xl";
+        // نشان کنار اسم (هدر)
+        if (vipBadge) {
+            vipBadge.classList.remove('hidden');
+            vipBadge.classList.toggle('vip-pill--premium', isPremium);
+            const bt = $id('vipBadgeText');
+            if (bt) bt.textContent = isPremium ? 'عضو پرمیوم' : 'عضو VIP';
+            const bi = vipBadge.querySelector('.material-symbols-outlined');
+            if (bi) bi.textContent = isPremium ? 'workspace_premium' : 'verified';
+        }
+        if (vipIcon) vipIcon.className = 'material-symbols-outlined text-3xl ' + (isPremium ? 'vip-icon--gold' : 'vip-icon--green');
 
         if (vipUntilDate) {
-            const endDate = vipUntilDate.toLocaleDateString('fa-IR');
+            const endDate = vipUntilDate.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
             const msPerDay = 1000 * 60 * 60 * 24;
-            const daysLeft = Math.max(0, Math.ceil((vipUntilDate - now) / msPerDay));
+            daysLeft = Math.max(0, Math.ceil((vipUntilDate - now) / msPerDay));
 
             let urgency = 'is-safe';
             if (daysLeft <= 3) urgency = 'is-critical';
             else if (daysLeft <= 7) urgency = 'is-warning';
 
+            let nudge = '';
+            if (daysLeft <= 3) nudge = '<span class="vip-status__nudge is-critical">اشتراک شما رو به پایان است؛ برای ادامه‌ی دسترسی تمدید کنید.</span>';
+            else if (daysLeft <= 7) nudge = '<span class="vip-status__nudge">کمتر از یک هفته تا پایان اشتراک باقی مانده است.</span>';
+
             if (vipStatusText) {
-                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">${tierLabel} شما فعال است</span> اعتبار تا: <span class="mono">${endDate}</span>`;
+                vipStatusText.innerHTML = `<span class="vip-status__line">اعتبار تا <b class="mono">${endDate}</b></span>${nudge}`;
             }
             if (vipDaysWrap) {
                 vipDaysWrap.classList.remove('hidden');
                 vipDaysWrap.classList.add(urgency);
             }
-            if (vipDaysNumber) vipDaysNumber.innerText = daysLeft;
+            if (vipDaysNumber) vipDaysNumber.innerText = daysLeft.toLocaleString('fa-IR');
             if (vipProgressBar) {
                 // نوار پیشرفت روی یک بازه‌ی مرجع ۳۰ روزه محاسبه می‌شود تا همیشه قابل خواندن باشد
                 const pct = Math.min(100, Math.max(4, (daysLeft / 30) * 100));
                 vipProgressBar.style.width = pct + '%';
             }
-        } else {
-            if (vipStatusText) {
-                vipStatusText.innerHTML = `<span class="text-emerald-400 font-bold block mb-1">${tierLabel} شما فعال است</span> اعتبار: <span class="mono">نامحدود</span>`;
-            }
+        } else if (vipStatusText) {
+            vipStatusText.innerHTML = '<span class="vip-status__line">اعتبار: <b class="mono">نامحدود</b></span>';
         }
 
         if (vipActionBtn) {
-            vipActionBtn.innerText = "تمدید اشتراک VIP";
-            vipActionBtn.className = "w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black font-bold text-xs transition-all text-center shadow-lg shadow-emerald-950/30 block";
+            const soon = daysLeft !== null && daysLeft <= 7;
+            if (isPremium || soon) {
+                vipActionBtn.textContent = 'تمدید اشتراک';
+                vipActionBtn.className = 'vip-cta ' + (isPremium ? 'vip-cta--gold' : 'vip-cta--green');
+            } else {
+                vipActionBtn.textContent = 'ارتقا به پرمیوم 👑';
+                vipActionBtn.className = 'vip-cta vip-cta--gold';
+            }
         }
     } else if (isExpired) {
-        if (vipIcon) vipIcon.className = "material-symbols-outlined text-red-500 text-3xl";
+        if (vipBadge) vipBadge.classList.add('hidden');
+        if (vipIcon) vipIcon.className = 'material-symbols-outlined text-red-500 text-3xl';
         if (vipStatusText) {
-            vipStatusText.innerHTML = `<span class="text-red-400 font-bold block mb-1">اشتراک ویژه‌ی شما به پایان رسیده</span> تاریخ انقضا: <span class="mono">${vipUntilDate.toLocaleDateString('fa-IR')}</span>`;
+            vipStatusText.innerHTML = `<span class="vip-status__line">تاریخ انقضا: <b class="mono">${vipUntilDate.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' })}</b></span>`;
         }
         if (vipActionBtn) {
-            vipActionBtn.innerText = "تمدید اشتراک VIP";
-            vipActionBtn.className = "w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center block";
+            vipActionBtn.textContent = 'تمدید اشتراک';
+            vipActionBtn.className = 'vip-cta vip-cta--red';
         }
     } else {
+        if (vipBadge) vipBadge.classList.add('hidden');
         if (vipStatusText) {
-            vipStatusText.innerText = "شما در حال حاضر حساب معمولی دارید. با تهیه اشتراک VIP به آرشیو اختصاصی دسترسی پیدا کنید.";
+            vipStatusText.textContent = 'با تهیه‌ی اشتراک، چپترهای قفل‌شده را بخوانید و از امکانات ویژه‌ی زیر بهره‌مند شوید.';
+        }
+        if (vipActionBtn) {
+            vipActionBtn.textContent = 'مشاهده‌ی پلن‌ها';
+            vipActionBtn.className = 'vip-cta vip-cta--red';
         }
     }
 
-    // لینک‌های خدمات: پشتیبانی برای همه؛ دانلود آفلاین و درخواست مانهوا فقط پرمیوم
+    // ---------- امکانات: فعال‌ها روشن، قفل‌ها با نشان پرمیوم ----------
     try {
-        const host = vipStatusText && vipStatusText.parentElement;
-        if (host && !document.getElementById('svcLinks')) {
-            const box = document.createElement('div');
-            box.id = 'svcLinks';
-            box.className = 'mt-3 flex flex-wrap gap-2 text-[11px]';
-            const mkLink = (href, text, on) => {
-                const a = document.createElement('a');
-                a.href = on ? href : '/vip.html';
-                a.textContent = on ? text : text + ' (پرمیوم)';
-                a.className = 'px-3 py-1.5 rounded-lg border ' + (on ? 'border-white/15 text-zinc-200 hover:bg-white/10' : 'border-white/5 text-zinc-500 hover:text-zinc-300');
-                return a;
-            };
-            box.append(
-                mkLink('/support.html', 'پشتیبانی و تیکت', true),
-                mkLink('/manhwa-request.html', 'درخواست مانهوا 👑', isPremium),
-                mkLink('/offline.html', 'دانلودهای آفلاین 👑', isPremium)
-            );
-            host.appendChild(box);
+        const perksBox = $id('vipPerks');
+        const perks = (window.MCVip && window.MCVip.PERKS) || [];
+        if (perksBox && perks.length) {
+            const eff = isVip ? tier : 'free';       // منقضی‌ها مثل بدون اشتراک دیده می‌شوند
+            perksBox.innerHTML = perks.map((p) => {
+                const on = p.on.includes(eff);
+                // امکانی که فقط پرمیوم دارد و کاربر ندارد: به صفحه‌ی خرید می‌رود
+                const needsPremium = !on && p.on.length === 1 && p.on[0] === 'premium';
+                const href = on ? (p.href || '') : '/vip.html';
+                const state = on
+                    ? '<span class="perk__state perk__state--on"><span class="material-symbols-outlined">check</span>فعال</span>'
+                    : `<span class="perk__state perk__state--lock"><span class="material-symbols-outlined">lock</span>${needsPremium ? 'پرمیوم' : 'اشتراک'}</span>`;
+                const tag = href ? 'a' : 'div';
+                return `<${tag} class="perk ${on ? 'is-on' : 'is-locked'}"${href ? ` href="${href}"` : ''}>
+                    <span class="perk__icon"><span class="material-symbols-outlined">${p.icon}</span></span>
+                    <span class="perk__text"><b>${p.title}</b><small>${p.desc}</small></span>
+                    ${state}
+                </${tag}>`;
+            }).join('');
         }
     } catch (e) { console.error(e); }
+
+    // ---------- پیام پایین کارت: پیشنهاد ارتقا برای VIP / قدردانی برای پرمیوم ----------
+    try {
+        const note = $id('vipNote');
+        if (note) {
+            if (tier === 'vip') {
+                note.innerHTML = '<span class="material-symbols-outlined">auto_awesome</span><span>با <b>پرمیوم</b> دانلود آفلاین و درخواست مانهوا هم برای شما باز می‌شود.</span>';
+                note.classList.remove('hidden');
+            } else if (tier === 'premium') {
+                note.innerHTML = '<span class="material-symbols-outlined">favorite</span><span>از اینکه از مانهواچی حمایت می‌کنید سپاسگزاریم؛ ترجمه‌ها با حمایت شما ادامه پیدا می‌کنند.</span>';
+                note.classList.remove('hidden');
+            } else {
+                note.classList.add('hidden');
+            }
+        }
+    } catch (e) { console.error(e); }
+
+    window.__profileTier = tier; // برای سایر بخش‌های همین صفحه
+    if (window.MCVip) window.MCVip.remember(isVip ? tier : '');
 
     // بارگذاری بوکمارک‌ها و کامنت‌های خود کاربر
     loadUserBookmarks(client);

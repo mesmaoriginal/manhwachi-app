@@ -34,7 +34,7 @@
                         <h1 id="dispUsername" class="hero__name">در حال بارگذاری...</h1>
                         <span id="vipBadge" class="hidden vip-pill">
                             <span class="material-symbols-outlined">workspace_premium</span>
-                            اشتراک فعال
+                            <span id="vipBadgeText">اشتراک فعال</span>
                         </span>
                     </div>
 
@@ -95,15 +95,17 @@
         <!-- ===================== اشتراک + تنظیمات ===================== -->
         <div class="split">
 
-            <!-- کارت اشتراک ویژه -->
-            <section class="vip-card">
+            <!-- کارت اشتراک ویژه (ظاهر و محتوا بر اساس سطح: پرمیوم / VIP / منقضی / بدون اشتراک؛ در profile.js پر می‌شود) -->
+            <section class="vip-card" id="vipCard" data-tier="free">
+                <div class="vip-card__shine" aria-hidden="true"></div>
+
                 <div class="vip-card__head">
                     <div class="vip-card__icon">
                         <span id="vipIcon" class="material-symbols-outlined text-zinc-500 text-3xl">workspace_premium</span>
                     </div>
-                    <div>
-                        <h2 class="vip-card__title">اشتراک ویژه</h2>
-                        <p class="vip-card__sub">وضعیت حساب شما</p>
+                    <div class="vip-card__headtext">
+                        <h2 class="vip-card__title" id="vipTitle">اشتراک ویژه</h2>
+                        <p class="vip-card__sub" id="vipSub">وضعیت حساب شما</p>
                     </div>
                 </div>
 
@@ -121,6 +123,12 @@
                 <div id="vipStatusText" class="vip-card__status">
                     در حال بررسی وضعیت اشتراک...
                 </div>
+
+                <!-- امکانات: فعال‌ها روشن، قفل‌ها با نشان پرمیوم -->
+                <div id="vipPerks" class="vip-perks" aria-label="امکانات حساب شما"></div>
+
+                <!-- پیشنهاد ارتقا / پیام قدردانی -->
+                <div id="vipNote" class="vip-note hidden"></div>
 
                 <a href="/vip.html" id="vipActionBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center block">
                     ارتقاء به VIP

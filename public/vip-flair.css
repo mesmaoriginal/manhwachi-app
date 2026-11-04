@@ -1,0 +1,283 @@
+/* =====================================================================
+   ManhwaChi — VIP / Premium flair (مشترک بین همه‌ی صفحه‌ها)
+   - پرمیوم: طلایی  |  VIP (استاندارد): سبز زمردی
+   - کلاس‌ها: vf-badge, vf-av, vf-name, vf-card, vf-pop, vf-confetti
+   ===================================================================== */
+
+:root {
+    --vf-gold: #f3c75f;
+    --vf-gold-2: #e8b64a;
+    --vf-gold-deep: #b9822a;
+    --vf-gold-soft: rgba(232, 182, 74, 0.35);
+    --vf-emerald: #34d399;
+    --vf-emerald-soft: rgba(52, 211, 153, 0.3);
+}
+
+/* ---------- نشان کنار اسم ---------- */
+.vf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 8px 1px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.8;
+    white-space: nowrap;
+    vertical-align: middle;
+    letter-spacing: 0;
+}
+.vf-badge .material-symbols-outlined { font-size: 12px; font-variation-settings: 'FILL' 1; }
+
+.vf-badge--premium {
+    color: #2a1a00;
+    background: linear-gradient(110deg, #e8b64a 0%, #f7d778 35%, #fff3c4 50%, #f7d778 65%, #e8b64a 100%);
+    background-size: 240% 100%;
+    animation: vfShine 4.5s linear infinite;
+    box-shadow: 0 0 14px rgba(232, 182, 74, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.vf-badge--vip {
+    color: #6ee7b7;
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.32);
+}
+@keyframes vfShine {
+    0%   { background-position: 130% 0; }
+    100% { background-position: -130% 0; }
+}
+
+/* ---------- حلقه‌ی دور آواتار ---------- */
+.vf-av--premium {
+    box-shadow: 0 0 0 2px #0b0b0e, 0 0 0 4px var(--vf-gold-2), 0 0 18px var(--vf-gold-soft) !important;
+}
+.vf-av--vip {
+    box-shadow: 0 0 0 2px #0b0b0e, 0 0 0 3.5px rgba(52, 211, 153, 0.75) !important;
+}
+
+/* ---------- اسم پرمیوم: طلایی و درخشان ---------- */
+.vf-name--premium {
+    background: linear-gradient(100deg, #f7d778 0%, #fff3c4 45%, #e8b64a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent !important;
+}
+
+/* ---------- کارت نظر ---------- */
+.vf-card--premium {
+    border-color: rgba(232, 182, 74, 0.38) !important;
+    background-image: linear-gradient(135deg, rgba(232, 182, 74, 0.07), transparent 42%) !important;
+    box-shadow: 0 0 0 1px rgba(232, 182, 74, 0.06), 0 14px 34px -20px rgba(232, 182, 74, 0.45) !important;
+}
+.vf-card--vip { border-color: rgba(52, 211, 153, 0.22) !important; }
+
+/* ---------- قطعات کنفتی ---------- */
+.vf-confetti {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    pointer-events: none;
+    overflow: hidden;
+}
+.vf-confetti i {
+    position: absolute;
+    top: -14px;
+    width: 8px;
+    height: 12px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: vfFall linear forwards;
+}
+@keyframes vfFall {
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
+    100% { transform: translate3d(var(--vf-dx, 0), 105vh, 0) rotate(var(--vf-rot, 540deg)); opacity: 0.95; }
+}
+
+/* ---------- ظهور نرم ---------- */
+.vf-pop { animation: vfPop 0.5s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes vfPop {
+    0%   { transform: scale(0.86); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vf-badge--premium, .vf-pop { animation: none; }
+    .vf-confetti { display: none; }
+}
+
+/* ---------- دکمه‌ی هدر و منوی کشویی (پرمیوم) ---------- */
+.vf-navbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+.vf-navbtn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.vf-navbtn:active { transform: scale(0.96); }
+.vf-navbtn .material-symbols-outlined { font-size: 17px; font-variation-settings: 'FILL' 1; }
+.vf-navbtn--premium {
+    color: #2a1a00;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(110deg, #e8b64a 0%, #f7d778 35%, #fff3c4 50%, #f7d778 65%, #e8b64a 100%);
+    background-size: 240% 100%;
+    animation: vfShine 5s linear infinite;
+    box-shadow: 0 0 18px rgba(232, 182, 74, 0.45);
+}
+
+.vf-drawer--premium {
+    background: linear-gradient(135deg, rgba(232, 182, 74, 0.18), rgba(24, 24, 27, 0.92)) !important;
+    border-color: rgba(232, 182, 74, 0.5) !important;
+    box-shadow: 0 10px 28px -16px rgba(232, 182, 74, 0.55);
+}
+.vf-drawer--premium .vf-drawer__icon {
+    background: linear-gradient(135deg, #f7d778, #e8b64a) !important;
+    color: #2a1a00 !important;
+}
+.vf-drawer--premium .vf-drawer__chip {
+    color: #2a1a00 !important;
+    background: linear-gradient(110deg, #e8b64a, #f7d778) !important;
+    border-color: transparent !important;
+}
+
+/* ---------- پیام «اشتراک فعال شد» ---------- */
+.vf-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.82);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+.vf-modal__card {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px 24px 22px;
+    text-align: center;
+    border-radius: 28px;
+    color: #fff;
+    background: linear-gradient(175deg, #17171b, #0c0c0f);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 60px rgba(52, 211, 153, 0.18);
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+}
+.vf-modal--premium .vf-modal__card {
+    border-color: rgba(232, 182, 74, 0.55);
+    background: radial-gradient(120% 70% at 50% 0%, rgba(232, 182, 74, 0.22), transparent 60%), linear-gradient(175deg, #1d1507, #0c0b09);
+    box-shadow: 0 0 70px rgba(232, 182, 74, 0.28);
+}
+.vf-modal__crown {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    border-radius: 50%;
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+}
+.vf-modal--premium .vf-modal__crown {
+    background: rgba(232, 182, 74, 0.14);
+    border-color: rgba(232, 182, 74, 0.5);
+    box-shadow: 0 0 36px rgba(232, 182, 74, 0.35);
+}
+.vf-modal__title { font-size: 20px; font-weight: 900; margin: 0 0 6px; }
+.vf-modal--premium .vf-modal__title {
+    background: linear-gradient(100deg, #f7d778, #fff3c4 50%, #e8b64a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.vf-modal__lead { font-size: 13px; line-height: 1.9; color: #d4d4d8; margin: 0 0 12px; }
+.vf-modal__perks {
+    list-style: none;
+    margin: 0 0 14px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: right;
+}
+.vf-modal__perks li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+}
+.vf-modal__perks .material-symbols-outlined { font-size: 18px; color: #6ee7b7; }
+.vf-modal--premium .vf-modal__perks .material-symbols-outlined { color: #f3c75f; }
+.vf-modal__date { font-size: 12px; color: #a1a1aa; margin: 0 0 16px; }
+.vf-modal__date b { color: #fff; }
+.vf-modal__btn {
+    width: 100%;
+    padding: 13px;
+    border: 0;
+    border-radius: 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    color: #fff;
+    background: #059669;
+}
+.vf-modal--premium .vf-modal__btn { color: #2a1a00; background: linear-gradient(110deg, #e8b64a, #f7d778 50%, #e8b64a); }
+
+
+/* =====================================================================
+   حس پرمیوم در ریدر و صفحه‌های امکانات (html.vf-t-premium از vip-flair.js)
+   ===================================================================== */
+.vf-reader-chip {
+    display: none;
+    align-items: center;
+    gap: 3px;
+    margin-inline-start: 6px;
+    padding: 0 7px 0 5px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 17px;
+    color: #2a1a00;
+    vertical-align: middle;
+    background: linear-gradient(110deg, #e8b64a 0%, #f7d778 40%, #fff3c4 50%, #f7d778 60%, #e8b64a 100%);
+    background-size: 240% 100%;
+    animation: vfShine 5s linear infinite;
+}
+.vf-reader-chip .material-symbols-outlined { font-size: 11px; font-variation-settings: 'FILL' 1; }
+html.vf-t-premium .vf-reader-chip { display: inline-flex; }
+
+/* خط پیشرفت و لبه‌ی هدر ریدر: طلایی */
+html.vf-t-premium #top-nav { border-bottom-color: rgba(232, 182, 74, 0.28) !important; }
+html.vf-t-premium #progress-bar {
+    background-image: linear-gradient(90deg, #b9822a, #f7d778 60%, #fff3c4) !important;
+    box-shadow: 0 0 12px rgba(232, 182, 74, 0.7) !important;
+}
+/* دکمه‌ی دانلود آفلاین: برای پرمیوم طلایی و زنده (وقتی ذخیره شد سبز می‌ماند) */
+html.vf-t-premium #offline-btn:not(.text-green-400) { color: #f3c75f; }
+html.vf-t-premium #offline-btn:not(.text-green-400) .material-symbols-outlined {
+    filter: drop-shadow(0 0 6px rgba(232, 182, 74, 0.6));
+}
+
+/* صفحه‌های دانلود آفلاین / درخواست مانهوا: عنوان طلایی برای پرمیوم */
+html.vf-t-premium.vf-gold-h1 h1 {
+    background: linear-gradient(100deg, #f7d778 0%, #fff3c4 50%, #e8b64a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+html.vf-t-premium.vf-gold-h1 header .bar { border-bottom-color: rgba(232, 182, 74, 0.25); }
+
+@media (prefers-reduced-motion: reduce) { .vf-reader-chip { animation: none; } }
