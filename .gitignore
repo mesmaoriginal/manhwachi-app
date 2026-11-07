@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.*
+export/
+export-vip/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+team_files/
+app-stats.json
