@@ -71,7 +71,15 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
+// 🔒 قفل تلاش ناموفق (per-IP): ۱۰ خطا در ۱۵ دقیقه ⇒ ۴۲۹
+const adminFails = new Map();
+const ADMIN_FAIL_MAX = 10, ADMIN_FAIL_WINDOW = 15 * 60 * 1000;
 function auth(req, res, next) {
+  const nowMs = Date.now(), fr = adminFails.get(req.ip);
+  if (fr && fr.reset > nowMs && fr.n >= ADMIN_FAIL_MAX) {
+    res.set("Retry-After", String(Math.ceil((fr.reset - nowMs) / 1000)));
+    return res.status(429).send("تلاش‌های ناموفق زیاد بود. بعداً دوباره امتحان کنید.");
+  }
   const USER = process.env.ADMIN_USER;
   const PASS = process.env.ADMIN_PASS;
   if (!USER || !PASS) {
@@ -97,8 +105,11 @@ function auth(req, res, next) {
   const u = idx === -1 ? decoded : decoded.slice(0, idx);
   const p = idx === -1 ? "" : decoded.slice(idx + 1);
 
-  if (safeEqual(u, USER) && safeEqual(p, PASS)) return next();
+  if (safeEqual(u, USER) && safeEqual(p, PASS)) { adminFails.delete(req.ip); return next(); }
 
+  if (adminFails.size > 5000) for (const [k, v] of adminFails) if (v.reset <= nowMs) adminFails.delete(k);
+  const cur = fr && fr.reset > nowMs ? fr : { n: 0, reset: nowMs + ADMIN_FAIL_WINDOW };
+  cur.n += 1; adminFails.set(req.ip, cur);
   res.set("WWW-Authenticate", 'Basic realm="Manhwachi Admin"');
   return res.status(401).send("نام کاربری یا رمز عبور اشتباه است.");
 }
@@ -107,6 +118,14 @@ router.use(auth);
 
 // ---------- صفحه‌ی پنل ----------
 router.use(express.static(path.join(__dirname, "public")));
+
+// 🔒 جلوگیری از slugهایی مثل __proto__ / constructor (آلودگی prototype)
+router.param("slug", (req, res, next, slug) => {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,199}$/.test(slug) || ["constructor", "prototype", "toString", "valueOf", "hasOwnProperty"].includes(slug)) {
+    return res.status(400).json({ error: "slug نامعتبر است" });
+  }
+  next();
+});
 
 // ---------- API: لیست خلاصه‌ی مانهواها ----------
 router.get("/api/manga", (req, res) => {

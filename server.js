@@ -301,7 +301,7 @@ const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 // بدون لاگین و بدون rate-limit بگیره. صفحات چپتر فقط از /chapter-image با
 // توکن زمان‌دار (که خروجی /api/get-chapter-images هست) در دسترسن.
 const PUBLIC_MANHWA_PATH_RE =
-  /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif|svg)$/i;
+  /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif)$/i;
 
 const { getCachedImage, UpstreamBusyError } = require("./lib/imageProxyCache");
 
@@ -1343,6 +1343,19 @@ async function verifyAndCreditPayment(trackId) {
       const notFoundErr = new Error("تراکنش مربوطه در دیتابیس پیدا نشد.");
       notFoundErr.final = true; // رکورد وجود نداره، retry هیچ‌وقت درستش نمی‌کنه
       throw notFoundErr;
+    }
+
+    // 🔒 مبلغ پرداخت‌شده‌ی واقعی (زیبال) باید با مبلغ ثبت‌شده‌ی تراکنش یکی باشد
+    if (zibalData.amount !== undefined && zibalData.amount !== null && Number(zibalData.amount) !== Number(paymentRecord.amount)) {
+      console.error(`[verifyAndCreditPayment] مغایرت مبلغ trackId=${trackId}: zibal=${zibalData.amount} db=${paymentRecord.amount}`);
+      await fetch(`${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}`, {
+        method: "PATCH",
+        headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ status: "failed" }),
+      }).catch(() => {});
+      const mismatch = new Error("مبلغ پرداخت‌شده با مبلغ سفارش مطابقت ندارد.");
+      mismatch.final = true;
+      throw mismatch;
     }
 
     try {
