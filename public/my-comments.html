@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>دیدگاه‌های من | مانهواچی</title>
+  <link rel="icon" href="/ManhwaChi/favicon.ico" />
+  <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap'" />
+  <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap'" />
+  <link rel="stylesheet" href="/profile-pages.css?v=2" />
+</head>
+<body>
+  <header class="pp-header">
+    <div class="pp-header__inner">
+      <a href="/" class="pp-brand">
+        <img src="/ManhwaChi/LOGO-main-white.webp" alt="" onerror="this.remove()" />
+        Manhwa<span class="accent">Chi</span>
+      </a>
+      <div class="pp-header__actions">
+        <a href="/?page=profile" class="pp-icon-btn" title="پروفایل" aria-label="پروفایل">
+          <span class="material-symbols-outlined">person</span>
+        </a>
+        <button type="button" class="pp-icon-btn" onclick="history.length > 1 ? history.back() : location.href='/'" title="بازگشت" aria-label="بازگشت">
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="pp-main">
+    <nav class="pp-subnav" aria-label="بخش‌های پروفایل">
+      <a href="/bookmarks.html">نشان‌شده‌ها</a>
+      <a href="/history.html">تاریخچه</a>
+      <a href="/my-comments.html" class="is-on">دیدگاه‌ها</a>
+      <a href="/?page=profile">پروفایل</a>
+    </nav>
+
+    <div class="pp-title-row">
+      <div>
+        <h1 class="pp-title">
+          <span class="material-symbols-outlined">chat</span>
+          دیدگاه‌های من
+        </h1>
+        <p class="pp-sub">نظرها و پاسخ‌هایی که ثبت کردی</p>
+      </div>
+      <div id="countBadge" class="pp-count hidden"><b id="countNum">0</b> دیدگاه</div>
+    </div>
+
+    <div class="pp-toolbar">
+      <div class="pp-search">
+        <span class="material-symbols-outlined">search</span>
+        <input type="search" id="searchInput" placeholder="جستجو در متن یا اسلاگ مانهوا..." autocomplete="off" aria-label="جستجو" />
+      </div>
+    </div>
+
+    <div id="stateLoading" class="pp-loading">در حال بارگذاری...</div>
+    <div id="stateAuth" class="pp-auth hidden">
+      <span class="material-symbols-outlined">lock</span>
+      <h2>برای دیدن دیدگاه‌ها وارد شو</h2>
+      <p>دیدگاه‌ها به حساب کاربری‌ات وصل هستند.</p>
+      <a href="/?page=profile" class="pp-btn pp-btn--primary">ورود / ثبت‌نام</a>
+    </div>
+    <div id="stateEmpty" class="pp-empty hidden">
+      <span class="material-symbols-outlined">chat_bubble_outline</span>
+      <h2>هنوز نظری ثبت نکردی</h2>
+      <p>زیر هر چپتر می‌توانی اولین دیدگاهت را بنویسی.</p>
+      <a href="/" class="pp-btn pp-btn--primary">برو به صفحه اصلی</a>
+    </div>
+    <div id="list" class="pp-comments hidden"></div>
+  </main>
+
+  <div id="toasts" class="pp-toasts" aria-live="polite"></div>
+
+  <script src="/js/vendor/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script>
+(function () {
+  let items = [];
+  let userId = null;
+
+  function toast(msg, type) {
+    const box = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = 'pp-toast' + (type === 'ok' ? ' pp-toast--ok' : type === 'err' ? ' pp-toast--err' : '');
+    el.textContent = msg;
+    box.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('is-on'));
+    setTimeout(() => {
+      el.classList.remove('is-on');
+      setTimeout(() => el.remove(), 250);
+    }, 2600);
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function client() {
+    return window.supabaseClient || window.supabase || null;
+  }
+
+  function show(id) {
+    ['stateLoading', 'stateAuth', 'stateEmpty', 'list'].forEach((x) => {
+      document.getElementById(x).classList.toggle('hidden', x !== id);
+    });
+  }
+
+  function fmtDate(iso) {
+    try {
+      return new Date(iso).toLocaleDateString('fa-IR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function render(list) {
+    const box = document.getElementById('list');
+    const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+    const filtered = !q
+      ? list
+      : list.filter((c) => {
+          const t = ((c.text || '') + ' ' + (c.manhwa_slug || '')).toLowerCase();
+          return t.includes(q);
+        });
+
+    document.getElementById('countNum').textContent = String(list.length);
+    document.getElementById('countBadge').classList.toggle('hidden', list.length === 0);
+
+    if (!list.length) {
+      show('stateEmpty');
+      return;
+    }
+    if (!filtered.length) {
+      box.innerHTML = '<div class="pp-empty"><p>نتیجه‌ای برای این جستجو پیدا نشد.</p></div>';
+      show('list');
+      return;
+    }
+
+    box.innerHTML = filtered
+      .map((c) => {
+        const typeLabel = c.parent_message_id ? 'پاسخ' : 'نظر';
+        const stamp = c.approved
+          ? '<span class="pp-stamp pp-stamp--ok">تایید شده</span>'
+          : '<span class="pp-stamp pp-stamp--wait">در انتظار تایید</span>';
+        const href = '/manga.php?slug=' + encodeURIComponent(c.manhwa_slug);
+        return (
+          '<article class="pp-bubble" data-id="' +
+          escapeHtml(c.id) +
+          '">' +
+          '<div class="pp-bubble__head">' +
+          '<div class="pp-bubble__meta">' +
+          '<span>' +
+          typeLabel +
+          ' روی</span>' +
+          '<a href="' +
+          href +
+          '">' +
+          escapeHtml(c.manhwa_slug) +
+          '</a>' +
+          stamp +
+          '</div>' +
+          '<button type="button" class="pp-icon-btn" style="width:34px;height:34px" data-del="' +
+          escapeHtml(c.id) +
+          '" title="حذف دیدگاه" aria-label="حذف"><span class="material-symbols-outlined" style="font-size:18px">delete</span></button>' +
+          '</div>' +
+          '<p class="pp-bubble__text">' +
+          escapeHtml(c.text) +
+          '</p>' +
+          '<p class="pp-bubble__foot mono">' +
+          escapeHtml(fmtDate(c.created_at)) +
+          '</p>' +
+          '</article>'
+        );
+      })
+      .join('');
+
+    box.querySelectorAll('[data-del]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-del');
+        if (!confirm('این دیدگاه حذف شود؟')) return;
+        await deleteComment(id);
+      });
+    });
+
+    show('list');
+  }
+
+  async function deleteComment(id) {
+    const c = client();
+    if (!c || !userId) return;
+    const { error } = await c.from('messages').delete().eq('id', id).eq('user_id', userId);
+    if (error) {
+      toast('حذف نشد', 'err');
+      return;
+    }
+    items = items.filter((x) => String(x.id) !== String(id));
+    render(items);
+    toast('دیدگاه حذف شد', 'ok');
+  }
+
+  async function load() {
+    show('stateLoading');
+    const c = client();
+    if (!c) {
+      show('stateAuth');
+      return;
+    }
+    let session = null;
+    try {
+      const { data } = await c.auth.getSession();
+      session = data && data.session;
+    } catch (e) {}
+    if (!session || !session.user) {
+      show('stateAuth');
+      return;
+    }
+    userId = session.user.id;
+    const { data, error } = await c
+      .from('messages')
+      .select('id, text, manhwa_slug, approved, created_at, parent_message_id')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) {
+      toast('خطا در بارگذاری', 'err');
+      show('stateEmpty');
+      return;
+    }
+    items = data || [];
+    render(items);
+  }
+
+  document.getElementById('searchInput').addEventListener('input', () => render(items));
+  load();
+})();
+  </script>
+</body>
+</html>

@@ -355,6 +355,7 @@
         #mobileDrawer a[href*="telegram"] .material-symbols-outlined.text-2xl { font-size: 22px; }
     </style>
 <link rel="stylesheet" href="/mc-polish.css?v=1">
+<link rel="stylesheet" href="/home-sections.css?v=1">
 </head>
 
 <body>
@@ -637,14 +638,41 @@
                         </section>
                         <div class="dots" id="dots" aria-label="انتخاب اسلاید"></div>
 
-                        <h2 class="title"><a href="/library-page.html">آخرین آپدیت‌ها</a></h2>
-                            <div class="daily_list main">
+                        <!-- نوار تب‌ها (هم‌مثل اپ) -->
+                        <div class="mc-tabs" role="tablist" aria-label="بخش‌های صفحه اصلی">
+                            <button type="button" class="mc-tab is-on" role="tab" data-tab="home" aria-selected="true">خانه</button>
+                            <button type="button" class="mc-tab" role="tab" data-tab="trending" aria-selected="false">داغ‌ترین‌ها</button>
+                            <button type="button" class="mc-tab" role="tab" data-tab="schedule" aria-selected="false">جدول زمانی</button>
+                            <button type="button" class="mc-tab" role="tab" data-tab="latest" aria-selected="false">جدیدترین‌ها</button>
+                        </div>
+
+                        <!-- آمار سریع -->
+                        <ul class="mc-stats mc-home-only" aria-label="آمار سریع">
+                            <li class="mc-stat"><b id="mcStatTotal">—</b><span>مانهوا در آرشیو</span></li>
+                            <li class="mc-stat"><b id="mcStatToday">—</b><span>آپدیت امروز</span></li>
+                            <li class="mc-stat"><b id="mcStatGenre">—</b><span>پرطرفدارترین ژانر</span></li>
+                        </ul>
+
+                        <!-- ادامه‌ی مطالعه (از تاریخچه‌ی همین مرورگر) -->
+                        <section class="mc-continue mc-home-only" id="mcContinue" hidden aria-label="ادامه مطالعه">
+                            <div class="mc-sec-head">
+                                <h2>ادامه مطالعه</h2>
+                                <button type="button" class="mc-link-btn" id="mcContinueClear">پاک کردن</button>
+                            </div>
+                            <ul class="mc-cont-list" id="mcContinueList"></ul>
+                        </section>
+
+                        <!-- فیلتر ژانر (روی «آخرین آپدیت‌ها» و «بهترین‌ها» اثر می‌گذارد) -->
+                        <div class="mc-chips mc-home-only" id="mcChips" role="group" aria-label="فیلتر ژانر"></div>
+
+                        <h2 class="title mc-home-only"><a href="/library-page.html">آخرین آپدیت‌ها</a></h2>
+                            <div class="daily_list main mc-home-only">
                                 <!-- لیست خالی جهت رندر داینامیک -->
                                 <ul class="lst_type1 horizontal-scroll" id="todaysList">
                                     <!-- آیتم‌ها توسط جاوااسکریپت جایگذاری می‌شوند -->
                                 </ul>
                             </div>
-                        <div class="mw-banner-wrapper">
+                        <div class="mw-banner-wrapper mc-home-only">
                             <div class="mw-banner-container">
                                 <div class="mw-banner-content">
                                     
@@ -675,7 +703,7 @@
                             </div>
                         </div>
                         <!-- Telegram Banner -->
-                        <section class="telegram-banner">
+                        <section class="telegram-banner mc-home-only">
                             <div class="telegram-banner-link">
                                 <div class="telegram-icon">
                                     <img src="file/icons8-telegram-app-96.png" alt="Telegram">
@@ -694,17 +722,17 @@
 
 
                             
-                        <h2 class="title">
+                        <h2 class="title mc-home-only">
                             <a href="/library-page.html">بهترین‌ها</a>
                         </h2>
 
-                        <div class="toprated_list">
+                        <div class="toprated_list mc-home-only">
                             <ul class="lst_type2" id="topRatedList">
 
                             </ul>
                         </div>
                         <!-- Instagram Banner -->
-            <section class="instagram-banner">
+            <section class="instagram-banner mc-home-only">
                 <div class="instagram-banner-link">
                     <div class="banner-btn-group">
                         <a href="https://www.instagram.com/ManhwaChiOfficial" target="_blank" rel="noopener noreferrer" class="instagram-btn">فالو کردن</a>
@@ -719,6 +747,29 @@
                     </div>
                 </div>
             </section>
+                    
+                    <!-- تب داغ‌ترین‌ها -->
+                    <section class="mc-panel" data-panel="trending" aria-label="داغ‌ترین‌ها">
+                        <div class="mc-panel-head"><h2>داغ‌ترین‌ها</h2><span>بر اساس امتیاز</span></div>
+                        <ul class="mc-list" id="mcTrendingList"></ul>
+                        <button type="button" class="mc-more" id="mcTrendingMore" hidden>نمایش بیشتر</button>
+                    </section>
+
+                    <!-- تب جدول زمانی -->
+                    <section class="mc-panel" data-panel="schedule" aria-label="جدول زمانی انتشار">
+                        <div class="mc-days" id="mcDays" role="group" aria-label="روزهای هفته"></div>
+                        <div class="mc-panel-head"><h2 id="mcDayTitle">—</h2><span id="mcDayCount"></span></div>
+                        <ul class="mc-list" id="mcScheduleList"></ul>
+                        <p class="mc-empty" id="mcScheduleEmpty" hidden>برای این روز اثری ثبت نشده.</p>
+                        <button type="button" class="mc-more" id="mcScheduleMore" hidden>نمایش بیشتر</button>
+                    </section>
+
+                    <!-- تب جدیدترین‌ها -->
+                    <section class="mc-panel" data-panel="latest" aria-label="جدیدترین‌ها">
+                        <div class="mc-panel-head"><h2>جدیدترین‌ها</h2><span>بر اساس آخرین چپتر</span></div>
+                        <ul class="mc-list" id="mcLatestList"></ul>
+                        <button type="button" class="mc-more" id="mcLatestMore" hidden>نمایش بیشتر</button>
+                    </section>
                     <div data-mhp="banner"></div>
                     
                     
@@ -868,7 +919,8 @@
     
     <!-- اسکریپت پایه هوم (اسلایدر و کدهای اصلی هوم شما) فقط یک بار اینجا لود می‌شود -->
     <script src="/vip-flair.js?v=2" defer></script>
-    <script src="home.js?v=4" defer></script>
+    <script src="home.js?v=5" defer></script>
+    <script src="/home-sections.js?v=1" defer></script>
    <script>
 
 

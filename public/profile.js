@@ -490,7 +490,8 @@ async function loadUserBookmarks(client) {
         return;
     }
 
-    listEl.innerHTML = bookmarks.map(b => {
+    // پیش‌نمایش فشرده؛ لیست کامل در /bookmarks.html
+    listEl.innerHTML = bookmarks.slice(0, 8).map(b => {
         const title = b.title_fa || b.title_en || b.manhwa_slug;
         const cover = b.cover_url || '';
         return `
@@ -557,7 +558,8 @@ async function loadUserComments(client) {
         return;
     }
 
-    listEl.innerHTML = comments.map(c => {
+    // پیش‌نمایش فشرده؛ لیست کامل در /my-comments.html
+    listEl.innerHTML = comments.slice(0, 4).map(c => {
         const statusBadge = c.approved
             ? `<span class="stamp stamp--ok">تایید شده</span>`
             : `<span class="stamp stamp--wait">در انتظار تایید</span>`;
@@ -661,7 +663,8 @@ function loadReadingHistory() {
         return;
     }
 
-    listEl.innerHTML = history.map(h => {
+    // پیش‌نمایش فشرده؛ لیست کامل در /history.html
+    listEl.innerHTML = history.slice(0, 8).map(h => {
         const title = escapeHtml(h.title || h.slug);
         const cover = h.cover || '';
         const chapterLabel = h.chapter_number

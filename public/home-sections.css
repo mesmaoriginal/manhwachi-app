@@ -1,0 +1,158 @@
+/* home-sections.css — بعد از home.css و home-fixes.css لود شود.
+   استایل بخش‌های جدید صفحه‌ی اصلی + مرتب‌سازی ظاهر موبایل و دسکتاپ. */
+
+.home-page {
+  --hs-line: rgba(255,255,255,.08);
+  --hs-card: #141416;
+  --hs-card-2: #1b1b1f;
+  --hs-red: #DC2626;
+  --hs-muted: #9a9aa3;
+}
+
+/* ---------- تب‌ها ---------- */
+.mc-tabs {
+  display: flex; gap: 4px; padding: 4px; margin: 14px 12px 6px;
+  background: var(--hs-card); border: 1px solid var(--hs-line); border-radius: 16px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.mc-tabs::-webkit-scrollbar { display: none; }
+.mc-tab {
+  flex: 1 0 auto; min-width: 0; padding: 10px 14px; border: 0; border-radius: 12px;
+  background: transparent; color: var(--hs-muted); font: 700 13px/1 'Vazirmatn', sans-serif;
+  cursor: pointer; white-space: nowrap; transition: background .2s, color .2s;
+}
+.mc-tab:hover { color: #fff; }
+.mc-tab.is-on { background: var(--hs-red); color: #fff; box-shadow: 0 6px 16px -6px rgba(220,38,38,.7); }
+
+/* نمایش بخش‌ها بر اساس تب فعال (بدون جابه‌جا کردن عناصر، تا گرید دسکتاپ سالم بماند) */
+.home-page .mc-panel { display: none; }
+.home-page[data-tab="trending"] .mc-panel[data-panel="trending"],
+.home-page[data-tab="schedule"] .mc-panel[data-panel="schedule"],
+.home-page[data-tab="latest"] .mc-panel[data-panel="latest"] { display: block; }
+.home-page[data-tab]:not([data-tab="home"]) .mc-home-only { display: none !important; }
+
+/* ---------- آمار سریع ---------- */
+.mc-stats {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
+  margin: 12px; padding: 0; list-style: none;
+}
+.mc-stat {
+  display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center;
+  padding: 14px 8px; border-radius: 16px; background: var(--hs-card); border: 1px solid var(--hs-line);
+}
+.mc-stat b { font: 800 22px/1 'Vazirmatn', sans-serif; color: #fff; min-height: 22px; }
+.mc-stat:first-child b { color: #ef4444; }
+.mc-stat span { font-size: 12px; color: var(--hs-muted); }
+
+/* ---------- ادامه‌ی مطالعه ---------- */
+.mc-continue { margin: 18px 0 4px; }
+.mc-sec-head { display: flex; align-items: center; justify-content: space-between; padding: 0 14px; margin-bottom: 10px; }
+.mc-sec-head h2 { margin: 0; font: 800 16px/1.4 'Vazirmatn', sans-serif; color: #fff; position: relative; padding-inline-start: 12px; }
+.mc-sec-head h2::before {
+  content: ""; position: absolute; inset-inline-start: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 1.1em; border-radius: 3px; background: var(--hs-red);
+}
+.mc-link-btn { border: 0; background: none; color: var(--hs-muted); font: 600 12px 'Vazirmatn', sans-serif; cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+.mc-link-btn:hover { color: #fff; background: rgba(255,255,255,.06); }
+.mc-cont-list {
+  display: flex; gap: 12px; margin: 0; padding: 2px 14px 6px; list-style: none;
+  overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity;
+}
+.mc-cont-list::-webkit-scrollbar { display: none; }
+.mc-cont-list > li { flex: 0 0 112px; scroll-snap-align: start; }
+.mc-cont { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; }
+.mc-cont__pic { position: relative; aspect-ratio: 3 / 4; border-radius: 14px; overflow: hidden; background: var(--hs-card-2); border: 1px solid var(--hs-line); }
+.mc-cont__pic img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+.mc-cont:hover .mc-cont__pic img { transform: scale(1.05); }
+.mc-cont__title { font: 700 12.5px/1.5 'Vazirmatn', sans-serif; color: #fff; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.mc-cont__ch { font-size: 11.5px; color: #ef4444; }
+
+/* ---------- چیپ‌های ژانر ---------- */
+.mc-chips {
+  display: flex; gap: 8px; padding: 12px 14px 4px; overflow-x: auto; scrollbar-width: none;
+}
+.mc-chips::-webkit-scrollbar { display: none; }
+.mc-chip {
+  flex: 0 0 auto; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--hs-line);
+  background: var(--hs-card); color: #cfcfd6; font: 600 13px/1 'Vazirmatn', sans-serif; cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s, transform .15s;
+}
+.mc-chip:hover { border-color: rgba(220,38,38,.5); color: #fff; }
+.mc-chip:active { transform: scale(.95); }
+.mc-chip.is-on { background: var(--hs-red); border-color: var(--hs-red); color: #fff; }
+
+.mc-empty { padding: 28px 12px; text-align: center; color: var(--hs-muted); font-size: 13px; list-style: none; }
+
+/* ---------- جدول زمانی ---------- */
+.mc-days { display: flex; gap: 8px; padding: 6px 14px 12px; overflow-x: auto; scrollbar-width: none; }
+.mc-days::-webkit-scrollbar { display: none; }
+.mc-day {
+  position: relative; flex: 0 0 auto; min-width: 82px; display: flex; flex-direction: column; gap: 4px; align-items: center;
+  padding: 12px 10px; border-radius: 14px; border: 1px solid var(--hs-line); background: var(--hs-card);
+  color: #cfcfd6; cursor: pointer; font-family: 'Vazirmatn', sans-serif; transition: background .2s, border-color .2s;
+}
+.mc-day b { font-size: 13px; font-weight: 800; }
+.mc-day i { font-style: normal; font-size: 11px; color: var(--hs-muted); }
+.mc-day u { position: absolute; top: -7px; text-decoration: none; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #3f3f46; color: #fff; }
+.mc-day.is-today { border-color: rgba(220,38,38,.55); }
+.mc-day.is-on { background: var(--hs-red); border-color: var(--hs-red); color: #fff; }
+.mc-day.is-on i { color: rgba(255,255,255,.85); }
+.mc-day.is-on u { background: #fff; color: var(--hs-red); }
+
+/* ---------- ردیف مانهوا ---------- */
+.mc-list { list-style: none; margin: 0; padding: 4px 12px 10px; display: grid; gap: 10px; }
+.mc-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 16px;
+  background: var(--hs-card); border: 1px solid var(--hs-line); text-decoration: none; color: inherit;
+  transition: border-color .25s, background .25s, transform .25s;
+}
+@media (hover: hover) { .mc-row:hover { border-color: rgba(220,38,38,.5); background: var(--hs-card-2); transform: translateY(-2px); } }
+.mc-row__pic { flex: none; width: 58px; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; background: var(--hs-card-2); }
+.mc-row__pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mc-row__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.mc-row__title { font: 700 14px/1.5 'Vazirmatn', sans-serif; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-row__sub { font-size: 12px; color: var(--hs-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-row__meta { font-size: 11.5px; color: #7c7c86; }
+.mc-row__end { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.mc-row__badge { padding: 3px 10px; border-radius: 999px; background: rgba(220,38,38,.15); color: #f87171; font: 700 11.5px/1.5 'Vazirmatn', sans-serif; }
+.mc-row__score { font-size: 12px; color: #fbbf24; font-weight: 700; direction: ltr; }
+
+.mc-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 4px; }
+.mc-panel-head h2 { margin: 0; font: 800 16px/1.4 'Vazirmatn', sans-serif; color: #fff; }
+.mc-panel-head span { font-size: 12px; color: var(--hs-muted); }
+.mc-more {
+  display: block; margin: 6px auto 18px; padding: 10px 28px; border-radius: 999px; border: 1px solid var(--hs-line);
+  background: var(--hs-card); color: #fff; font: 700 13px 'Vazirmatn', sans-serif; cursor: pointer; transition: background .2s, border-color .2s;
+}
+.mc-more:hover { background: var(--hs-red); border-color: var(--hs-red); }
+.mc-more[hidden], .mc-continue[hidden], .mc-empty[hidden] { display: none !important; }
+
+/* ---------- موبایل: مرتب‌سازی عمومی صفحه ---------- */
+@media (max-width: 767px) {
+  .home-page .title a { font-size: 1rem; font-weight: 800; }
+  .home-page .title { margin-top: 10px; }
+  .mw-banner-wrapper { border-bottom: 0 !important; }
+  .lst_type1 { border-bottom: 0 !important; }
+  .mc-stat b { font-size: 20px; }
+}
+
+/* ---------- دسکتاپ ---------- */
+@media (min-width: 1024px) {
+  .mc-tabs { margin: 22px 0 8px; width: fit-content; padding: 5px; gap: 6px; }
+  .mc-tab { padding: 11px 26px; font-size: 14px; }
+  .mc-stats { margin: 14px 0; gap: 16px; }
+  .mc-stat { flex-direction: row; justify-content: center; gap: 14px; padding: 18px; border-radius: 20px; }
+  .mc-stat b { font-size: 28px; }
+  .mc-stat span { font-size: 13.5px; }
+  .mc-sec-head, .mc-panel-head, .mc-chips, .mc-days { padding-inline: 0; }
+  .mc-sec-head h2, .mc-panel-head h2 { font-size: 1.25rem; }
+  .mc-cont-list { padding-inline: 0; }
+  .mc-cont-list > li { flex-basis: 140px; }
+  .mc-chips { flex-wrap: wrap; overflow: visible; padding-top: 16px; padding-bottom: 6px; }
+  .mc-list { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-inline: 0; gap: 14px; }
+  .mc-row { padding: 12px 14px; gap: 16px; }
+  .mc-row__pic { width: 72px; }
+  .mc-row__title { font-size: 15px; }
+  .mc-days { gap: 10px; }
+  .mc-day { min-width: 112px; }
+}

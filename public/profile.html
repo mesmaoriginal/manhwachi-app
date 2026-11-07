@@ -67,15 +67,15 @@
 
         <!-- ===================== دسترسی سریع ===================== -->
         <nav class="stats" aria-label="دسترسی سریع">
-            <a href="#bookmarksSection" class="stat">
+            <a href="/bookmarks.html" class="stat">
                 <span class="stat__icon stat__icon--red"><span class="material-symbols-outlined">bookmark</span></span>
                 <span class="stat__text">
-                    <b>علامت‌گذاری‌ها</b>
+                    <b>نشان‌شده‌ها</b>
                     <small id="bookmarksCountHint">مانهواهای ذخیره‌شده</small>
                 </span>
             </a>
 
-            <a href="#historySection" class="stat">
+            <a href="/history.html" class="stat">
                 <span class="stat__icon stat__icon--gold"><span class="material-symbols-outlined">history</span></span>
                 <span class="stat__text">
                     <b>تاریخچه خواندن</b>
@@ -83,12 +83,32 @@
                 </span>
             </a>
 
-            <a href="#commentsSection" class="stat">
+            <a href="/my-comments.html" class="stat">
                 <span class="stat__icon stat__icon--green"><span class="material-symbols-outlined">chat</span></span>
                 <span class="stat__text">
                     <b>دیدگاه‌های من</b>
                     <small id="commentsCountHint">نظرهای ثبت‌شده</small>
                 </span>
+            </a>
+        </nav>
+
+        <!-- لینک‌های مفید -->
+        <nav class="quick-links" aria-label="لینک‌های مفید">
+            <a href="/vip.html" class="qlink qlink--vip">
+                <span class="material-symbols-outlined">workspace_premium</span>
+                <span>خرید / مدیریت اشتراک</span>
+            </a>
+            <a href="/support.html" class="qlink">
+                <span class="material-symbols-outlined">support_agent</span>
+                <span>پشتیبانی</span>
+            </a>
+            <a href="/team.html" class="qlink">
+                <span class="material-symbols-outlined">groups</span>
+                <span>تیم مانهواچی</span>
+            </a>
+            <a href="/Careers.html" class="qlink">
+                <span class="material-symbols-outlined">work</span>
+                <span>همکاری با ما</span>
             </a>
         </nav>
 
@@ -211,51 +231,49 @@
             </div>
         </div>
 
-        <!-- ===================== علامت‌گذاری‌های من ===================== -->
-        <section id="bookmarksSection" class="panel shelf">
+        <!-- پیش‌نمایش فشرده + لینک به صفحه کامل (جستجو و مدیریت کامل در صفحات جدا) -->
+        <section id="bookmarksSection" class="panel shelf shelf--preview">
             <header class="sec-head sec-head--wrap">
                 <span class="sec-head__icon"><span class="material-symbols-outlined">bookmark</span></span>
-                <h2 class="sec-head__title">علامت‌گذاری‌های من</h2>
-                <div class="shelf-search sec-head__end">
-                    <span class="material-symbols-outlined">search</span>
-                    <input type="text" id="bookmarksSearch" oninput="filterShelf('bookmarksList', this.value)" placeholder="جستجو در نشان‌ها..." aria-label="جستجو در نشان‌ها" />
-                </div>
+                <h2 class="sec-head__title">نشان‌شده‌ها</h2>
+                <a href="/bookmarks.html" class="link-btn sec-head__end">
+                    مشاهده همه
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </a>
             </header>
-            <div id="bookmarksList" class="shelf-grid">
+            <div id="bookmarksList" class="shelf-grid shelf-grid--preview">
                 <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
         </section>
 
-        <!-- ===================== تاریخچه خواندن ===================== -->
-        <section id="historySection" class="panel shelf">
+        <section id="historySection" class="panel shelf shelf--preview">
             <header class="sec-head sec-head--wrap">
                 <span class="sec-head__icon"><span class="material-symbols-outlined">history</span></span>
                 <h2 class="sec-head__title">تاریخچه خواندن</h2>
-                <button type="button" onclick="clearReadingHistory()" class="link-btn sec-head__end">
-                    <span class="material-symbols-outlined">delete_sweep</span>
-                    پاک کردن تاریخچه
-                </button>
+                <a href="/history.html" class="link-btn sec-head__end">
+                    مشاهده همه
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </a>
             </header>
             <p class="note">
                 <span class="material-symbols-outlined">info</span>
-                این تاریخچه فقط روی همین گوشی یا مرورگر ذخیره می‌شه و بین دستگاه‌ها سینک نمی‌شه.
+                فقط روی همین مرورگر ذخیره می‌شود.
             </p>
-            <div class="shelf-search shelf-search--block">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" id="historySearch" oninput="filterShelf('historyList', this.value)" placeholder="جستجو در تاریخچه..." aria-label="جستجو در تاریخچه" />
-            </div>
-            <div id="historyList" class="shelf-grid">
+            <div id="historyList" class="shelf-grid shelf-grid--preview">
                 <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
         </section>
 
-        <!-- ===================== دیدگاه‌های من ===================== -->
-        <section id="commentsSection" class="panel shelf">
-            <header class="sec-head">
+        <section id="commentsSection" class="panel shelf shelf--preview">
+            <header class="sec-head sec-head--wrap">
                 <span class="sec-head__icon"><span class="material-symbols-outlined">chat</span></span>
                 <h2 class="sec-head__title">دیدگاه‌های من</h2>
+                <a href="/my-comments.html" class="link-btn sec-head__end">
+                    مشاهده همه
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </a>
             </header>
-            <div id="commentsList" class="comments">
+            <div id="commentsList" class="comments comments--preview">
                 <p class="text-xs text-zinc-500">در حال بارگذاری...</p>
             </div>
         </section>

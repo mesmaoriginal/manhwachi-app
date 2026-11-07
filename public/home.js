@@ -375,7 +375,8 @@ async function loadTopRated() {
     }));
 
     listArray.sort((a, b) => parseFloat(b.score || b.rating || 0) - parseFloat(a.score || a.rating || 0));
-    const topFive = listArray.slice(0, 5);
+    const _g = window.__mcGenre;
+    const topFive = (_g ? listArray.filter(i => (i.genres || []).includes(_g)) : listArray).slice(0, 5);
 
     const list = document.getElementById("topRatedList");
     if (!list) return;
@@ -630,9 +631,10 @@ async function renderLatestFromJSON() {
         items.sort((a, b) => dateToSortable(b.latestEpDate) - dateToSortable(a.latestEpDate));
 
         // ۵ تای اول
-        const top5 = items.slice(0, 5);
+        const _g = window.__mcGenre;
+        const top5 = (_g ? items.filter(i => (i.genres || []).includes(_g)) : items).slice(0, 5);
 
-        listContainer.innerHTML = '';
+        listContainer.innerHTML = top5.length ? '' : '<li class="mc-empty">در این ژانر چیزی پیدا نشد.</li>';
 
         top5.forEach(item => {
             const comicLink = `https://manhwachi.ir/comic/${item.slug}`;
