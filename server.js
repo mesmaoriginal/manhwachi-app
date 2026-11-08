@@ -372,6 +372,7 @@ app.get("/manhwas/*", async (req, res) => {
 const { isValidToken } = require("./lib/localImageToken");
 
 const imageWatermark = require("./lib/imageWatermark");
+const wmRegistry = require("./lib/wmRegistry"); // کد کوتاه روی عکس ← IP/کوکی/حساب (به‌جای نوشتن خودِ IP)
 app.get("/chapter-image/:key(*)", antiScrape.imageGuard, async (req, res) => {
   const { key } = req.params;
   const { token, expires } = req.query;
@@ -386,7 +387,9 @@ app.get("/chapter-image/:key(*)", antiScrape.imageGuard, async (req, res) => {
     let out = { buffer: raw.buffer, contentType: raw.contentType, watermarked: false };
     try {
       const gid = readGuestId(req);
-      out = await imageWatermark.apply({ buffer: raw.buffer, contentType: raw.contentType, cacheKey: key, ip: req.ip, tag: gid ? String(gid).slice(0, 4) : "" });
+      const wmCode = wmRegistry.codeFor(req.ip, gid); // کد ۸ حرفی (hex)؛ خودِ IP روی عکس چاپ نمی‌شود
+      out = await imageWatermark.apply({ buffer: raw.buffer, contentType: raw.contentType, cacheKey: key, code: wmCode });
+      if (out.watermarked) wmRegistry.note({ ip: req.ip, gid }); // فقط وقتی کدِ جدید دیده شد یک خط ذخیره می‌شود
     } catch (e) {
       if (e instanceof imageWatermark.WatermarkBusyError) {
         res.setHeader("Retry-After", String(e.retryAfterSeconds || 5));
@@ -1882,6 +1885,7 @@ app.post("/api/get-chapter-images", async (req, res) => {
     // ۳.۵ ضد اسکرپ: ابزارهای کپی‌برداری و رفتار غیرانسانی (تعداد زیاد چپتر/مانهوای متفاوت) → بلاک خودکار
     {
       const as = antiScrape.noteChapter({ req, userId: authContext ? authContext.user.id : null, slug, chapterNum });
+      if (as.ok && authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
       if (!as.ok) {
         if (as.retryAfterSeconds) res.setHeader("Retry-After", String(as.retryAfterSeconds));
         return res.status(as.status).json(as.body);
