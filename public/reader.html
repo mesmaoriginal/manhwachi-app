@@ -491,14 +491,14 @@
                 chNum = parseInt(chParam);
             }
         } else if (pathSegments.length >= 2) {
-            slug = pathSegments[1];
+            try { slug = decodeURIComponent(pathSegments[1]); } catch (e) { slug = pathSegments[1]; }
             if (pathSegments[2] !== undefined && !isNaN(parseInt(pathSegments[2]))) {
                 chNum = parseInt(pathSegments[2]);
             }
         }
 
         document.getElementById('back-to-manhwa-btn').onclick = () => {
-            window.location.href = `/comic/${slug}`;
+            window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`;
         };
 
         const db = window.supabaseClient; // کلاینت مشترک سایت (js/supabase.js) تا نشست لاگین همان باشد
@@ -757,7 +757,7 @@
                     ${btns}
                 </div>`;
             container.querySelectorAll('[data-act="reload"]').forEach(b => b.onclick = () => location.reload());
-            container.querySelectorAll('[data-act="back"]').forEach(b => b.onclick = () => { location.href = `/comic/${slug}`; });
+            container.querySelectorAll('[data-act="back"]').forEach(b => b.onclick = () => { location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`; });
         }
         function renderTimedLock(container, result, isGuest) {
             const early = result.code === 'EARLY_LOCKED';
@@ -951,7 +951,7 @@
 
                 if (nextEpisode) {
                     document.getElementById('next-ch-footer-btn').onclick = () => {
-                        window.location.href = `/comic/${slug}/${nextEpisode.num}`;
+                        window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(nextEpisode.num)}`;
                     };
                 } else {
                     document.getElementById('footer-status-icon').className = "inline-flex items-center justify-center w-20 h-20 rounded-full border-2 border-amber-500 mb-6 animate-pulse";
@@ -997,7 +997,7 @@
                 cover: coverPath,
                 chapter_number: chNum,
                 chapter_title: '',
-                url: `/comic/${slug}/${chNum}`,
+                url: `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(chNum)}`,
                 timestamp: Date.now()
             });
 
@@ -1085,7 +1085,7 @@
                     div.onclick = () => {
                         toggleEpisodeModal();
                         // قسمت قفل هم باز می‌شود؛ سرور تصمیم می‌گیرد VIP هست یا نه
-                        window.location.href = `/comic/${slug}/${epNum}`;
+                        window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(epNum)}`;
                     };
                 }
                 container.appendChild(div);

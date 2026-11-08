@@ -158,7 +158,7 @@
       .map((h) => {
         const title = h.title || h.slug;
         const cover = (c => c.indexOf('/manhwas/') === 0 ? (window.IMG_BASE || '') + c : c)(h.cover || '');
-        const href = h.url || '/manga.php?slug=' + encodeURIComponent(h.slug);
+        const href = h.url || 'https://manhwachi.ir/comic/' + encodeURIComponent(h.slug);
         const ch =
           h.chapter_number != null && h.chapter_number !== ''
             ? 'چپتر ' + h.chapter_number + (h.chapter_title ? ' · ' + h.chapter_title : '')

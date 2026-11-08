@@ -138,7 +138,7 @@
       .map((b) => {
         const title = b.title_fa || b.title_en || b.manhwa_slug;
         const cover = (c => c.indexOf('/manhwas/') === 0 ? (window.IMG_BASE || '') + c : c)(b.cover_url || '');
-        const href = '/manga.php?slug=' + encodeURIComponent(b.manhwa_slug);
+        const href = 'https://manhwachi.ir/comic/' + encodeURIComponent(b.manhwa_slug);
         return (
           '<article class="pp-card" data-slug="' +
           escapeHtml(b.manhwa_slug) +

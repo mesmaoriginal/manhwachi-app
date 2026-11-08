@@ -391,7 +391,7 @@ async function loadTopRated() {
 
       topHtml += `
         <li>
-          <a href="https://manhwachi.ir/comic/${item.slug}">
+          <a href="https://manhwachi.ir/comic/${encodeURIComponent(item.slug)}">
             <div class="row">
               <div class="col num">
                 <span ${index === 0 ? 'class="rank1"' : ""}>
@@ -637,7 +637,7 @@ async function renderLatestFromJSON() {
         listContainer.innerHTML = top5.length ? '' : '<li class="mc-empty">در این ژانر چیزی پیدا نشد.</li>';
 
         top5.forEach(item => {
-            const comicLink = `https://manhwachi.ir/comic/${item.slug}`;
+            const comicLink = `https://manhwachi.ir/comic/${encodeURIComponent(item.slug)}`;
             const mainGenre = item.genres && item.genres.length > 0 ? item.genres[0] : 'مانهوا';
             const titleFa = item.title_fa || item.title_en;
 

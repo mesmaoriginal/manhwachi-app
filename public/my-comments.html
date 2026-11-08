@@ -151,7 +151,7 @@
         const stamp = c.approved
           ? '<span class="pp-stamp pp-stamp--ok">تایید شده</span>'
           : '<span class="pp-stamp pp-stamp--wait">در انتظار تایید</span>';
-        const href = '/manga.php?slug=' + encodeURIComponent(c.manhwa_slug);
+        const href = 'https://manhwachi.ir/comic/' + encodeURIComponent(c.manhwa_slug);
         return (
           '<article class="pp-bubble" data-id="' +
           escapeHtml(c.id) +

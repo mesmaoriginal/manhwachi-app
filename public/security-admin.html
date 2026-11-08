@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>امنیت و ضد کپی | مانهواچی</title>
+<style>
+  :root{--bg:#0b0b0d;--card:#141417;--line:#26262b;--tx:#e5e5e5;--mut:#9a9aa3;--red:#ef4444;--grn:#22c55e;--amb:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.7 Tahoma,Vazirmatn,sans-serif;padding:16px;max-width:1000px;margin-inline:auto}
+  h1{font-size:20px;margin:6px 0 2px}h2{font-size:15px;margin:0 0 10px}
+  .sub{color:var(--mut);margin:0 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  input,select,button{font:inherit;color:var(--tx);background:#0f0f12;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  input:focus,select:focus{outline:1px solid var(--red)}
+  button{cursor:pointer}button.pri{background:var(--red);border-color:var(--red);color:#fff}
+  button.sm{padding:3px 10px;font-size:12px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .row input[type=text],.row input[type=password]{flex:1;min-width:140px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-all}
+  th{color:var(--mut);font-weight:600}
+  .tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid var(--line)}
+  .tag.auto{color:var(--amb);border-color:#7c5a10}.tag.man{color:#93c5fd;border-color:#1e3a8a}
+  .ev{font-size:12px;border-bottom:1px solid var(--line);padding:6px 0;color:#cfcfd6;word-break:break-all}
+  .mut{color:var(--mut)}.msg{margin-top:8px;min-height:20px}.ok{color:var(--grn)}.bad{color:var(--red)}
+  .scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<h1>امنیت و ضد کپی</h1>
+<p class="sub">مسدودسازی IP، بازه‌ی IP، کوکی مهمان یا حساب کاربری — اعمال روی کل سایت.</p>
+
+<div class="card" id="loginCard">
+  <h2>کلید مدیریت</h2>
+  <div class="row">
+    <input type="password" id="key" placeholder="VIP_ADMIN_KEY" autocomplete="current-password">
+    <button class="pri" id="loginBtn">ورود</button>
+  </div>
+  <div class="msg" id="loginMsg"></div>
+</div>
+
+<div id="panel" hidden>
+  <div class="card">
+    <h2>مسدود کردن</h2>
+    <div class="row">
+      <select id="bType">
+        <option value="ip">IP</option>
+        <option value="cidr">بازه‌ی IPv4 (مثل 1.2.3.0/24)</option>
+        <option value="user">حساب کاربری (user id)</option>
+        <option value="guest">کوکی مهمان</option>
+      </select>
+      <input type="text" id="bVal" placeholder="مقدار" dir="ltr">
+      <input type="text" id="bReason" placeholder="دلیل (اختیاری)">
+      <select id="bDur">
+        <option value="0">دائمی</option>
+        <option value="60">۱ ساعت</option>
+        <option value="1440">۱ روز</option>
+        <option value="10080">۷ روز</option>
+        <option value="43200">۳۰ روز</option>
+      </select>
+      <button class="pri" id="bBtn">مسدود کن</button>
+    </div>
+    <div class="msg" id="bMsg"></div>
+    <p class="mut" style="margin:8px 0 0">توجه: در ایران بسیاری از کاربران موبایل یک IP مشترک دارند؛ بلاک دائمی IP یا بازه‌ی بزرگ ممکن است کاربر عادی را هم ببندد. برای هاست‌ها و سرورهای اسکرپ (دیتاسنتر) مناسب است.</p>
+  </div>
+
+  <div class="card">
+    <h2>پیدا کردن صاحب حساب</h2>
+    <p class="mut" style="margin:0 0 8px">شناسه‌ی کاربر (از رویدادها)، شماره یا بخشی از نام. فقط حساب‌هایی که در خود مانهواچی ثبت‌نام کرده‌اند؛ برای IP یا مهمانِ بدون حساب هویتی وجود ندارد.</p>
+    <div class="row">
+      <input type="text" id="uQ" placeholder="user id یا شماره یا نام" dir="ltr">
+      <button id="uBtn">جستجو</button>
+    </div>
+    <div class="scroll"><table><tbody id="uRes"></tbody></table></div>
+    <div class="msg" id="uMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>لیست مسدودها <span class="mut" id="cnt"></span></h2>
+    <div class="scroll"><table><thead><tr><th>نوع</th><th>مقدار</th><th>دلیل</th><th>تا</th><th></th></tr></thead><tbody id="blocks"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h2>لیست سفید (تشخیص خودکار روی این‌ها اعمال نمی‌شود)</h2>
+    <div class="row">
+      <select id="aType"><option value="user">حساب کاربری</option><option value="ip">IP</option></select>
+      <input type="text" id="aVal" placeholder="مقدار" dir="ltr">
+      <button id="aBtn">افزودن</button>
+    </div>
+    <div class="msg" id="aMsg"></div>
+    <div class="scroll"><table><tbody id="allow"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h2>رویدادهای اخیر</h2>
+    <div id="events"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(s){ return document.querySelector(s); };
+  var KEY = sessionStorage.getItem('sa_key') || '';
+  function fa(n){ return String(n).replace(/\d/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d];}); }
+  function api(method, path, body){
+    return fetch(path, {
+      method: method,
+      headers: Object.assign({'x-vip-admin-key': KEY}, body ? {'Content-Type':'application/json'} : {}),
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ if(!r.ok) throw new Error(j.message||('خطا '+r.status)); return j; }); });
+  }
+  function cell(tr, text, cls){ var td=document.createElement('td'); td.textContent=text; if(cls) td.className=cls; tr.appendChild(td); return td; }
+  function fmtUntil(e){ return e.until ? new Date(e.until).toLocaleString('fa-IR') : 'دائمی'; }
+  var TYPES = {ip:'IP', cidr:'بازه', user:'کاربر', guest:'کوکی مهمان'};
+
+  function render(s){
+    $('#cnt').textContent = '(' + fa(s.blocks.length) + ') — IP شما: ' + s.you;
+    var tb = $('#blocks'); tb.textContent = '';
+    s.blocks.forEach(function(e){
+      var tr = document.createElement('tr');
+      var t = cell(tr, ''); var sp = document.createElement('span'); sp.className='tag '+(e.auto?'auto':'man'); sp.textContent = (TYPES[e.type]||e.type) + (e.auto?' · خودکار':''); t.appendChild(sp);
+      cell(tr, e.value).dir='ltr';
+      cell(tr, e.reason || '—');
+      cell(tr, fmtUntil(e));
+      var td = cell(tr, ''); var b = document.createElement('button'); b.className='sm'; b.textContent='آزاد کن';
+      b.onclick = function(){ api('POST','/api/security-admin/unblock',{type:e.type,value:e.value}).then(load).catch(function(x){alert(x.message);}); };
+      td.appendChild(b); tb.appendChild(tr);
+    });
+    if(!s.blocks.length){ var tr=document.createElement('tr'); cell(tr,'موردی نیست','mut'); tb.appendChild(tr); }
+
+    var ab = $('#allow'); ab.textContent='';
+    s.allow.forEach(function(e){
+      var tr=document.createElement('tr'); cell(tr,TYPES[e.type]||e.type); cell(tr,e.value).dir='ltr';
+      var td=cell(tr,''); var b=document.createElement('button'); b.className='sm'; b.textContent='حذف';
+      b.onclick=function(){ api('POST','/api/security-admin/unallow',{type:e.type,value:e.value}).then(load).catch(function(x){alert(x.message);}); };
+      td.appendChild(b); ab.appendChild(tr);
+    });
+
+    var ev = $('#events'); ev.textContent='';
+    s.events.forEach(function(e){
+      var d=document.createElement('div'); d.className='ev';
+      var parts=[new Date(e.t).toLocaleString('fa-IR'), e.kind];
+      ['ip','userId','guestId','value','why','reason','slug','ua'].forEach(function(k){ if(e[k]) parts.push(k+': '+e[k]); });
+      if(e.blockedMinutes) parts.push('بلاک ' + fa(e.blockedMinutes) + ' دقیقه');
+      d.textContent = parts.join(' · '); ev.appendChild(d);
+    });
+    if(!s.events.length){ var d=document.createElement('div'); d.className='mut'; d.textContent='رویدادی ثبت نشده'; ev.appendChild(d); }
+  }
+  function load(){
+    return api('GET','/api/security-admin/state').then(function(s){
+      $('#loginCard').hidden = true; $('#panel').hidden = false; render(s);
+    }).catch(function(e){
+      $('#panel').hidden = true; $('#loginCard').hidden = false; $('#loginMsg').className='msg bad'; $('#loginMsg').textContent = e.message;
+    });
+  }
+  $('#loginBtn').onclick = function(){ KEY = $('#key').value.trim(); sessionStorage.setItem('sa_key', KEY); load(); };
+  $('#key').addEventListener('keydown', function(e){ if(e.key==='Enter') $('#loginBtn').click(); });
+  $('#bBtn').onclick = function(){
+    var m=$('#bMsg'); m.className='msg';
+    api('POST','/api/security-admin/block',{type:$('#bType').value,value:$('#bVal').value.trim(),reason:$('#bReason').value.trim(),minutes:Number($('#bDur').value)})
+      .then(function(){ m.className='msg ok'; m.textContent='مسدود شد.'; $('#bVal').value=''; return load(); })
+      .catch(function(e){ m.className='msg bad'; m.textContent=e.message; });
+  };
+  $('#aBtn').onclick = function(){
+    var m=$('#aMsg'); m.className='msg';
+    api('POST','/api/security-admin/allow',{type:$('#aType').value,value:$('#aVal').value.trim()})
+      .then(function(){ m.className='msg ok'; m.textContent='افزوده شد.'; $('#aVal').value=''; return load(); })
+      .catch(function(e){ m.className='msg bad'; m.textContent=e.message; });
+  };
+  $('#uBtn').onclick = function(){
+    var m=$('#uMsg'); m.className='msg'; m.textContent='';
+    api('GET','/api/security-admin/user?q='+encodeURIComponent($('#uQ').value.trim())).then(function(r){
+      var tb=$('#uRes'); tb.textContent='';
+      if(!r.users.length){ m.textContent='کاربری پیدا نشد'; return; }
+      r.users.forEach(function(u){
+        var tr=document.createElement('tr');
+        cell(tr,u.name||'—'); cell(tr,u.phone||'—').dir='ltr'; cell(tr,u.email||'—').dir='ltr'; cell(tr,u.vip?'VIP':'عادی');
+        cell(tr,u.id).dir='ltr';
+        var td=cell(tr,''); var b=document.createElement('button'); b.className='sm'; b.textContent='مسدود کن';
+        b.onclick=function(){ if(!confirm('حساب این کاربر مسدود شود؟')) return;
+          api('POST','/api/security-admin/block',{type:'user',value:u.id,reason:'اسکرپ/کپی',minutes:0}).then(load).catch(function(x){alert(x.message);}); };
+        td.appendChild(b); tb.appendChild(tr);
+      });
+    }).catch(function(e){ m.className='msg bad'; m.textContent=e.message; });
+  };
+  if(KEY) load();
+  setInterval(function(){ if(!$('#panel').hidden) load(); }, 20000);
+})();
+</script>
+</body>
+</html>

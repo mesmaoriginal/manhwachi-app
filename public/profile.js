@@ -496,7 +496,7 @@ async function loadUserBookmarks(client) {
         const cover = (c => c.indexOf('/manhwas/') === 0 ? (window.IMG_BASE || '') + c : c)(b.cover_url || '');
         return `
             <div class="shelf-item group" data-title="${escapeHtml(title.toLowerCase())}">
-                <a href="/manga.php?slug=${encodeURIComponent(b.manhwa_slug)}" class="block aspect-[3/4] bg-zinc-800">
+                <a href="https://manhwachi.ir/comic/${encodeURIComponent(b.manhwa_slug)}" class="block aspect-[3/4] bg-zinc-800">
                     ${cover ? `<img loading="lazy" decoding="async" src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" />` : ''}
                 </a>
                 <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2">
@@ -571,7 +571,7 @@ async function loadUserComments(client) {
                 <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                     <div class="flex items-center gap-2">
                         <span class="text-[10px] text-zinc-500">${typeLabel} روی</span>
-                        <a href="/manga.php?slug=${encodeURIComponent(c.manhwa_slug)}" class="text-[11px] font-bold text-red-400 hover:underline">${escapeHtml(c.manhwa_slug)}</a>
+                        <a href="https://manhwachi.ir/comic/${encodeURIComponent(c.manhwa_slug)}" class="text-[11px] font-bold text-red-400 hover:underline">${escapeHtml(c.manhwa_slug)}</a>
                         ${statusBadge}
                     </div>
                     <button onclick="deleteOwnComment('${c.id}')" title="حذف دیدگاه" class="text-zinc-500 hover:text-red-500 transition-colors">
@@ -632,7 +632,7 @@ function saveReadingHistory({ slug, title, cover, chapter_number, chapter_title,
         cover: cover || '',
         chapter_number: chapter_number || null,
         chapter_title: chapter_title || '',
-        url: url || `/manga.php?slug=${encodeURIComponent(slug)}`,
+        url: url || `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`,
         timestamp: Date.now()
     });
     if (history.length > READING_HISTORY_LIMIT) {

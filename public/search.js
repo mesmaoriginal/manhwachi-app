@@ -364,7 +364,7 @@ const searchInput = document.getElementById('main-search');
             resultsGrid.insertAdjacentHTML(
                 'beforeend',
                 `
-                <a href="https://manhwachi.ir/comic/${item.slug}" class="group cursor-pointer block animate-fade-in">
+                <a href="https://manhwachi.ir/comic/${encodeURIComponent(item.slug)}" class="group cursor-pointer block animate-fade-in">
                     <div class="aspect-[3/4] rounded-2xl overflow-hidden relative mb-3 shadow-lg border border-white/5 group-hover:border-primary/75 card-glow transition-all duration-300">
                         <img src="${window.IMG_BASE || ''}/manhwas/${item.slug}/${item.cover_image}" alt="${escapeHtml(item.title_en)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <!-- Dark Overlay at the bottom -->

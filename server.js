@@ -138,6 +138,11 @@ app.use((req, res, next) => {
 // قبلاً وجود نداشت - یعنی همه‌چیز بدون فشرده‌سازی رد و بدل می‌شد.
 app.use(compression());
 
+// 🛡️ ضد کپی: IP/بازه/کوکی/حساب مسدودشده از کل سایت رد می‌شود (lib/antiScrape.js، مدیریت: /security-admin)
+const antiScrape = require("./lib/antiScrape");
+antiScrape.init({ readGuestId: (req) => readGuestId(req) });
+app.use(antiScrape.gate);
+
 // 🔎 سئو: ریدایرکت 301 از www به دامنه‌ی اصلی + هدر X-Robots-Tag برای صفحات خصوصی/ابزاری (lib/seoPolicy.js)
 const seoPolicy = require("./lib/seoPolicy");
 app.use(seoPolicy.middleware);
@@ -197,6 +202,7 @@ app.use("/admin", adminRouter);
 // عمومی: GET /api/vip/config  |  مدیریت: /vip-admin (نیاز به متغیر محیطی VIP_ADMIN_KEY)
 app.use(require("./lib/vipConfig").createRouter());
 app.use(require("./lib/careersConfig").createRouter({ adminAuth: require("./lib/vipConfig").adminAuth })); // باز/بسته بودن ثبت‌نام همکاری
+app.use(antiScrape.createRouter({ adminAuth: require("./lib/vipConfig").adminAuth, express })); // پنل /security-admin
 
 // ---------- تنظیمات EJS برای صفحه‌ی مانهوا ----------
 app.set("view engine", "ejs");
@@ -219,6 +225,7 @@ const fs = require("fs");
 const PUBLIC_DIR = path.resolve("public");
 const LOCAL_ASSET_RE = /\b(href|src)=(["'])(\/?[A-Za-z0-9_\-./]+\.(?:css|js))(?:\?v=[^"']*)?\2/g;
 const { IMG_BASE, IMG_SNIPPET } = require("./lib/imgBase");
+app.locals.IMG_BASE = IMG_BASE; // برای قالب‌های EJS (views/manga.ejs)
 const htmlCache = new Map();
 function versionedHtml(file) {
   const hit = htmlCache.get(file);
@@ -360,7 +367,8 @@ app.get("/manhwas/*", async (req, res) => {
 // خودکار برمی‌گرده به اون (اولویت اول همیشه Bunyه، این فقط fallback دومه).
 const { isValidToken } = require("./lib/localImageToken");
 
-app.get("/chapter-image/:key(*)", async (req, res) => {
+const imageWatermark = require("./lib/imageWatermark");
+app.get("/chapter-image/:key(*)", antiScrape.imageGuard, async (req, res) => {
   const { key } = req.params;
   const { token, expires } = req.query;
 
@@ -369,12 +377,23 @@ app.get("/chapter-image/:key(*)", async (req, res) => {
   }
 
   try {
-    const { buffer, contentType } = await getCachedImage(key);
-    res.set("Content-Type", contentType);
-    // فایل عوض نمی‌شه بدون این‌که کلید (مسیر) عوض بشه، پس کش طولانی‌مدت
-    // سمت مرورگر هم بی‌خطره - شبیه همون /manhwas/* بالا.
-    res.set("Cache-Control", "public, max-age=3600");
-    res.send(buffer);
+    const raw = await getCachedImage(key);
+    // 🛡️ چاپ ریز IP دریافت‌کننده روی عکس (ردیابی کپی؛ lib/imageWatermark.js). خاموش: AS_WATERMARK=0
+    let out = { buffer: raw.buffer, contentType: raw.contentType, watermarked: false };
+    try {
+      const gid = readGuestId(req);
+      out = await imageWatermark.apply({ buffer: raw.buffer, contentType: raw.contentType, cacheKey: key, ip: req.ip, tag: gid ? String(gid).slice(0, 4) : "" });
+    } catch (e) {
+      if (e instanceof imageWatermark.WatermarkBusyError) {
+        res.setHeader("Retry-After", String(e.retryAfterSeconds || 5));
+        return res.status(503).send("سرور موقتاً شلوغ است؛ کمی بعد دوباره تلاش کنید");
+      }
+      console.error("[watermark] خطا؛ عکس اصلی سرو شد:", e.message);
+    }
+    res.set("Content-Type", out.contentType);
+    // عکسِ واترمارک‌شده مخصوص همین IP است: نباید در کش مشترک (CDN/پروکسی) برای بقیه سرو شود.
+    res.set("Cache-Control", out.watermarked ? "private, max-age=3600" : "public, max-age=3600");
+    res.send(out.buffer);
   } catch (err) {
     if (err.name === "NoSuchKey" || err.$metadata?.httpStatusCode === 404) {
       return res.status(404).send("تصویر یافت نشد");
@@ -496,6 +515,29 @@ app.get("/comic/:slug", (req, res) => {
     if (k) return res.redirect(301, `/comic/${encodeURIComponent(k)}`);
   }
   renderMangaPage(req, res, raw);
+});
+
+// لینک‌های قدیمی/اشتراکی به شکل /comic/<slug>/<شماره> (مثلاً /comic/shadow-slave/1) هیچ‌وقت route نداشتن
+// و 404 می‌دادن. این‌ها رو به صفحه‌ی خواندن همون چپتر می‌بریم. آدرس سئوی چپتر هم /comic/<slug>/chapter-<n> هست.
+app.get("/comic/:slug/:num", (req, res, next) => {
+  if (!/^\d{1,5}$/.test(String(req.params.num))) return next();
+  const raw = String(req.params.slug || "").trim();
+  const data = getData();
+  let slug = raw;
+  if (!Object.prototype.hasOwnProperty.call(data, raw)) {
+    const k = Object.keys(data).find((x) => x.toLowerCase() === raw.toLowerCase());
+    if (!k) return next();
+    slug = k;
+  }
+  // حروف بزرگ/کوچک اشتباه → 301 به آدرس استاندارد
+  if (slug !== raw) return res.redirect(301, `/comic/${encodeURIComponent(slug)}/${parseInt(req.params.num, 10)}`);
+  // آدرس همین‌جا (بدون ریدایرکت) باز می‌شود: /comic/<slug>/<شماره> → خواننده (reader.html خودش slug و شماره را از مسیر می‌خواند)
+  try {
+    res.set({ "X-Robots-Tag": "noindex, follow", "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
+    return res.send(versionedHtml(path.join(PUBLIC_DIR, "reader.html")));
+  } catch (e) {
+    return res.redirect(302, `/reader.html?slug=${encodeURIComponent(slug)}&ch=${parseInt(req.params.num, 10)}`);
+  }
 });
 
 app.get("/manga.php", (req, res) => {
@@ -1830,6 +1872,15 @@ app.post("/api/get-chapter-images", async (req, res) => {
               : "شما به سقف مجاز خواندن چپتر در این ساعت رسیدید.",
           retryAfterSeconds: rl.retryAfterSeconds,
         });
+      }
+    }
+
+    // ۳.۵ ضد اسکرپ: ابزارهای کپی‌برداری و رفتار غیرانسانی (تعداد زیاد چپتر/مانهوای متفاوت) → بلاک خودکار
+    {
+      const as = antiScrape.noteChapter({ req, userId: authContext ? authContext.user.id : null, slug, chapterNum });
+      if (!as.ok) {
+        if (as.retryAfterSeconds) res.setHeader("Retry-After", String(as.retryAfterSeconds));
+        return res.status(as.status).json(as.body);
       }
     }
 

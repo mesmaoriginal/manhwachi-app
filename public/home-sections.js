@@ -66,7 +66,7 @@
     var ep = latestEp(m);
     var genres = (m.genres || []).slice(0, 2).map(gname).join(' • ');
     var s = score(m);
-    return '<li><a class="mc-row" href="/comic/' + encodeURIComponent(m.slug) + '">' +
+    return '<li><a class="mc-row" href="https://manhwachi.ir/comic/' + encodeURIComponent(m.slug) + '">' +
       '<span class="mc-row__pic"><img loading="lazy" decoding="async" src="' + (window.IMG_BASE || '') + '/manhwas/' + esc(m.slug) + '/' + esc(m.cover_image) + '" alt="' + esc(title(m)) + '"' +
       ' onerror="this.onerror=null;this.style.visibility=\'hidden\'"></span>' +
       '<span class="mc-row__body">' +
@@ -117,7 +117,7 @@
     if (!h.length) { box.hidden = true; return; }
     box.hidden = false;
     list.innerHTML = h.map(function (x) {
-      return '<li><a class="mc-cont" href="' + esc(x.url || '/comic/' + x.slug) + '">' +
+      return '<li><a class="mc-cont" href="' + esc(x.url || 'https://manhwachi.ir/comic/' + encodeURIComponent(x.slug)) + '">' +
         '<span class="mc-cont__pic"><img loading="lazy" decoding="async" src="' + esc(x.cover || '') + '" alt="' + esc(x.title) + '" onerror="this.style.visibility=\'hidden\'"></span>' +
         '<span class="mc-cont__title">' + esc(x.title) + '</span>' +
         '<span class="mc-cont__ch">ادامه از چپتر ' + esc(fa(x.chapter_number || 1)) + '</span></a></li>';

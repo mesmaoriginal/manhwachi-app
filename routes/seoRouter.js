@@ -134,12 +134,12 @@ function renderHome(readHtml, homeFile) {
 
   html = fillUl(html, "todaysList", latest.map((it) => {
     const t = esc(title(it)), g = esc(faOf(keyOf((it.genres || [])[0] || "مانهوا")));
-    return `<li><a class="comic-card" href="/comic/${encodeURIComponent(it.slug)}"><div class="comic-pic"><img src="${coverUrl(it)}" alt="مانهوا ${t}" loading="lazy" decoding="async"><div class="badge-chapter-box"><span class="badge-chapter-num">چپتر ${esc(it.latestNum)}</span></div></div><div class="comic-info"><h3 class="comic-title">${t}</h3><div class="comic-meta"><span class="comic-genre">${g}</span></div></div></a></li>`;
+    return `<li><a class="comic-card" href="${SITE}/comic/${encodeURIComponent(it.slug)}"><div class="comic-pic"><img src="${coverUrl(it)}" alt="مانهوا ${t}" loading="lazy" decoding="async"><div class="badge-chapter-box"><span class="badge-chapter-num">چپتر ${esc(it.latestNum)}</span></div></div><div class="comic-info"><h3 class="comic-title">${t}</h3><div class="comic-meta"><span class="comic-genre">${g}</span></div></div></a></li>`;
   }).join("\n"));
 
   html = fillUl(html, "topRatedList", top.map((it, i) => {
     const t = esc(title(it)), g = esc((it.genres || []).map((x) => faOf(keyOf(x))).join(" • ") || "نامشخص");
-    return `<li><a href="/comic/${encodeURIComponent(it.slug)}"><div class="row"><div class="col num"><span${i === 0 ? ' class="rank1"' : ""}>${i + 1}</span></div><div class="col pic"><img src="${coverUrl(it)}" width="100%" alt="مانهوا ${t}" loading="lazy" decoding="async"></div><div class="col info"><p class="subj"><strong class="ellipsis">${t}</strong></p><p class="genre">${g}</p></div></div></a></li>`;
+    return `<li><a href="${SITE}/comic/${encodeURIComponent(it.slug)}"><div class="row"><div class="col num"><span${i === 0 ? ' class="rank1"' : ""}>${i + 1}</span></div><div class="col pic"><img src="${coverUrl(it)}" width="100%" alt="مانهوا ${t}" loading="lazy" decoding="async"></div><div class="col info"><p class="subj"><strong class="ellipsis">${t}</strong></p><p class="genre">${g}</p></div></div></a></li>`;
   }).join("\n"));
 
   const chips = [...c.genres.values()].sort((a, b) => b.items.length - a.items.length)
@@ -188,7 +188,7 @@ ${css || ""}</style>${ld || ""}</head><body>
 <nav aria-label="منوی اصلی"><a href="/">خانه</a><a href="/library-page.html">آرشیو مانهوا</a><a href="/genres">ژانرها</a><a href="/blog">وبلاگ</a><a href="/search.html">جستجو</a></nav></div></header>
 <main>${body}</main><footer>© ${BRAND} | Manhwachi — خواندن آنلاین مانهوا و مانگا با ترجمه فارسی</footer></body></html>`;
 }
-const card = (it) => `<a class="card" href="/comic/${encodeURIComponent(it.slug)}"><img src="${coverUrl(it)}" alt="مانهوا ${esc(title(it))}" loading="lazy" decoding="async" width="300" height="400"><h2>${esc(title(it))}</h2>${score(it) ? `<small>★ ${esc(it.score || it.rating)}</small>` : ""}</a>`;
+const card = (it) => `<a class="card" href="${SITE}/comic/${encodeURIComponent(it.slug)}"><img src="${coverUrl(it)}" alt="مانهوا ${esc(title(it))}" loading="lazy" decoding="async" width="300" height="400"><h2>${esc(title(it))}</h2>${score(it) ? `<small>★ ${esc(it.score || it.rating)}</small>` : ""}</a>`;
 const crumbs = (items) => ({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map(([n, u], i) => ({ "@type": "ListItem", position: i + 1, name: n, item: u })) });
 
 
@@ -261,13 +261,13 @@ function renderChapter(c, it, n) {
   const g0 = genres[0] && c.genres.get(genres[0].slug);
   const related = g0 ? g0.items.filter((x) => x.slug !== it.slug).slice(0, 6) : [];
 
-  const body = `<nav class="crumb" aria-label="مسیر"><a href="/">خانه</a> › <a href="/comic/${encodeURIComponent(it.slug)}">${esc(nameFa)}</a> › چپتر ${n}</nav>
+  const body = `<nav class="crumb" aria-label="مسیر"><a href="/">خانه</a> › <a href="${SITE}/comic/${encodeURIComponent(it.slug)}">${esc(nameFa)}</a> › چپتر ${n}</nav>
 <h1>مانهوا <span>${esc(nameFa)}</span> چپتر ${n}</h1>
 <div class="hero">${it.cover_image ? `<img src="${coverUrl(it)}" alt="مانهوا ${esc(nameFa)}" width="130" height="173" decoding="async" fetchpriority="high">` : ""}
 <div class="meta"><p class="intro">${esc(lead)}.${ep.date ? ` تاریخ انتشار: ${esc(ep.date)}.` : ""} ${lastN === n ? "این آخرین چپتر منتشرشده است." : `آخرین چپتر منتشرشده: ${lastN}.`}</p>
 <span class="badge ${free ? "free" : "vip"}">${free ? "رایگان" : "اشتراکی"}</span>${genres.slice(0, 3).map((g) => `<a class="badge" href="/genre/${encodeURIComponent(g.slug)}">${esc(g.name)}</a>`).join("")}
-<div><a class="cta" href="/reader.html?slug=${encodeURIComponent(it.slug)}&amp;ch=${n}" rel="nofollow">خواندن چپتر ${n}</a></div></div></div>
-<div class="pn">${next ? `<a href="${chUrl(it.slug, next.n)}" rel="next">‹ چپتر ${next.n}</a>` : "<span></span>"}<a href="/comic/${encodeURIComponent(it.slug)}">همه‌ی چپترهای ${esc(nameFa)}</a>${prev ? `<a href="${chUrl(it.slug, prev.n)}" rel="prev">چپتر ${prev.n} ›</a>` : "<span></span>"}</div>
+<div><a class="cta" href="${SITE}/comic/${encodeURIComponent(it.slug)}/${n}" rel="nofollow">خواندن چپتر ${n}</a></div></div></div>
+<div class="pn">${next ? `<a href="${chUrl(it.slug, next.n)}" rel="next">‹ چپتر ${next.n}</a>` : "<span></span>"}<a href="${SITE}/comic/${encodeURIComponent(it.slug)}">همه‌ی چپترهای ${esc(nameFa)}</a>${prev ? `<a href="${chUrl(it.slug, prev.n)}" rel="prev">چپتر ${prev.n} ›</a>` : "<span></span>"}</div>
 ${raw ? `<section class="sec"><h2>درباره‌ی مانهوا ${esc(nameFa)}</h2><p>${esc(trimTo(raw, 420))}</p></section>` : ""}
 <section class="sec"><h2>چپترهای دیگر ${esc(nameFa)}</h2><div class="chl">${chips}</div></section>
 ${related.length ? `<section class="sec"><h2>مانهواهای مشابه</h2><div class="grid">${related.map(card).join("")}</div></section>` : ""}`;

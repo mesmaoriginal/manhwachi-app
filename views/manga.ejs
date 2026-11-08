@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html class="dark" lang="fa" dir="rtl">
 <head>
+<script>window.IMG_BASE=<%- JSON.stringify(IMG_BASE || "") %>;</script>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="robots" content="<%= manhwa ? 'index, follow, max-image-preview:large' : 'noindex, follow' %>">
@@ -684,12 +685,12 @@
                 initial_episodes.forEach(function(ep) {
                     var ep_num = ep.num;
                     var is_free = !!ep.free;
-                    var ep_link = "/reader.html?slug=" + encodeURIComponent(slug) + "&ch=" + ep_num;
+                    var ep_link = "https://manhwachi.ir/comic/" + encodeURIComponent(slug) + "/" + ep_num;
                     var ep_is_new = ejsIsEpisodeNew(ep);
                 %>
                 <a href="<%= ep_link %>" data-free="<%= is_free ? '1' : '0' %>" data-num="<%= ep_num %>" class="mx-ep episode-card">
                     <div class="mx-thumb">
-                        <img src="/manhwas/<%= encodeURIComponent(slug) %>/chapterPictures/chapterpicture<%= ep_num %>.png" class="chapter-cover-img" alt="Ep <%= ep_num %>" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <img src="<%= IMG_BASE %>/manhwas/<%= encodeURIComponent(slug) %>/chapterPictures/chapterpicture<%= ep_num %>.png" class="chapter-cover-img" alt="Ep <%= ep_num %>" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
                         <div class="chapter-cover-fallback hidden">#<%= ep_num %></div>
                         <% if (!is_free) { %><div class="mx-lock chapter-lock-overlay"><span class="material-symbols-outlined">lock</span></div><% } %>
                         <% if (ep_is_new) { %><span class="new-badge">جدید</span><% } %>
@@ -1178,7 +1179,7 @@
             visibleEpisodes.forEach((ep, idx) => {
                 const a = document.createElement('a');
                 let isFree = ep.free;
-                a.href = `/reader.html?slug=${encodeURIComponent(MANHWA_SLUG)}&ch=${encodeURIComponent(ep.num)}`;
+                a.href = `https://manhwachi.ir/comic/${encodeURIComponent(MANHWA_SLUG)}/${encodeURIComponent(ep.num)}`;
                 a.dataset.free = isFree ? '1' : '0';
                 a.dataset.num = ep.num;
 
@@ -1193,7 +1194,7 @@
                 const isNew = isChapterNew(ep);
                 a.innerHTML = `
                     <div class="mx-thumb">
-                        <img src="/manhwas/${encodeURIComponent(MANHWA_SLUG)}/chapterPictures/chapterpicture${ep.num}.png" class="chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <img src="${window.IMG_BASE || ''}/manhwas/${encodeURIComponent(MANHWA_SLUG)}/chapterPictures/chapterpicture${ep.num}.png" class="chapter-cover-img" alt="Ep ${ep.num}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
                         <div class="chapter-cover-fallback hidden">#${ep.num}</div>
                         ${((!isFree && !currentUserSubscribed) || timeLocked) ? `<div class="mx-lock chapter-lock-overlay"><span class="material-symbols-outlined">lock</span></div>` : ''}
                         ${isNew ? `<span class="new-badge">جدید</span>` : ''}
@@ -1233,7 +1234,7 @@
         // لاگین/اشتراک کاربر یا به صفحه خرید اشتراک بره یا به صفحه ریدر
         // (بررسی نهایی و دقیق‌تر خود صفحه ریدر انجام می‌شه)
         async function goToChapter(epNum, isFree) {
-            const readerUrl = `/reader.html?slug=${encodeURIComponent(MANHWA_SLUG)}&ch=${encodeURIComponent(epNum)}`;
+            const readerUrl = `https://manhwachi.ir/comic/${encodeURIComponent(MANHWA_SLUG)}/${encodeURIComponent(epNum)}`;
 
             // به محض تلاش برای باز کردن چپتر، به عنوان خوانده‌شده ثبتش می‌کنیم تا نشان «جدید» برداشته شود
             ChapterReadService.markRead(MANHWA_SLUG, epNum);
@@ -1615,14 +1616,14 @@
             similarList.innerHTML = '';
             similarItems.forEach(item => {
                 const card = document.createElement('a');
-                card.href = `/comic/${encodeURIComponent(item.slug)}`;
+                card.href = `https://manhwachi.ir/comic/${encodeURIComponent(item.slug)}`;
                 card.className = 'sim-card';
                 const faTitle = escapeHtml(item.title_fa || item.title_en);
                 const firstGenre = (item.genres || [])[0];
 
                 card.innerHTML = `
                     <div class="sim-cover">
-                        <img src="/manhwas/${encodeURIComponent(item.slug)}/${item.cover_image}"
+                        <img src="${window.IMG_BASE || ''}/manhwas/${encodeURIComponent(item.slug)}/${item.cover_image}"
                              alt="${faTitle}" loading="lazy" decoding="async"
                              onerror="this.onerror=null;this.src='/ManhwaChi/favicon-192x192.png'" />
                         <span class="sim-score"><span class="material-symbols-outlined">star</span>${escapeHtml(item.score || '—')}</span>
