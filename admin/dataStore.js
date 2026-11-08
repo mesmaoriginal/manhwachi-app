@@ -17,7 +17,7 @@ const { dataEvents, DATA_UPDATED } = require("../lib/dataEvents");
 const DATA_DIR = path.join(__dirname, "..", "data");
 const DATA_PATH = path.join(DATA_DIR, "data.json");
 const BACKUP_DIR = path.join(DATA_DIR, "backups");
-const MAX_BACKUPS = 30;
+const MAX_BACKUPS = Math.max(1, Number(process.env.DATA_BACKUP_KEEP) || 1); // فقط آخرین بکاپ (دیسک موقت محدود است)
 
 let queue = Promise.resolve();
 

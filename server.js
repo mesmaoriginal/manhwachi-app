@@ -317,6 +317,7 @@ const PUBLIC_MANHWA_PATH_RE =
   /^[^/]+\/(?:chapterPictures\/)?[^/]+\.(?:jpe?g|png|webp|gif|avif)$/i;
 
 const { getCachedImage, UpstreamBusyError } = require("./lib/imageProxyCache");
+require("./lib/diskGuard").start(); // لاگ و کنترل مصرف دیسک (دیسک موقت ۵۱۲MB)
 
 app.get("/manhwas/*", async (req, res) => {
   // req.params[0] یعنی همه‌چیز بعد از "/manhwas/" (مثلاً "<slug>/cover.jpg"

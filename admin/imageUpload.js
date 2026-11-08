@@ -39,6 +39,19 @@ const PARSPACK_BUCKET = process.env.PARSPACK_BUCKET;
 const TMP_UPLOAD_DIR = path.join(os.tmpdir(), "manhwachi-admin-uploads");
 fs.mkdirSync(TMP_UPLOAD_DIR, { recursive: true });
 
+// اگه پردازشی وسط کار کرش کنه، فایل خام (تا ۳۰MB) برای همیشه روی دیسک موقت می‌مونه؛ هر ۱۰ دقیقه قدیمی‌ها رو جارو کن
+function sweepTmpUploads() {
+  fs.readdir(TMP_UPLOAD_DIR, (e, names) => {
+    if (e) return;
+    for (const n of names) {
+      const f = path.join(TMP_UPLOAD_DIR, n);
+      fs.stat(f, (er, st) => { if (!er && st.isFile() && Date.now() - st.mtimeMs > 30 * 60 * 1000) fs.unlink(f, () => {}); });
+    }
+  });
+}
+sweepTmpUploads();
+setInterval(sweepTmpUploads, 10 * 60 * 1000).unref();
+
 // حداکثر حجم هر فایلِ خام (قبل از پردازش) - فقط برای جلوگیری از آپلود
 // چیزهای عجیب‌وغریب حجیم، نه محدودیت نهایی (اون رو sharp حل می‌کنه).
 const MAX_RAW_UPLOAD_BYTES = 30 * 1024 * 1024; // ۳۰ مگابایت

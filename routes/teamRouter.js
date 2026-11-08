@@ -1330,11 +1330,14 @@ module.exports = function ({ getAuthContext }) {
       if (e) return;
       for (const n of names) {
         const f = path.join(TMP, n);
-        fs.stat(f, (er, st) => { if (!er && Date.now() - st.mtimeMs > 30 * 60 * 1000) fs.unlink(f, () => {}); });
+        // کپی‌های پیش‌نمایش (c_*) تا ۱۰۰MB هستن و دوباره از S3 قابل‌گرفتنن: فقط ۵ دقیقه بعد از آخرین استفاده می‌مونن.
+        // آپلودهای نیمه‌کاره (بقیه‌ی فایل‌ها) ۳۰ دقیقه فرصت دارن.
+        const ttl = n.startsWith("c_") ? 5 * 60 * 1000 : 30 * 60 * 1000;
+        fs.stat(f, (er, st) => { if (!er && Date.now() - st.mtimeMs > ttl) fs.unlink(f, () => {}); });
       }
     });
   }
-  setInterval(cleanTmp, 10 * 60 * 1000).unref();
+  setInterval(cleanTmp, 2 * 60 * 1000).unref();
   cleanTmp();
   setInterval(sweep, 5 * 60 * 1000).unref();
   setTimeout(sweep, 60 * 1000).unref();
