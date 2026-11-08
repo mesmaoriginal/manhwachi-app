@@ -145,7 +145,11 @@ app.use(compression());
 // 🛡️ ضد کپی: IP/بازه/کوکی/حساب مسدودشده از کل سایت رد می‌شود (lib/antiScrape.js، مدیریت: /security-admin)
 const antiScrape = require("./lib/antiScrape");
 antiScrape.init({ readGuestId: (req) => readGuestId(req) });
-app.use(antiScrape.gate);
+// ⛔ بلاک خودکار/دروازه‌ی ضد کپی به‌صورت پیش‌فرض خاموش است (همه‌ی کاربرها و حتی ادمین را مسدود می‌کرد).
+// برای روشن کردن دوباره: ANTISCRAPE_GATE=1 (اول بلاک‌لیست /security-admin را تمیز کن) و ANTISCRAPE_AUTOBLOCK=1 برای بلاک خودکار.
+const ANTISCRAPE_GATE_ON = process.env.ANTISCRAPE_GATE === "1";
+const ANTISCRAPE_AUTOBLOCK_ON = process.env.ANTISCRAPE_AUTOBLOCK === "1";
+if (ANTISCRAPE_GATE_ON) app.use(antiScrape.gate);
 
 // 🔎 سئو: ریدایرکت 301 از www به دامنه‌ی اصلی + هدر X-Robots-Tag برای صفحات خصوصی/ابزاری (lib/seoPolicy.js)
 const seoPolicy = require("./lib/seoPolicy");
@@ -374,7 +378,7 @@ const { isValidToken } = require("./lib/localImageToken");
 
 const imageWatermark = require("./lib/imageWatermark");
 const wmRegistry = require("./lib/wmRegistry"); // کد کوتاه روی عکس ← IP/کوکی/حساب (به‌جای نوشتن خودِ IP)
-app.get("/chapter-image/:key(*)", antiScrape.imageGuard, async (req, res) => {
+app.get("/chapter-image/:key(*)", ANTISCRAPE_GATE_ON ? antiScrape.imageGuard : (req, res, next) => next(), async (req, res) => {
   const { key } = req.params;
   const { token, expires } = req.query;
 
@@ -1884,7 +1888,9 @@ app.post("/api/get-chapter-images", async (req, res) => {
     }
 
     // ۳.۵ ضد اسکرپ: ابزارهای کپی‌برداری و رفتار غیرانسانی (تعداد زیاد چپتر/مانهوای متفاوت) → بلاک خودکار
-    {
+    if (!ANTISCRAPE_AUTOBLOCK_ON) {
+      if (authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
+    } else {
       const as = antiScrape.noteChapter({ req, userId: authContext ? authContext.user.id : null, slug, chapterNum });
       if (as.ok && authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
       if (!as.ok) {
