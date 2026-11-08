@@ -113,7 +113,9 @@ function index() {
   return cache;
 }
 
-const coverUrl = (it) => `/manhwas/${encodeURIComponent(it.slug)}/${esc(it.cover_image)}`;
+const { IMG_BASE, IMG_SNIPPET } = require("../lib/imgBase");
+const coverPath = (it) => `/manhwas/${encodeURIComponent(it.slug)}/${esc(it.cover_image)}`; // برای og:image/سئو (دامنه‌ی اصلی)
+const coverUrl = (it) => IMG_BASE + coverPath(it); // برای <img> (CDN اگه IMG_BASE ست باشه)
 
 // ---------- صفحه اصلی ----------
 function fillUl(html, id, inner) {
@@ -158,7 +160,7 @@ function renderHome(readHtml, homeFile) {
 function layout({ ttl, desc, canonical, robots, body, ld, image, css, ogType }) {
   const img = image || DEFAULT_OG;
   return `<!DOCTYPE html>
-<html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="fa" dir="rtl"><head><meta charset="UTF-8">${IMG_SNIPPET}<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(ttl)}</title><meta name="description" content="${esc(desc)}"><meta name="robots" content="${robots || "index, follow, max-image-preview:large"}">
 <link rel="canonical" href="${canonical}">
 <meta property="og:type" content="${ogType || 'website'}"><meta property="og:site_name" content="${BRAND}"><meta property="og:title" content="${esc(ttl)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="fa_IR"><meta property="og:image" content="${img}">
@@ -237,7 +239,7 @@ function renderChapter(c, it, n) {
   const free = !!ep.free;
   const genres = (Array.isArray(it.genres) ? it.genres : []).map((g) => ({ name: faOf(keyOf(g)), slug: slugOf(keyOf(g)) }));
   const lastN = list[list.length - 1].n;
-  const cover = it.cover_image ? SITE + coverUrl(it) : undefined;
+  const cover = it.cover_image ? SITE + coverPath(it) : undefined;
 
   const ttls = [
     `مانهوا ${nameFa} چپتر ${n} | خواندن آنلاین | ${BRAND}`,
@@ -358,7 +360,7 @@ module.exports = function createSeoRouter(opts = {}) {
     res.set("Cache-Control", "public, max-age=300").type("html").send(layout({
       ttl: trimTo(`مانهوا و مانگای ${g.name} | خواندن آنلاین با ترجمه فارسی | ${BRAND}`, 70),
       desc: trimTo(`خواندن آنلاین ${fa(g.items.length)} مانهوا و مانگای ${g.name} با ترجمه فارسی، از جمله ${names}. جدیدترین چپترها در مانهواچی.`, 158),
-      canonical: url, body, image: first && first.cover_image ? SITE + coverUrl(first) : undefined,
+      canonical: url, body, image: first && first.cover_image ? SITE + coverPath(first) : undefined,
       ld: jsonLd(crumbs([["خانه", SITE + "/"], ["ژانرها", SITE + "/genres"], [g.name, url]])) +
         jsonLd({ "@context": "https://schema.org", "@type": "CollectionPage", name: `مانهوای ${g.name}`, url, inLanguage: "fa-IR",
           isPartOf: { "@type": "WebSite", name: BRAND, url: SITE + "/" },

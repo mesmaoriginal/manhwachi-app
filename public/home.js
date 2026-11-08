@@ -384,7 +384,7 @@ async function loadTopRated() {
 
     let topHtml = "";
     topFive.forEach((item, index) => {
-      const coverSrc = `manhwas/${item.slug}/${item.cover_image}`;
+      const coverSrc = `${window.IMG_BASE || ''}/manhwas/${item.slug}/${item.cover_image}`;
       const genresFormatted = item.genres 
         ? item.genres.map(genre => genreNames[genre] || genre).join(" • ") 
         : "نامشخص";
@@ -477,7 +477,7 @@ function renderLibraryCards(manhwas) {
 
     const originType = manhwa.origin || "کره‌ای";
     const detailPageLink = `manhwas/${manhwa.slug}/index.html`;
-    const coverSrc = `manhwas/${manhwa.slug}/${manhwa.cover_image}`;
+    const coverSrc = `${window.IMG_BASE || ''}/manhwas/${manhwa.slug}/${manhwa.cover_image}`;
 
     const cardHTML = `
       <div class="manhwa-card" data-link="${detailPageLink}">
@@ -650,7 +650,7 @@ async function renderLatestFromJSON() {
                 <a class="comic-card" href="${comicLink}">
                     <div class="comic-pic">
                         ${accessBadge}
-                        <img src="/manhwas/${item.slug}/${item.cover_image}" alt="${titleFa}" loading="lazy">
+                        <img src="${window.IMG_BASE || ''}/manhwas/${item.slug}/${item.cover_image}" alt="${titleFa}" loading="lazy">
                         <div class="badge-chapter-box">
                             <span class="badge-chapter-num">چپتر ${item.latestEpNum}</span>
                             ${item.latestEpDate ? `<span class="badge-chapter-date">${item.latestEpDate}</span>` : ''}

@@ -493,7 +493,7 @@ async function loadUserBookmarks(client) {
     // پیش‌نمایش فشرده؛ لیست کامل در /bookmarks.html
     listEl.innerHTML = bookmarks.slice(0, 8).map(b => {
         const title = b.title_fa || b.title_en || b.manhwa_slug;
-        const cover = b.cover_url || '';
+        const cover = (c => c.indexOf('/manhwas/') === 0 ? (window.IMG_BASE || '') + c : c)(b.cover_url || '');
         return `
             <div class="shelf-item group" data-title="${escapeHtml(title.toLowerCase())}">
                 <a href="/manga.php?slug=${encodeURIComponent(b.manhwa_slug)}" class="block aspect-[3/4] bg-zinc-800">

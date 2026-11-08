@@ -112,7 +112,7 @@
             return `
             <a href="https://manhwachi.ir/comic/${m.slug}" class="poster-card flex-none w-40 snap-start">
                 <div class="poster-frame relative aspect-[3/4] rounded-lg overflow-hidden mb-2">
-                    <img src="manhwas/${m.slug}/${m.cover_image}" class="w-full h-full object-cover"
+                    <img src="${window.IMG_BASE || ''}/manhwas/${m.slug}/${m.cover_image}" class="w-full h-full object-cover"
                          loading="lazy" alt="${m.title_fa || m.title_en}"
                          onerror="this.onerror=null;this.src='${fallbackCover}';this.classList.add('object-contain','p-6')">
                     <span class="poster-rank">${index + 1}</span>

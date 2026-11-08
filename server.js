@@ -218,6 +218,7 @@ app.use("/.well-known", express.static("public/.well-known", { dotfiles: "allow"
 const fs = require("fs");
 const PUBLIC_DIR = path.resolve("public");
 const LOCAL_ASSET_RE = /\b(href|src)=(["'])(\/?[A-Za-z0-9_\-./]+\.(?:css|js))(?:\?v=[^"']*)?\2/g;
+const { IMG_BASE, IMG_SNIPPET } = require("./lib/imgBase");
 const htmlCache = new Map();
 function versionedHtml(file) {
   const hit = htmlCache.get(file);
@@ -231,7 +232,8 @@ function versionedHtml(file) {
       return m;
     }
   });
-  const out = seoPolicy.enhance("/" + path.basename(file), html); // 🔎 canonical/robots برای صفحاتی که ندارند
+  let out = seoPolicy.enhance("/" + path.basename(file), html); // 🔎 canonical/robots برای صفحاتی که ندارند
+  if (IMG_SNIPPET) out = out.replace(/<head[^>]*>/i, (m) => m + IMG_SNIPPET); // آدرس پایه‌ی CDN عکس برای فرانت
   htmlCache.set(file, { at: Date.now(), body: out });
   return out;
 }
@@ -321,6 +323,8 @@ app.get("/manhwas/*", async (req, res) => {
     res.set("Content-Type", contentType);
     // این تصاویر به‌ندرت عوض می‌شن (فقط وقتی از پنل ادمین آپلود جدید
     // می‌گیرن)، پس کش طولانی‌مدت مثل بقیه‌ی فایل‌های استاتیک منطقیه.
+    // اجازه‌ی نمایش عکس روی سایت اصلی وقتی از ساب‌دامین img سرو می‌شه (CDN)
+    res.set("Cross-Origin-Resource-Policy", "cross-origin");
     res.set("Cache-Control", "public, max-age=604800");
     return res.send(buffer);
   } catch (err) {
@@ -435,8 +439,9 @@ function renderMangaPage(req, res, slugRaw) {
     const seo_desc = seoTrim(_body ? `${_lead}؛ ${_body}` : `${_lead} در مانهواچی.`, 158);
     const genre_links = (manhwa.genres || []).map((g) => genreInfo(g)); // [{name, slug}] → لینک داخلی به /genre/<slug>
 
-    const cover_url = `/manhwas/${encodeURIComponent(slug)}/${manhwa.cover_image || ""}`;
-    const full_cover_url = `https://manhwachi.ir${cover_url}`;
+    const cover_path = `/manhwas/${encodeURIComponent(slug)}/${manhwa.cover_image || ""}`;
+    const cover_url = `${IMG_BASE}${cover_path}`; // برای <img> (CDN اگه IMG_BASE ست باشه)
+    const full_cover_url = `https://manhwachi.ir${cover_path}`; // برای og:image و سئو همیشه دامنه‌ی اصلی
     const canonical_url = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`;
 
     const score = manhwa.score || "0.0";

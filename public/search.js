@@ -366,7 +366,7 @@ const searchInput = document.getElementById('main-search');
                 `
                 <a href="https://manhwachi.ir/comic/${item.slug}" class="group cursor-pointer block animate-fade-in">
                     <div class="aspect-[3/4] rounded-2xl overflow-hidden relative mb-3 shadow-lg border border-white/5 group-hover:border-primary/75 card-glow transition-all duration-300">
-                        <img src="/manhwas/${item.slug}/${item.cover_image}" alt="${escapeHtml(item.title_en)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="${window.IMG_BASE || ''}/manhwas/${item.slug}/${item.cover_image}" alt="${escapeHtml(item.title_en)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <!-- Dark Overlay at the bottom -->
                         <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                         <div class="absolute top-3 right-3 bg-[#0c0c0e]/80 backdrop-blur-md text-[11px] font-bold px-2.5 py-1 rounded-xl text-white border border-white/5 flex items-center gap-1 shadow-md">

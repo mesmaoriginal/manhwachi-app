@@ -253,7 +253,7 @@ function suggest(w) {
 /* ---------- Render ---------- */
 const card = (it, w = []) => `<a class="card fade" href="https://manhwachi.ir/comic/${encodeURIComponent(it.slug)}">
   <div class="cover"><span class="material-symbols-outlined ph">image</span>
-    <img src="/manhwas/${encodeURIComponent(it.slug)}/${esc(it.cover_image)}" alt="" loading="lazy" decoding="async">
+    <img src="${window.IMG_BASE || ''}/manhwas/${encodeURIComponent(it.slug)}/${esc(it.cover_image)}" alt="" loading="lazy" decoding="async">
     ${it._rate ? `<b class="rate">★ ${fa(it._rate)}</b>` : ''}${TL[it._type] ? `<i class="tag">${TL[it._type]}</i>` : ''}
   </div>
   <h3>${hl(it.title_fa || it.title_en, w)}</h3>

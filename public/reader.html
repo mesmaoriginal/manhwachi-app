@@ -1073,7 +1073,7 @@
 
                 div.innerHTML = `
                     <div class="w-16 h-12 bg-zinc-800 rounded-xl overflow-hidden relative flex-shrink-0">
-                        <img src="/manhwas/${slug}/chapterPictures/chapterpicture${epNum}.png" onerror="this.style.display='none'" class="w-full h-full object-cover" alt="Ep ${epNum}">
+                        <img src="${window.IMG_BASE || ''}/manhwas/${slug}/chapterPictures/chapterpicture${epNum}.png" onerror="this.style.display='none'" class="w-full h-full object-cover" alt="Ep ${epNum}">
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="font-medium truncate ${isCurrent ? 'text-red-400' : ''}">قسمت ${epNum}</p>

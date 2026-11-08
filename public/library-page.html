@@ -599,7 +599,7 @@
 
             return `
                 <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${encodeURIComponent(slug)}">
-                    <img loading="lazy" decoding="async" src="manhwas/${encodeURIComponent(slug)}/${encodeURIComponent(manhwa.cover_image || '')}" alt="${esc(title)}" class="card-cover" onerror="this.onerror=null;this.src='${defaultCover(title)}';this.style.objectFit='contain';this.style.padding='30px'">
+                    <img loading="lazy" decoding="async" src="${window.IMG_BASE || ''}/manhwas/${encodeURIComponent(slug)}/${encodeURIComponent(manhwa.cover_image || '')}" alt="${esc(title)}" class="card-cover" onerror="this.onerror=null;this.src='${defaultCover(title)}';this.style.objectFit='contain';this.style.padding='30px'">
                     
                     <div class="card-ui manhwa-title">${esc(title)}</div>
                     

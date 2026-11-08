@@ -565,7 +565,7 @@
             const description = manhwa.description ? manhwa.description.trim() : 'توضیحاتی برای این مانهوا ثبت نشده است.';
             
             // اصلاح آدرس پوشه مانهوا و عکس کاور مطابق درخواست قبلی شما
-            const coverSrc = `manhwas/${encodeURIComponent(slug)}/${encodeURIComponent(manhwa.cover_image || "")}`;
+            const coverSrc = `${window.IMG_BASE || ''}/manhwas/${encodeURIComponent(slug)}/${encodeURIComponent(manhwa.cover_image || "")}`;
 
             return `
                 <div class="manhwa-card" data-link="https://manhwachi.ir/comic/${encodeURIComponent(slug)}">

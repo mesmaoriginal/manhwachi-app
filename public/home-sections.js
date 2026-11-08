@@ -67,7 +67,7 @@
     var genres = (m.genres || []).slice(0, 2).map(gname).join(' • ');
     var s = score(m);
     return '<li><a class="mc-row" href="/comic/' + encodeURIComponent(m.slug) + '">' +
-      '<span class="mc-row__pic"><img loading="lazy" decoding="async" src="/manhwas/' + esc(m.slug) + '/' + esc(m.cover_image) + '" alt="' + esc(title(m)) + '"' +
+      '<span class="mc-row__pic"><img loading="lazy" decoding="async" src="' + (window.IMG_BASE || '') + '/manhwas/' + esc(m.slug) + '/' + esc(m.cover_image) + '" alt="' + esc(title(m)) + '"' +
       ' onerror="this.onerror=null;this.style.visibility=\'hidden\'"></span>' +
       '<span class="mc-row__body">' +
         '<span class="mc-row__title">' + esc(title(m)) + '</span>' +
