@@ -145,10 +145,11 @@ app.use(compression());
 // 🛡️ ضد کپی: IP/بازه/کوکی/حساب مسدودشده از کل سایت رد می‌شود (lib/antiScrape.js، مدیریت: /security-admin)
 const antiScrape = require("./lib/antiScrape");
 antiScrape.init({ readGuestId: (req) => readGuestId(req) });
-// ⛔ بلاک خودکار/دروازه‌ی ضد کپی به‌صورت پیش‌فرض خاموش است (همه‌ی کاربرها و حتی ادمین را مسدود می‌کرد).
-// برای روشن کردن دوباره: ANTISCRAPE_GATE=1 (اول بلاک‌لیست /security-admin را تمیز کن) و ANTISCRAPE_AUTOBLOCK=1 برای بلاک خودکار.
-const ANTISCRAPE_GATE_ON = process.env.ANTISCRAPE_GATE === "1";
-const ANTISCRAPE_AUTOBLOCK_ON = process.env.ANTISCRAPE_AUTOBLOCK === "1";
+// 🛡️ ضد کپی (lib/antiScrape.js) روشن است؛ فقط «خودِ متخلف» بلاک می‌شود، نه همه‌ی کاربرهای یک IP.
+// کلیدهای اضطراری (بدون تغییر کد): ANTISCRAPE_GATE=0 دروازه را خاموش می‌کند، ANTISCRAPE_AUTOBLOCK=0 بلاک خودکار را.
+// حالت آزمایشی: AS_DRY_RUN=1 (فقط لاگ می‌کند و کسی را بلاک نمی‌کند؛ رویدادها در /security-admin).
+const ANTISCRAPE_GATE_ON = process.env.ANTISCRAPE_GATE !== "0";
+const ANTISCRAPE_AUTOBLOCK_ON = process.env.ANTISCRAPE_AUTOBLOCK !== "0";
 if (ANTISCRAPE_GATE_ON) app.use(antiScrape.gate);
 
 // 🔎 سئو: ریدایرکت 301 از www به دامنه‌ی اصلی + هدر X-Robots-Tag برای صفحات خصوصی/ابزاری (lib/seoPolicy.js)
