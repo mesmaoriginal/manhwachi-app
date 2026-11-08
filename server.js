@@ -14,6 +14,10 @@ const deviceLimit = require("./lib/deviceLimit");
 const app = express();
 
 // شبکه‌ی ایمنی: یک promise رد‌شده‌ی فراموش‌شده (مثلاً در یک هندلر async) نباید کل پروسه را (Node >= 15) بکشد
+process.on("uncaughtException", (err) => {
+  console.error("[uncaughtException]", err && err.stack ? err.stack : err);
+  process.exit(1);
+});
 process.on("unhandledRejection", (reason) => {
   console.error("[unhandledRejection]", reason && reason.stack ? reason.stack : reason);
 });
@@ -1960,6 +1964,21 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const httpServer = app.listen(PORT, () => {
   console.log(`سرور روی پورت ${PORT} روشن شد`);
 });
+// اگه پورت اشغاله یا مجوز نداریم، دلیلش تو لاگ بیاد (به‌جای این‌که پروسه بی‌صدا بمیره)
+httpServer.on("error", (e) => {
+  console.error(`[listen] راه‌اندازی روی پورت ${PORT} شکست خورد:`, e && e.code, e && e.message);
+  process.exit(1);
+});
+// لاگ مصرف رم/دیسک موقت هر ۶۰ ثانیه، فقط وقتی LOG_RESOURCES=1 (برای پیدا کردن OOM یا پر شدن ephemeral)
+if (process.env.LOG_RESOURCES === "1") {
+  const _fs = require("fs");
+  setInterval(() => {
+    const m = process.memoryUsage();
+    let disk = "";
+    try { const st = _fs.statfsSync(process.cwd()); disk = ` diskFree=${Math.round((st.bavail * st.bsize) / 1048576)}MB`; } catch (e) {}
+    console.log(`[res] rss=${Math.round(m.rss / 1048576)}MB heap=${Math.round(m.heapUsed / 1048576)}MB${disk}`);
+  }, 60000).unref();
+}
