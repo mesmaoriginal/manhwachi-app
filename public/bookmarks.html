@@ -9,12 +9,24 @@
   <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap'" />
   <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap'" />
   <link rel="stylesheet" href="/profile-pages.css?v=2" />
-  <link rel="stylesheet" href="/mc-header.css?v=1">
-  <link rel="stylesheet" href="/mc-theme.css?v=1">
-  <script src="/mc-header.js?v=1" defer></script>
 </head>
 <body>
-  <div id="mc-header-root"></div>
+  <header class="pp-header">
+    <div class="pp-header__inner">
+      <a href="/" class="pp-brand">
+        <img src="/ManhwaChi/LOGO-main-white.webp" alt="" onerror="this.remove()" />
+        Manhwa<span class="accent">Chi</span>
+      </a>
+      <div class="pp-header__actions">
+        <a href="/?page=profile" class="pp-icon-btn" title="پروفایل" aria-label="پروفایل">
+          <span class="material-symbols-outlined">person</span>
+        </a>
+        <button type="button" class="pp-icon-btn" onclick="history.length > 1 ? history.back() : location.href='/'" title="بازگشت" aria-label="بازگشت">
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
   <main class="pp-main">
     <nav class="pp-subnav" aria-label="بخش‌های پروفایل">

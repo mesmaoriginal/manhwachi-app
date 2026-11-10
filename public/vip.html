@@ -219,14 +219,22 @@
         :focus-visible{ outline:2px solid var(--ember); outline-offset:2px; }
     </style>
 <link rel="stylesheet" href="/mc-polish.css?v=1">
-  <link rel="stylesheet" href="/mc-header.css?v=1">
-  <link rel="stylesheet" href="/mc-theme.css?v=1">
-  <script src="/mc-header.js?v=1" defer></script>
 </head>
 <body class="min-h-screen flex flex-col justify-between font-vazir selection:bg-red-900 selection:text-white">
 
     <!-- هدر ساده -->
-    <div id="mc-header-root"></div>
+    <header class="mc-header">
+        <div class="mc-header__in">
+            <a href="/" class="mc-brand" aria-label="مانهواچی">
+                <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi" onerror="this.remove()" />
+                <span class="mc-brand__name">Manhwa<b>Chi</b></span>
+            </a>
+            <a href="/" class="mc-back">
+                بازگشت به سایت
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            </a>
+        </div>
+    </header>
 
     <!-- بخش اصلی معرفی پلن‌ها -->
     <main class="v-wrap">

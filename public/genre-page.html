@@ -424,14 +424,11 @@
         }
     </style>
 <link rel="stylesheet" href="/mc-polish.css?v=1">
-  <link rel="stylesheet" href="/mc-header.css?v=1">
-  <link rel="stylesheet" href="/mc-theme.css?v=1">
-  <script src="/mc-header.js?v=1" defer></script>
 </head>
-<body class="mc-red-accent">
+<body>
 
     <div class="header-section">
-        <h2>کتابخانه مانهواچی</h2>
+        <h2>📖 کتابخانه مانهواچی</h2>
         <a class="back-button" onclick="goBack()">
             <span>بازگشت</span>
             <svg viewBox="0 0 24 24">
@@ -499,7 +496,7 @@
                 }
 
                 // آپدیت عنوان صفحه متناسب با ژانر انتخاب شده
-                pageTitle.textContent = `مانهواهای ژانر ${targetGenre}`;
+                pageTitle.textContent = `📖 مانهواهای ژانر ${targetGenre}`;
                 document.title = `مانهواهای ژانر ${targetGenre} - مانهواچی`;
 
                 const response = await fetch('data/data.json');
