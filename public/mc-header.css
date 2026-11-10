@@ -1,0 +1,90 @@
+/* =====================================================================
+   ManhwaChi — mc-header.css
+   هدر و منوی کشویی یکسان برای همه‌ی صفحه‌ها (کپی دقیق هدر صفحه‌ی مانگا).
+   بدون وابستگی به Tailwind؛ با mc-header.js ساخته می‌شه.
+   ===================================================================== */
+.mch, .mch *, .mch-drawer, .mch-drawer *, .mch-overlay { box-sizing: border-box; }
+.mch, .mch-drawer { font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; direction: rtl; -webkit-font-smoothing: antialiased; }
+.mch a, .mch-drawer a { text-decoration: none; color: inherit; }
+.mch button, .mch-drawer button { font: inherit; cursor: pointer; margin: 0; }
+.mch .material-symbols-outlined, .mch-drawer .material-symbols-outlined { line-height: 1; }
+
+/* ---------- هدر ---------- */
+.mch { position: sticky; top: 0; z-index: 50; width: 100%; background: rgba(0,0,0,.85);
+  -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,.10); }
+.mch__in { max-width: 80rem; margin: 0 auto; padding: 0 20px; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mch__side { display: flex; align-items: center; gap: 16px; }
+.mch__actions { display: flex; align-items: center; gap: 12px; }
+
+.mch-btn { width: 40px; height: 40px; border-radius: 16px; background: #161616; border: 1px solid rgba(255,255,255,.10); color: #e2e2e2;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0;
+  transition: color .15s, border-color .15s, transform .15s; }
+.mch-btn:hover { color: #DC2626; border-color: rgba(220,38,38,.40); }
+.mch-btn:active { transform: scale(.95); }
+.mch-btn .material-symbols-outlined { font-size: 24px; }
+.mch-btn--sm .material-symbols-outlined { font-size: 20px; }
+
+.mch-brand { display: flex; align-items: center; gap: 12px; color: #fff; }
+.mch-brand img { height: 32px; width: auto; object-fit: contain; filter: drop-shadow(0 0 8px rgba(220,38,38,.3)); transition: transform .3s; }
+.mch-brand:hover img { transform: scale(1.05); }
+.mch-brand__name { display: none; font: 700 20px/1 'Montserrat', 'Vazirmatn', sans-serif; letter-spacing: -.025em; color: #fff; direction: ltr; }
+.mch-brand__name b { color: #DC2626; font-weight: inherit; }
+@media (min-width: 640px) { .mch-brand__name { display: inline; } }
+
+.mch-nav { display: none; align-items: center; gap: 32px; font-size: 14px; font-weight: 500; color: #cbb8b8; }
+@media (min-width: 768px) { .mch-nav { display: flex; } }
+.mch-nav a { position: relative; display: inline-flex; align-items: center; gap: 6px; transition: color .15s; }
+.mch-nav a:hover, .mch-nav a.is-active { color: #fff; }
+.mch-nav a .material-symbols-outlined { font-size: 18px; }
+.mch-nav a::after { content: ''; position: absolute; bottom: -4px; right: 0; width: 0; height: 2px; background: #DC2626; transition: width .3s ease; }
+.mch-nav a:hover::after, .mch-nav a.is-active::after { width: 100%; }
+.mch-nav a.mch-tg { color: #38bdf8; }
+
+.mch-account { min-width: 40px; width: auto; padding: 0 10px; }
+.mch-account.is-in { border-color: rgba(220,38,38,.40); }
+.mch-account.is-in .material-symbols-outlined { color: #DC2626; }
+.mch-account__name { display: none; font-size: 14px; font-weight: 600; color: #DC2626; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mch-account.is-in .mch-account__name { display: inline; }
+
+.mch-careers { display: none; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 16px; font-size: 12px; font-weight: 600;
+  background: rgba(220,38,38,.10); border: 1px solid rgba(220,38,38,.30); color: #DC2626; transition: all .3s; }
+.mch-careers:hover { background: #DC2626; color: #fff; }
+.mch-careers .material-symbols-outlined { font-size: 16px; }
+@media (min-width: 640px) { .mch-careers { display: inline-flex; } }
+
+/* ---------- منوی کشویی ---------- */
+.mch-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.70); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .3s, visibility .3s; }
+.mch-drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 101; width: 300px; max-width: 92vw; background: #161616; border-left: 1px solid rgba(255,255,255,.10);
+  transform: translateX(100%); transition: transform .3s; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,.6); color: #e2e2e2; }
+@media (min-width: 640px) { .mch-drawer { width: 340px; } }
+body.mch-open .mch-overlay { opacity: 1; visibility: visible; pointer-events: auto; }
+body.mch-open .mch-drawer { transform: none; }
+body.mch-open { overflow: hidden; }
+.mch-drawer__glow { position: absolute; top: -80px; right: -80px; width: 192px; height: 192px; background: rgba(220,38,38,.20); filter: blur(90px); pointer-events: none; }
+.mch-drawer__top { position: relative; }
+.mch-drawer__head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,.10); }
+.mch-drawer__brand { display: flex; align-items: center; gap: 12px; font: 700 18px/1 'Montserrat', 'Vazirmatn', sans-serif; color: #fff; direction: ltr; }
+.mch-drawer__brand img { height: 28px; width: auto; filter: drop-shadow(0 0 8px rgba(220,38,38,.3)); }
+.mch-drawer__brand b { color: #DC2626; font-weight: inherit; }
+.mch-drawer__close { width: 36px; height: 36px; border-radius: 12px; background: #1f1f1f; border: 1px solid rgba(255,255,255,.10); color: #e2e2e2; display: inline-flex; align-items: center; justify-content: center; transition: color .15s, transform .15s; }
+.mch-drawer__close:hover { color: #DC2626; } .mch-drawer__close:active { transform: scale(.95); }
+.mch-drawer__nav { display: flex; flex-direction: column; gap: 12px; }
+.mch-item { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 16px; background: rgba(31,31,31,.60); border: 1px solid rgba(255,255,255,.05);
+  color: #fff; font-size: 13.5px; font-weight: 500; transition: all .25s cubic-bezier(.4,0,.2,1); }
+.mch-item:hover { background: rgba(220,38,38,.12); border-color: rgba(220,38,38,.30); transform: translateX(-4px); }
+.mch-item__ic { width: 34px; height: 34px; flex: none; border-radius: 12px; background: rgba(220,38,38,.10); color: #DC2626; display: flex; align-items: center; justify-content: center; }
+.mch-item__ic .material-symbols-outlined { font-size: 20px; }
+.mch-drawer__foot { position: relative; padding-top: 24px; margin-top: 24px; border-top: 1px solid rgba(255,255,255,.10); display: flex; flex-direction: column; gap: 16px; }
+.mch-tgbtn { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 16px; color: #fff; font-weight: 600;
+  background: linear-gradient(to right, #0ea5e9, #2563eb); box-shadow: 0 10px 15px -3px rgba(14,165,233,.20); transition: transform .15s; }
+.mch-tgbtn:hover { transform: scale(1.02); } .mch-tgbtn:active { transform: scale(.95); }
+.mch-tgbtn > span:first-child { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.mch-tgbtn .material-symbols-outlined { font-size: 22px; }
+.mch-tgbtn > .material-symbols-outlined { font-size: 18px; }
+.mch-copy { text-align: center; font-size: 12px; font-weight: 500; color: #8C8C8C; margin: 0; }
+
+/* ایمنی در برابر صفحه‌هایی که body رو flex کردن */
+.mch { flex: none; } .mch-nav a, .mch-careers, .mch-drawer__brand { white-space: nowrap; }
+.mch-btn { flex: none; }

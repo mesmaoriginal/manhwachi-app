@@ -451,13 +451,13 @@
     </div>
 </div> -->
 <!-- Main Header -->
-<header class="sticky top-0 z-50 w-full bg-[#121212]/85 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
+<header class="sticky top-0 z-50 w-full bg-black/85 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
         
         <!-- Right side: Logo & Toggle Button -->
         <div class="flex items-center gap-4">
             <!-- Mobile Menu Button -->
-            <button id="openDrawerBtn" aria-label="منو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+            <button id="openDrawerBtn" aria-label="منو" class="w-10 h-10 rounded-2xl bg-[#161616] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-2xl">menu</span>
             </button>
 
@@ -494,11 +494,11 @@
                 
             </div>
 
-            <button type="button" data-page="profile" onclick="loadPage(this)" aria-label="پروفایل" class="hidden md:flex w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+            <button type="button" data-page="profile" onclick="loadPage(this)" aria-label="پروفایل" class="hidden md:flex w-10 h-10 rounded-2xl bg-[#161616] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">person</span>
             </button>
 
-            <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
+            <a href="/search.html" aria-label="جستجو" class="w-10 h-10 rounded-2xl bg-[#161616] border border-white/10 flex items-center justify-center text-white hover:text-red-600 hover:border-red-600/40 active:scale-95 transition-all">
                 <span aria-hidden="true" translate="no" class="material-symbols-outlined text-xl">search</span>
             </a>
         </div>
@@ -1072,7 +1072,7 @@
     <script>
         
         const app = document.getElementById("app");
-        const ASSET_V = "8";                       // با عوض‌کردن این عدد، کش همه‌ی صفحه‌ها یک‌جا تازه می‌شه
+        const ASSET_V = "9";                       // با عوض‌کردن این عدد، کش همه‌ی صفحه‌ها یک‌جا تازه می‌شه
         const cache = { home: app.innerHTML };     // HTML صفحه‌ها (خانه از همین ابتدا ذخیره می‌شه)
         const pageCss = {};                        // page → { link, ready }
         const pageJs = {};                         // page → Promise (هر اسکریپت فقط یک بار لود می‌شه)

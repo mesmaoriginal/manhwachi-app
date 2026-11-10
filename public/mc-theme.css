@@ -1,0 +1,83 @@
+/* =====================================================================
+   ManhwaChi — mc-theme.css
+   ظاهر صفحه‌ی مانگا برای کل سایت: پس‌زمینه‌ی مشکی خالص، قرمز #DC2626،
+   وزیرمتن سبک‌وزن، کارت‌های شیشه‌ای با خط ظریف، تیتر بخش با نوار قرمز،
+   دکمه‌ی گرادیانی قرمز، اسکرول‌بار و انتخاب متن قرمز.
+   بعد از CSS خود صفحه لود می‌شه تا توکن‌های رنگ رو یکدست کنه.
+   ===================================================================== */
+
+/* ---------- توکن‌ها: همه‌ی اسم‌های رنگ صفحه‌ها به پالت مانگا وصل می‌شن ---------- */
+html:root {
+  color-scheme: dark;
+  --mx-bg: #000; --mx-panel: #161616; --mx-panel-2: #1f1f1f; --mx-ln: rgba(255,255,255,.08);
+  --mx-red: #DC2626; --mx-red-hot: #ef4444; --mx-red-deep: #b91c1c;
+  --mx-text: #e2e2e2; --mx-muted: #8C8C8C; --mx-soft: #cbb8b8;
+
+  /* اسم‌های قدیمی صفحه‌ها */
+  --bg: #000; --bg-dark: #000; --bg-color: #000; --void: #000;
+  --pp-bg: #000; --pp-card: #161616; --pp-card-2: #1f1f1f; --pp-line: rgba(255,255,255,.08); --pp-red: #DC2626; --pp-red-hot: #ef4444;
+  --card-bg: #161616; --input-bg: #161616;
+  --panel: #161616; --panel2: #1f1f1f; --surface: #161616; --surface2: #1f1f1f;
+  --line: rgba(255,255,255,.08); --border-glow: rgba(255,255,255,.08); --card-border: rgba(255,255,255,.08);
+  --red: #DC2626; --primary-color: #DC2626; --primary-hover: #ef4444;
+  --text-muted: #8C8C8C; --muted: #8C8C8C;
+}
+/* صفحه‌هایی که لهجه‌ی طلاییِ آرشیو داشتن، مثل صفحه‌ی مانگا قرمز بشن */
+body.mc-red-accent { --primary-gold: #DC2626; --shadow-gold: rgba(220,38,38,.45); }
+
+/* ---------- پایه ---------- */
+html { scroll-behavior: smooth; }
+html, body { background: #000; }
+body { color: #e2e2e2; font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight: 400; -webkit-font-smoothing: antialiased; }
+body b, body strong { font-weight: 600; }
+::selection { background: rgba(220,38,38,.45); color: #fff; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1f1f1f; }
+::-webkit-scrollbar-thumb { background: #DC2626; border-radius: 10px; }
+
+/* ---------- تیتر بخش (نوار قرمز کنار عنوان) ---------- */
+.mc-title, .section-title { position: relative; padding-inline-start: 14px; font-size: 18px; font-weight: 600; color: #fff; }
+.mc-title::before, .section-title::before { content: ""; position: absolute; inset-inline-start: 0; top: 50%; width: 4px; height: 20px; transform: translateY(-50%); border-radius: 4px; background: linear-gradient(#ef4444, #b91c1c); }
+
+/* ---------- کارت شیشه‌ای ---------- */
+.mc-card { background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); border: 1px solid rgba(255,255,255,.08); border-radius: 18px;
+  transition: background .25s, border-color .25s, box-shadow .25s, transform .25s; }
+.mc-card:hover { border-color: rgba(220,38,38,.45); box-shadow: 0 14px 30px -20px rgba(220,38,38,.6); }
+
+/* ---------- دکمه‌ها ---------- */
+.mc-btn-red { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 50px; padding: 0 22px; border: 0; border-radius: 14px; color: #fff; font: 500 15px/1 'Vazirmatn', sans-serif; cursor: pointer;
+  background: linear-gradient(135deg, #ef4444, #dc2626 60%, #b91c1c); box-shadow: 0 14px 30px -12px rgba(220,38,38,.75); transition: transform .2s, filter .2s; }
+.mc-btn-red:hover { filter: brightness(1.12); } .mc-btn-red:active { transform: scale(.97); }
+.mc-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 50px; padding: 0 20px; border-radius: 14px; color: #fff; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.03); font: 500 14px/1 'Vazirmatn', sans-serif; transition: .2s; }
+.mc-btn-ghost:hover { border-color: rgba(255,255,255,.35); } .mc-btn-ghost:active { transform: scale(.95); }
+
+/* ---------- چیپ ---------- */
+.mc-chip { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 99px; font-size: 12px; color: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.08); transition: .2s; }
+.mc-chip:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+.mc-chip--red { color: #fecaca; background: rgba(220,38,38,.16); border-color: rgba(220,38,38,.3); }
+
+/* ---------- محتوای صفحه زیر هدر مشترک ---------- */
+.mc-page { max-width: 72rem; margin: 0 auto; padding: 28px 20px 80px; }
+@media (min-width: 900px) { .mc-page { padding: 44px 32px 96px; } }
+
+/* =====================================================================
+   صفحه‌های آرشیو و ژانر (library-page / genre-page) — هم‌سبک صفحه‌ی مانگا
+   ===================================================================== */
+body.mc-red-accent, body.mc-red-accent * { font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+body.mc-red-accent { padding: 0 20px 56px; }
+body.mc-red-accent .mch { width: calc(100% + 40px); margin-inline: -20px; }
+body.mc-red-accent .header-section { margin-top: 32px; margin-bottom: 28px; }
+body.mc-red-accent .header-section h2 { position: relative; padding-inline-start: 14px; font-size: 22px; font-weight: 600; letter-spacing: 0; text-shadow: none; }
+body.mc-red-accent .header-section h2::before { content: ""; position: absolute; inset-inline-start: 0; top: 50%; width: 4px; height: 22px; transform: translateY(-50%); border-radius: 4px; background: linear-gradient(#ef4444, #b91c1c); }
+body.mc-red-accent .back-button { height: 46px; padding: 0 18px; border-radius: 14px; font-weight: 500; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.14); box-shadow: none; }
+body.mc-red-accent .back-button:hover { border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.06); transform: none; box-shadow: none; }
+body.mc-red-accent .manhwa-card { border-radius: 18px; border: 1px solid rgba(255,255,255,.08); box-shadow: 0 16px 34px -22px #000; }
+body.mc-red-accent .manhwa-card:hover:not(.preview-mode) { transform: translateY(-6px); border-color: rgba(220,38,38,.55); box-shadow: 0 26px 44px -20px rgba(220,38,38,.45); }
+body.mc-red-accent .skeleton-card { border-radius: 18px; }
+
+/* صفحه‌ی همکاری (body به‌صورت flex وسط‌چین بود) */
+body.mc-careers { flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0; }
+body.mc-careers .container { margin: auto; padding: 40px 20px 56px; }
+
+html:root body { margin: 0; }
