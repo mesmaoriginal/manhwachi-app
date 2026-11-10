@@ -1991,6 +1991,10 @@ if (process.env.LOG_RESOURCES === "1") {
     const m = process.memoryUsage();
     let disk = "";
     try { const st = _fs.statfsSync(process.cwd()); disk = ` diskFree=${Math.round((st.bavail * st.bsize) / 1048576)}MB`; } catch (e) {}
-    console.log(`[res] rss=${Math.round(m.rss / 1048576)}MB heap=${Math.round(m.heapUsed / 1048576)}MB${disk}`);
+    console.log(`[res] rss=${Math.round(m.rss / 1048576)}MB heapUsed=${Math.round(m.heapUsed / 1048576)}MB heapTotal=${Math.round(m.heapTotal / 1048576)}MB external=${Math.round(m.external / 1048576)}MB buffers=${Math.round(m.arrayBuffers / 1048576)}MB${disk} lagMax=${lagMax}ms`);
+    lagMax = 0;
   }, 60000).unref();
+  // بیشینه‌ی تأخیر event loop در هر دقیقه؛ عدد چند ثانیه‌ای = احتمال شکست liveness probe
+  let lagMax = 0, lagLast = Date.now();
+  setInterval(() => { const n = Date.now(); lagMax = Math.max(lagMax, n - lagLast - 500); lagLast = n; }, 500).unref();
 }
