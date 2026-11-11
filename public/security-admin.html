@@ -67,6 +67,19 @@
   </div>
 
   <div class="card">
+    <h2>ردیابی دزد (از روی کد واترمارک)</h2>
+    <p class="mut" style="margin:0 0 8px">کد ۸حرفیِ روی عکس، یا gid / IP / user id را بده؛ همه‌ی هویت‌های مرتبط (کوکی‌ها، حساب‌ها، IPهای عمومی، مرورگرها) را نشان می‌دهد و می‌توانی همه را یک‌جا مسدود کنی.</p>
+    <div class="row">
+      <input type="text" id="wQ" placeholder="مثلاً deea092a" dir="ltr">
+      <button id="wBtn">ردیابی</button>
+      <label class="mut"><input type="checkbox" id="wIps"> IPهای عمومی را هم ببند</label>
+      <button class="pri" id="wBlock">مسدود کردن همه</button>
+    </div>
+    <pre id="wRes" dir="ltr" style="white-space:pre-wrap;word-break:break-all;margin:8px 0 0"></pre>
+    <div class="msg" id="wMsg"></div>
+  </div>
+
+  <div class="card">
     <h2>پیدا کردن صاحب حساب</h2>
     <p class="mut" style="margin:0 0 8px">شناسه‌ی کاربر (از رویدادها)، شماره یا بخشی از نام. فقط حساب‌هایی که در خود مانهواچی ثبت‌نام کرده‌اند؛ برای IP یا مهمانِ بدون حساب هویتی وجود ندارد.</p>
     <div class="row">
@@ -161,6 +174,21 @@
     var m=$('#bMsg'); m.className='msg';
     api('POST','/api/security-admin/block',{type:$('#bType').value,value:$('#bVal').value.trim(),reason:$('#bReason').value.trim(),minutes:Number($('#bDur').value)})
       .then(function(){ m.className='msg ok'; m.textContent='مسدود شد.'; $('#bVal').value=''; return load(); })
+      .catch(function(e){ m.className='msg bad'; m.textContent=e.message; });
+  };
+  $('#wBtn').onclick = function(){
+    var m=$('#wMsg'); m.className='msg'; m.textContent=''; $('#wRes').textContent='';
+    api('GET','/api/security-admin/wm?q='+encodeURIComponent($('#wQ').value.trim())).then(function(r){
+      $('#wRes').textContent = JSON.stringify(r,null,2);
+      if(!r.rows){ m.className='msg bad'; m.textContent='موردی پیدا نشد'; }
+      else if(r.privateIpSeen && !r.ips.length){ m.className='msg bad'; m.textContent='IP واقعی ثبت نشده بود (IP داخلی)؛ فقط gid قابل‌اتکاست.'; }
+    }).catch(function(e){ m.className='msg bad'; m.textContent=e.message; });
+  };
+  $('#wBlock').onclick = function(){
+    var m=$('#wMsg'); m.className='msg';
+    if(!confirm('همه‌ی هویت‌های مرتبط مسدود شوند؟')) return;
+    api('POST','/api/security-admin/wm-block',{q:$('#wQ').value.trim(),minutes:0,includeIps:$('#wIps').checked})
+      .then(function(r){ m.className='msg ok'; m.textContent='مسدود شد: '+r.blocked.join(' , '); return load(); })
       .catch(function(e){ m.className='msg bad'; m.textContent=e.message; });
   };
   $('#aBtn').onclick = function(){
