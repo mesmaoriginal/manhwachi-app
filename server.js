@@ -1955,6 +1955,21 @@ app.get("/api/access/chapters/:slug", async (req, res) => {
 // چون data.json بیرون از پوشه‌ی public قرار داره، مرورگر مستقیم بهش دسترسی نداره
 // پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه.
 // حالا این روت هم از همون کش مشترک dataStore استفاده می‌کنه، نه یک کش جدا.
+// ---------- متادیتای سبک یک مانهوا برای ردر (به‌جای دانلود کل data.json) ----------
+// فقط چیزهایی که صفحه‌ی خواندن لازم داره: عنوان، کاور و لیست قسمت‌ها (num/free/date).
+app.get("/api/manhwa-meta/:slug", (req, res) => {
+  const slug = String(req.params.slug || "").trim();
+  const data = getData();
+  const m = Object.prototype.hasOwnProperty.call(data, slug) ? data[slug] : null;
+  if (!m) return res.status(404).json({ error: "پیدا نشد" });
+  res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=600");
+  res.json({
+    title_fa: m.title_fa || "",
+    cover_image: m.cover_image || "",
+    episodes: (Array.isArray(m.episodes) ? m.episodes : []).map((e) => ({ num: e.num, free: !!e.free, date: e.date || "" })),
+  });
+});
+
 app.get("/data/data.json", (req, res) => {
   // ۶۰ ثانیه کش + نمایش نسخه‌ی قبلی هنگام به‌روزرسانی در پس‌زمینه (سرعت بیشتر، فشار کمتر روی سرور)
   res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=600");
