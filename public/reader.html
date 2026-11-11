@@ -51,7 +51,13 @@
     });
   };
   var R = window.__rd = { slug: slug, ch: ch, tok: null, imgP: null, dataP: null };
-  R.dataP = fetch('/data/data.json').then(function (r) { if (!r.ok) throw new Error('data'); return r.json(); });
+  R.dataP = fetch('/api/manhwa-meta/' + encodeURIComponent(slug)).then(function (r) {
+    if (r.status === 404) return {};
+    if (!r.ok) throw new Error('meta');
+    return r.json().then(function (m) { var o = {}; o[slug] = m; return o; });
+  }).catch(function () {
+    return fetch('/data/data.json').then(function (r) { if (!r.ok) throw new Error('data'); return r.json(); });
+  });
   R.dataP.catch(function () {});
   if (ch !== null) {
     R.tok = sniffToken();
