@@ -1,0 +1,399 @@
+/* home-minimal.css — آخرین فایل استایل صفحه‌ی اصلی (بعد از home-sections.css لود شود).
+   هدف: ظاهر مینیمال، یک حاشیه‌ی ثابت برای همه‌ی بخش‌ها، بدون سایه و گرادیان‌های سنگین،
+   و رفع بیرون‌زدگی کادرها در موبایل. فقط روی .home-page اثر می‌گذارد. */
+
+.home-page {
+  --m-bg: #0b0b0c;
+  --m-surface: #131315;
+  --m-line: rgba(255, 255, 255, .08);
+  --m-text: #f4f4f5;
+  --m-muted: #8b8b94;
+  --m-red: #DC2626;
+  --m-pad: 16px;
+  --m-r: 14px;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: clip;
+  padding-bottom: 8px;
+}
+.home-page *, .home-page *::before, .home-page *::after { box-sizing: border-box; }
+.home-page img { max-width: 100%; }
+
+/* اسلایدر: عمداً دست‌نخورده؛ از home-v2.css می‌آید */
+
+/* ================= تب‌ها (خط زیرین به‌جای قرص) ================= */
+.home-page .mc-tabs {
+  gap: 22px; margin: 14px var(--m-pad) 0; padding: 0; width: auto;
+  background: none; border: 0; border-bottom: 1px solid var(--m-line); border-radius: 0;
+}
+.home-page .mc-tab {
+  flex: 0 0 auto; padding: 12px 2px; border-radius: 0; background: none; box-shadow: none;
+  color: var(--m-muted); font-size: 14px; position: relative;
+}
+.home-page .mc-tab.is-on { background: none; box-shadow: none; color: #fff; }
+.home-page .mc-tab.is-on::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: -1px; height: 2px; background: var(--m-red);
+}
+
+/* ================= آمار ================= */
+.home-page .mc-stats { margin: 16px var(--m-pad) 0; gap: 0; }
+.home-page .mc-stat {
+  flex-direction: column; justify-content: center; gap: 4px; padding: 4px 8px;
+  background: none; border: 0; border-radius: 0;
+}
+.home-page .mc-stat + .mc-stat { border-inline-start: 1px solid var(--m-line); }
+.home-page .mc-stat b, .home-page .mc-stat:first-child b { font-size: 20px; color: #fff; }
+.home-page .mc-stat span { font-size: 11.5px; color: var(--m-muted); }
+
+/* ================= عنوان بخش‌ها (یکدست) ================= */
+.home-page .title {
+  margin: 32px var(--m-pad) 12px; padding: 0; border: 0; display: flex;
+}
+.home-page .title a {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; height: auto; overflow: visible; padding: 0;
+  font-size: 17px; font-weight: 800; color: #fff; position: relative;
+}
+.home-page .title a::before { content: none; display: none; }
+.home-page .title a::after {
+  content: "مشاهده همه"; position: static; width: auto; height: auto;
+  background: none; border: 0; padding: 0; border-radius: 0;
+  font-size: 12.5px; font-weight: 600; color: var(--m-muted); transition: color .2s;
+}
+.home-page .title a:hover::after { background: none; border: 0; color: #fff; }
+
+.home-page .mc-sec-head, .home-page .mc-panel-head { padding: 0 var(--m-pad); }
+.home-page .mc-panel-head { padding-top: 20px; padding-bottom: 6px; }
+.home-page .mc-sec-head h2, .home-page .mc-panel-head h2 {
+  font-size: 17px; padding: 0; font-weight: 800;
+}
+.home-page .mc-sec-head h2::before { content: none; display: none; }
+.home-page .mc-continue { margin: 28px 0 0; }
+
+/* ================= ادامه‌ی مطالعه ================= */
+.home-page .mc-cont-list { padding: 2px var(--m-pad) 6px; gap: 10px; scroll-padding-inline: var(--m-pad); }
+.home-page .mc-cont-list > li { flex: 0 0 104px; }
+.home-page .mc-cont__pic { border: 0; border-radius: 12px; }
+.home-page .mc-cont__title { font-size: 12.5px; }
+
+/* ================= چیپ‌های ژانر ================= */
+.home-page .mc-chips { padding: 14px var(--m-pad) 0; gap: 8px; }
+.home-page .mc-chip {
+  padding: 7px 14px; font-size: 12.5px; background: none; color: #c9c9d1; border-color: var(--m-line);
+}
+.home-page .mc-chip:hover { color: #fff; border-color: rgba(255, 255, 255, .3); }
+.home-page .mc-chip.is-on { background: #fff; border-color: #fff; color: var(--m-bg); }
+
+/* ================= کارت‌ها: «آخرین آپدیت‌ها» ================= */
+.home-page .horizontal-scroll { scroll-padding-inline: var(--m-pad); }
+.home-page .lst_type1 {
+  padding: 2px var(--m-pad) 8px; gap: 10px; border: 0;
+}
+.home-page .lst_type1 li { flex: 0 0 clamp(120px, 34vw, 150px); }
+.home-page .lst_type1 li:last-child { margin: 0; }
+
+.home-page .comic-card {
+  border-radius: 12px; background: var(--m-surface); border: 1px solid var(--m-line);
+  box-shadow: none; transition: border-color .2s;
+}
+.home-page .comic-card:hover { transform: none; box-shadow: none; border-color: rgba(255, 255, 255, .22); }
+.home-page .comic-card:hover .comic-pic img { transform: none; }
+.home-page .comic-card:hover .comic-title { color: #fff; }
+.home-page .comic-pic { height: auto; aspect-ratio: 3 / 4; }
+.home-page .comic-pic::after { background: linear-gradient(to top, rgba(0, 0, 0, .6), transparent 45%); }
+
+.home-page .badge-access {
+  top: 8px; right: 8px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
+  border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; letter-spacing: 0;
+}
+.home-page .badge-vip { background: var(--m-red); }
+.home-page .badge-free { background: rgba(0, 0, 0, .6); }
+.home-page .badge-chapter-box {
+  left: 8px; right: 8px; bottom: 8px; padding: 3px 8px; border-radius: 8px;
+  background: rgba(0, 0, 0, .6); border: 0;
+}
+.home-page .badge-chapter-num { font-size: 11.5px; }
+.home-page .badge-chapter-date { font-size: 10.5px; }
+
+.home-page .comic-info { padding: 10px; gap: 4px; background: transparent; }
+.home-page .comic-title { height: 3em; font-size: 13px; color: #fff; }
+.home-page .comic-meta { border: 0; padding: 0; }
+.home-page .comic-genre { background: none; padding: 0; border-radius: 0; font-size: 11.5px; color: var(--m-muted); }
+.home-page .comic-score { font-size: 12px; }
+
+/* ================= «بهترین‌ها»: لیست ساده ================= */
+.home-page .toprated_list { border: 0; margin: 0; }
+.home-page .lst_type2 { display: block; padding: 0 var(--m-pad) 8px; }
+.home-page .lst_type2 > li,
+.home-page .lst_type2 > li:first-child {
+  background: none; border: 0; border-bottom: 1px solid var(--m-line); border-radius: 0; padding: 10px 0;
+}
+.home-page .lst_type2 > li:last-child { border-bottom: 0; }
+.home-page .lst_type2 a { display: block; }
+.home-page .lst_type2 .row { display: flex; align-items: center; flex-wrap: nowrap; }
+.home-page .lst_type2 .num { width: 30px; height: auto; font-size: 15px; font-weight: 800; color: var(--m-muted); text-align: center; }
+.home-page .lst_type2 .num .rank1 {
+  background: none; text-indent: 0; width: auto; height: auto; overflow: visible; white-space: normal;
+  color: #fff; display: inline;
+}
+.home-page .lst_type2 .pic { width: 52px; height: 68px; margin: 0 8px 0 12px; flex: none; }
+.home-page .lst_type2 .pic span { display: block; width: 100%; height: 100%; border-radius: 8px; overflow: hidden; }
+.home-page .lst_type2 .pic span img { width: 100%; height: 100%; object-fit: cover; }
+.home-page .lst_type2 .info { padding: 0; min-width: 0; }
+.home-page .lst_type2 .subj { font-size: 14.5px; font-weight: 700; color: #fff; }
+.home-page .lst_type2 .subj .ellipsis { height: auto; line-height: 1.7; }
+.home-page .lst_type2 .genre { font-size: 12px; margin: 2px 0 0; color: var(--m-muted); }
+
+/* ================= بنر همکاری ================= */
+.home-page .mw-banner-wrapper { margin: 32px var(--m-pad) 0; width: auto; border: 0; }
+.home-page .mw-banner-container {
+  aspect-ratio: auto; height: auto; background: var(--m-surface); background-image: none;
+  border: 1px solid var(--m-line); border-radius: var(--m-r); padding: 16px;
+  box-shadow: none; transform: none; display: block;
+}
+.home-page .mw-banner-container:hover { transform: none; box-shadow: none; }
+.home-page .mw-banner-content {
+  width: 100%; margin: 0; padding: 0; display: grid;
+  grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; row-gap: 2px; align-items: center;
+}
+.home-page .mw-banner-title {
+  grid-column: 1; margin: 0; font-size: 15px; font-weight: 800; line-height: 1.7; text-shadow: none; color: #fff;
+}
+.home-page .mw-banner-title br { display: none; }
+.home-page .mw-banner-title span {
+  display: inline; background: none; -webkit-background-clip: border-box; background-clip: border-box;
+  -webkit-text-fill-color: currentColor; -webkit-text-stroke: 0; text-shadow: none; filter: none;
+}
+.home-page .mw-banner-subtitle {
+  grid-column: 1; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--m-muted);
+  text-shadow: none; white-space: normal;
+}
+.home-page .mw-banner-action { grid-column: 1 / -1; grid-row: 3; margin-top: 12px; width: 100%; }
+.home-page .mw-btn-glow {
+  display: flex; justify-content: center; width: 100%; gap: 8px; padding: 10px 16px;
+  background: var(--m-red); border: 0; border-radius: 10px; box-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none; font-size: 13px; font-weight: 700;
+}
+.home-page .mw-btn-glow::before { display: none; }
+.home-page .mw-btn-glow:hover { background: #b91c1c; }
+.home-page .mw-btn-icon { width: 16px; height: 16px; }
+
+/* ================= تلگرام و اینستاگرام ================= */
+.home-page .telegram-banner, .home-page .instagram-banner {
+  display: flex; width: auto; margin: 10px var(--m-pad) 0; padding: 0;
+}
+.home-page .telegram-banner-link, .home-page .instagram-banner-link {
+  flex: 1; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px;
+  width: 100%; max-width: none; min-height: 0; padding: 14px;
+  background: var(--m-surface); border: 1px solid var(--m-line); border-radius: 16px;
+  box-shadow: none; transform: none; overflow: hidden;
+}
+.home-page .telegram-banner-link::before, .home-page .instagram-banner-link::before { display: none; }
+.home-page .telegram-banner-link:hover, .home-page .instagram-banner-link:hover { transform: none; box-shadow: none; }
+.home-page .telegram-icon, .home-page .instagram-icon {
+  grid-column: 1; grid-row: 1; width: 44px; height: 44px; border-radius: 12px;
+  display: grid; place-items: center; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.home-page .telegram-icon { background: rgba(34, 158, 217, .14); }
+.home-page .instagram-icon { background: rgba(220, 39, 67, .14); }
+.home-page .telegram-icon img, .home-page .instagram-icon img { width: 24px; height: 24px; }
+.home-page .telegram-content, .home-page .instagram-content { grid-column: 2; grid-row: 1; min-width: 0; margin: 0; }
+.home-page .telegram-title, .home-page .instagram-title {
+  font-size: 14px; font-weight: 700; line-height: 1.6; margin: 0 0 2px; white-space: normal; overflow: visible; color: #fff;
+}
+.home-page .telegram-subtitle, .home-page .instagram-subtitle {
+  font-size: 12px; line-height: 1.6; color: var(--m-muted); opacity: 1; white-space: normal;
+}
+.home-page .telegram-subtitle strong, .home-page .instagram-subtitle strong { color: #fff; font-weight: 700; }
+.home-page .banner-btn-group { grid-column: 1 / -1; grid-row: 2; display: flex; flex-direction: row; gap: 8px; }
+.home-page .telegram-btn, .home-page .instagram-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; height: 40px; padding: 0 12px;
+  background: rgba(255, 255, 255, .06); color: #e4e4e7; border: 1px solid var(--m-line); border-radius: 12px;
+  box-shadow: none; font: 700 12.5px 'Vazirmatn', sans-serif; cursor: pointer; text-decoration: none;
+  transition: background .2s, border-color .2s;
+}
+.home-page .banner-btn-group > button:hover { background: rgba(255, 255, 255, .12); }
+.home-page .telegram-banner .banner-btn-group > a { background: #229ed9; border-color: transparent; color: #fff; }
+.home-page .instagram-banner .banner-btn-group > a { background: #dc2743; border-color: transparent; color: #fff; }
+.home-page .telegram-banner .banner-btn-group > a:hover { background: #1a8bc0; }
+.home-page .instagram-banner .banner-btn-group > a:hover { background: #c01f38; }
+.home-page .telegram-banner-link:hover .telegram-btn,
+.home-page .instagram-banner-link:hover .instagram-btn { transform: none; }
+
+/* ================= تب‌های داغ‌ترین‌ها / جدول / جدیدترین‌ها ================= */
+.home-page .mc-days { padding: 12px var(--m-pad) 6px; gap: 8px; }
+.home-page .mc-day {
+  min-width: 70px; padding: 10px 8px; background: none; border-color: var(--m-line); border-radius: 12px;
+}
+.home-page .mc-day.is-today { border-color: rgba(220, 38, 38, .6); }
+.home-page .mc-day.is-on { background: #fff; border-color: #fff; color: var(--m-bg); }
+.home-page .mc-day.is-on i { color: rgba(0, 0, 0, .6); }
+.home-page .mc-day.is-on u { background: var(--m-red); color: #fff; }
+
+.home-page .mc-list { gap: 0; padding: 4px var(--m-pad) 10px; }
+.home-page .mc-row {
+  padding: 12px 0; gap: 12px; background: none; border: 0; border-bottom: 1px solid var(--m-line);
+  border-radius: 0; transform: none;
+}
+.home-page .mc-row:hover { background: none; border-color: var(--m-line); transform: none; }
+.home-page .mc-row__pic { border-radius: 8px; }
+.home-page .mc-row__badge { border-radius: 6px; }
+.home-page .mc-more { border-radius: 10px; background: none; margin: 14px auto 24px; }
+.home-page .mc-more:hover { background: none; border-color: #fff; }
+
+/* ================= تبلت و دسکتاپ ================= */
+@media (min-width: 768px) {
+  .home-page { --m-pad: 24px; }
+  .home-page .lst_type1 li { flex-basis: 160px; }
+}
+
+@media (min-width: 1024px) {
+  .home-page {
+    --m-pad: 0px;
+    max-width: 1200px; margin-inline: auto; padding-inline: 24px; padding-top: 16px;
+    column-gap: 20px;
+  }
+
+  .home-page .mc-tabs { gap: 28px; margin-top: 20px; }
+  .home-page .mc-tab { font-size: 14.5px; }
+
+  .home-page .mc-stats { margin-top: 20px; width: fit-content; }
+  .home-page .mc-stat { flex-direction: row; gap: 10px; padding: 4px 28px; }
+  .home-page .mc-stat:first-child { padding-inline-start: 0; }
+  .home-page .mc-stat b { font-size: 22px; }
+  .home-page .mc-stat span { font-size: 13px; }
+
+  .home-page .title { margin: 48px 0 16px; padding: 0; border: 0; }
+  .home-page .title a { font-size: 1.25rem; padding: 0; }
+  .home-page .mc-sec-head h2, .home-page .mc-panel-head h2 { font-size: 1.25rem; }
+  .home-page .mc-sec-head, .home-page .mc-panel-head { padding-inline: 0; }
+  .home-page .mc-continue { margin-top: 40px; }
+  .home-page .mc-cont-list { padding-inline: 0; }
+  .home-page .mc-cont-list > li { flex-basis: 132px; }
+  .home-page .mc-chips { padding: 16px 0 0; }
+  .home-page .mc-chip { font-size: 13px; padding: 8px 16px; }
+
+  /* آخرین آپدیت‌ها: پنج کارت هم‌اندازه (به‌جای چیدمان بنتوی نامتقارن) */
+  body .home-page #todaysList {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: auto;
+    gap: 16px; padding: 2px 0 8px; overflow: visible;
+  }
+  body .home-page #todaysList > li { grid-column: auto; grid-row: auto; flex: none; }
+  body .home-page #todaysList li .comic-card {
+    height: 100%; border-radius: 12px; background: var(--m-surface); border: 1px solid var(--m-line); box-shadow: none;
+  }
+  body .home-page #todaysList li .comic-card::after { display: none; }
+  body .home-page #todaysList li .comic-card:hover { transform: none; box-shadow: none; border-color: rgba(255, 255, 255, .22); }
+  body .home-page #todaysList li .comic-pic { position: relative; inset: auto; height: auto; aspect-ratio: 3 / 4; }
+  body .home-page #todaysList li .comic-pic::after { background: linear-gradient(to top, rgba(0, 0, 0, .6), transparent 45%); }
+  body .home-page #todaysList li .badge-access { top: 8px; right: 8px; padding: 2px 8px; font-size: 11px; border-radius: 6px; box-shadow: none; }
+  body .home-page #todaysList li .badge-chapter-box { left: 8px; right: 8px; bottom: 8px; padding: 3px 8px; border-radius: 8px; background: rgba(0, 0, 0, .6); border: 0; }
+  body .home-page #todaysList li .badge-chapter-num { font-size: 11.5px; }
+  body .home-page #todaysList li .comic-info { position: static; bottom: auto; padding: 10px 12px 12px; gap: 4px; background: transparent; }
+  body .home-page #todaysList li .comic-title { height: 3em; font-size: 13.5px; line-height: 1.5; text-shadow: none; }
+  body .home-page #todaysList li .comic-meta { justify-content: space-between; gap: 8px; border: 0; padding: 0; }
+  body .home-page #todaysList li .comic-genre { background: none; padding: 0; border-radius: 0; font-size: 11.5px; color: var(--m-muted); backdrop-filter: none; }
+  body .home-page #todaysList li .comic-score { margin: 0; padding: 0; background: none; border: 0; border-radius: 0; font-size: 12px; }
+
+  /* بهترین‌ها: دو ستون، رتبه‌ها از بالا به پایین */
+  .home-page .toprated_list { margin: 0; }
+  body .home-page #topRatedList {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column; column-gap: 48px; row-gap: 0; padding: 0 0 8px;
+  }
+  body .home-page #topRatedList > li,
+  body .home-page #topRatedList > li:first-child,
+  body .home-page #topRatedList > li:not(:first-child) {
+    grid-column: auto; grid-row: auto; padding: 12px 0; border-bottom: 1px solid var(--m-line);
+  }
+  body .home-page #topRatedList > li > a,
+  body .home-page #topRatedList > li:first-child > a {
+    position: static; height: auto; overflow: visible; background: none; border: 0; border-radius: 0; box-shadow: none;
+  }
+  body .home-page #topRatedList > li > a:hover,
+  body .home-page #topRatedList > li:not(:first-child) > a:hover { background: none; box-shadow: none; transform: none; }
+  body .home-page #topRatedList > li:first-child > a::before { content: none; display: none; }
+  body .home-page #topRatedList > li .row,
+  body .home-page #topRatedList > li:first-child .row { display: flex; position: static; height: auto; padding: 0; align-items: center; }
+  body .home-page #topRatedList > li .num,
+  body .home-page #topRatedList > li:first-child .num,
+  body .home-page #topRatedList > li:not(:first-child) .num {
+    position: static; width: 34px; height: auto; border: 0; border-radius: 0; background: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none; display: block;
+    font-size: 1rem; font-weight: 800; color: var(--m-muted); -webkit-text-stroke: 0; text-align: center;
+  }
+  body .home-page #topRatedList > li .num span,
+  body .home-page #topRatedList > li:first-child .num span { color: inherit; font-size: inherit; text-shadow: none; }
+  body .home-page #topRatedList > li:first-child .num .rank1 { color: #fff; }
+  body .home-page #topRatedList > li .pic,
+  body .home-page #topRatedList > li:first-child .pic,
+  body .home-page #topRatedList > li:not(:first-child) .pic {
+    position: static; inset: auto; width: 56px; height: 74px; margin: 0 8px 0 14px; border-radius: 8px;
+    overflow: hidden; box-shadow: none; transition: none;
+  }
+  body .home-page #topRatedList > li:first-child .pic::after { display: none; }
+  body .home-page #topRatedList > li .pic img,
+  body .home-page #topRatedList > li:first-child .pic img { width: 100%; height: 100%; object-fit: cover; transform: none; }
+  body .home-page #topRatedList > li > a:hover .pic { transform: none; }
+  body .home-page #topRatedList > li .info,
+  body .home-page #topRatedList > li:first-child .info,
+  body .home-page #topRatedList > li:not(:first-child) .info { position: static; padding: 0; }
+  body .home-page #topRatedList > li .subj .ellipsis,
+  body .home-page #topRatedList > li:first-child .subj .ellipsis,
+  body .home-page #topRatedList > li:not(:first-child) .subj .ellipsis {
+    font-size: 15.5px; font-weight: 700; line-height: 1.7; text-shadow: none; height: auto;
+  }
+  body .home-page #topRatedList > li .genre,
+  body .home-page #topRatedList > li:first-child .genre,
+  body .home-page #topRatedList > li:not(:first-child) .genre { font-size: 12px; color: var(--m-muted); margin-top: 2px; }
+
+  /* بنر همکاری: کارت افقی ساده */
+  .home-page .mw-banner-wrapper { margin: 48px 0 0; }
+  .home-page .mw-banner-container { padding: 22px 28px; border-radius: var(--m-r); }
+  .home-page .mw-banner-title { font-size: 1.1rem; }
+  .home-page .mw-banner-subtitle { font-size: 13.5px; }
+  .home-page .mw-banner-action { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; width: auto; }
+  .home-page .mw-btn-glow { display: inline-flex; width: auto; padding: 10px 22px; font-size: 14px; }
+
+  /* تلگرام و اینستاگرام: دو کارت هم‌قد کنار هم */
+  .home-page .telegram-banner, .home-page .instagram-banner { margin: 20px 0 0; }
+  .home-page .telegram-banner-link, .home-page .instagram-banner-link {
+    grid-template-columns: auto minmax(0, 1fr) auto; padding: 18px 20px; gap: 16px;
+  }
+  .home-page .telegram-icon, .home-page .instagram-icon { width: 52px; height: 52px; border-radius: 14px; }
+  .home-page .telegram-icon img, .home-page .instagram-icon img { width: 28px; height: 28px; }
+  .home-page .banner-btn-group { grid-column: 3; grid-row: 1; }
+  .home-page .telegram-btn, .home-page .instagram-btn { flex: none; min-width: 96px; padding: 0 18px; font-size: 13px; }
+  .home-page .telegram-title, .home-page .instagram-title { font-size: 15px; }
+
+  /* پنل‌ها */
+  .home-page .mc-days { padding-inline: 0; gap: 10px; }
+  .home-page .mc-day { min-width: 100px; }
+  .home-page .mc-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; padding-inline: 0; }
+  .home-page .mc-row { padding: 14px 0; }
+}
+
+@media (min-width: 1440px) {
+  .home-page { max-width: 1280px; }
+}
+
+/* موبایل‌های خیلی باریک */
+@media (max-width: 360px) {
+  .home-page { --m-pad: 12px; }
+  .home-page .mc-tabs { gap: 16px; }
+}
+
+/* ---- هماهنگی با home-v2.css ---- */
+.home-page #todaysList { padding: 2px var(--m-pad) 8px; }
+.home-page .comic-title { white-space: normal; line-height: 1.5; }
+.home-page .lst_type2 a { padding: 0; }
+.home-page .lst_type2 .row { gap: 0; }
+.home-page .lst_type2 .pic { border-radius: 0; background: none; }
+@media (min-width: 1024px) {
+  .home-page #todaysList { padding: 2px 0 8px; }
+  .home-page .lst_type2 { padding-inline: 0; }
+  .home-page .lst_type2 { grid-template-columns: none; }
+}
+
+/* عنکبوت: دوباره نمایش داده می‌شود (home-v2.css مخفی‌اش کرده بود) */
+.home-page .spider-container { display: block !important; }
