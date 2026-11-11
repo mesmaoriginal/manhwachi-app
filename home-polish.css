@@ -1,0 +1,65 @@
+/* home-polish.css — بعد از home-sections.css لود شود.
+   ۱) اسلایدر دقیقاً مثل home-v2.css   ۲) فقط کمی زیباتر کردن «بهترین‌ها» و بنرها (بدون دست‌زدن به بقیه‌ی صفحه) */
+
+:root { --pl-ln: rgba(255,255,255,.08); --pl-s1: #0e0e0e; --pl-s2: #151515; --pl-s3: #1d1d1d; --pl-pr: #dc2626; --pl-pr2: #ef4444; --pl-mu: #8c8c8c; }
+
+/* ================= اسلایدر (از home-v2.css) ================= */
+.home-page .slider { margin: 12px 12px 0; width: auto; border-radius: 20px; border: 1px solid var(--pl-ln); }
+@media (max-width: 767px) { .home-page .slider { height: clamp(250px, 72vw, 350px); } }
+@media (min-width: 768px) { .home-page .slider { margin: 16px 12px 0; } }
+@media (min-width: 1024px) { .home-page .slider { margin: 20px 0 0; border-radius: 24px; } }
+.home-page .dots { padding-block: 12px 2px; gap: 6px; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.home-page .dot { width: 8px; height: 8px; background: rgba(255,255,255,.22); box-shadow: none; }
+.home-page .dot.is-active { width: 26px; background: var(--pl-pr); box-shadow: none; }
+.home-page .slider-nav { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(0,0,0,.55); border-color: var(--pl-ln); opacity: .85; }
+.home-page .slider-nav:hover { background: var(--pl-pr); border-color: transparent; }
+.home-page .slider-nav svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ================= موبایل و تبلت ================= */
+@media (max-width: 1023px) {
+
+  /* --- بهترین‌ها: کارت‌های تمیز با رتبه --- */
+  .home-page .lst_type2 { display: grid; gap: 8px; padding: 4px 12px 14px; margin: 0; list-style: none; }
+  .home-page .lst_type2 > li {
+    margin: 0; padding: 0; border-radius: 16px; background: var(--pl-s1); border: 1px solid var(--pl-ln);
+    transition: border-color .2s, background .2s;
+  }
+  .home-page .lst_type2 > li:first-child {
+    background: linear-gradient(135deg, rgba(220,38,38,.16), var(--pl-s1)); border-color: rgba(220,38,38,.38);
+  }
+  .home-page .lst_type2 a { display: block; padding: 8px 12px 8px 8px; }
+  .home-page .lst_type2 .row { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
+  .home-page .lst_type2 .num {
+    width: 26px; height: auto; flex: none; text-align: center; font: 700 17px/1 'Vazirmatn', sans-serif; color: #5b5b5b;
+  }
+  .home-page .lst_type2 .num .rank1 {
+    background: none !important; text-indent: 0; width: auto; height: auto; overflow: visible; white-space: normal;
+    display: inline; color: var(--pl-pr2); font-size: 20px;
+  }
+  .home-page .lst_type2 .pic { width: 54px; height: 74px; margin: 0; flex: none; border-radius: 10px; overflow: hidden; background: var(--pl-s3); }
+  .home-page .lst_type2 .pic span { display: block; width: 100%; height: 100%; border-radius: 0; }
+  .home-page .lst_type2 .pic span img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .home-page .lst_type2 .info { flex: 1; min-width: 0; padding: 0; }
+  .home-page .lst_type2 .subj { margin: 0 0 4px; font: 600 14px/1.6 'Vazirmatn', sans-serif; color: #fff; }
+  .home-page .lst_type2 .subj .ellipsis { height: auto; line-height: 1.6; }
+  .home-page .lst_type2 .genre { margin: 0; font-size: 12px; color: var(--pl-mu); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* --- بنرها: متقارن و داخل صفحه (قبلاً یک طرفشان به لبه می‌چسبید) --- */
+  .home-page .mw-banner-wrapper {
+    margin: 22px 12px !important; width: auto; border: 1px solid var(--pl-ln) !important;
+    border-radius: 20px; overflow: hidden;
+  }
+  .home-page .telegram-banner, .home-page .instagram-banner { margin: 14px 12px; padding: 0; justify-content: center; }
+  .home-page .telegram-banner-link, .home-page .instagram-banner-link {
+    max-width: none; width: 100%; padding: 14px 16px; border-radius: 20px; gap: 12px;
+    box-shadow: 0 8px 22px -12px rgba(0,0,0,.6);
+  }
+  .home-page .telegram-banner-link::before, .home-page .instagram-banner-link::before { display: none; }
+  .home-page .telegram-title, .home-page .instagram-title { white-space: normal; line-height: 1.6; }
+  .home-page .telegram-subtitle, .home-page .instagram-subtitle { white-space: normal; line-height: 1.6; }
+  .home-page .telegram-btn, .home-page .instagram-btn { min-width: 84px; border-radius: 12px; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-page .lst_type2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
