@@ -29,24 +29,24 @@ const DEFAULT_SLIDES = [
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/4/manhwa-back4.webp",
-    product: "src-mobi/slider/4/manhwa-cover4.webp",
+    bg: "src-mobi/slider/4/manhwa-back4-v2.webp",
+    product: "src-mobi/slider/4/manhwa-cover4-v2.webp",
     link: "https://manhwachi.ir/comic/regressed-mercenary-machinations"
   },
   {
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/3/manhwa-back3.webp",
-    product: "src-mobi/slider/3/manhwa-cover3.webp",
+    bg: "src-mobi/slider/3/manhwa-back3-v2.webp",
+    product: "src-mobi/slider/3/manhwa-cover3-v2.webp",
     link: "https://manhwachi.ir/comic/the-100-curses-of-illeston-mansion"
   },
   {
     title: "",
     kicker: "",
     subtitle: "",
-    bg: "src-mobi/slider/2/manhwa-back2.webp",
-    product: "src-mobi/slider/2/manhwa-cover2.webp",
+    bg: "src-mobi/slider/2/manhwa-back2-v2.webp",
+    product: "src-mobi/slider/2/manhwa-cover2-v2.webp",
     link: "https://manhwachi.ir/comic/the-white-tiger-clans-baby-cotton-ball"
   },
   {
