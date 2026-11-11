@@ -1,1468 +1,1249 @@
 <!DOCTYPE html>
 <html class="dark" dir="rtl" lang="fa">
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport" />
-    <meta name="theme-color" content="#050505" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="screen-orientation" content="portrait" />
-    <meta name="x5-orientation" content="portrait" />
-    <meta name="full-screen" content="yes" />
-    <meta name="x5-fullscreen" content="true" />
-    <title id="dynamic-title">خواندن چپتر - مانهواچی</title>
-    <link rel="stylesheet" href="/css/vendor/inter.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;display=swap'">
-    <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" media="print" onload="this.media='all'">
-    <script>
-      // Tailwind: اول فایل کامپایل‌شده‌ی لوکال (/css/tailwind.css). اگه نبود/خراب بود، CDN به‌صورت غیر-بلاک‌کننده لود می‌شه.
-      window.__twFallback = function () {
-        if (window.__twFallbackDone) return;
-        window.__twFallbackDone = true;
-        var s = document.createElement('script');
-        s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
-        s.onload = function () {
-          tailwind.config = { darkMode: 'class', theme: { extend: { colors: {
-            'blood-glow': 'rgba(139, 0, 0, 0.6)', 'void-black': '#050505', 'primary': '#ffb4a8', 'primary-container': '#8b0000'
-          } } } };
-        };
-        document.head.appendChild(s);
-      };
-      window.addEventListener('load', function () {
-        setTimeout(function () {
-          var probe = document.createElement('div');
-          probe.className = 'hidden';
-          document.body.appendChild(probe);
-          var ok = getComputedStyle(probe).display === 'none';
-          probe.remove();
-          if (!ok) window.__twFallback();
-        }, 300);
-      });
-    </script>
-    <link rel="stylesheet" href="/css/tailwind.css?v=1" onerror="window.__twFallback()" />
-    <link rel="icon" href="/ManhwaChi/favicon.ico" />
-<link rel="stylesheet" href="/vip-flair.css?v=2" />
-<script src="/vip-flair.js?v=2"></script>
-    <link rel="preconnect" href="https://s3.parspack.net" crossorigin />
-    <link rel="dns-prefetch" href="https://s3.parspack.net" />
-    <style>
-        body { background-color: #050505; overflow-x: hidden; user-select: none; scroll-behavior: smooth; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #8b0000; border-radius: 10px; }
-        .reading-progress-bar { transition: width 0.1s ease-out; }
-        #top-nav, #bottom-nav { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .ui-hidden #top-nav { transform: translateY(-100%); }
-        .ui-hidden #bottom-nav { transform: translateY(100%); }
-        .episode-modal { animation: modalPop 0.3s ease; }
-        @keyframes modalPop { from { opacity: 0; transform: scale(0.95) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .manhwa-panel img { pointer-events: none; -webkit-user-drag: none; filter: contrast(1.02); touch-action: pan-y; }
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport" />
+<meta name="theme-color" content="#000000" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title id="dynamic-title">خواندن چپتر - مانهواچی</title>
+<link rel="icon" href="/ManhwaChi/favicon.ico" />
+<link rel="preconnect" href="https://s3.parspack.net" crossorigin />
+<link rel="dns-prefetch" href="https://s3.parspack.net" />
 
-        /* ===== حالت خواندن پیوسته (وبتون) - پیش‌فرض ===== */
-        #reader.mode-vertical { flex-direction: column; }
-        #reader.mode-vertical .manhwa-panel { width: var(--panel-width, 100%); transition: width 0.2s ease; }
-
-        /* ===== حالت خواندن صفحه‌ای (کشویی افقی، مثل مانگا) ===== */
-        #reader.mode-paged {
-            flex-direction: row;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            scrollbar-width: none;
-            padding-top: calc(3.5rem + env(safe-area-inset-top));
-            padding-bottom: 0;
+<!-- ⚡ شروع زودهنگام: درخواست تصاویر چپتر و data.json همین‌جا، قبل از دانلود هر اسکریپت دیگری، موازی شروع می‌شود -->
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var seg = location.pathname.split('/').filter(function (s) { return s !== ''; });
+  var slug = 'the-forgotten-field', ch = null;
+  if (q.get('slug')) {
+    slug = q.get('slug');
+    var c = q.get('ch');
+    if (c !== null && c !== undefined && !isNaN(parseInt(c))) ch = parseInt(c);
+  } else if (seg.length >= 2) {
+    try { slug = decodeURIComponent(seg[1]); } catch (e) { slug = seg[1]; }
+    if (seg[2] !== undefined && !isNaN(parseInt(seg[2]))) ch = parseInt(seg[2]);
+  }
+  // توکن نشست Supabase را مستقیم از localStorage می‌خوانیم (بدون انتظار برای لود کتابخانه)
+  function sniffToken() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (/^sb-.+-auth-token$/.test(k)) {
+          var v = JSON.parse(localStorage.getItem(k));
+          var s = v && (v.access_token ? v : (v.currentSession || null));
+          if (s && s.access_token && (!s.expires_at || s.expires_at * 1000 > Date.now() + 30000)) return s.access_token;
         }
-        #reader.mode-paged::-webkit-scrollbar { display: none; }
-        #reader.mode-paged .manhwa-panel {
-            flex: 0 0 100vw;
-            width: 100vw;
-            height: 100%;
-            scroll-snap-align: center;
-        }
-        #reader.mode-paged .manhwa-panel img { max-height: 100%; width: auto; max-width: 100%; margin: 0 auto; touch-action: none; }
+      }
+    } catch (e) {}
+    return null;
+  }
+  window.__rdPost = function (tok) {
+    var h = { 'Content-Type': 'application/json' };
+    if (tok) h['Authorization'] = 'Bearer ' + tok;
+    return fetch('/api/get-chapter-images', {
+      method: 'POST', headers: h, priority: 'high',
+      body: JSON.stringify({ slug: slug, chapterNum: ch })
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, json: j }; });
+    });
+  };
+  var R = window.__rd = { slug: slug, ch: ch, tok: null, imgP: null, dataP: null };
+  R.dataP = fetch('/data/data.json').then(function (r) { if (!r.ok) throw new Error('data'); return r.json(); });
+  R.dataP.catch(function () {});
+  if (ch !== null) {
+    R.tok = sniffToken();
+    R.imgP = window.__rdPost(R.tok);
+    R.imgP.catch(function () {});
+  }
+})();
+</script>
 
-        /* مخفی کردن انتهای چپتر در حالت صفحه‌ای */
-        #reader.mode-paged ~ #footer-container { display: none !important; }
+<!-- استایل‌های غیر-بلاک‌کننده (صفحه به هیچ‌کدام برای اولین نمایش وابسته نیست) -->
+<link rel="stylesheet" href="/css/vendor/vazirmatn.css" media="print" onload="this.media='all'" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
+<link rel="stylesheet" href="/css/vendor/material-symbols.css" media="print" onload="this.media='all'" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
+<link rel="stylesheet" href="/css/tailwind.css?v=1" media="print" onload="this.media='all'" onerror="window.__twFallback&&window.__twFallback()" />
+<link rel="stylesheet" href="/vip-flair.css?v=2" media="print" onload="this.media='all'" />
+<script>
+  window.__twFallback = function () {
+    if (window.__twFallbackDone) return; window.__twFallbackDone = true;
+    var s = document.createElement('script');
+    s.src = 'https://cdn.tailwindcss.com?plugins=forms,container-queries';
+    document.head.appendChild(s);
+  };
+</script>
+<script src="/vip-flair.js?v=2" defer></script>
 
-        /* ===== زوم با دابل‌تپ روی تصویر ===== */
-        .manhwa-panel img { transition: transform 0.25s ease; transform-origin: center center; }
-        .manhwa-panel img.zoomed { transform: scale(2); cursor: zoom-out; }
+<style>
+:root{--bg:#000;--s1:#0f0f0f;--s2:#161616;--s3:#1f1f1f;--ln:rgba(255,255,255,.08);--tx:#e8e8e8;--mu:#8c8c8c;--pr:#dc2626;--pr2:#ef4444;--hh:52px;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Vazirmatn','Vazir',Tahoma,system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden;user-select:none;-webkit-user-select:none;min-height:100vh;min-height:100dvh}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+.hidden{display:none!important}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#2c2c2c;border-radius:10px}
+.sc{scrollbar-width:thin;scrollbar-color:#2c2c2c transparent}
 
-        /* ===== حالت آفلاین امن: صفحه‌ها روی canvas کشیده می‌شوند (نه <img>) ===== */
-        .manhwa-panel canvas { display: block; width: 100%; height: auto; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: pan-y; }
-        #reader.mode-vertical .manhwa-panel.mc-off { aspect-ratio: var(--ar, auto); }
-        #reader.mode-vertical .manhwa-panel.mc-off canvas { height: 100%; }
-        #reader.mode-paged .manhwa-panel canvas { max-height: 100%; width: auto; max-width: 100%; margin: 0 auto; touch-action: none; }
+/* ===== نوار پیشرفت ثابت بالای صفحه ===== */
+#rd-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;pointer-events:none;background:rgba(255,255,255,.05)}
+#progress-bar{display:block;height:100%;background:var(--pr);transform:scaleX(0);transform-origin:100% 50%;will-change:transform}
+#dim{position:fixed;inset:0;z-index:40;background:#000;opacity:0;pointer-events:none}
 
-        .reader-toast {
-            position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: rgba(15,15,15,0.97); border: 1px solid rgba(139,0,0,0.4); border-radius: 16px;
-            padding: 12px 16px; z-index: 200; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none;
-            transition: opacity 0.25s ease, transform 0.25s ease; max-width: 92vw;
-        }
-        .reader-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+/* ===== هدر ===== */
+#top-nav{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:var(--sat);background:rgba(0,0,0,.96);border-bottom:1px solid var(--ln);transition:transform .25s ease;will-change:transform}
+.tn{display:flex;align-items:center;justify-content:space-between;gap:8px;height:var(--hh);padding:0 6px}
+.tn-l{display:flex;align-items:center;gap:2px;min-width:0;flex:1}
+.tn-r{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.ic{min-width:42px;height:42px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;color:#cfcfcf;transition:background .15s,color .15s}
+.ic:active,.ic:hover{background:var(--s3);color:#fff}
+.ic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ic.on{color:var(--pr2)}
+.ic .tx{font-size:12px;display:none}
+@media(min-width:768px){.ic .tx{display:inline}}
+#offline-icon{font-size:17px;line-height:1}
+#offline-label{font-size:10px}
+.tn-t{min-width:0}
+#nav-manhwa-title{margin:0;font-size:14px;font-weight:600;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw}
+@media(min-width:768px){#nav-manhwa-title{max-width:340px}}
+.tn-sub{margin:0;font-size:11px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+#pages-left-wrap{display:none;color:#5d5d5d}
+@media(min-width:768px){#pages-left-wrap{display:inline}}
 
-        .chip-btn { padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; background: #18181b; border: 1px solid transparent; transition: all 0.2s; }
-        .chip-btn.active { background: rgba(139,0,0,0.25); border-color: #b91c1c; color: #ffb4a8; }
+/* ===== منوی پایین (شناور) ===== */
+#bottom-nav{position:fixed;z-index:50;left:0;right:0;margin:0 auto;bottom:calc(10px + var(--sab));width:calc(100% - 20px);max-width:520px;height:54px;display:flex;align-items:center;gap:4px;padding:0 6px;background:rgba(18,18,18,.96);border:1px solid var(--ln);border-radius:20px;box-shadow:0 10px 30px -10px rgba(0,0,0,.8);transition:transform .25s ease;will-change:transform}
+#bottom-nav .ic{padding:0;width:42px}
+#bottom-nav .ic[disabled]{opacity:.28;pointer-events:none}
+#page-scrub{flex:1;min-width:0;height:28px;margin:0 4px;accent-color:var(--pr);background:transparent;cursor:pointer}
+.ui-hidden #top-nav{transform:translateY(-110%)}
+.ui-hidden #bottom-nav{transform:translateY(calc(100% + 30px))}
 
-        .toggle-switch { width: 46px; height: 26px; border-radius: 999px; background: #27272a; position: relative; transition: background 0.2s; flex-shrink: 0; }
-        .toggle-switch.on { background: #b91c1c; }
-        .toggle-switch .knob { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: transform 0.2s; }
-        .toggle-switch.on .knob { transform: translateX(-20px); }
+/* ===== خواننده ===== */
+#reader{width:100%;min-height:100vh;min-height:100dvh;display:flex;align-items:center}
+#reader.mode-vertical{flex-direction:column;padding-top:var(--sat)}
+#reader.mode-vertical .manhwa-panel{width:var(--panel-width,100%);max-width:768px}
+.manhwa-panel{position:relative;display:flex;justify-content:center;align-items:center;width:100%}
+.manhwa-panel img{display:block;width:100%;height:auto;opacity:0;transition:opacity .2s ease;pointer-events:none;-webkit-user-drag:none;touch-action:pan-y;transform-origin:center center}
+.manhwa-panel img.ld{opacity:1}
+.manhwa-panel img.zoomed{transform:scale(2);cursor:zoom-out;transition:transform .25s ease}
+.manhwa-panel.panel-loading{background:#0a0a0a;aspect-ratio:1/var(--avgar,1.45)}
+.manhwa-panel.is-f::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid rgba(255,255,255,.1);border-top-color:var(--pr);animation:rdspin .8s linear infinite}
+@keyframes rdspin{to{transform:rotate(360deg)}}
+.manhwa-panel canvas{display:block;width:100%;height:auto;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+#reader.mode-vertical .manhwa-panel.mc-off{aspect-ratio:var(--ar,auto)}
+#reader.mode-vertical .manhwa-panel.mc-off canvas{height:100%}
 
-        #settings-panel {
-            height: 100vh !important;
-            height: 100dvh !important;
-        }
-        .episode-modal {
-            max-height: 85vh !important;
-            max-height: 85dvh !important;
-        }
+#reader.mode-paged{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;width:100vw;height:100vh;height:100dvh;scrollbar-width:none;padding:0}
+#reader.mode-paged::-webkit-scrollbar{display:none}
+#reader.mode-paged .manhwa-panel{flex:0 0 100vw;width:100vw;height:100%;scroll-snap-align:center;aspect-ratio:auto}
+#reader.mode-paged .manhwa-panel img,#reader.mode-paged .manhwa-panel canvas{max-height:100%;width:auto;max-width:100%;margin:0 auto;touch-action:none}
+#reader.mode-paged ~ #footer-container{display:none!important}
 
-        /* ===== سازگاری با ناچ/نوار پایین گوشی (safe-area) ===== */
-        #top-nav { padding-top: env(safe-area-inset-top); }
-        #bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
-        #bottom-nav .flex { min-height: 4rem; }
-        #reader.mode-vertical { padding-top: calc(3.5rem + env(safe-area-inset-top)); padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
-        #settings-panel > div:last-child { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
-        .episode-modal { padding-bottom: env(safe-area-inset-bottom); }
+.rd-skel{width:100%;min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--mu);font-size:13px}
+.rd-skel i{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.1);border-top-color:var(--pr);animation:rdspin .8s linear infinite}
+.image-retry-box{width:100%;aspect-ratio:3/4;max-height:70vh;background:var(--s2);border-top:1px solid var(--ln);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--mu);font-size:13px}
 
-        /* ===== حداقل اندازه لمسی مناسب برای دکمه‌های آیکونی در موبایل ===== */
-        #top-nav button, #bottom-nav button {
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #bottom-nav button { flex-direction: column; gap: 2px; }
-        @media (max-width: 400px) {
-            #nav-manhwa-title { max-width: 34vw; }
-        }
+/* ===== پایان چپتر ===== */
+#footer-container{max-width:560px;margin:0 auto;text-align:center;padding:56px 20px calc(110px + var(--sab))}
+.ft-ico{width:68px;height:68px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(220,38,38,.45);color:var(--pr2);background:rgba(220,38,38,.07)}
+.ft-ico.wait{border-color:rgba(245,158,11,.4);color:#f59e0b;background:rgba(245,158,11,.07)}
+.ft-ico svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#footer-status-title{margin:0 0 8px;font-size:20px;font-weight:600}
+#footer-status-desc{margin:0 0 26px;font-size:13.5px;line-height:2;color:var(--mu)}
+.btn-pr{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 40px;border-radius:16px;background:var(--pr);color:#fff;font-weight:600;font-size:15px;transition:transform .15s,background .15s}
+.btn-pr:active{transform:scale(.97);background:#b91c1c}
+.btn-wait{display:inline-block;padding:12px 24px;border-radius:16px;background:var(--s2);border:1px solid var(--ln);color:var(--mu);font-size:13.5px}
 
-        /* ===== لودر آماده‌سازی چپتر ===== */
-        #chapter-loader {
-            position: fixed; inset: 0; z-index: 150;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
-            padding: 24px; text-align: center;
-            background: radial-gradient(ellipse at 50% 38%, rgba(139,0,0,0.28) 0%, #050505 62%);
-            transition: opacity 0.45s ease, visibility 0.45s ease;
-        }
-        #chapter-loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-        .loader-ring { position: relative; width: 148px; height: 148px; }
-        .loader-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-        .loader-ring .track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 5; }
-        .loader-ring .bar {
-            fill: none; stroke: #dc2626; stroke-width: 5; stroke-linecap: round;
-            stroke-dasharray: 339.29; stroke-dashoffset: 339.29;
-            filter: drop-shadow(0 0 8px rgba(220,38,38,0.85));
-            transition: stroke-dashoffset 0.25s linear;
-        }
-        .loader-ring .pct {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 30px; color: #fff;
-            direction: ltr;
-        }
-        .loader-ring::after {
-            content: ''; position: absolute; inset: -14px; border-radius: 50%;
-            border: 1px solid rgba(220,38,38,0.25);
-            animation: loaderPulse 2.2s ease-out infinite;
-        }
-        @keyframes loaderPulse { 0% { transform: scale(0.92); opacity: 0.9; } 100% { transform: scale(1.18); opacity: 0; } }
-        #loader-tip { min-height: 1.5em; transition: opacity 0.3s ease; }
-        .loader-skip { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
-        .loader-skip.show { opacity: 1; pointer-events: auto; }
+/* ===== شیت‌ها (تنظیمات/فصل‌ها) ===== */
+.sheet-wrap{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.72)}
+.sheet{width:100%;max-width:480px;max-height:88vh;max-height:88dvh;display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--ln);border-bottom:0;border-radius:24px 24px 0 0;overflow:hidden;animation:shUp .28s cubic-bezier(.2,.9,.3,1);padding-bottom:var(--sab)}
+@media(min-width:768px){.sheet-wrap{align-items:center}.sheet{border-radius:24px;border-bottom:1px solid var(--ln)}}
+@keyframes shUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.sh-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--ln);flex-shrink:0}
+.sh-h h2{margin:0;font-size:16px;font-weight:600}
+.sh-b{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:22px}
+.sh-f{padding:12px 18px;border-top:1px solid var(--ln);flex-shrink:0}
+.lbl{display:block;font-size:13px;font-weight:500;margin-bottom:10px;color:#d6d6d6}
+.hint{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-top:6px}
+.rng{width:100%;accent-color:var(--pr)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:14px;font-size:13px;font-weight:500;background:var(--s2);border:1px solid var(--ln);color:#cfcfcf;transition:.2s}
+.chip-btn.active{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.55);color:#fff}
+.chip-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.row p{margin:0}.row .t{font-size:13.5px;font-weight:500}.row .s{font-size:11.5px;color:var(--mu);margin-top:2px}
+.toggle-switch{width:46px;height:26px;border-radius:999px;background:#2a2a2a;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-switch.on{background:var(--pr)}
+.toggle-switch .knob{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:999px;background:#fff;transition:transform .2s}
+.toggle-switch.on .knob{transform:translateX(-20px)}
+.inp{width:100%;background:var(--s2);border:1px solid var(--ln);border-radius:14px;padding:11px 14px;font:inherit;font-size:13.5px;color:var(--tx);outline:none;user-select:text;-webkit-user-select:text}
+.inp:focus{border-color:rgba(220,38,38,.6)}
+textarea.inp{resize:none}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border-radius:14px;font-size:14px;font-weight:600;background:var(--pr);color:#fff;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.alt{background:var(--s2);border:1px solid var(--ln);color:#d6d6d6;font-weight:500}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn-sm{padding:0 22px;width:auto;min-height:44px;flex-shrink:0}
 
-        /* جایگزین صفحه‌ی سیاه تا وقتی تصویر لود می‌شود */
-        #reader.mode-vertical .manhwa-panel.panel-loading {
-            min-height: 70vh; position: relative; overflow: hidden;
-            background: linear-gradient(100deg, #0b0b0b 30%, #161616 50%, #0b0b0b 70%);
-            background-size: 200% 100%; animation: panelShimmer 1.4s linear infinite;
-        }
-        @keyframes panelShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-        @media (prefers-reduced-motion: reduce) {
-            .loader-ring::after, #reader.mode-vertical .manhwa-panel.panel-loading { animation: none; }
-        }
+/* فهرست فصل‌ها */
+.srch{position:relative;padding:14px 16px 4px}
+.srch svg{position:absolute;right:30px;top:50%;margin-top:-1px;transform:translateY(-50%);width:17px;height:17px;fill:none;stroke:var(--mu);stroke-width:1.8;stroke-linecap:round}
+.srch .inp{padding-right:42px}
+#modalEpisodeList{flex:1;overflow-y:auto;padding:12px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.ep{display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:16px;background:var(--s2);border:1px solid transparent;cursor:pointer;transition:background .15s}
+.ep:active{background:var(--s3)}
+.ep.cur{border-color:rgba(220,38,38,.4);background:rgba(220,38,38,.07);cursor:default}
+.ep .th{width:58px;height:44px;border-radius:10px;background:var(--s3);overflow:hidden;flex-shrink:0}
+.ep .th img{width:100%;height:100%;object-fit:cover;display:block}
+.ep .in{flex:1;min-width:0}
+.ep .n{margin:0;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep.cur .n{color:var(--pr2)}
+.ep .d{margin:2px 0 0;font-size:11px;color:var(--mu)}
+.ep .st{font-size:12px;font-weight:500;display:flex;align-items:center;gap:4px;flex-shrink:0;color:#4ade80}
+.ep .st.lk{color:#fbbf24}
+.ep .st svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-        /* ===== مودال پرمیوم (دانلود آفلاین) ===== */
-        .pm-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;
-            background: rgba(0,0,0,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-        .pm-overlay.show { opacity: 1; pointer-events: auto; }
-        .pm-card { position: relative; width: 100%; max-width: 380px; text-align: center; direction: rtl; overflow: hidden;
-            padding: 34px 24px 24px; border-radius: 28px; color: #fff;
-            background: radial-gradient(120% 80% at 50% -10%, rgba(240,195,95,.22), transparent 60%), linear-gradient(180deg, #17120a, #0b0905);
-            border: 1px solid rgba(240,195,95,.35); box-shadow: 0 30px 80px -20px rgba(232,182,74,.35), 0 0 0 1px rgba(0,0,0,.6) inset;
-            transform: translateY(24px) scale(.94); transition: transform .35s cubic-bezier(.2,.9,.3,1.2); }
-        .pm-overlay.show .pm-card { transform: none; }
-        .pm-close { position: absolute; top: 12px; left: 12px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
-            background: rgba(255,255,255,.07); color: #a1a1aa; transition: background .2s, color .2s; }
-        .pm-close:hover { background: rgba(255,255,255,.14); color: #fff; }
-        .pm-crown { width: 76px; height: 76px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
-            background: linear-gradient(135deg, #f0c35f, #b8862b); color: #1a1204; box-shadow: 0 10px 30px -6px rgba(232,182,74,.6);
-            animation: pmFloat 3s ease-in-out infinite; }
-        .pm-crown .material-symbols-outlined { font-size: 40px; font-variation-settings: 'FILL' 1; }
-        @keyframes pmFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .pm-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px;
-            background: linear-gradient(90deg, #f6d98a, #e8b64a, #f6d98a); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .pm-sub { font-size: .85rem; color: #a1a1aa; line-height: 1.8; margin-bottom: 18px; }
-        .pm-list { list-style: none; padding: 0; margin: 0 0 22px; text-align: right; display: grid; gap: 10px; }
-        .pm-list li { display: flex; align-items: center; gap: 10px; font-size: .88rem; color: #e4e4e7; padding: 10px 12px;
-            border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.05); }
-        .pm-list .material-symbols-outlined { font-size: 20px; color: #e8b64a; }
-        .pm-buy { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 16px; font-weight: 800; font-size: .95rem;
-            background: linear-gradient(135deg, #f0c35f, #b8862b); color: #1a1204; box-shadow: 0 10px 26px -8px rgba(232,182,74,.6); transition: transform .15s; }
-        .pm-buy:active { transform: scale(.97); }
-        .pm-later { margin-top: 10px; width: 100%; padding: 10px; font-size: .8rem; color: #71717a; }
-        .pm-later:hover { color: #d4d4d8; }
-        @media (prefers-reduced-motion: reduce) { .pm-crown { animation: none; } .pm-card, .pm-overlay { transition: none; } }
+/* ===== تُست ===== */
+.reader-toast{position:fixed;bottom:calc(76px + var(--sab));left:50%;transform:translateX(-50%) translateY(16px);background:rgba(22,22,22,.98);border:1px solid var(--ln);border-radius:16px;padding:10px 14px;z-index:200;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;max-width:92vw;width:max-content}
+.reader-toast.show{opacity:1;transform:translateX(-50%);pointer-events:auto}
+.reader-toast .m{font-size:13px;color:#e4e4e4}
+.reader-toast .a{display:flex;gap:6px;flex-shrink:0}
+.reader-toast .a button{font-size:12px;font-weight:600;padding:6px 12px;border-radius:10px;background:#262626}
+.reader-toast .a button.p{background:var(--pr)}
 
-        /* ===== پایه‌ی موبایل ===== */
-        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-        body { min-height: 100vh; min-height: 100dvh; font-family: 'Vazirmatn', 'Vazir', Tahoma, system-ui, sans-serif; }
-        #reader { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; }
+/* ===== قفل / خطا ===== */
+#reader.is-locked,#reader.is-locked.mode-vertical,#reader.is-locked.mode-paged{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:auto;min-height:100vh;min-height:100dvh;overflow:visible;scroll-snap-type:none;padding:calc(var(--hh) + var(--sat) + 8px) 16px calc(5rem + var(--sab))}
+#reader.is-locked ~ #footer-container{display:none!important}
+.lk-card{width:100%;max-width:400px;margin:0 auto;text-align:center;padding:30px 22px 22px;border-radius:24px;background:var(--s2);border:1px solid var(--ln)}
+.lk-ico{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:rgba(245,158,11,.1);color:#f59e0b}
+.lk-ico svg{width:30px;height:30px}
+.lk-title{font-size:1.05rem;font-weight:600;margin:0 0 10px;line-height:1.9}
+.lk-desc{font-size:.85rem;line-height:2;color:var(--mu);margin:0 0 18px}
+.lk-timer{font-size:1.8rem;font-weight:600;letter-spacing:.1em;color:#fbbf24;margin:0 0 20px;direction:ltr;font-variant-numeric:tabular-nums}
+.lk-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;padding:12px 16px;border-radius:16px;font-weight:600;font-size:.92rem;color:#fff;background:var(--pr);border:0;cursor:pointer;font-family:inherit}
+.lk-btn:active{transform:scale(.98)}
+.lk-btn.alt{background:var(--s3);border:1px solid var(--ln);color:#e0e0e0;margin-top:10px}
 
-        /* ===== پشتیبان حداقلی: اگر Tailwind (لوکال و CDN) لود نشد، صفحه نشکند ===== */
-        #top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(0,0,0,.95); border-bottom: 1px solid rgba(127,29,29,.3); }
-        #top-nav > div:first-child { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; }
-        #top-nav > div:first-child > div { display: flex; align-items: center; gap: 4px; min-width: 0; }
-        #bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: rgba(0,0,0,.95); border-top: 1px solid rgba(127,29,29,.3); }
-        #bottom-nav > div { display: flex; justify-content: space-around; align-items: center; height: 4rem; }
-        #top-nav button, #bottom-nav button { background: transparent; color: #e5e5e5; border: 0; padding: 6px; font: inherit; cursor: pointer; }
-        #top-nav h1 { margin: 0; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw; }
-        #top-nav p { margin: 0; font-size: 10px; color: #9ca3af; }
-        #progress-bar { height: 2px; background: #dc2626; }
-        #episodeModal.hidden, #settings-panel.hidden { display: none; }
-        #episodeModal, #settings-panel { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.92); }
-        #settings-panel { display: flex; flex-direction: column; }
-        #footer-container { text-align: center; padding: 64px 24px 96px; }
-
-        /* ===== صفحه‌های قفل/خطا (بدون وابستگی به Tailwind) ===== */
-        #reader.is-locked, #reader.is-locked.mode-vertical, #reader.is-locked.mode-paged {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            width: 100%; height: auto; min-height: 100vh; min-height: 100dvh;
-            overflow: visible; scroll-snap-type: none;
-            padding: calc(3.5rem + env(safe-area-inset-top)) 16px calc(5rem + env(safe-area-inset-bottom));
-        }
-        #reader.is-locked ~ #footer-container { display: none !important; }
-        .lk-card { width: 100%; max-width: 420px; margin: 0 auto; text-align: center; direction: rtl; box-sizing: border-box;
-            padding: 30px 20px 22px; border-radius: 24px; color: #fff;
-            background: linear-gradient(180deg, #131313, #0a0a0a); border: 1px solid rgba(139,0,0,.35);
-            box-shadow: 0 20px 60px -24px rgba(139,0,0,.5); }
-        .lk-ico { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
-            background: rgba(245,158,11,.12); color: #f59e0b; }
-        .lk-ico svg { width: 36px; height: 36px; }
-        .lk-title { font-size: 1.1rem; font-weight: 800; margin: 0 0 10px; line-height: 1.8; }
-        .lk-desc { font-size: .88rem; line-height: 2; color: #a1a1aa; margin: 0 0 18px; }
-        .lk-timer { font-size: 1.9rem; font-weight: 900; letter-spacing: .1em; color: #fbbf24; margin: 0 0 20px; direction: ltr; font-variant-numeric: tabular-nums; }
-        .lk-btn { display: flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; min-height: 48px;
-            padding: 12px 16px; border-radius: 16px; font-weight: 800; font-size: .95rem; color: #fff; background: #dc2626;
-            border: 0; text-decoration: none; cursor: pointer; font-family: inherit; }
-        .lk-btn:active { transform: scale(.98); }
-        .lk-btn.alt { background: #18181b; border: 1px solid #27272a; color: #e4e4e7; margin-top: 10px; }
-    </style>
+/* ===== مودال پرمیوم ===== */
+.pm-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);opacity:0;pointer-events:none;transition:opacity .2s ease}
+.pm-overlay.show{opacity:1;pointer-events:auto}
+.pm-card{position:relative;width:100%;max-width:360px;text-align:center;direction:rtl;padding:32px 22px 20px;border-radius:26px;background:radial-gradient(120% 70% at 50% -10%,rgba(240,195,95,.14),transparent 60%),#0f0d09;border:1px solid rgba(240,195,95,.28);transform:translateY(20px) scale(.96);transition:transform .3s cubic-bezier(.2,.9,.3,1.1)}
+.pm-overlay.show .pm-card{transform:none}
+.pm-close{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.06);color:#a1a1aa}
+.pm-close svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.pm-crown{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#f0c35f,#b8862b);color:#1a1204}
+.pm-crown svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pm-title{font-size:1.2rem;font-weight:700;margin:0 0 6px;background:linear-gradient(90deg,#f6d98a,#e8b64a,#f6d98a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pm-sub{font-size:.84rem;color:#a1a1aa;line-height:1.9;margin:0 0 16px}
+.pm-list{list-style:none;padding:0;margin:0 0 20px;text-align:right;display:grid;gap:8px}
+.pm-list li{display:flex;align-items:center;gap:10px;font-size:.85rem;color:#e4e4e7;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04)}
+.pm-list li::before{content:'';width:7px;height:7px;border-radius:50%;background:#e8b64a;flex-shrink:0}
+.pm-buy{display:flex;align-items:center;justify-content:center;width:100%;padding:13px;border-radius:16px;font-weight:700;font-size:.92rem;background:linear-gradient(135deg,#f0c35f,#b8862b);color:#1a1204}
+.pm-later{margin-top:8px;width:100%;padding:10px;font-size:.8rem;color:#71717a}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
-<body class="custom-scrollbar text-white min-h-screen selection:bg-primary-container selection:text-white ui-hidden">
+<body class="ui-hidden">
 
-    <!-- لودر آماده‌سازی چپتر -->
-    <div id="chapter-loader" role="status" aria-live="polite">
-        <div class="loader-ring">
-            <svg viewBox="0 0 120 120" aria-hidden="true">
-                <circle class="track" cx="60" cy="60" r="54"></circle>
-                <circle class="bar" id="loader-bar" cx="60" cy="60" r="54"></circle>
-            </svg>
-            <div class="pct"><span id="loader-pct">0</span><span class="text-base text-gray-500 mr-0.5">%</span></div>
-        </div>
-        <div class="space-y-2">
-            <h2 id="loader-title" class="text-xl font-bold">در حال آماده‌سازی چپتر</h2>
-            <p id="loader-count" class="text-sm text-gray-400">در حال اتصال به سرور...</p>
-            <p id="loader-tip" class="text-xs text-gray-500">تصاویر با کیفیت بالا هستند، کمی صبر کنید</p>
-        </div>
-        <button id="loader-skip" onclick="hideChapterLoader()" class="loader-skip px-5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-800 text-sm text-gray-300 transition-colors">نمایش بدون انتظار</button>
+<div id="rd-progress"><i id="progress-bar"></i></div>
+<div id="dim"></div>
+
+<!-- هدر -->
+<header id="top-nav">
+  <div class="tn">
+    <div class="tn-l">
+      <button id="back-to-manhwa-btn" class="ic" aria-label="بازگشت"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <div class="tn-t">
+        <h1 id="nav-manhwa-title">بارگذاری...</h1>
+        <p class="tn-sub"><span class="vf-reader-chip" title="عضو پرمیوم"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>پرمیوم</span>چپتر <span id="nav-ch-num">1</span> • <span id="current-page">1</span>/<span id="total-pages">0</span> <span id="pages-left-wrap">• <span id="pages-left"></span></span></p>
+      </div>
     </div>
-
-    <!-- هدر بالایی هوشمند -->
-    <header id="top-nav" class="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-red-900/30 z-50 transition-all duration-300">
-        <div class="flex justify-between items-center gap-2 px-2.5 py-2 md:px-4 md:py-3">
-            <div class="flex items-center gap-1.5 md:gap-3 min-w-0">
-                <button id="back-to-manhwa-btn" class="p-1.5 md:p-2 shrink-0 hover:text-red-400 transition-colors">
-                    <span class="material-symbols-outlined text-xl md:text-2xl">arrow_back</span>
-                </button>
-                <div class="min-w-0">
-                    <h1 id="nav-manhwa-title" class="text-xs md:text-base font-bold leading-tight truncate max-w-[42vw] md:max-w-xs">بارگذاری...</h1>
-                    <p class="text-[10px] md:text-xs text-gray-400 font-mono truncate"><span class="vf-reader-chip" title="عضو پرمیوم"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>پرمیوم</span>چپتر <span id="nav-ch-num">1</span> • <span id="current-page">1</span>/<span id="total-pages">0</span> <span id="pages-left-wrap" class="hidden md:inline text-gray-600">• <span id="pages-left"></span></span></p>
-                </div>
-            </div>
-            <div class="flex items-center gap-0.5 md:gap-4 shrink-0">
-                <button onclick="toggleAutoScroll()" id="auto-scroll-btn" class="flex items-center gap-1.5 p-1.5 md:px-2.5 md:py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 transition-colors">
-                    <span class="material-symbols-outlined text-lg md:text-base" id="auto-icon">play_arrow</span>
-                    <span id="auto-text" class="hidden md:inline text-xs">اسکرول خودکار</span>
-                </button>
-                <button onclick="toggleFullscreen()" id="fullscreen-btn" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">fullscreen</span></button>
-                <button id="offline-btn" class="flex items-center gap-0.5 p-1.5 md:p-2 hover:text-red-400 transition-colors" title="دانلود برای خواندن آفلاین"><span class="text-lg md:text-xl" id="offline-icon"></span><span id="offline-label" class="text-[10px] font-mono"></span></button>
-                <button onclick="toggleSettings()" class="p-1.5 md:p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-lg md:text-xl">settings</span></button>
-            </div>
-        </div>
-        <div class="h-0.5 bg-red-900/30">
-            <div class="reading-progress-bar h-0.5 bg-gradient-to-r from-red-600 to-red-500 w-0 shadow-[0_0_10px_#b91c1c]" id="progress-bar"></div>
-        </div>
-    </header>
-
-    <!-- کانتینر اصلی مانهوا -->
-    <main class="pt-14 pb-20 w-full min-h-screen flex items-center justify-start mode-vertical" id="reader"></main>
-    <div id="premium-modal" class="pm-overlay" role="dialog" aria-modal="true" aria-labelledby="pm-title">
-        <div class="pm-card">
-            <button type="button" class="pm-close" id="pm-close" aria-label="بستن"><span class="material-symbols-outlined" style="font-size:20px">close</span></button>
-            <div class="pm-crown"><span class="material-symbols-outlined">workspace_premium</span></div>
-            <h3 class="pm-title" id="pm-title">اشتراک پرمیوم بخرید</h3>
-            <p class="pm-sub">دانلود چپتر برای خواندن آفلاین فقط برای کاربران پرمیوم فعاله.</p>
-            <ul class="pm-list">
-                <li><span class="material-symbols-outlined">download_for_offline</span>دانلود چپترها و خواندن بدون اینترنت</li>
-                <li><span class="material-symbols-outlined">lock_open</span>دسترسی به همه‌ی چپترهای اشتراکی</li>
-                <li><span class="material-symbols-outlined">add_circle</span>ثبت درخواست مانهوای جدید</li>
-            </ul>
-            <a href="/vip.html" class="pm-buy"><span class="material-symbols-outlined" style="font-size:20px">workspace_premium</span>مشاهده‌ی پلن‌های پرمیوم</a>
-            <button type="button" class="pm-later" id="pm-later">فعلاً نه</button>
-        </div>
+    <div class="tn-r">
+      <button onclick="toggleAutoScroll()" id="auto-scroll-btn" class="ic" aria-label="اسکرول خودکار"><span id="auto-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span id="auto-text" class="tx">اسکرول خودکار</span></button>
+      <button onclick="toggleFullscreen()" id="fullscreen-btn" class="ic" aria-label="تمام‌صفحه"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+      <button id="offline-btn" class="ic hidden" title="دانلود برای خواندن آفلاین"><span id="offline-icon"></span><span id="offline-label"></span></button>
+      <button onclick="toggleSettings()" class="ic" aria-label="تنظیمات"><svg viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg></button>
     </div>
-    <div id="reader-toast" class="reader-toast"></div>
+  </div>
+</header>
 
-    <!-- بخش انتهای چپتر -->
-    <div class="max-w-3xl mx-auto px-6 py-24 text-center border-t border-red-900/20" id="footer-container">
-        <div id="footer-status-icon" class="inline-flex items-center justify-center w-20 h-20 rounded-full border-2 border-red-600 mb-6 animate-pulse">
-            <span class="material-symbols-outlined text-5xl text-red-500">check_circle</span>
-        </div>
-        <h2 id="footer-status-title" class="text-3xl font-bold mb-3">چپتر به پایان رسید</h2>
-        <p id="footer-status-desc" class="text-gray-400 mb-8">عالی بود! آماده‌ای برای ادامه داستان؟</p>
-        <div id="footer-action-area">
-            <button id="next-ch-footer-btn" class="px-12 py-4 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20 rounded-2xl font-bold text-lg transition-all active:scale-95">چپتر بعدی</button>
-        </div>
-    </div>
+<!-- خواننده -->
+<main id="reader" class="mode-vertical"><div class="rd-skel"><i></i><span>در حال آماده‌سازی چپتر…</span></div></main>
 
-    <!-- نوار ناوبری پایینی پاپ‌آپ -->
-    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-red-900/30 z-50">
-        <div class="flex justify-around items-center h-16">
-            <button onclick="nextPage()" class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"><span class="material-symbols-outlined">arrow_forward_ios</span><span class="text-xs">بعدی</span></button>
-            <button onclick="toggleEpisodeModal()" class="flex flex-col items-center text-red-400"><span class="material-symbols-outlined text-2xl">auto_stories</span><span class="text-xs font-medium">فصل‌ها</span></button>
-            <button onclick="prevPage()" class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"><span class="material-symbols-outlined">arrow_back_ios</span><span class="text-xs">قبلی</span></button>
-        </div>
-    </nav>
-
-    <!-- مودال لیست چپترها -->
-    <div id="episodeModal" class="fixed inset-0 bg-black/80 hidden flex items-end lg:items-center justify-center z-[100]">
-        <div class="episode-modal bg-[#0f0f0f] w-full max-w-lg lg:max-w-xl max-h-[85vh] rounded-t-3xl lg:rounded-3xl overflow-hidden flex flex-col">
-            <div class="flex items-center justify-between p-5 border-b border-red-900/30">
-                <h2 class="text-xl font-bold">قسمت‌ها</h2>
-                <button onclick="toggleEpisodeModal()" class="p-2 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-3xl">close</span></button>
-            </div>
-            <div class="px-5 pt-4">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">search</span>
-                    <input id="episode-search" type="text" inputmode="numeric" placeholder="جستجوی شماره قسمت..." class="w-full bg-zinc-900 border border-zinc-800 focus:border-red-700 rounded-xl py-2.5 pr-10 pl-3 text-sm outline-none">
-                </div>
-            </div>
-            <div class="flex-1 overflow-auto p-4 space-y-3 custom-scrollbar" id="modalEpisodeList"></div>
-        </div>
-    </div>
-
-   <!-- تنظیمات خواندن -->
-<div id="settings-panel" class="fixed inset-0 bg-black/95 hidden flex flex-col z-[100] h-full w-full overflow-hidden">
-    
-    <!-- هدر ثبت شده در بالا -->
-    <div class="p-4 border-b border-zinc-800/80 max-w-xl mx-auto w-full flex items-center justify-between shrink-0">
-        <h2 class="text-xl font-bold flex items-center gap-2 text-red-400">
-            <span class="material-symbols-outlined">settings</span>
-            تنظیمات خواندن
-        </h2>
-        <button onclick="toggleSettings()" class="text-gray-400 hover:text-white p-1">
-            <span class="material-symbols-outlined">close</span>
-        </button>
-    </div>
-
-    <!-- بدنه اسکرول‌پذیر تنظیمات -->
-    <div class="flex-1 p-4 sm:p-6 overflow-y-auto max-w-xl mx-auto w-full space-y-6 text-slate-200">
-        
-        <!-- حالت خواندن -->
-        <div>
-            <label class="block text-sm mb-2 font-medium">حالت خواندن</label>
-            <div class="grid grid-cols-2 gap-3">
-                <button id="mode-vertical-btn" onclick="setReadingMode('vertical')" class="chip-btn flex items-center justify-center gap-2 py-2.5 px-3 text-xs sm:text-sm">
-                    <span class="material-symbols-outlined text-lg">swap_vert</span>
-                    پیوسته (وبتون)
-                </button>
-                <button id="mode-paged-btn" onclick="setReadingMode('paged')" class="chip-btn flex items-center justify-center gap-2 py-2.5 px-3 text-xs sm:text-sm">
-                    <span class="material-symbols-outlined text-lg">view_carousel</span>
-                    صفحه‌ای (مانگا)
-                </button>
-            </div>
-        </div>
-
-        <!-- عرض تصاویر -->
-        <div id="image-width-row">
-            <label class="block text-sm mb-2 font-medium">عرض تصاویر</label>
-            <input type="range" min="60" max="100" value="100" id="image-width" class="w-full accent-red-600">
-            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                <span>باریک‌تر</span>
-                <span>عرض کامل</span>
-            </div>
-        </div>
-
-        <!-- روشنایی صفحه -->
-        <div>
-            <label class="block text-sm mb-2 font-medium">روشنایی صفحه</label>
-            <input type="range" min="20" max="100" value="100" id="brightness" class="w-full accent-red-600">
-        </div>
-
-        <!-- سرعت اسکرول خودکار -->
-        <div>
-            <label class="block text-sm mb-2 font-medium">سرعت اسکرول خودکار</label>
-            <input type="range" min="1" max="15" value="5" id="scroll-speed" class="w-full accent-red-600">
-            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                <span>بسیار آرام</span>
-                <span>سریع</span>
-            </div>
-        </div>
-
-        <!-- پرش به صفحه -->
-        <div>
-            <label class="block text-sm mb-2 font-medium">پرش سریع به صفحه</label>
-            <div class="flex gap-2">
-                <input type="number" id="page-jump-input" min="1" placeholder="شماره صفحه" class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-700">
-                <button onclick="jumpToPage()" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold transition-colors">برو</button>
-            </div>
-        </div>
-
-        <!-- جلوگیری از خاموشی صفحه -->
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p class="text-sm font-medium">جلوگیری از خاموشی صفحه</p>
-                <p class="text-xs text-gray-500 mt-0.5">مناسب مطالعه طولانی</p>
-            </div>
-            <button id="wakelock-toggle" onclick="toggleWakeLockSetting()" class="toggle-switch shrink-0"><div class="knob"></div></button>
-        </div>
-
-        <!-- لرزش لمسی -->
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p class="text-sm font-medium">لرزش لمسی (هپتیک)</p>
-                <p class="text-xs text-gray-500 mt-0.5">بازخورد لرزشی هنگام لمس دکمه‌ها</p>
-            </div>
-            <button id="haptic-toggle" onclick="toggleHapticSetting()" class="toggle-switch shrink-0"><div class="knob"></div></button>
-        </div>
-
-        <!-- گزارش مشکل -->
-        <div class="pt-4 border-t border-zinc-800 space-y-3">
-            <button id="report-issue-btn" onclick="toggleReportForm()" class="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm font-medium transition-colors">
-                <span class="material-symbols-outlined text-lg text-amber-500">flag</span>
-                <span id="report-issue-label">گزارش مشکل در این قسمت</span>
-            </button>
-            <div id="report-form" class="hidden space-y-2">
-                <textarea id="report-message" rows="3" maxlength="500" placeholder="مشکل رو توضیح بدید (مثلاً: تصویر صفحه ۵ باز نمیشه)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none focus:border-red-700 resize-none"></textarea>
-                <button id="report-submit-btn" onclick="submitReport()" class="w-full py-2 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold transition-colors">ارسال گزارش</button>
-            </div>
-            <p class="text-xs text-gray-500 text-center">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
-        </div>
-    </div>
-
-    <!-- فوتر ثابت پایین -->
-    <div class="p-3 sm:p-4 border-t border-zinc-800/80 max-w-xl mx-auto w-full shrink-0 bg-black/95">
-        <button onclick="toggleSettings()" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold transition-colors text-sm sm:text-base">بستن تنظیمات</button>
-    </div>
+<div id="premium-modal" class="pm-overlay" role="dialog" aria-modal="true" aria-labelledby="pm-title">
+  <div class="pm-card">
+    <button type="button" class="pm-close" id="pm-close" aria-label="بستن"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="pm-crown"><svg viewBox="0 0 24 24"><path d="M3 18h18M4 8l4 4 4-7 4 7 4-4-2 10H6L4 8z"/></svg></div>
+    <h3 class="pm-title" id="pm-title">اشتراک پرمیوم بخرید</h3>
+    <p class="pm-sub">دانلود چپتر برای خواندن آفلاین فقط برای کاربران پرمیوم فعاله.</p>
+    <ul class="pm-list">
+      <li>دانلود چپترها و خواندن بدون اینترنت</li>
+      <li>دسترسی به همه‌ی چپترهای اشتراکی</li>
+      <li>ثبت درخواست مانهوای جدید</li>
+    </ul>
+    <a href="/vip.html" class="pm-buy">مشاهده‌ی پلن‌های پرمیوم</a>
+    <button type="button" class="pm-later" id="pm-later">فعلاً نه</button>
+  </div>
 </div>
-    <script src="/js/vendor/supabase.min.js"></script>
-    <script src="/js/supabase.js"></script>
-    <script src="/offline.js"></script>
-<script src="/offline-ui.js"></script>
-    <script>
-        let slug = "the-forgotten-field";
-        let chNum = null;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const pathSegments = window.location.pathname.split('/').filter(seg => seg !== "");
-
-        if (urlParams.get('slug')) {
-            slug = urlParams.get('slug');
-            const chParam = urlParams.get('ch');
-            if (chParam !== null && chParam !== undefined && !isNaN(parseInt(chParam))) {
-                chNum = parseInt(chParam);
-            }
-        } else if (pathSegments.length >= 2) {
-            try { slug = decodeURIComponent(pathSegments[1]); } catch (e) { slug = pathSegments[1]; }
-            if (pathSegments[2] !== undefined && !isNaN(parseInt(pathSegments[2]))) {
-                chNum = parseInt(pathSegments[2]);
-            }
-        }
-
-        document.getElementById('back-to-manhwa-btn').onclick = () => {
-            window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`;
-        };
-
-        const db = window.supabaseClient; // کلاینت مشترک سایت (js/supabase.js) تا نشست لاگین همان باشد
-        
-        let manhwaData = null;
-        let totalPanels = 0;
-        let isAutoScrolling = false;
-        let autoScrollAnimation = null;
-
-        const API_BASE_URL = "/api/get-chapter-images";
-
-        const MAX_IMAGE_RETRIES = 3;
-        function handleImageError(imgEl) {
-            const retryCount = parseInt(imgEl.dataset.retryCount || '0', 10);
-
-            if (retryCount < MAX_IMAGE_RETRIES) {
-                imgEl.dataset.retryCount = retryCount + 1;
-                const delayMs = 800 * Math.pow(2, retryCount);
-                setTimeout(() => {
-                    const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
-                    imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
-                }, delayMs);
-                return;
-            }
-
-            imgEl.dataset.broken = 'true';
-            imgEl.classList.add('hidden');
-            if (imgEl.nextElementSibling?.classList.contains('image-retry-box')) return;
-
-            const retryBox = document.createElement('div');
-            retryBox.className = 'image-retry-box w-full aspect-[3/4] max-h-[70vh] bg-zinc-900 border border-red-900/30 rounded-xl flex flex-col items-center justify-center gap-3 text-gray-400';
-            retryBox.innerHTML = `
-                <span class="material-symbols-outlined text-4xl text-red-500">broken_image</span>
-                <p class="text-sm">این تصویر بارگذاری نشد</p>
-                <button class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-sm font-bold text-white">تلاش مجدد</button>
-            `;
-            retryBox.querySelector('button').onclick = () => {
-                imgEl.dataset.retryCount = '0';
-                imgEl.classList.remove('hidden');
-                imgEl.classList.add('opacity-0');
-                retryBox.remove();
-                const sep = imgEl.dataset.originalSrc.includes('?') ? '&' : '?';
-                imgEl.src = `${imgEl.dataset.originalSrc}${sep}_retry=${Date.now()}`;
-            };
-            imgEl.after(retryBox);
-        }
-
-
-        // ===== لودر چپتر =====
-        const LOADER_WAIT_COUNT = 3;      // تعداد تصویر اولی که قبل از نمایش صبر می‌کنیم
-        const LOADER_MAX_WAIT_MS = 45000; // سقف انتظار؛ بعد از آن صفحه به هر حال نمایش داده می‌شود
-        const LOADER_TIPS = [
-            'تصاویر با کیفیت بالا هستند، کمی صبر کنید',
-            'بعد از لود اولیه، ادامه‌ی چپتر روان‌تر باز می‌شود',
-            'می‌توانید در تنظیمات، حالت صفحه‌ای را امتحان کنید',
-            'در حال دریافت صفحه‌های اول چپتر...'
-        ];
-        let loaderShown = 0, loaderTarget = 0, loaderTimers = [], loaderDone = false;
-
-        function setLoaderProgress(pct) {
-            pct = Math.max(0, Math.min(100, pct));
-            document.getElementById('loader-bar').style.strokeDashoffset = 339.29 * (1 - pct / 100);
-            document.getElementById('loader-pct').textContent = Math.round(pct);
-        }
-        function startChapterLoader() {
-            loaderDone = false; loaderShown = 0; loaderTarget = 8;
-            const el = document.getElementById('chapter-loader');
-            el.classList.remove('hide');
-            document.body.style.overflow = 'hidden';
-            // پیشرفت نرم و پیوسته به سمت هدف
-            loaderTimers.push(setInterval(() => {
-                if (loaderShown < loaderTarget) loaderShown += Math.max(0.4, (loaderTarget - loaderShown) * 0.08);
-                setLoaderProgress(loaderShown);
-            }, 80));
-            let tipIdx = 0;
-            loaderTimers.push(setInterval(() => {
-                const tip = document.getElementById('loader-tip');
-                tip.style.opacity = 0;
-                setTimeout(() => { tipIdx = (tipIdx + 1) % LOADER_TIPS.length; tip.textContent = LOADER_TIPS[tipIdx]; tip.style.opacity = 1; }, 300);
-            }, 3500));
-            loaderTimers.push(setTimeout(() => document.getElementById('loader-skip').classList.add('show'), 8000));
-            loaderTimers.push(setTimeout(hideChapterLoader, LOADER_MAX_WAIT_MS));
-        }
-        function hideChapterLoader() {
-            if (loaderDone) return;
-            loaderDone = true;
-            loaderTimers.forEach(t => { clearInterval(t); clearTimeout(t); });
-            loaderTimers = [];
-            setLoaderProgress(100);
-            const el = document.getElementById('chapter-loader');
-            setTimeout(() => {
-                el.classList.add('hide');
-                document.body.style.overflow = '';
-            }, 250);
-        }
-        // صبر می‌کند تا چند تصویر اول کامل لود شوند و همزمان درصد را به‌روز می‌کند
-        function waitForFirstImages(onReady) {
-            const imgs = [...document.querySelectorAll('#reader .manhwa-panel img')].slice(0, LOADER_WAIT_COUNT);
-            const need = imgs.length;
-            if (!need) { onReady(); return; }
-            let settled = 0, finished = false;
-            const countEl = document.getElementById('loader-count');
-            const update = () => {
-                countEl.textContent = `دریافت صفحه‌ها: ${Math.min(settled, need)} از ${need}`;
-                // هر تصویر بخشی از ۱۰۰٪ است؛ تا ۹۵٪ فقط با لود واقعی جلو می‌رود
-                loaderTarget = Math.min(95, 8 + (settled / need) * 87);
-            };
-            const done = () => {
-                if (finished) return;
-                settled++;
-                update();
-                if (settled >= need) { finished = true; onReady(); }
-            };
-            update();
-            imgs.forEach(img => {
-                if (img.complete && img.naturalWidth > 0) { done(); return; }
-                const once = () => { img.removeEventListener('load', once); img.removeEventListener('error', onErr); done(); };
-                // روی خطا، منطق retry خودش کار می‌کند؛ ما فقط بعد از شکست نهایی عبور می‌کنیم
-                const onErr = () => { if (parseInt(img.dataset.retryCount || '0', 10) >= MAX_IMAGE_RETRIES) once(); };
-                img.addEventListener('load', once);
-                img.addEventListener('error', onErr);
-            });
-        }
-
-        // ===== حالت آفلاین امن (offline.js) =====
-        async function getOfflineSession() {
-            try {
-                const r = await Promise.race([db.auth.getSession(), new Promise(res => setTimeout(() => res(null), 2500))]);
-                const s = r && r.data && r.data.session;
-                if (s && s.user) { if (window.MCOffline) MCOffline.rememberUid(s.user.id); return { uid: s.user.id, token: s.access_token }; }
-            } catch (e) {}
-            const uid = window.MCOffline && MCOffline.lastUid();
-            return uid ? { uid, token: null } : null;
-        }
-
-        async function renderOfflineChapter(panelsContainer) {
-            if (!window.MCOffline || !MCOffline.supported()) return false;
-            const sess = await getOfflineSession();
-            if (!sess) return false;
-            let handle;
-            try {
-                handle = await MCOffline.open(sess.uid, slug, chNum, sess.token);
-            } catch (e) {
-                if (e.code === 'EXPIRED') {
-                    hideChapterLoader();
-                    panelsContainer.innerHTML = `<div class="text-center py-24 px-6 w-full text-gray-300"><span class="material-symbols-outlined text-6xl text-amber-500 mb-4 block">timer_off</span>${e.message}</div>`;
-                    return true;
-                }
-                return false;
-            }
-            if (!handle) return false;
-            totalPanels = handle.n;
-            document.getElementById('total-pages').textContent = totalPanels;
-            showToast('📴 این چپتر از حافظه‌ی آفلاین باز شد', [], 2500);
-            await MCOffline.render(panelsContainer, handle, { onError: (e) => console.error(e) });
-            hideChapterLoader();
-            setTimeout(restoreScrollPosition, 350);
-            return true;
-        }
-
-        async function offlineStubData() {
-            if (!window.MCOffline || !MCOffline.supported()) throw new Error('no data');
-            const sess = await getOfflineSession();
-            if (!sess) throw new Error('no data');
-            const items = (await MCOffline.list(sess.uid)).filter(i => i.slug === slug);
-            if (!items.length) throw new Error('no data');
-            return { [slug]: { title_fa: items[0].title, episodes: items.map(i => ({ num: i.ch, free: true })) } };
-        }
-
-        function showPremiumModal() {
-            const m = document.getElementById('premium-modal');
-            m.classList.add('show');
-        }
-        function hidePremiumModal() { document.getElementById('premium-modal').classList.remove('show'); }
-        (function () {
-            const m = document.getElementById('premium-modal');
-            m.addEventListener('click', (e) => { if (e.target === m) hidePremiumModal(); });
-            document.getElementById('pm-close').onclick = hidePremiumModal;
-            document.getElementById('pm-later').onclick = hidePremiumModal;
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePremiumModal(); });
-        })();
-
-        async function setupOfflineButton() {
-            const btn = document.getElementById('offline-btn');
-            if (!btn) return;
-            btn.classList.remove('hidden');
-            if (!window.MCOffline || !window.MCOfflineUI) return;
-            // منوی دکمه، صف دانلود و نوار پیشرفت: همه در offline.js / offline-ui.js
-            MCOffline.queue.configure(getOfflineSession);
-            MCOfflineUI.mount({ quiet: true });
-            const menu = MCOfflineUI.attachMenu({
-                btn,
-                icon: document.getElementById('offline-icon'),
-                label: document.getElementById('offline-label'),
-                ctx: () => ({
-                    slug, ch: chNum,
-                    title: (manhwaData && manhwaData.title_fa) || slug,
-                    episodes: (manhwaData && manhwaData.episodes) || [],
-                    getSession: getOfflineSession,
-                    checkAccess: fetchAccess,
-                    onNeedLogin: () => {
-                        showToast('برای دانلود باید وارد حساب شوید', [], 3000);
-                        if (typeof openAuthModal === 'function') openAuthModal('login');
-                    },
-                    onNeedPremium: () => showPremiumModal(),
-                    toast: (m) => showToast(m, [], 2500),
-                }),
-            });
-            try {
-                const s0 = MCOffline.supported() ? await getOfflineSession() : null;
-                if (s0 && s0.token) {
-                    MCOffline.renewAll(s0.uid, s0.token).catch(() => {});
-                    // دانلودِ نیمه‌کاره‌ی قبلی (مثلاً وسط دانلود به چپتر بعد رفته‌اید) بی‌سروصدا ادامه پیدا می‌کند
-                    await MCOffline.queue.resume();
-                    menu.autoRun();
-                }
-            } catch (e) { /* ignore */ }
-        }
-
-        // ===== قفل زمانی: رایگان تا ۲۴ ساعت اول (بدون اشتراک) / اشتراک هفتگی تا ۱ روز اول (چپتر اشتراکی) =====
-        let lockTimer = null;
-        function fmtRemaining(sec) {
-            sec = Math.max(0, Math.floor(sec));
-            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = sec % 60;
-            const p = (n) => String(n).padStart(2, '0');
-            return `${p(h)}:${p(m)}:${p(x)}`.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-        }
-        const LK_ICONS = {
-            lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>',
-            clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-            crown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 8l4 4 4-7 4 7 4-4-2 10H6L4 8z"/></svg>',
-            warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/></svg>'
-        };
-        function lkEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-        function loginHref() { return '/?action=login&next=' + encodeURIComponent(location.pathname + location.search); }
-
-        // حالت «قفل/خطا»: هدر دیده می‌شه، فوتر «چپتر به پایان رسید» مخفی می‌شه، کارت وسط صفحه می‌شینه
-        function enterLockedLayout() {
-            const r = document.getElementById('reader');
-            r.classList.add('is-locked');
-            document.body.classList.remove('ui-hidden');
-            isUIHidden = false;
-            window.scrollTo(0, 0);
-        }
-        function renderLock(container, o) {
-            enterLockedLayout();
-            const btns = (o.buttons || []).map(b => b.href
-                ? `<a class="lk-btn${b.alt ? ' alt' : ''}" href="${lkEsc(b.href)}">${lkEsc(b.label)}</a>`
-                : `<button type="button" class="lk-btn${b.alt ? ' alt' : ''}" data-act="${lkEsc(b.act)}">${lkEsc(b.label)}</button>`).join('');
-            container.innerHTML = `
-                <div class="lk-card" role="alert">
-                    <div class="lk-ico">${LK_ICONS[o.icon] || LK_ICONS.lock}</div>
-                    <h2 class="lk-title">${lkEsc(o.title)}</h2>
-                    ${o.desc ? `<p class="lk-desc">${lkEsc(o.desc)}</p>` : ''}
-                    ${o.timer ? '<div class="lk-timer" id="lock-countdown" dir="ltr">--:--:--</div>' : ''}
-                    ${btns}
-                </div>`;
-            container.querySelectorAll('[data-act="reload"]').forEach(b => b.onclick = () => location.reload());
-            container.querySelectorAll('[data-act="back"]').forEach(b => b.onclick = () => { location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`; });
-        }
-        function renderTimedLock(container, result, isGuest) {
-            const early = result.code === 'EARLY_LOCKED';
-            const until = result.unlocksAt ? new Date(result.unlocksAt).getTime() : Date.now() + (result.remainingSeconds || 0) * 1000;
-            const buttons = [{ href: '/vip.html', label: early ? 'ارتقای اشتراک' : 'خرید اشتراک' }];
-            if (isGuest) buttons.push({ href: loginHref(), label: 'اشتراک دارم؛ ورود به حساب', alt: true });
-            renderLock(container, {
-                icon: 'clock', timer: true, buttons,
-                title: early ? 'این قسمت هنوز برای اشتراک هفتگی باز نشده' : 'این قسمت تازه منتشر شده',
-                desc: early
-                    ? 'با اشتراک هفتگی، قسمت‌های اشتراکی تا ۱ روز اول قفل هستند. با اشتراک ماهانه یا سه‌ماهه (استاندارد یا پرمیوم) از همان لحظه‌ی انتشار بخوانید.'
-                    : 'قسمت‌های رایگان تا ۲۴ ساعت اول فقط برای دارندگان اشتراک باز هستند. با خرید اشتراک همین حالا بخوانید یا تا باز شدن قفل صبر کنید.'
-            });
-            clearInterval(lockTimer);
-            const tick = () => {
-                const el = document.getElementById('lock-countdown');
-                const left = (until - Date.now()) / 1000;
-                if (!el) { clearInterval(lockTimer); return; }
-                if (left <= 0) { clearInterval(lockTimer); location.reload(); return; }
-                el.textContent = fmtRemaining(left);
-            };
-            tick();
-            lockTimer = setInterval(tick, 1000);
-        }
-
-        async function fetchAccess(token) {
-            try {
-                const r = await fetch('/api/access/me', { headers: token ? { Authorization: 'Bearer ' + token } : {}, cache: 'no-store' });
-                return r.ok ? await r.json() : null;
-            } catch (e) { return null; }
-        }
-
-        // سطح اشتراک را از سرور می‌گیرد (فقط برای ظاهر)؛ دسترسی واقعی را سرور تعیین می‌کند
-        async function applyReaderTier() {
-            try {
-                if (!window.MCVip) return;
-                const s = await getOfflineSession();
-                if (!s || !s.token) { MCVip.remember(''); return; }
-                const acc = await fetchAccess(s.token);
-                if (!acc) return; // خطای موقت: همان حالت قبلی بماند
-                const tier = MCVip.tierFromAccess(acc);
-                MCVip.remember(tier);
-                if (tier === 'premium') {
-                    let seen = false;
-                    try { seen = !!localStorage.getItem('mc_vf_reader_hint'); localStorage.setItem('mc_vf_reader_hint', '1'); } catch (e) {}
-                    if (!seen) setTimeout(() => showToast('👑 دانلود آفلاین (آیکون بالا) مخصوص شماست', [], 4200), 2500);
-                }
-            } catch (e) { /* تزئینی است */ }
-        }
-
-        async function loadChapterPanels() {
-            const panelsContainer = document.getElementById('reader');
-            panelsContainer.innerHTML = '';
-            panelsContainer.classList.remove('is-locked');
-            startChapterLoader();
-            if (!navigator.onLine && await renderOfflineChapter(panelsContainer)) return;
-
-            let authHeader = {};
-            try {
-                const { data: { session } } = await db.auth.getSession();
-                if (session?.access_token) {
-                    authHeader = { 'Authorization': `Bearer ${session.access_token}` };
-                }
-            } catch (e) {}
-
-            try {
-                const res = await fetch(API_BASE_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...authHeader },
-                    body: JSON.stringify({ slug, chapterNum: chNum })
-                });
-                const result = await res.json();
-
-                if (!res.ok) {
-                    if (res.status >= 500 && await renderOfflineChapter(panelsContainer)) return;
-                    hideChapterLoader();
-                    panelsContainer.innerHTML = '';
-                    const isGuest = !authHeader.Authorization;
-                    if (result.code === 'FREE_LOCKED' || result.code === 'EARLY_LOCKED') {
-                        renderTimedLock(panelsContainer, result, isGuest);
-                    } else if (result.code === 'AUTH_REQUIRED') {
-                        renderLock(panelsContainer, {
-                            icon: 'lock', title: 'برای خواندن این قسمت وارد حساب شوید',
-                            desc: 'این قسمت فقط برای کاربران واردشده (و دارندگان اشتراک) قابل خواندن است. وارد حساب خود شوید یا اشتراک تهیه کنید.',
-                            buttons: [{ href: loginHref(), label: 'ورود / ثبت‌نام' }, { href: '/vip.html', label: 'خرید اشتراک', alt: true }]
-                        });
-                    } else if (result.code === 'VIP_REQUIRED') {
-                        renderLock(panelsContainer, {
-                            icon: 'crown', title: 'این قسمت مخصوص دارندگان اشتراک است',
-                            desc: 'با تهیه‌ی اشتراک به تمام قسمت‌های اشتراکی دسترسی پیدا می‌کنید.',
-                            buttons: [{ href: '/vip.html', label: 'خرید اشتراک' }].concat(isGuest ? [{ href: loginHref(), label: 'اشتراک دارم؛ ورود به حساب', alt: true }] : [])
-                        });
-                    } else {
-                        renderLock(panelsContainer, {
-                            icon: 'warn', title: result.error || 'خطایی رخ داد.',
-                            buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }]
-                        });
-                    }
-                    return;
-                }
-
-                let urls = result.urls || [];
-                if (urls.length === 0) {
-                    hideChapterLoader();
-                    renderLock(panelsContainer, { icon: 'warn', title: 'تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }] });
-                    return;
-                }
-
-                function extractPageNumber(url) {
-                    const cleanUrl = url.split('?')[0];
-                    const match = cleanUrl.match(/(\d+)(?=\.\w+$)/);
-                    return match ? parseInt(match[1], 10) : null;
-                }
-                const allNumbered = urls.every(u => extractPageNumber(u) !== null);
-                if (allNumbered) {
-                    urls = urls
-                        .map((u, originalIdx) => ({ u, originalIdx, n: extractPageNumber(u) }))
-                        .sort((a, b) => a.n - b.n)
-                        .map(item => item.u);
-                }
-
-                panelsContainer.innerHTML = '';
-                urls.forEach((imgUrl, idx) => {
-                    const panel = document.createElement('div');
-                    panel.className = 'manhwa-panel panel-loading w-full max-w-3xl flex justify-center items-center';
-                    panel.innerHTML = `<img
-                        src="${imgUrl}"
-                        data-original-src="${imgUrl}"
-                        data-retry-count="0"
-                        class="w-full h-auto block opacity-0 transition-opacity duration-300"
-                        onload="this.classList.remove('opacity-0'); this.removeAttribute('data-broken'); this.parentElement.classList.remove('panel-loading');"
-                        onerror="handleImageError(this)"
-                        loading="${idx < 4 ? 'eager' : 'lazy'}"
-                        alt="صفحه ${idx + 1}">`;
-                    panelsContainer.appendChild(panel);
-                });
-
-                totalPanels = urls.length;
-                document.getElementById('total-pages').textContent = totalPanels;
-
-                // اول چند تصویر اول دانلود می‌شود، بعد لودر کنار می‌رود
-                waitForFirstImages(() => {
-                    hideChapterLoader();
-                    setTimeout(restoreScrollPosition, 350);
-                });
-            } catch (err) {
-                console.error(err);
-                if ((err instanceof TypeError || !navigator.onLine) && await renderOfflineChapter(panelsContainer)) return;
-                hideChapterLoader();
-                renderLock(panelsContainer, { icon: 'warn', title: 'خطا در بارگذاری تصاویر', desc: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }] });
-            }
-        }
-
-        async function initReader() {
-            try {
-                let data;
-                try {
-                    const res = await fetch('/data/data.json');
-                    data = await res.json();
-                } catch (e) {
-                    data = await offlineStubData(); // آفلاین و بدون کش data.json
-                }
-                manhwaData = data[slug];
-
-                if (!manhwaData || !manhwaData.episodes || manhwaData.episodes.length === 0) { hideChapterLoader(); renderLock(document.getElementById('reader'), { icon: 'warn', title: 'این قسمت پیدا نشد', desc: 'ممکن است آدرس اشتباه باشد یا قسمت حذف شده باشد.', buttons: [{ href: '/', label: 'بازگشت به صفحه‌ی اصلی' }] }); return; }
-
-                if (chNum === null) {
-                    const hasZero = manhwaData.episodes.some(e => Number(e.num) === 0);
-                    chNum = hasZero ? 0 : 1;
-                }
-
-                const episode = manhwaData.episodes.find(e => Number(e.num) === chNum);
-                if (!episode) { hideChapterLoader(); renderLock(document.getElementById('reader'), { icon: 'warn', title: 'این قسمت پیدا نشد', desc: 'ممکن است آدرس اشتباه باشد یا قسمت حذف شده باشد.', buttons: [{ href: '/', label: 'بازگشت به صفحه‌ی اصلی' }] }); return; }
-
-                document.title = `خواندن مانهوا ${manhwaData.title_fa} چپتر ${chNum} - مانهواچی`;
-                document.getElementById('nav-manhwa-title').textContent = manhwaData.title_fa;
-                document.getElementById('nav-ch-num').textContent = chNum;
-                document.getElementById('total-pages').textContent = "...";
-
-                const panelsContainer = document.getElementById('reader');
-                panelsContainer.innerHTML = '';
-                totalPanels = 0;
-
-                await loadChapterPanels();
-                setupOfflineButton();
-                applyReaderTier();
-
-                const sortedEpisodes = [...manhwaData.episodes].sort((a, b) => Number(a.num) - Number(b.num));
-                const currentIndex = sortedEpisodes.findIndex(e => Number(e.num) === chNum);
-                const nextEpisode = (currentIndex !== -1 && currentIndex < sortedEpisodes.length - 1) ? sortedEpisodes[currentIndex + 1] : null;
-
-                if (nextEpisode) {
-                    document.getElementById('next-ch-footer-btn').onclick = () => {
-                        window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(nextEpisode.num)}`;
-                    };
-                } else {
-                    document.getElementById('footer-status-icon').className = "inline-flex items-center justify-center w-20 h-20 rounded-full border-2 border-amber-500 mb-6 animate-pulse";
-                    document.getElementById('footer-status-icon').innerHTML = '<span class="material-symbols-outlined text-5xl text-amber-500">schedule</span>';
-                    document.getElementById('footer-status-title').textContent = "به انتهای داستان رسیدید";
-                    document.getElementById('footer-status-desc').textContent = "چپتر بعدی هنوز منتشر نشده است. مانهواچی به زودی آن را اضافه خواهد کرد!";
-                    document.getElementById('footer-action-area').innerHTML = `<span class="px-6 py-3 bg-zinc-900 border border-white/10 text-gray-400 rounded-2xl font-medium inline-block">در انتظار پارت جدید ⏳</span>`;
-                }
-
-                incrementChapterView();
-                saveUserBookmark();
-                saveReadingHistoryEntry();
-                updateReportButtonUI();
-            } catch (err) {
-                console.error(err);
-                hideChapterLoader();
-                renderLock(document.getElementById('reader'), { icon: 'warn', title: 'خطا در بارگذاری صفحه', desc: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }] });
-            }
-        }
-
-        function saveUserBookmark() {
-            localStorage.setItem(`bookmark_${slug}`, chNum);
-        }
-
-        function saveReadingHistoryEntry() {
-            const READING_HISTORY_KEY = 'manhwachi_reading_history';
-            const READING_HISTORY_LIMIT = 40;
-
-            const coverPath = manhwaData?.cover_image ? `/manhwas/${slug}/${manhwaData.cover_image}` : '';
-
-            let history = [];
-            try {
-                const raw = JSON.parse(localStorage.getItem(READING_HISTORY_KEY));
-                if (Array.isArray(raw)) history = raw;
-            } catch (e) {
-                history = [];
-            }
-
-            history = history.filter(h => h.slug !== slug);
-            history.unshift({
-                slug,
-                title: manhwaData?.title_fa || slug,
-                cover: coverPath,
-                chapter_number: chNum,
-                chapter_title: '',
-                url: `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(chNum)}`,
-                timestamp: Date.now()
-            });
-
-            if (history.length > READING_HISTORY_LIMIT) {
-                history = history.slice(0, READING_HISTORY_LIMIT);
-            }
-
-            try {
-                localStorage.setItem(READING_HISTORY_KEY, JSON.stringify(history));
-            } catch (e) {
-                console.error('ذخیره‌ی تاریخچه‌ی خواندن با خطا مواجه شد:', e);
-            }
-        }
-
-        window.addEventListener('scroll', () => {
-            if(totalPanels > 0 && chNum !== null) {
-                localStorage.setItem(`scroll_pos_${slug}_${chNum}`, window.scrollY);
-            }
-        });
-
-        function restoreScrollPosition() {
-            const savedScroll = parseInt(localStorage.getItem(`scroll_pos_${slug}_${chNum}`) || '0', 10);
-            if (savedScroll && savedScroll > 400) {
-                showToast(
-                    `آخرین بار تا صفحه ${estimatePageFromScroll(savedScroll)} خونده بودید`,
-                    [
-                        { label: 'ادامه', primary: true, onClick: () => window.scrollTo({ top: savedScroll, behavior: 'instant' }) },
-                        { label: 'شروع از اول', onClick: () => window.scrollTo({ top: 0, behavior: 'instant' }) }
-                    ],
-                    6000
-                );
-                setTimeout(() => window.scrollTo({ top: savedScroll, behavior: 'instant' }), 120);
-            }
-        }
-
-        function estimatePageFromScroll(scrollTop) {
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            if (totalPanels === 0 || docHeight <= 0) return 1;
-            return Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
-        }
-
-        let toastTimeout = null;
-        function showToast(message, actions = [], duration = 4000) {
-            const toast = document.getElementById('reader-toast');
-            toast.innerHTML = `
-                <span class="text-sm text-gray-200">${message}</span>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    ${actions.map((a, i) => `<button data-toast-action="${i}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${a.primary ? 'bg-red-600 hover:bg-red-700' : 'bg-zinc-800 hover:bg-zinc-700'} transition-colors">${a.label}</button>`).join('')}
-                </div>`;
-            actions.forEach((a, i) => {
-                toast.querySelector(`[data-toast-action="${i}"]`).onclick = () => { a.onClick && a.onClick(); hideToast(); };
-            });
-            toast.classList.add('show');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(hideToast, duration);
-        }
-        function hideToast() { document.getElementById('reader-toast').classList.remove('show'); }
-
-        function renderModalEpisodes() {
-            const container = document.getElementById('modalEpisodeList');
-            container.innerHTML = '';
-            if (!manhwaData) return;
-
-            manhwaData.episodes.forEach(ep => {
-                const epNum = Number(ep.num);
-                const isCurrent = epNum === chNum;
-                const div = document.createElement('div');
-                div.dataset.epNum = String(epNum);
-                div.className = `flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98] ${isCurrent ? 'bg-red-950/40 border border-red-800/50' : 'bg-zinc-900 hover:bg-zinc-800 cursor-pointer'}`;
-                let statusHTML = ep.free 
-                    ? `<span class="text-green-400 text-sm font-bold">${isCurrent ? 'در حال خواندن' : 'رایگان'}</span>`
-                    : `<span class="text-amber-400 text-sm font-medium flex items-center gap-1"><span class="material-symbols-outlined">lock</span>قفل</span>`;
-
-                div.innerHTML = `
-                    <div class="w-16 h-12 bg-zinc-800 rounded-xl overflow-hidden relative flex-shrink-0">
-                        <img src="${window.IMG_BASE || ''}/manhwas/${slug}/chapterPictures/chapterpicture${epNum}.png" onerror="this.style.display='none'" class="w-full h-full object-cover" alt="Ep ${epNum}">
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium truncate ${isCurrent ? 'text-red-400' : ''}">قسمت ${epNum}</p>
-                        <p class="text-xs text-gray-500">${ep.date}</p>
-                    </div>
-                    ${statusHTML}
-                `;
-                if(!isCurrent) {
-                    div.onclick = () => {
-                        toggleEpisodeModal();
-                        // قسمت قفل هم باز می‌شود؛ سرور تصمیم می‌گیرد VIP هست یا نه
-                        window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(epNum)}`;
-                    };
-                }
-                container.appendChild(div);
-            });
-        }
-
-        function toggleEpisodeModal() {
-            const modal = document.getElementById('episodeModal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) {
-                renderModalEpisodes();
-                const searchInput = document.getElementById('episode-search');
-                searchInput.value = '';
-                const current = document.querySelector('#modalEpisodeList [data-ep-num="' + chNum + '"]');
-                if (current) setTimeout(() => current.scrollIntoView({ block: 'center' }), 50);
-            }
-        }
-
-        document.getElementById('episode-search').addEventListener('input', (e) => {
-            const q = e.target.value.trim();
-            document.querySelectorAll('#modalEpisodeList > div').forEach(row => {
-                row.style.display = (!q || row.dataset.epNum.includes(q)) ? '' : 'none';
-            });
-        });
-
-        let isUIHidden = true;
-        function toggleUI() {
-            isUIHidden = !isUIHidden;
-            if (isUIHidden) document.body.classList.add('ui-hidden');
-            else document.body.classList.remove('ui-hidden');
-        }
-
-        const AVG_SECONDS_PER_PAGE = 12;
-        function updateProgress() {
-            const readerEl = document.getElementById('reader');
-            const isPaged = readerEl.classList.contains('mode-paged');
-            let currentPage = 1;
-
-            if (isPaged) {
-                const scrollLeft = readerEl.scrollLeft;
-                const pageWidth = readerEl.clientWidth || 1;
-                const scrollPercent = totalPanels > 1 ? Math.min((scrollLeft / (pageWidth * (totalPanels - 1))) * 100, 100) : 100;
-                document.getElementById('progress-bar').style.width = `${scrollPercent}%`;
-                currentPage = Math.max(1, Math.min(totalPanels, Math.round(scrollLeft / pageWidth) + 1));
-            } else {
-                const scrollTop = window.scrollY;
-                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const scrollPercent = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
-                document.getElementById('progress-bar').style.width = `${scrollPercent}%`;
-                if (totalPanels > 0 && docHeight > 0) {
-                    currentPage = Math.max(1, Math.min(totalPanels, Math.ceil((scrollTop / (docHeight / totalPanels)) + 1)));
-                }
-            }
-
-            if (totalPanels > 0) {
-                document.getElementById('current-page').textContent = currentPage;
-                const remaining = Math.max(0, totalPanels - currentPage);
-                const pagesLeftEl = document.getElementById('pages-left');
-                if (remaining === 0) {
-                    pagesLeftEl.textContent = 'صفحه آخر';
-                } else {
-                    const minutesLeft = Math.max(1, Math.round((remaining * AVG_SECONDS_PER_PAGE) / 60));
-                    pagesLeftEl.textContent = `${remaining} صفحه مانده (~${minutesLeft} دقیقه)`;
-                }
-            }
-        }
-
-        let lastTapTime = 0;
-        let lastTapTarget = null;
-        document.getElementById('reader').addEventListener('click', (e) => {
-            if (!(e.target.tagName === 'IMG' || e.target.closest('.manhwa-panel'))) return;
-
-            const now = Date.now();
-            const isDoubleTap = (now - lastTapTime < 320) && lastTapTarget === e.target;
-            lastTapTime = now;
-            lastTapTarget = e.target;
-
-            if (isDoubleTap && e.target.tagName === 'IMG') {
-                e.target.classList.toggle('zoomed');
-                if (e.target.classList.contains('zoomed')) {
-                    const rect = e.target.getBoundingClientRect();
-                    const originX = ((e.clientX - rect.left) / rect.width) * 100;
-                    const originY = ((e.clientY - rect.top) / rect.height) * 100;
-                    e.target.style.transformOrigin = `${originX}% ${originY}%`;
-                }
-                vibrate(15);
-                return;
-            }
-
-            const readingMode = document.getElementById('reader').classList.contains('mode-paged') ? 'paged' : 'vertical';
-            if (readingMode === 'paged') {
-                const zoneWidth = window.innerWidth * 0.28;
-                if (e.clientX < zoneWidth) { prevPage(); return; }
-                if (e.clientX > window.innerWidth - zoneWidth) { nextPage(); return; }
-            }
-            toggleUI();
-        });
-
-        function toggleAutoScroll() {
-            isAutoScrolling = !isAutoScrolling;
-            const btn = document.getElementById('auto-scroll-btn');
-            const icon = document.getElementById('auto-icon');
-            const text = document.getElementById('auto-text');
-            if (isAutoScrolling) {
-                icon.textContent = 'pause'; text.textContent = 'توقف'; btn.classList.add('text-red-500');
-                startAutoScroll();
-            } else {
-                icon.textContent = 'play_arrow'; text.textContent = 'اسکرول خودکار'; btn.classList.remove('text-red-500');
-                cancelAnimationFrame(autoScrollAnimation);
-            }
-        }
-
-        function startAutoScroll() {
-            function animate() {
-                if (!isAutoScrolling) return;
-                const speed = Number(document.getElementById('scroll-speed').value);
-                window.scrollBy(0, speed * 0.15);
-                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
-                    toggleAutoScroll(); return;
-                }
-                autoScrollAnimation = requestAnimationFrame(animate);
-            }
-            autoScrollAnimation = requestAnimationFrame(animate);
-        }
-
-        async function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                try {
-                    await document.documentElement.requestFullscreen();
-                } catch (e) { console.error('Fullscreen request failed:', e); }
-                try {
-                    if (screen.orientation && screen.orientation.lock) {
-                        await screen.orientation.lock('portrait');
-                    }
-                } catch (e) {}
-            } else {
-                try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
-                document.exitFullscreen();
-            }
-        }
-        function toggleSettings() { document.getElementById('settings-panel').classList.toggle('hidden'); }
-
-        function nextPage() {
-            vibrate(10);
-            const readerEl = document.getElementById('reader');
-            if (readerEl.classList.contains('mode-paged')) {
-                readerEl.scrollBy({ left: readerEl.clientWidth, behavior: 'smooth' });
-            } else {
-                window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
-            }
-        }
-        function prevPage() {
-            vibrate(10);
-            const readerEl = document.getElementById('reader');
-            if (readerEl.classList.contains('mode-paged')) {
-                readerEl.scrollBy({ left: -readerEl.clientWidth, behavior: 'smooth' });
-            } else {
-                window.scrollBy({ top: -window.innerHeight * 0.85, behavior: 'smooth' });
-            }
-        }
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
-            if (e.key === 'ArrowLeft') prevPage();
-            if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
-        });
-
-        (function setupSwipeGestures() {
-            const readerEl = document.getElementById('reader');
-            let touchStartX = 0, touchStartY = 0;
-            readerEl.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].clientX;
-                touchStartY = e.changedTouches[0].clientY;
-            }, { passive: true });
-            readerEl.addEventListener('touchend', (e) => {
-                if (!readerEl.classList.contains('mode-paged')) return;
-                const dx = e.changedTouches[0].clientX - touchStartX;
-                const dy = e.changedTouches[0].clientY - touchStartY;
-                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-                    if (dx < 0) nextPage(); else prevPage();
-                }
-            }, { passive: true });
-        })();
-
-        window.addEventListener('scroll', updateProgress);
-        document.getElementById('reader').addEventListener('scroll', updateProgress);
-
-        // ================= تنظیمات پایدار کاربر =================
-        const SETTINGS_KEY = 'manhwachi_reader_settings';
-        // حالت پیش‌فرض صریحاً روی 'vertical' (پیوسته) تنظیم شده است
-        const defaultSettings = { readingMode: 'vertical', imageWidth: 100, wakeLock: false, haptic: true, brightness: 100, scrollSpeed: 5 };
-        let readerSettings = { ...defaultSettings };
-
-        function loadSettings() {
-            try {
-                const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
-                if (saved && typeof saved === 'object') readerSettings = { ...defaultSettings, ...saved };
-            } catch (e) { readerSettings = { ...defaultSettings }; }
-        }
-        function saveSettings() {
-            try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(readerSettings)); } catch (e) {}
-        }
-
-        function vibrate(ms) {
-            if (readerSettings.haptic && navigator.vibrate) {
-                try { navigator.vibrate(ms); } catch (e) {}
-            }
-        }
-
-        function setReadingMode(mode) {
-            readerSettings.readingMode = mode;
-            const readerEl = document.getElementById('reader');
-            readerEl.classList.remove('mode-vertical', 'mode-paged');
-            readerEl.classList.add(mode === 'paged' ? 'mode-paged' : 'mode-vertical');
-            document.getElementById('mode-vertical-btn').classList.toggle('active', mode === 'vertical');
-            document.getElementById('mode-paged-btn').classList.toggle('active', mode === 'paged');
-            document.getElementById('image-width-row').style.display = mode === 'paged' ? 'none' : '';
-            saveSettings();
-        }
-
-        function setImageWidth(value) {
-            readerSettings.imageWidth = value;
-            document.getElementById('reader').style.setProperty('--panel-width', `${value}%`);
-            saveSettings();
-        }
-
-        let wakeLockRef = null;
-        async function requestWakeLock() {
-            if (!('wakeLock' in navigator)) return;
-            try {
-                wakeLockRef = await navigator.wakeLock.request('screen');
-            } catch (e) { console.error('Wake Lock error:', e); }
-        }
-        function releaseWakeLock() {
-            if (wakeLockRef) { wakeLockRef.release().catch(() => {}); wakeLockRef = null; }
-        }
-        function toggleWakeLockSetting() {
-            readerSettings.wakeLock = !readerSettings.wakeLock;
-            document.getElementById('wakelock-toggle').classList.toggle('on', readerSettings.wakeLock);
-            if (readerSettings.wakeLock) requestWakeLock(); else releaseWakeLock();
-            saveSettings();
-        }
-        function toggleHapticSetting() {
-            readerSettings.haptic = !readerSettings.haptic;
-            document.getElementById('haptic-toggle').classList.toggle('on', readerSettings.haptic);
-            vibrate(15);
-            saveSettings();
-        }
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && readerSettings.wakeLock) requestWakeLock();
-        });
-
-        function jumpToPage() {
-            const input = document.getElementById('page-jump-input');
-            const pageNum = parseInt(input.value, 10);
-            if (!pageNum || pageNum < 1 || pageNum > totalPanels) {
-                showToast('شماره صفحه معتبر نیست', [], 2500);
-                return;
-            }
-            const readerEl = document.getElementById('reader');
-            const panels = readerEl.querySelectorAll('.manhwa-panel');
-            const target = panels[pageNum - 1];
-            if (!target) return;
-            if (readerEl.classList.contains('mode-paged')) {
-                readerEl.scrollTo({ left: (pageNum - 1) * readerEl.clientWidth, behavior: 'smooth' });
-            } else {
-                window.scrollTo({ top: target.offsetTop - 60, behavior: 'smooth' });
-            }
-            toggleSettings();
-            vibrate(10);
-        }
-
-        const REPORT_KEY_PREFIX = 'reported_chapter_';
-        function reportKey() { return `${REPORT_KEY_PREFIX}${slug}_${chNum}`; }
-        function reportAlreadySent() { return localStorage.getItem(reportKey()) === '1'; }
-
-        function updateReportButtonUI() {
-            const btn = document.getElementById('report-issue-btn');
-            const label = document.getElementById('report-issue-label');
-            if (!btn) return;
-            if (reportAlreadySent()) {
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-                label.textContent = 'قبلاً گزارش شده ✓';
-                document.getElementById('report-form').classList.add('hidden');
-            } else {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                label.textContent = 'گزارش مشکل در این قسمت';
-            }
-        }
-
-        function toggleReportForm() {
-            if (reportAlreadySent()) {
-                showToast('برای این قسمت قبلاً گزارش ارسال کرده‌اید', [], 3000);
-                return;
-            }
-            document.getElementById('report-form').classList.toggle('hidden');
-        }
-
-        async function submitReport() {
-            if (reportAlreadySent()) { showToast('قبلاً گزارش شده است', [], 2500); return; }
-
-            const messageEl = document.getElementById('report-message');
-            const message = messageEl.value.trim();
-            if (!message) { showToast('لطفاً توضیح مشکل را بنویسید', [], 2500); return; }
-
-            const submitBtn = document.getElementById('report-submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'در حال ارسال...';
-
-            localStorage.setItem(reportKey(), '1');
-
-            try {
-                const { error } = await db.from('chapter_reports').insert({
-                    slug,
-                    chapter_num: chNum,
-                    message,
-                    page: document.getElementById('current-page')?.textContent || null
-                });
-                if (error) throw error;
-
-                updateReportButtonUI();
-                messageEl.value = '';
-                showToast('گزارش شما ثبت شد، ممنون از همکاری شما 🙏', [], 4000);
-            } catch (err) {
-                console.error('Report submit error:', err);
-                localStorage.removeItem(reportKey());
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'ارسال گزارش';
-                showToast('ارسال گزارش با خطا مواجه شد. لطفاً دوباره تلاش کنید.', [], 3500);
-                return;
-            }
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'ارسال گزارش';
-        }
-
-        document.addEventListener('fullscreenchange', () => {
-            const icon = document.querySelector('#fullscreen-btn .material-symbols-outlined');
-            if (icon) icon.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
-            if (!document.fullscreenElement) {
-                try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
-            }
-        });
-
-        async function incrementChapterView() {
-            try { await db.rpc('increment_manhwa_views', { p_slug: slug }); } catch (err) { console.error(err); }
-        }
-
-        const __mcBoot = () => {
-            loadSettings();
-
-            setReadingMode(readerSettings.readingMode);
-            setImageWidth(readerSettings.imageWidth);
-            document.getElementById('image-width').value = readerSettings.imageWidth;
-            document.getElementById('brightness').value = readerSettings.brightness;
-            document.getElementById('scroll-speed').value = readerSettings.scrollSpeed;
-            document.getElementById('wakelock-toggle').classList.toggle('on', readerSettings.wakeLock);
-            document.getElementById('haptic-toggle').classList.toggle('on', readerSettings.haptic);
-            document.getElementById('reader').style.filter = `brightness(${readerSettings.brightness}%)`;
-            if (readerSettings.wakeLock) requestWakeLock();
-
-            initReader();
-
-            document.getElementById('brightness').addEventListener('input', e => {
-                readerSettings.brightness = Number(e.target.value);
-                document.getElementById('reader').style.filter = `brightness(${e.target.value}%)`;
-                saveSettings();
-            });
-            document.getElementById('scroll-speed').addEventListener('change', e => {
-                readerSettings.scrollSpeed = Number(e.target.value);
-                saveSettings();
-            });
-            document.getElementById('image-width').addEventListener('input', e => setImageWidth(Number(e.target.value)));
-            document.getElementById('page-jump-input').addEventListener('keydown', e => { if (e.key === 'Enter') jumpToPage(); });
-        };
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __mcBoot); else __mcBoot();
-    </script>
+<div id="reader-toast" class="reader-toast"></div>
+
+<!-- پایان چپتر -->
+<section id="footer-container">
+  <div id="footer-status-icon" class="ft-ico"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  <h2 id="footer-status-title">چپتر به پایان رسید</h2>
+  <p id="footer-status-desc">عالی بود! آماده‌ای برای ادامه داستان؟</p>
+  <div id="footer-action-area"><button id="next-ch-footer-btn" class="btn-pr">چپتر بعدی</button></div>
+</section>
+
+<!-- منوی پایین -->
+<nav id="bottom-nav">
+  <button onclick="toggleEpisodeModal()" class="ic" aria-label="فصل‌ها"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+  <button id="prev-ch-btn" class="ic" aria-label="چپتر قبلی" disabled><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  <input type="range" id="page-scrub" min="1" max="1" value="1" aria-label="پیمایش صفحه‌ها">
+  <button id="next-ch-btn" class="ic" aria-label="چپتر بعدی" disabled><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+</nav>
+
+<!-- لیست چپترها -->
+<div id="episodeModal" class="sheet-wrap hidden">
+  <div class="sheet">
+    <div class="sh-h">
+      <h2>قسمت‌ها</h2>
+      <button onclick="toggleEpisodeModal()" class="ic" aria-label="بستن"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="srch">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="episode-search" type="text" inputmode="numeric" placeholder="جستجوی شماره قسمت..." class="inp">
+    </div>
+    <div id="modalEpisodeList" class="sc"></div>
+  </div>
+</div>
+
+<!-- تنظیمات -->
+<div id="settings-panel" class="sheet-wrap hidden">
+  <div class="sheet">
+    <div class="sh-h">
+      <h2>تنظیمات خواندن</h2>
+      <button onclick="toggleSettings()" class="ic" aria-label="بستن"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="sh-b sc">
+      <div>
+        <span class="lbl">حالت خواندن</span>
+        <div class="grid2">
+          <button id="mode-vertical-btn" onclick="setReadingMode('vertical')" class="chip-btn"><svg viewBox="0 0 24 24"><path d="M12 4v16M8 8l4-4 4 4M8 16l4 4 4-4"/></svg>پیوسته (وبتون)</button>
+          <button id="mode-paged-btn" onclick="setReadingMode('paged')" class="chip-btn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 5v14"/></svg>صفحه‌ای (مانگا)</button>
+        </div>
+      </div>
+      <div id="image-width-row">
+        <span class="lbl">عرض تصاویر</span>
+        <input type="range" min="60" max="100" value="100" id="image-width" class="rng">
+        <div class="hint"><span>باریک‌تر</span><span>عرض کامل</span></div>
+      </div>
+      <div>
+        <span class="lbl">روشنایی صفحه</span>
+        <input type="range" min="20" max="100" value="100" id="brightness" class="rng">
+      </div>
+      <div>
+        <span class="lbl">سرعت اسکرول خودکار</span>
+        <input type="range" min="1" max="15" value="5" id="scroll-speed" class="rng">
+        <div class="hint"><span>بسیار آرام</span><span>سریع</span></div>
+      </div>
+      <div>
+        <span class="lbl">پرش سریع به صفحه</span>
+        <div class="row" style="gap:8px">
+          <input type="number" id="page-jump-input" min="1" placeholder="شماره صفحه" class="inp" style="flex:1">
+          <button onclick="jumpToPage()" class="btn btn-sm">برو</button>
+        </div>
+      </div>
+      <div class="row">
+        <div><p class="t">جلوگیری از خاموشی صفحه</p><p class="s">مناسب مطالعه طولانی</p></div>
+        <button id="wakelock-toggle" onclick="toggleWakeLockSetting()" class="toggle-switch"><div class="knob"></div></button>
+      </div>
+      <div class="row">
+        <div><p class="t">لرزش لمسی (هپتیک)</p><p class="s">بازخورد لرزشی هنگام لمس دکمه‌ها</p></div>
+        <button id="haptic-toggle" onclick="toggleHapticSetting()" class="toggle-switch"><div class="knob"></div></button>
+      </div>
+      <div style="border-top:1px solid var(--ln);padding-top:18px;display:flex;flex-direction:column;gap:10px">
+        <button id="report-issue-btn" onclick="toggleReportForm()" class="btn alt"><span id="report-issue-label">گزارش مشکل در این قسمت</span></button>
+        <div id="report-form" class="hidden" style="display:flex;flex-direction:column;gap:8px">
+          <textarea id="report-message" rows="3" maxlength="500" placeholder="مشکل رو توضیح بدید (مثلاً: تصویر صفحه ۵ باز نمیشه)" class="inp"></textarea>
+          <button id="report-submit-btn" onclick="submitReport()" class="btn">ارسال گزارش</button>
+        </div>
+        <p style="margin:0;text-align:center;font-size:11px;color:var(--mu)">تنظیمات شما به صورت خودکار ذخیره می‌شوند.</p>
+      </div>
+    </div>
+    <div class="sh-f"><button onclick="toggleSettings()" class="btn">بستن تنظیمات</button></div>
+  </div>
+</div>
+
+<script src="/js/vendor/supabase.min.js" defer></script>
+<script src="/js/supabase.js" defer></script>
+<script src="/offline.js" defer></script>
+<script src="/offline-ui.js" defer></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let slug = window.__rd.slug;
+let chNum = window.__rd.ch;
+let db = null;
+let manhwaData = null;
+let totalPanels = 0;
+let isAutoScrolling = false;
+let autoScrollAnimation = null;
+
+const SVG = (p, extra) => `<svg viewBox="0 0 24 24"${extra || ''}>${p}</svg>`;
+const ICONS = {
+  play: SVG('<path d="M8 5v14l11-7z" fill="currentColor"/>'),
+  pause: SVG('<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/>'),
+  fs: SVG('<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>'),
+  fsExit: SVG('<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>'),
+  clock: SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  lock: SVG('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>')
+};
+
+$('back-to-manhwa-btn').onclick = () => { window.location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`; };
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+const lkEsc = esc;
+function hideChapterLoader() { /* سازگاری با کدهای قدیمی؛ دیگر لودر تمام‌صفحه نداریم */ }
+
+// ================= موتور بارگذاری هوشمند تصاویر =================
+const MAX_IMAGE_RETRIES = 3;
+const AHEAD = 7, BEHIND = 2, MAXC = 4;      // پیش‌بارگذاری ۷ صفحه‌ی بعدی، حداکثر ۴ دانلود همزمان
+const ANCHOR_OK = (() => { try { return CSS.supports('overflow-anchor', 'auto'); } catch (e) { return false; } })();
+let P = [];                 // وضعیت هر صفحه‌ی آنلاین: {url, img, panel, s: 0 idle|1 loading|2 done|3 failed, tries}
+let panelEls = [], tops = [], heights = [], topsDirty = true;
+let cur = 0, inflight = 0, arSum = 0, arCnt = 0, lastIdx = -1;
+const reader = $('reader');
+const isPaged = () => reader.classList.contains('mode-paged');
+
+function indexPanels() { panelEls = [...reader.querySelectorAll('.manhwa-panel')]; topsDirty = true; }
+function calcTops() {
+  const y0 = window.scrollY;
+  tops = []; heights = [];
+  for (const p of panelEls) { const r = p.getBoundingClientRect(); tops.push(r.top + y0); heights.push(r.height); }
+  topsDirty = false;
+}
+function indexAtY(y) {
+  let lo = 0, hi = tops.length - 1, ans = 0;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (tops[m] <= y) { ans = m; lo = m + 1; } else hi = m - 1; }
+  return ans;
+}
+
+function pump() {
+  if (!P.length) return;
+  const hi = Math.min(P.length - 1, cur + AHEAD), lo = Math.max(0, cur - BEHIND);
+  for (let i = cur; i <= hi && inflight < MAXC; i++) if (P[i].s === 0) startLoad(i);
+  for (let i = cur - 1; i >= lo && inflight < MAXC; i--) if (P[i].s === 0) startLoad(i);
+}
+function startLoad(i, bust) {
+  const p = P[i];
+  p.s = 1; inflight++;
+  p.panel.classList.add('is-f');
+  if (i < 2) p.img.fetchPriority = 'high';
+  p.img.src = bust ? bustUrl(p.url) : p.url;
+}
+function bustUrl(u) { return u + (u.includes('?') ? '&' : '?') + '_retry=' + Date.now(); }
+
+function onImgLoad(i) {
+  const p = P[i];
+  if (p.s === 2) return;
+  const prevH = heights[i], prevTop = tops[i];
+  p.s = 2; inflight = Math.max(0, inflight - 1);
+  p.panel.classList.remove('panel-loading', 'is-f');
+  p.img.classList.add('ld');
+  p.img.removeAttribute('data-broken');
+  // میانگین نسبت تصاویر → جای‌نگهدار صفحه‌های بارگذاری‌نشده تقریباً هم‌اندازه‌ی واقعی می‌شود
+  if (p.img.naturalWidth > 0 && (arCnt < 4 || arCnt % 5 === 0)) {
+    arSum += Math.min(6, Math.max(0.5, p.img.naturalHeight / p.img.naturalWidth)); arCnt++;
+    reader.style.setProperty('--avgar', (arSum / arCnt).toFixed(3));
+  } else if (p.img.naturalWidth > 0) { arSum += Math.min(6, Math.max(0.5, p.img.naturalHeight / p.img.naturalWidth)); arCnt++; }
+  // مرورگرهایی که scroll-anchoring ندارند (Safari): جبران پرش وقتی تصویرِ بالای صفحه لود می‌شود
+  if (!ANCHOR_OK && prevH != null && !isPaged() && prevTop + prevH <= window.scrollY + 1) {
+    const nh = p.panel.offsetHeight;
+    if (nh !== prevH) window.scrollBy(0, nh - prevH);
+  }
+  topsDirty = true;
+  if (pendingResume && pendingResume.i === i) refineResume();
+  requestFrame();
+  pump();
+}
+function onImgError(i) {
+  const p = P[i];
+  if (p.tries < MAX_IMAGE_RETRIES) {
+    p.tries++;
+    setTimeout(() => { p.img.src = bustUrl(p.url); }, 800 * Math.pow(2, p.tries - 1));
+    return;
+  }
+  p.s = 3; inflight = Math.max(0, inflight - 1);
+  p.panel.classList.remove('is-f');
+  p.img.dataset.broken = 'true';
+  p.img.classList.add('hidden');
+  if (p.panel.querySelector('.image-retry-box')) { pump(); return; }
+  const box = document.createElement('div');
+  box.className = 'image-retry-box';
+  box.innerHTML = `<p style="margin:0">این تصویر بارگذاری نشد</p><button class="btn btn-sm">تلاش مجدد</button>`;
+  box.querySelector('button').onclick = () => {
+    box.remove(); p.tries = 0; p.img.classList.remove('hidden'); startLoad(i, true);
+  };
+  p.panel.appendChild(box);
+  pump();
+}
+
+function buildPanels(urls) {
+  const frag = document.createDocumentFragment();
+  P = []; inflight = 0; arSum = 0; arCnt = 0;
+  urls.forEach((url, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'manhwa-panel panel-loading';
+    const img = document.createElement('img');
+    img.decoding = 'async';
+    img.draggable = false;
+    img.alt = `صفحه ${i + 1}`;
+    img.dataset.originalSrc = url;
+    img.onload = () => onImgLoad(i);
+    img.onerror = () => onImgError(i);
+    panel.appendChild(img);
+    frag.appendChild(panel);
+    P.push({ url, img, panel, s: 0, tries: 0 });
+  });
+  reader.innerHTML = '';
+  reader.appendChild(frag);
+  totalPanels = urls.length;
+  $('total-pages').textContent = totalPanels;
+  $('page-scrub').max = totalPanels;
+  indexPanels();
+  cur = 0;
+  pump();
+}
+
+// ================= حالت آفلاین امن (offline.js) =================
+async function getOfflineSession() {
+  try {
+    const r = await Promise.race([db.auth.getSession(), new Promise(res => setTimeout(() => res(null), 2500))]);
+    const s = r && r.data && r.data.session;
+    if (s && s.user) { if (window.MCOffline) MCOffline.rememberUid(s.user.id); return { uid: s.user.id, token: s.access_token }; }
+  } catch (e) {}
+  const uid = window.MCOffline && MCOffline.lastUid();
+  return uid ? { uid, token: null } : null;
+}
+async function sessionToken() {
+  try {
+    const r = await Promise.race([db.auth.getSession(), new Promise(res => setTimeout(() => res(null), 4000))]);
+    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+  } catch (e) { return null; }
+}
+
+async function renderOfflineChapter(container) {
+  if (!window.MCOffline || !MCOffline.supported()) return false;
+  const sess = await getOfflineSession();
+  if (!sess) return false;
+  let handle;
+  try {
+    handle = await MCOffline.open(sess.uid, slug, chNum, sess.token);
+  } catch (e) {
+    if (e.code === 'EXPIRED') {
+      container.innerHTML = `<div style="text-align:center;padding:96px 24px;width:100%;color:#d4d4d4">${esc(e.message)}</div>`;
+      return true;
+    }
+    return false;
+  }
+  if (!handle) return false;
+  totalPanels = handle.n;
+  $('total-pages').textContent = totalPanels;
+  $('page-scrub').max = totalPanels;
+  showToast('📴 این چپتر از حافظه‌ی آفلاین باز شد', [], 2500);
+  await MCOffline.render(container, handle, { onError: (e) => console.error(e) });
+  indexPanels();
+  requestFrame();
+  setTimeout(restoreScrollPosition, 200);
+  return true;
+}
+
+async function offlineStubData() {
+  if (!window.MCOffline || !MCOffline.supported()) throw new Error('no data');
+  const sess = await getOfflineSession();
+  if (!sess) throw new Error('no data');
+  const items = (await MCOffline.list(sess.uid)).filter(i => i.slug === slug);
+  if (!items.length) throw new Error('no data');
+  return { [slug]: { title_fa: items[0].title, episodes: items.map(i => ({ num: i.ch, free: true })) } };
+}
+
+function showPremiumModal() { $('premium-modal').classList.add('show'); }
+function hidePremiumModal() { $('premium-modal').classList.remove('show'); }
+(function () {
+  const m = $('premium-modal');
+  m.addEventListener('click', (e) => { if (e.target === m) hidePremiumModal(); });
+  $('pm-close').onclick = hidePremiumModal;
+  $('pm-later').onclick = hidePremiumModal;
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePremiumModal(); });
+})();
+
+async function setupOfflineButton() {
+  const btn = $('offline-btn');
+  if (!btn) return;
+  btn.classList.remove('hidden');
+  if (!window.MCOffline || !window.MCOfflineUI) { btn.classList.add('hidden'); return; }
+  MCOffline.queue.configure(getOfflineSession);
+  MCOfflineUI.mount({ quiet: true });
+  const menu = MCOfflineUI.attachMenu({
+    btn,
+    icon: $('offline-icon'),
+    label: $('offline-label'),
+    ctx: () => ({
+      slug, ch: chNum,
+      title: (manhwaData && manhwaData.title_fa) || slug,
+      episodes: (manhwaData && manhwaData.episodes) || [],
+      getSession: getOfflineSession,
+      checkAccess: fetchAccess,
+      onNeedLogin: () => {
+        showToast('برای دانلود باید وارد حساب شوید', [], 3000);
+        if (typeof openAuthModal === 'function') openAuthModal('login');
+      },
+      onNeedPremium: () => showPremiumModal(),
+      toast: (m) => showToast(m, [], 2500),
+    }),
+  });
+  try {
+    const s0 = MCOffline.supported() ? await getOfflineSession() : null;
+    if (s0 && s0.token) {
+      MCOffline.renewAll(s0.uid, s0.token).catch(() => {});
+      await MCOffline.queue.resume();
+      menu.autoRun();
+    }
+  } catch (e) { /* ignore */ }
+}
+
+// ===== قفل زمانی =====
+let lockTimer = null;
+function fmtRemaining(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = sec % 60;
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(h)}:${p(m)}:${p(x)}`.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+const LK_ICONS = {
+  lock: SVG('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/>', ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'),
+  clock: SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'),
+  crown: SVG('<path d="M3 18h18M4 8l4 4 4-7 4 7 4-4-2 10H6L4 8z"/>', ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'),
+  warn: SVG('<path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/>', ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"')
+};
+function loginHref() { return '/?action=login&next=' + encodeURIComponent(location.pathname + location.search); }
+
+function enterLockedLayout() {
+  reader.classList.add('is-locked');
+  document.body.classList.remove('ui-hidden');
+  isUIHidden = false;
+  window.scrollTo(0, 0);
+}
+function renderLock(container, o) {
+  enterLockedLayout();
+  const btns = (o.buttons || []).map(b => b.href
+    ? `<a class="lk-btn${b.alt ? ' alt' : ''}" href="${lkEsc(b.href)}">${lkEsc(b.label)}</a>`
+    : `<button type="button" class="lk-btn${b.alt ? ' alt' : ''}" data-act="${lkEsc(b.act)}">${lkEsc(b.label)}</button>`).join('');
+  container.innerHTML = `
+    <div class="lk-card" role="alert">
+      <div class="lk-ico">${LK_ICONS[o.icon] || LK_ICONS.lock}</div>
+      <h2 class="lk-title">${lkEsc(o.title)}</h2>
+      ${o.desc ? `<p class="lk-desc">${lkEsc(o.desc)}</p>` : ''}
+      ${o.timer ? '<div class="lk-timer" id="lock-countdown" dir="ltr">--:--:--</div>' : ''}
+      ${btns}
+    </div>`;
+  container.querySelectorAll('[data-act="reload"]').forEach(b => b.onclick = () => location.reload());
+  container.querySelectorAll('[data-act="back"]').forEach(b => b.onclick = () => { location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}`; });
+}
+function renderTimedLock(container, result, isGuest) {
+  const early = result.code === 'EARLY_LOCKED';
+  const until = result.unlocksAt ? new Date(result.unlocksAt).getTime() : Date.now() + (result.remainingSeconds || 0) * 1000;
+  const buttons = [{ href: '/vip.html', label: early ? 'ارتقای اشتراک' : 'خرید اشتراک' }];
+  if (isGuest) buttons.push({ href: loginHref(), label: 'اشتراک دارم؛ ورود به حساب', alt: true });
+  renderLock(container, {
+    icon: 'clock', timer: true, buttons,
+    title: early ? 'این قسمت هنوز برای اشتراک هفتگی باز نشده' : 'این قسمت تازه منتشر شده',
+    desc: early
+      ? 'با اشتراک هفتگی، قسمت‌های اشتراکی تا ۱ روز اول قفل هستند. با اشتراک ماهانه یا سه‌ماهه (استاندارد یا پرمیوم) از همان لحظه‌ی انتشار بخوانید.'
+      : 'قسمت‌های رایگان تا ۲۴ ساعت اول فقط برای دارندگان اشتراک باز هستند. با خرید اشتراک همین حالا بخوانید یا تا باز شدن قفل صبر کنید.'
+  });
+  clearInterval(lockTimer);
+  const tick = () => {
+    const el = $('lock-countdown');
+    const left = (until - Date.now()) / 1000;
+    if (!el) { clearInterval(lockTimer); return; }
+    if (left <= 0) { clearInterval(lockTimer); location.reload(); return; }
+    el.textContent = fmtRemaining(left);
+  };
+  tick();
+  lockTimer = setInterval(tick, 1000);
+}
+
+async function fetchAccess(token) {
+  try {
+    const r = await fetch('/api/access/me', { headers: token ? { Authorization: 'Bearer ' + token } : {}, cache: 'no-store' });
+    return r.ok ? await r.json() : null;
+  } catch (e) { return null; }
+}
+
+async function applyReaderTier() {
+  try {
+    if (!window.MCVip) return;
+    const s = await getOfflineSession();
+    if (!s || !s.token) { MCVip.remember(''); return; }
+    const acc = await fetchAccess(s.token);
+    if (!acc) return;
+    const tier = MCVip.tierFromAccess(acc);
+    MCVip.remember(tier);
+    if (tier === 'premium') {
+      let seen = false;
+      try { seen = !!localStorage.getItem('mc_vf_reader_hint'); localStorage.setItem('mc_vf_reader_hint', '1'); } catch (e) {}
+      if (!seen) setTimeout(() => showToast('👑 دانلود آفلاین (آیکون بالا) مخصوص شماست', [], 4200), 2500);
+    }
+  } catch (e) { /* تزئینی است */ }
+}
+
+const AUTHISH = { AUTH_REQUIRED: 1, VIP_REQUIRED: 1, FREE_LOCKED: 1, EARLY_LOCKED: 1 };
+
+async function loadChapterPanels() {
+  reader.classList.remove('is-locked');
+  if (!navigator.onLine && await renderOfflineChapter(reader)) return;
+
+  let r, usedTok = null;
+  try {
+    const R = window.__rd;
+    if (R.imgP && R.ch === chNum) { usedTok = R.tok; r = await R.imgP; R.imgP = null; }
+    else { usedTok = await sessionToken(); r = await window.__rdPost(usedTok); }
+
+    // اگر درخواست زودهنگام با توکن حدسی/بدون توکن رد شد، یک‌بار با نشست رسمی Supabase تکرار می‌شود
+    if (!r.ok && (AUTHISH[r.json && r.json.code] || r.status === 401 || r.status === 403)) {
+      const t = await sessionToken();
+      if (t && t !== usedTok) { usedTok = t; r = await window.__rdPost(t); }
+    }
+  } catch (err) {
+    console.error(err);
+    if ((err instanceof TypeError || !navigator.onLine) && await renderOfflineChapter(reader)) return;
+    renderLock(reader, { icon: 'warn', title: 'خطا در بارگذاری تصاویر', desc: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }] });
+    return;
+  }
+
+  const result = r.json || {};
+  if (!r.ok) {
+    if (r.status >= 500 && await renderOfflineChapter(reader)) return;
+    const isGuest = !usedTok;
+    if (result.code === 'FREE_LOCKED' || result.code === 'EARLY_LOCKED') {
+      renderTimedLock(reader, result, isGuest);
+    } else if (result.code === 'AUTH_REQUIRED') {
+      renderLock(reader, {
+        icon: 'lock', title: 'برای خواندن این قسمت وارد حساب شوید',
+        desc: 'این قسمت فقط برای کاربران واردشده (و دارندگان اشتراک) قابل خواندن است. وارد حساب خود شوید یا اشتراک تهیه کنید.',
+        buttons: [{ href: loginHref(), label: 'ورود / ثبت‌نام' }, { href: '/vip.html', label: 'خرید اشتراک', alt: true }]
+      });
+    } else if (result.code === 'VIP_REQUIRED') {
+      renderLock(reader, {
+        icon: 'crown', title: 'این قسمت مخصوص دارندگان اشتراک است',
+        desc: 'با تهیه‌ی اشتراک به تمام قسمت‌های اشتراکی دسترسی پیدا می‌کنید.',
+        buttons: [{ href: '/vip.html', label: 'خرید اشتراک' }].concat(isGuest ? [{ href: loginHref(), label: 'اشتراک دارم؛ ورود به حساب', alt: true }] : [])
+      });
+    } else {
+      renderLock(reader, {
+        icon: 'warn', title: result.error || 'خطایی رخ داد.',
+        buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }]
+      });
+    }
+    return;
+  }
+
+  let urls = result.urls || [];
+  if (urls.length === 0) {
+    renderLock(reader, { icon: 'warn', title: 'تصاویری برای این چپتر یافت نشد یا هنوز آپلود نشده است.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }, { act: 'back', label: 'بازگشت به صفحه‌ی مانهوا', alt: true }] });
+    return;
+  }
+
+  const pageNo = (u) => { const m = u.split('?')[0].match(/(\d+)(?=\.\w+$)/); return m ? parseInt(m[1], 10) : null; };
+  if (urls.every(u => pageNo(u) !== null)) {
+    urls = urls.map(u => ({ u, n: pageNo(u) })).sort((a, b) => a.n - b.n).map(x => x.u);
+  }
+
+  buildPanels(urls);
+  requestFrame();
+  restoreScrollPosition();
+}
+
+// ================= متادیتا (غیر-بلاک‌کننده؛ تصاویر منتظرش نمی‌مانند) =================
+async function loadMeta() {
+  try {
+    const data = await (window.__rd.dataP || fetch('/data/data.json').then(r => r.json()));
+    manhwaData = data[slug] || null;
+  } catch (e) {
+    try { manhwaData = (await offlineStubData())[slug] || null; } catch (e2) { manhwaData = null; }
+  }
+}
+
+function applyMeta() {
+  if (!manhwaData || !manhwaData.episodes || !manhwaData.episodes.length) return;
+  document.title = `خواندن مانهوا ${manhwaData.title_fa} چپتر ${chNum} - مانهواچی`;
+  $('nav-manhwa-title').textContent = manhwaData.title_fa;
+  $('nav-ch-num').textContent = chNum;
+
+  const sorted = [...manhwaData.episodes].sort((a, b) => Number(a.num) - Number(b.num));
+  const idx = sorted.findIndex(e => Number(e.num) === chNum);
+  const next = (idx !== -1 && idx < sorted.length - 1) ? sorted[idx + 1] : null;
+  const prev = idx > 0 ? sorted[idx - 1] : null;
+  const href = (ep) => `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(ep.num)}`;
+
+  const nb = $('next-ch-btn'), pb = $('prev-ch-btn');
+  if (next) { nb.disabled = false; nb.onclick = () => { location.href = href(next); }; }
+  if (prev) { pb.disabled = false; pb.onclick = () => { location.href = href(prev); }; }
+
+  if (next) {
+    $('next-ch-footer-btn').onclick = () => { location.href = href(next); };
+  } else {
+    const ico = $('footer-status-icon');
+    ico.className = 'ft-ico wait';
+    ico.innerHTML = ICONS.clock;
+    $('footer-status-title').textContent = 'به انتهای داستان رسیدید';
+    $('footer-status-desc').textContent = 'چپتر بعدی هنوز منتشر نشده است. مانهواچی به زودی آن را اضافه خواهد کرد!';
+    $('footer-action-area').innerHTML = '<span class="btn-wait">در انتظار پارت جدید ⏳</span>';
+  }
+}
+
+async function initReader() {
+  try {
+    const metaP = loadMeta();
+    if (chNum === null) {
+      await metaP;
+      const hasZero = manhwaData && manhwaData.episodes && manhwaData.episodes.some(e => Number(e.num) === 0);
+      chNum = hasZero ? 0 : 1;
+      $('nav-ch-num').textContent = chNum;
+    }
+    const panelsP = loadChapterPanels();
+    metaP.then(applyMeta);
+    await Promise.all([metaP, panelsP]);
+
+    const noEpisode = !manhwaData || !manhwaData.episodes || !manhwaData.episodes.length ||
+      !manhwaData.episodes.some(e => Number(e.num) === chNum);
+    if (noEpisode && totalPanels === 0 && !reader.classList.contains('is-locked')) {
+      renderLock(reader, { icon: 'warn', title: 'این قسمت پیدا نشد', desc: 'ممکن است آدرس اشتباه باشد یا قسمت حذف شده باشد.', buttons: [{ href: '/', label: 'بازگشت به صفحه‌ی اصلی' }] });
+      return;
+    }
+
+    setupOfflineButton();
+    applyReaderTier();
+    incrementChapterView();
+    saveUserBookmark();
+    if (manhwaData) saveReadingHistoryEntry();
+    updateReportButtonUI();
+  } catch (err) {
+    console.error(err);
+    renderLock(reader, { icon: 'warn', title: 'خطا در بارگذاری صفحه', desc: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.', buttons: [{ act: 'reload', label: 'تلاش دوباره' }] });
+  }
+}
+
+function saveUserBookmark() { try { localStorage.setItem(`bookmark_${slug}`, chNum); } catch (e) {} }
+
+function saveReadingHistoryEntry() {
+  const KEY = 'manhwachi_reading_history', LIMIT = 40;
+  const coverPath = manhwaData && manhwaData.cover_image ? `/manhwas/${slug}/${manhwaData.cover_image}` : '';
+  let history = [];
+  try { const raw = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(raw)) history = raw; } catch (e) { history = []; }
+  history = history.filter(h => h.slug !== slug);
+  history.unshift({
+    slug, title: (manhwaData && manhwaData.title_fa) || slug, cover: coverPath,
+    chapter_number: chNum, chapter_title: '',
+    url: `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(chNum)}`,
+    timestamp: Date.now()
+  });
+  if (history.length > LIMIT) history = history.slice(0, LIMIT);
+  try { localStorage.setItem(KEY, JSON.stringify(history)); } catch (e) { console.error(e); }
+}
+
+// ================= ذخیره و بازیابی موقعیت خواندن =================
+let saveTimer = null;
+function savePosition() {
+  if (totalPanels <= 0 || chNum === null || reader.classList.contains('is-locked')) return;
+  try {
+    const i = Math.max(0, Math.min(panelEls.length - 1, cur));
+    let f = 0;
+    if (!isPaged() && heights[i]) f = Math.max(0, Math.min(1, (window.scrollY - tops[i]) / heights[i]));
+    localStorage.setItem(`rd_pos_${slug}_${chNum}`, JSON.stringify({ i, f: +f.toFixed(3) }));
+    localStorage.setItem(`scroll_pos_${slug}_${chNum}`, Math.round(window.scrollY));
+  } catch (e) {}
+}
+function schedSave() { clearTimeout(saveTimer); saveTimer = setTimeout(savePosition, 500); }
+window.addEventListener('pagehide', savePosition);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePosition(); });
+
+let pendingResume = null;
+function refineResume() {
+  const pr = pendingResume;
+  if (!pr) return;
+  if (Math.abs(window.scrollY - pr.y) < 3) {
+    calcTops();
+    const y = tops[pr.i] + pr.f * (heights[pr.i] || 0);
+    window.scrollTo({ top: y, behavior: 'instant' });
+    pr.y = window.scrollY;
+  } else { pendingResume = null; }
+}
+function goToPanel(i, f, smooth) {
+  if (!panelEls.length) return;
+  i = Math.max(0, Math.min(panelEls.length - 1, i)); f = f || 0;
+  if (isPaged()) {
+    const sign = getComputedStyle(reader).direction === 'rtl' ? -1 : 1;
+    reader.scrollTo({ left: sign * i * reader.clientWidth, behavior: smooth ? 'smooth' : 'instant' });
+  } else {
+    if (topsDirty) calcTops();
+    window.scrollTo({ top: tops[i] + f * (heights[i] || 0), behavior: smooth ? 'smooth' : 'instant' });
+  }
+  cur = i; pump();
+}
+
+function restoreScrollPosition() {
+  let pos = null;
+  try { pos = JSON.parse(localStorage.getItem(`rd_pos_${slug}_${chNum}`)); } catch (e) {}
+  if (!pos || typeof pos.i !== 'number' || (pos.i < 1 && !(pos.f > 0.25))) return;
+  const i = Math.min(pos.i, Math.max(0, panelEls.length - 1)), f = pos.f || 0;
+  showToast(`آخرین بار تا صفحه ${i + 1} خونده بودید`, [
+    { label: 'شروع از اول', onClick: () => { pendingResume = null; goToPanel(0, 0, false); } }
+  ], 5000);
+  goToPanel(i, f, false);
+  if (!isPaged()) { pendingResume = { i, f, y: window.scrollY }; setTimeout(() => { pendingResume = null; }, 4000); }
+}
+
+// ================= تُست =================
+let toastTimeout = null;
+function showToast(message, actions = [], duration = 4000) {
+  const toast = $('reader-toast');
+  toast.innerHTML = `<span class="m">${message}</span><div class="a">${actions.map((a, i) => `<button data-toast-action="${i}" class="${a.primary ? 'p' : ''}">${a.label}</button>`).join('')}</div>`;
+  actions.forEach((a, i) => { toast.querySelector(`[data-toast-action="${i}"]`).onclick = () => { a.onClick && a.onClick(); hideToast(); }; });
+  toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(hideToast, duration);
+}
+function hideToast() { $('reader-toast').classList.remove('show'); }
+
+// ================= لیست فصل‌ها =================
+function renderModalEpisodes() {
+  const box = $('modalEpisodeList');
+  if (!manhwaData) { box.innerHTML = ''; return; }
+  const base = window.IMG_BASE || '';
+  box.innerHTML = manhwaData.episodes.map(ep => {
+    const n = Number(ep.num), cur_ = n === chNum;
+    const st = ep.free
+      ? `<span class="st">${cur_ ? 'در حال خواندن' : 'رایگان'}</span>`
+      : `<span class="st lk">${SVG('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>')}قفل</span>`;
+    return `<div class="ep${cur_ ? ' cur' : ''}" data-ep-num="${n}">
+      <div class="th"><img loading="lazy" decoding="async" src="${base}/manhwas/${esc(slug)}/chapterPictures/chapterpicture${n}.png" onerror="this.style.display='none'" alt=""></div>
+      <div class="in"><p class="n">قسمت ${n}</p><p class="d">${esc(ep.date || '')}</p></div>${st}</div>`;
+  }).join('');
+}
+$('modalEpisodeList').addEventListener('click', (e) => {
+  const row = e.target.closest('.ep');
+  if (!row || row.classList.contains('cur')) return;
+  toggleEpisodeModal();
+  location.href = `https://manhwachi.ir/comic/${encodeURIComponent(slug)}/${encodeURIComponent(row.dataset.epNum)}`;
+});
+function toggleEpisodeModal() {
+  const modal = $('episodeModal');
+  modal.classList.toggle('hidden');
+  if (!modal.classList.contains('hidden')) {
+    renderModalEpisodes();
+    $('episode-search').value = '';
+    const c = document.querySelector('#modalEpisodeList [data-ep-num="' + chNum + '"]');
+    if (c) setTimeout(() => c.scrollIntoView({ block: 'center' }), 50);
+  }
+}
+$('episodeModal').addEventListener('click', (e) => { if (e.target === $('episodeModal')) toggleEpisodeModal(); });
+$('settings-panel').addEventListener('click', (e) => { if (e.target === $('settings-panel')) toggleSettings(); });
+$('episode-search').addEventListener('input', (e) => {
+  const q = e.target.value.trim();
+  document.querySelectorAll('#modalEpisodeList > .ep').forEach(row => { row.style.display = (!q || row.dataset.epNum.includes(q)) ? '' : 'none'; });
+});
+
+// ================= UI و پیشرفت =================
+let isUIHidden = true;
+function toggleUI() {
+  isUIHidden = !isUIHidden;
+  document.body.classList.toggle('ui-hidden', isUIHidden);
+}
+
+const AVG_SECONDS_PER_PAGE = 12;
+const scrub = $('page-scrub');
+let scrubbing = false, lastY = 0, dirAcc = 0;
+
+function updateProgress() {
+  let idx = 0, pct = 0;
+  if (isPaged()) {
+    const w = reader.clientWidth || 1, sl = Math.abs(reader.scrollLeft);
+    idx = Math.round(sl / w);
+    pct = totalPanels > 1 ? sl / (w * (totalPanels - 1)) : 1;
+  } else {
+    if (topsDirty) calcTops();
+    idx = panelEls.length ? indexAtY(window.scrollY + window.innerHeight * 0.35) : 0;
+    const dh = document.documentElement.scrollHeight - window.innerHeight;
+    pct = dh > 0 ? window.scrollY / dh : 0;
+  }
+  idx = Math.max(0, Math.min(Math.max(0, totalPanels - 1), idx));
+  cur = idx;
+  $('progress-bar').style.transform = `scaleX(${Math.max(0, Math.min(1, pct))})`;
+  if (idx !== lastIdx && totalPanels > 0) {
+    lastIdx = idx;
+    $('current-page').textContent = idx + 1;
+    if (!scrubbing) scrub.value = idx + 1;
+    const remaining = Math.max(0, totalPanels - (idx + 1));
+    $('pages-left').textContent = remaining === 0 ? 'صفحه آخر' : `${remaining} صفحه مانده (~${Math.max(1, Math.round(remaining * AVG_SECONDS_PER_PAGE / 60))} دقیقه)`;
+  }
+}
+
+// مخفی شدن خودکار هدر هنگام اسکرول به پایین
+function autoHideUI() {
+  if (isPaged() || reader.classList.contains('is-locked') || isUIHidden) { lastY = window.scrollY; dirAcc = 0; return; }
+  const y = window.scrollY, d = y - lastY; lastY = y;
+  if (Math.abs(d) > 300) { dirAcc = 0; return; }
+  dirAcc = (d > 0) === (dirAcc > 0) ? dirAcc + d : d;
+  if (dirAcc > 60) { dirAcc = 0; toggleUI(); }
+}
+
+let ticking = false;
+function frame() { ticking = false; updateProgress(); autoHideUI(); pump(); }
+function requestFrame() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+window.addEventListener('scroll', () => { requestFrame(); schedSave(); }, { passive: true });
+reader.addEventListener('scroll', () => { requestFrame(); schedSave(); }, { passive: true });
+window.addEventListener('resize', () => { topsDirty = true; requestFrame(); });
+
+scrub.addEventListener('input', () => { scrubbing = true; goToPanel(Number(scrub.value) - 1, 0, false); });
+scrub.addEventListener('change', () => { scrubbing = false; vibrate(8); });
+
+// ----- تپ: تغییر UI / دابل‌تپ زوم / ناحیه‌های کناری در حالت صفحه‌ای -----
+let lastTapTime = 0, lastTapTarget = null;
+reader.addEventListener('click', (e) => {
+  if (!(e.target.tagName === 'IMG' || e.target.closest('.manhwa-panel'))) return;
+  const now = Date.now();
+  const isDoubleTap = (now - lastTapTime < 320) && lastTapTarget === e.target;
+  lastTapTime = now; lastTapTarget = e.target;
+
+  if (isDoubleTap && e.target.tagName === 'IMG') {
+    toggleUI();   // تپ اول UI را تغییر داده بود؛ برمی‌گردانیم
+    e.target.classList.toggle('zoomed');
+    if (e.target.classList.contains('zoomed')) {
+      const rect = e.target.getBoundingClientRect();
+      e.target.style.transformOrigin = `${((e.clientX - rect.left) / rect.width) * 100}% ${((e.clientY - rect.top) / rect.height) * 100}%`;
+    }
+    vibrate(15);
+    return;
+  }
+  if (isPaged()) {
+    const zone = window.innerWidth * 0.28;
+    // راست‌به‌چپ: لبه‌ی چپ = صفحه‌ی بعد، لبه‌ی راست = صفحه‌ی قبل
+    if (e.clientX < zone) { nextPage(); return; }
+    if (e.clientX > window.innerWidth - zone) { prevPage(); return; }
+  }
+  toggleUI();
+});
+
+// ----- اسکرول خودکار (زمان‌محور، روان) -----
+function toggleAutoScroll() {
+  if (isPaged()) { showToast('اسکرول خودکار فقط در حالت پیوسته کار می‌کند', [], 2500); return; }
+  isAutoScrolling = !isAutoScrolling;
+  const btn = $('auto-scroll-btn');
+  if (isAutoScrolling) {
+    $('auto-icon').innerHTML = ICONS.pause; $('auto-text').textContent = 'توقف'; btn.classList.add('on');
+    startAutoScroll();
+  } else {
+    $('auto-icon').innerHTML = ICONS.play; $('auto-text').textContent = 'اسکرول خودکار'; btn.classList.remove('on');
+    cancelAnimationFrame(autoScrollAnimation);
+  }
+}
+function startAutoScroll() {
+  let last = performance.now(), acc = 0;
+  function step(t) {
+    if (!isAutoScrolling) return;
+    const dt = Math.min(64, t - last); last = t;
+    acc += Number($('scroll-speed').value) * 9 * dt / 1000;
+    const px = Math.floor(acc);
+    if (px >= 1) { acc -= px; window.scrollBy(0, px); }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) { toggleAutoScroll(); return; }
+    autoScrollAnimation = requestAnimationFrame(step);
+  }
+  autoScrollAnimation = requestAnimationFrame(step);
+}
+['touchstart', 'wheel'].forEach(ev => window.addEventListener(ev, () => { if (isAutoScrolling) toggleAutoScroll(); }, { passive: true }));
+
+async function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    try { await document.documentElement.requestFullscreen(); } catch (e) { console.error('Fullscreen request failed:', e); }
+    try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('portrait'); } catch (e) {}
+  } else {
+    try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+    document.exitFullscreen();
+  }
+}
+function toggleSettings() { $('settings-panel').classList.toggle('hidden'); }
+
+// ----- ناوبری صفحه‌ها (جهت‌آگاه برای راست‌به‌چپ) -----
+const rtlSign = () => (getComputedStyle(reader).direction === 'rtl' ? -1 : 1);
+function nextPage() {
+  vibrate(10);
+  if (isPaged()) reader.scrollBy({ left: rtlSign() * reader.clientWidth, behavior: 'smooth' });
+  else window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
+}
+function prevPage() {
+  vibrate(10);
+  if (isPaged()) reader.scrollBy({ left: -rtlSign() * reader.clientWidth, behavior: 'smooth' });
+  else window.scrollBy({ top: -window.innerHeight * 0.85, behavior: 'smooth' });
+}
+document.addEventListener('keydown', e => {
+  if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  if (isPaged()) {
+    if (e.key === 'ArrowLeft' || e.key === ' ') nextPage();
+    if (e.key === 'ArrowRight') prevPage();
+  } else {
+    if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+    if (e.key === 'ArrowLeft') prevPage();
+  }
+  if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
+});
+
+(function setupSwipeGestures() {
+  let sx = 0, sy = 0;
+  reader.addEventListener('touchstart', (e) => { sx = e.changedTouches[0].clientX; sy = e.changedTouches[0].clientY; }, { passive: true });
+  reader.addEventListener('touchend', (e) => {
+    if (!isPaged()) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) nextPage(); else prevPage(); }
+  }, { passive: true });
+})();
+
+// ================= تنظیمات پایدار کاربر =================
+const SETTINGS_KEY = 'manhwachi_reader_settings';
+const defaultSettings = { readingMode: 'vertical', imageWidth: 100, wakeLock: false, haptic: true, brightness: 100, scrollSpeed: 5 };
+let readerSettings = { ...defaultSettings };
+function loadSettings() {
+  try { const s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); if (s && typeof s === 'object') readerSettings = { ...defaultSettings, ...s }; }
+  catch (e) { readerSettings = { ...defaultSettings }; }
+}
+function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(readerSettings)); } catch (e) {} }
+function vibrate(ms) { if (readerSettings.haptic && navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+function setReadingMode(mode) {
+  const keep = cur;
+  readerSettings.readingMode = mode;
+  reader.classList.remove('mode-vertical', 'mode-paged');
+  reader.classList.add(mode === 'paged' ? 'mode-paged' : 'mode-vertical');
+  $('mode-vertical-btn').classList.toggle('active', mode === 'vertical');
+  $('mode-paged-btn').classList.toggle('active', mode === 'paged');
+  $('image-width-row').style.display = mode === 'paged' ? 'none' : '';
+  if (mode === 'paged') { document.body.classList.add('ui-hidden'); isUIHidden = true; }
+  topsDirty = true; lastIdx = -1;
+  saveSettings();
+  if (panelEls.length) requestAnimationFrame(() => { goToPanel(keep, 0, false); requestFrame(); });
+}
+function setImageWidth(v) {
+  readerSettings.imageWidth = v;
+  reader.style.setProperty('--panel-width', `${v}%`);
+  topsDirty = true;
+  saveSettings();
+}
+function setBrightness(v) { $('dim').style.opacity = String(Math.max(0, Math.min(0.8, 1 - v / 100))); }
+
+let wakeLockRef = null;
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try { wakeLockRef = await navigator.wakeLock.request('screen'); } catch (e) { console.error('Wake Lock error:', e); }
+}
+function releaseWakeLock() { if (wakeLockRef) { wakeLockRef.release().catch(() => {}); wakeLockRef = null; } }
+function toggleWakeLockSetting() {
+  readerSettings.wakeLock = !readerSettings.wakeLock;
+  $('wakelock-toggle').classList.toggle('on', readerSettings.wakeLock);
+  if (readerSettings.wakeLock) requestWakeLock(); else releaseWakeLock();
+  saveSettings();
+}
+function toggleHapticSetting() {
+  readerSettings.haptic = !readerSettings.haptic;
+  $('haptic-toggle').classList.toggle('on', readerSettings.haptic);
+  vibrate(15);
+  saveSettings();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && readerSettings.wakeLock) requestWakeLock(); });
+
+function jumpToPage() {
+  const n = parseInt($('page-jump-input').value, 10);
+  if (!n || n < 1 || n > totalPanels) { showToast('شماره صفحه معتبر نیست', [], 2500); return; }
+  goToPanel(n - 1, 0, true);
+  toggleSettings();
+  vibrate(10);
+}
+
+// ================= گزارش مشکل =================
+const REPORT_KEY_PREFIX = 'reported_chapter_';
+const reportKey = () => `${REPORT_KEY_PREFIX}${slug}_${chNum}`;
+const reportAlreadySent = () => { try { return localStorage.getItem(reportKey()) === '1'; } catch (e) { return false; } };
+
+function updateReportButtonUI() {
+  const btn = $('report-issue-btn'), label = $('report-issue-label');
+  if (!btn) return;
+  if (reportAlreadySent()) {
+    btn.disabled = true; label.textContent = 'قبلاً گزارش شده ✓'; $('report-form').classList.add('hidden');
+  } else {
+    btn.disabled = false; label.textContent = 'گزارش مشکل در این قسمت';
+  }
+}
+function toggleReportForm() {
+  if (reportAlreadySent()) { showToast('برای این قسمت قبلاً گزارش ارسال کرده‌اید', [], 3000); return; }
+  $('report-form').classList.toggle('hidden');
+}
+async function submitReport() {
+  if (reportAlreadySent()) { showToast('قبلاً گزارش شده است', [], 2500); return; }
+  const messageEl = $('report-message');
+  const message = messageEl.value.trim();
+  if (!message) { showToast('لطفاً توضیح مشکل را بنویسید', [], 2500); return; }
+  const submitBtn = $('report-submit-btn');
+  submitBtn.disabled = true; submitBtn.textContent = 'در حال ارسال...';
+  try { localStorage.setItem(reportKey(), '1'); } catch (e) {}
+  try {
+    const { error } = await db.from('chapter_reports').insert({ slug, chapter_num: chNum, message, page: $('current-page').textContent || null });
+    if (error) throw error;
+    updateReportButtonUI();
+    messageEl.value = '';
+    showToast('گزارش شما ثبت شد، ممنون از همکاری شما 🙏', [], 4000);
+  } catch (err) {
+    console.error('Report submit error:', err);
+    try { localStorage.removeItem(reportKey()); } catch (e) {}
+    submitBtn.disabled = false; submitBtn.textContent = 'ارسال گزارش';
+    showToast('ارسال گزارش با خطا مواجه شد. لطفاً دوباره تلاش کنید.', [], 3500);
+    return;
+  }
+  submitBtn.disabled = false; submitBtn.textContent = 'ارسال گزارش';
+}
+
+document.addEventListener('fullscreenchange', () => {
+  $('fullscreen-btn').innerHTML = document.fullscreenElement ? ICONS.fsExit : ICONS.fs;
+  if (!document.fullscreenElement) { try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {} }
+});
+
+async function incrementChapterView() {
+  try { await db.rpc('increment_manhwa_views', { p_slug: slug }); } catch (err) { console.error(err); }
+}
+
+// ================= شروع =================
+const __mcBoot = () => {
+  db = window.supabaseClient; // کلاینت مشترک سایت تا نشست لاگین همان باشد
+  loadSettings();
+  setReadingMode(readerSettings.readingMode);
+  setImageWidth(readerSettings.imageWidth);
+  $('image-width').value = readerSettings.imageWidth;
+  $('brightness').value = readerSettings.brightness;
+  $('scroll-speed').value = readerSettings.scrollSpeed;
+  $('wakelock-toggle').classList.toggle('on', readerSettings.wakeLock);
+  $('haptic-toggle').classList.toggle('on', readerSettings.haptic);
+  setBrightness(readerSettings.brightness);
+  if (readerSettings.wakeLock) requestWakeLock();
+
+  $('brightness').addEventListener('input', e => { readerSettings.brightness = Number(e.target.value); setBrightness(readerSettings.brightness); saveSettings(); });
+  $('scroll-speed').addEventListener('change', e => { readerSettings.scrollSpeed = Number(e.target.value); saveSettings(); });
+  $('image-width').addEventListener('input', e => setImageWidth(Number(e.target.value)));
+  $('page-jump-input').addEventListener('keydown', e => { if (e.key === 'Enter') jumpToPage(); });
+
+  initReader();
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __mcBoot); else __mcBoot();
+</script>
 </body>
 </html>
