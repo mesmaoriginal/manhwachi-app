@@ -6,13 +6,6 @@ let width, index, current, target;
 let startX, startOffset, lastX, lastTime, velocity, isDragging;
 let rafId = 0;
 let slideNodes = [];
-let pendingBg = [];
-function loadPendingBg() {
-  while (pendingBg.length) {
-    const { bg, url } = pendingBg.shift();
-    bg.style.backgroundImage = `url("${url}")`;
-  }
-}
 
 // عرض واقعی اسلایدر را برمی‌گرداند (نه عرض کل پنجره) تا در صفحات
 // بزرگ که محتوا محدود به یک عرض حداکثری‌ست، اسلایدها درست چیده شوند
@@ -80,16 +73,23 @@ function toPersianNumber(value) {
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
 }
 
-// داده‌ی صفحه‌ی اصلی از فید سبک (/api/home-feed) می‌آید؛ تعریفش در index.html است
-// (اگر نبود مستقیم از data.json می‌خواند).
-function getFeed() {
-  if (window.getHomeFeed) return window.getHomeFeed();
-  return fetch('/data/data.json').then((r) => r.json());
+// ==========================================
+// کش کردن دیتای data.json تا هر سه بخش (برترین‌ها،
+// تصادفی، آخرین آپدیت‌ها) فقط یک بار آن را دانلود و
+// پردازش کنند، نه سه بار جداگانه.
+// ==========================================
+let _manhwaDataPromise = null;
+function getManhwaData() {
+  if (!_manhwaDataPromise) {
+    _manhwaDataPromise = fetch('data/data.json').then((response) => {
+      if (!response.ok) {
+        throw new Error(`خطای HTTP: ${response.status}`);
+      }
+      return response.json();
+    });
+  }
+  return _manhwaDataPromise;
 }
-function escHtml(s) {
-  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='4'%3E%3Crect width='3' height='4' fill='%23161616'/%3E%3C/svg%3E";
 
 // ==========================================
 // تابع اصلی راه‌اندازی و بازسازی صفحه خانه
@@ -100,13 +100,10 @@ window.initHome = function() {
   // ۱. پاکسازی انیمیشن‌ها و رویدادهای قبلی جهت جلوگیری از تداخل
   if (rafId) {
     cancelAnimationFrame(rafId);
-    rafId = 0;
   }
-  clearInterval(autoTimer);
   
   // بازنشانی متغیرها و آرایه‌ها
   slideNodes = [];
-  pendingBg = [];
   isDragging = false;
 
   // پیدا کردن المان‌های جدید از روی HTML رندر شده
@@ -133,9 +130,8 @@ window.initHome = function() {
     updateUi();
     applyTransforms();
 
-    startAutoplay();
-    if (document.readyState === "complete") setTimeout(loadPendingBg, 800);
-    else window.addEventListener("load", () => setTimeout(loadPendingBg, 800), { once: true });
+    // اجرای مجدد حلقه انیمیشن
+    rafId = requestAnimationFrame(animate);
 
     // ثبت مجدد رویدادها روی المان‌های جدید
     slider.removeEventListener("pointerdown", onPointerDown);
@@ -164,8 +160,8 @@ window.initHome = function() {
 
   // لود دیتاها از فایل‌های JSON و رندر آپدیت‌ها
   loadTopRated();
-  if (document.getElementById('supabaseLibraryGrid')) fetchRandomManhwas();
-  renderLatestFromJSON();
+  fetchRandomManhwas();
+  renderLatestFromJSON(); // <--- اضافه شده برای بارگذاری بخش آپدیت‌ها
   initSocialButtons();   // <--- اضافه شده برای ثبت مجدد دکمه‌های شبکه اجتماعی
 };
 
@@ -185,11 +181,9 @@ function buildSlides() {
       }
     });
 
-    const isFirst = position === slides.length - 1; // اسلاید اولِ قابل‌نمایش
     const bg = document.createElement("div");
     bg.className = "layer bg-layer";
-    if (isFirst) bg.style.backgroundImage = `url("${slide.bg}")`;
-    else pendingBg.push({ bg, url: slide.bg });
+    bg.style.backgroundImage = `url("${slide.bg}")`;
 
     const productLayer = document.createElement("div");
     productLayer.className = "layer product-layer";
@@ -198,9 +192,6 @@ function buildSlides() {
     product.alt = "";
     product.draggable = false;
     product.style.pointerEvents = "none";
-    product.decoding = "async";
-    product.loading = isFirst ? "eager" : "lazy";
-    if (isFirst) product.fetchPriority = "high";
     product.src = slide.product;
     productLayer.append(product);
 
@@ -257,42 +248,22 @@ function applyTransforms() {
   });
 }
 
-// حلقه‌ی انیمیشن فقط وقتی اسلایدر در حال حرکت است اجرا می‌شود (در حالت سکون صفر مصرف CPU)
-function kick() {
-  if (!rafId) rafId = requestAnimationFrame(animate);
-}
 function animate() {
-  rafId = 0;
   const ease = isDragging ? 1 : 0.11;
   current += (target - current) * ease;
 
   if (!isDragging && Math.abs(target - current) < 0.5) {
     current = target;
-    applyTransforms();
-    return;
   }
 
   applyTransforms();
   rafId = requestAnimationFrame(animate);
 }
 
-// پخش خودکار آرام (متوقف هنگام درگ، پنهان بودن تب، یا تنظیم «کاهش حرکت»)
-let autoTimer = 0;
-function startAutoplay() {
-  clearInterval(autoTimer);
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  autoTimer = setInterval(() => {
-    if (document.hidden || isDragging || !slider || !slider.isConnected) return;
-    goTo(index <= 0 ? slides.length - 1 : index - 1);
-  }, 6500);
-}
-
 function goTo(nextIndex) {
   index = Math.max(0, Math.min(slides.length - 1, nextIndex));
   target = -index * width;
   updateUi();
-  loadPendingBg();
-  kick();
 }
 
 function onPointerDown(event) {
@@ -311,8 +282,6 @@ function onPointerDown(event) {
   lastTime = performance.now();
   velocity = 0;
   slider.setPointerCapture(event.pointerId);
-  loadPendingBg();
-  kick();
 }
 
 function onPointerMove(event) {
@@ -371,7 +340,7 @@ function handleKeyboard(e) {
 // رویدادهای سراسری ویندوز فقط یک بار ثبت می‌شوند
 window.addEventListener("resize", onResize);
 window.addEventListener("keydown", handleKeyboard);
-window.addEventListener("pagehide", () => { cancelAnimationFrame(rafId); rafId = 0; });
+window.addEventListener("pagehide", () => cancelAnimationFrame(rafId));
 
 // وقتی با دکمه‌ی بک برمی‌گردیم، مرورگر صفحه را از bfcache برمی‌گرداند:
 // DOMContentLoaded دوباره اجرا نمی‌شود ولی pagehide حلقه‌ی انیمیشن را
@@ -384,8 +353,7 @@ window.addEventListener("pageshow", (event) => {
   isDragging = false;
   slider.classList.remove("is-dragging");
   onResize();
-  rafId = 0;
-  kick();
+  rafId = requestAnimationFrame(animate);
 });
 
 // اولین لود زمان لود ابتدایی سند
@@ -399,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 async function loadTopRated() {
   try {
-    const data = await getFeed();
+    const data = await getManhwaData();
 
     const listArray = Object.keys(data).map(slug => ({
       slug: slug,
@@ -431,12 +399,12 @@ async function loadTopRated() {
                 </span>
               </div>
               <div class="col pic">
-                <img src="${coverSrc}" width="100%" loading="lazy" decoding="async" alt="${escHtml(item.title_fa || item.title_en)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG">
+                <img src="${coverSrc}" width="100%" loading="lazy" decoding="async" alt="${item.title_fa || item.title_en}" onerror="this.onerror=null;this.src='https://picsum.photos/150/220?random=${index}'">
               </div>
               <div class="col info">
                 <p class="subj">
                   <strong class="ellipsis">
-                    ${escHtml(item.title_fa || item.title_en)}
+                    ${item.title_fa || item.title_en}
                   </strong>
                 </p>
                 <p class="genre">
@@ -459,7 +427,7 @@ async function loadTopRated() {
 // ==========================================
 async function fetchRandomManhwas() {
   try {
-    const data = await getFeed();
+    const data = await getManhwaData();
 
     const listArray = Object.keys(data).map(slug => ({
       slug: slug,
@@ -513,7 +481,7 @@ function renderLibraryCards(manhwas) {
 
     const cardHTML = `
       <div class="manhwa-card" data-link="${detailPageLink}">
-        <img src="${coverSrc}" alt="${manhwa.title_fa || manhwa.title_en}" class="card-cover" loading="lazy" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG">
+        <img src="${coverSrc}" alt="${manhwa.title_fa || manhwa.title_en}" class="card-cover" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/400/600?random=${manhwa.slug}'">
         
         <div class="card-ui manhwa-title">${manhwa.title_fa || manhwa.title_en}</div>
         
@@ -623,7 +591,7 @@ async function renderLatestFromJSON() {
     if (!listContainer) return;
 
     try {
-        const data = await getFeed();
+        const data = await getManhwaData();
 
         // تبدیل تاریخ شمسی "1405/06/10" به عدد قابل مقایسه (مثلاً 14050610)
         // تا مرتب‌سازی بر اساس جدیدترین تاریخ درست انجام بشه
@@ -670,10 +638,8 @@ async function renderLatestFromJSON() {
 
         top5.forEach(item => {
             const comicLink = `https://manhwachi.ir/comic/${encodeURIComponent(item.slug)}`;
-            const g0 = item.genres && item.genres.length > 0 ? item.genres[0] : '';
-            const mainGenre = g0 ? (genreNames[g0] || g0) : 'مانهوا';
-            const titleFa = escHtml(item.title_fa || item.title_en);
-            const scoreVal = parseFloat(item.score || item.rating || 0);
+            const mainGenre = item.genres && item.genres.length > 0 ? item.genres[0] : 'مانهوا';
+            const titleFa = item.title_fa || item.title_en;
 
             const accessBadge = item.isVip 
                 ? `<span class="badge-access badge-vip">اشتراکی</span>`
@@ -684,7 +650,7 @@ async function renderLatestFromJSON() {
                 <a class="comic-card" href="${comicLink}">
                     <div class="comic-pic">
                         ${accessBadge}
-                        <img src="${window.IMG_BASE || ''}/manhwas/${item.slug}/${item.cover_image}" alt="${titleFa}" loading="lazy" decoding="async">
+                        <img src="${window.IMG_BASE || ''}/manhwas/${item.slug}/${item.cover_image}" alt="${titleFa}" loading="lazy">
                         <div class="badge-chapter-box">
                             <span class="badge-chapter-num">چپتر ${item.latestEpNum}</span>
                             ${item.latestEpDate ? `<span class="badge-chapter-date">${item.latestEpDate}</span>` : ''}
@@ -694,7 +660,7 @@ async function renderLatestFromJSON() {
                         <h3 class="comic-title" title="${titleFa}">${titleFa}</h3>
                         <div class="comic-meta">
                             <span class="comic-genre">${mainGenre}</span>
-                            ${scoreVal > 0 ? `<span class="comic-score">★ ${scoreVal.toFixed(1)}</span>` : ''}
+                            <span class="comic-score">★ ${item.score || '8.0'}</span>
                         </div>
                     </div>
                 </a>
