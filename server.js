@@ -34,7 +34,22 @@ process.on("unhandledRejection", (reason) => {
 // این خط رو نباید فعال بذارید - چون هر کسی می‌تونه با ست کردن دستیِ هدر
 // X-Forwarded-For یک IP جعلی/تصادفی بفرسته و کل rate limit رو دور بزنه.
 // => قبل از deploy مطمئن شید توپولوژی واقعی سرورتون چیه و همین مطابقش تنظیم کنید.
-app.set("trust proxy", 1);
+// TRUST_PROXY (env) می‌تواند عدد (تعداد پراکسی‌ها)، true/false یا لیست مثل "loopback, uniquelocal" باشد.
+// پیش‌فرض: به هر پراکسیِ «داخلی/خصوصی» اعتماد کن (127.x، 10.x، 172.16-31.x، 192.168.x)؛ express از راست به چپ می‌رود
+// و اولین IP غیرداخلی را IP کاربر حساب می‌کند. هدر X-Forwarded-For که کاربر خودش بفرستد جعل‌شدنی نیست چون
+// فقط پشت پراکسی‌های داخلی اعتماد می‌شود. (قبلاً 1 بود و req.ip = 192.168.4.104 یعنی IP پراکسی می‌شد.)
+const _tp = process.env.TRUST_PROXY;
+app.set("trust proxy", _tp === undefined || _tp === "" ? "loopback, linklocal, uniquelocal" : /^\d+$/.test(_tp) ? Number(_tp) : _tp === "true" ? true : _tp === "false" ? false : _tp);
+// اگر جلوی سایت Cloudflare یا CDN دیگری هست، نام هدرِ IP واقعی را در CLIENT_IP_HEADER بگذار (مثلاً cf-connecting-ip).
+// فقط وقتی فعال کن که سرور فقط از پشت همان CDN قابل دسترسی باشد، وگرنه کاربر می‌تواند هدر را جعل کند.
+const _cih = String(process.env.CLIENT_IP_HEADER || "").toLowerCase();
+if (_cih) {
+  app.use((req, _res, next) => {
+    const v = String(req.headers[_cih] || "").split(",")[0].trim();
+    if (v && require("net").isIP(v)) { try { Object.defineProperty(req, "ip", { value: v, configurable: true }); } catch (e) {} }
+    next();
+  });
+}
 
 // ---------- نرمال‌سازی IP کلاینت برای همه‌ی rate limit ها ----------
 // همه‌ی محدودیت‌های IP (کپچا، verify، ثبت‌نام، پیامک، ریست رمز) روی req.ip
@@ -395,7 +410,7 @@ app.get("/chapter-image/:key(*)", ANTISCRAPE_GATE_ON ? antiScrape.imageGuard : (
       const gid = readGuestId(req);
       const wmCode = wmRegistry.codeFor(req.ip, gid); // کد ۸ حرفی (hex)؛ خودِ IP روی عکس چاپ نمی‌شود
       out = await imageWatermark.apply({ buffer: raw.buffer, contentType: raw.contentType, cacheKey: key, code: wmCode });
-      if (out.watermarked) wmRegistry.note({ ip: req.ip, gid }); // فقط وقتی کدِ جدید دیده شد یک خط ذخیره می‌شود
+      if (out.watermarked) wmRegistry.note({ ip: req.ip, gid, meta: wmRegistry.metaFrom(req) }); // فقط وقتی کدِ جدید دیده شد یک خط ذخیره می‌شود
     } catch (e) {
       if (e instanceof imageWatermark.WatermarkBusyError) {
         res.setHeader("Retry-After", String(e.retryAfterSeconds || 5));
@@ -1890,10 +1905,10 @@ app.post("/api/get-chapter-images", async (req, res) => {
 
     // ۳.۵ ضد اسکرپ: ابزارهای کپی‌برداری و رفتار غیرانسانی (تعداد زیاد چپتر/مانهوای متفاوت) → بلاک خودکار
     if (!ANTISCRAPE_AUTOBLOCK_ON) {
-      if (authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
+      if (authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id, meta: wmRegistry.metaFrom(req) }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
     } else {
       const as = antiScrape.noteChapter({ req, userId: authContext ? authContext.user.id : null, slug, chapterNum });
-      if (as.ok && authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
+      if (as.ok && authContext && authContext.user) { try { wmRegistry.note({ ip: req.ip, gid: readGuestId(req), userId: authContext.user.id, meta: wmRegistry.metaFrom(req) }); } catch (e) {} } // کد این کاربر را به حساب‌اش وصل کن
       if (!as.ok) {
         if (as.retryAfterSeconds) res.setHeader("Retry-After", String(as.retryAfterSeconds));
         return res.status(as.status).json(as.body);
@@ -1955,21 +1970,6 @@ app.get("/api/access/chapters/:slug", async (req, res) => {
 // چون data.json بیرون از پوشه‌ی public قرار داره، مرورگر مستقیم بهش دسترسی نداره
 // پس یک روت مشخص می‌سازیم که فقط همین فایل رو، فقط با متد GET، برمی‌گردونه.
 // حالا این روت هم از همون کش مشترک dataStore استفاده می‌کنه، نه یک کش جدا.
-// ---------- متادیتای سبک یک مانهوا برای ردر (به‌جای دانلود کل data.json) ----------
-// فقط چیزهایی که صفحه‌ی خواندن لازم داره: عنوان، کاور و لیست قسمت‌ها (num/free/date).
-app.get("/api/manhwa-meta/:slug", (req, res) => {
-  const slug = String(req.params.slug || "").trim();
-  const data = getData();
-  const m = Object.prototype.hasOwnProperty.call(data, slug) ? data[slug] : null;
-  if (!m) return res.status(404).json({ error: "پیدا نشد" });
-  res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=600");
-  res.json({
-    title_fa: m.title_fa || "",
-    cover_image: m.cover_image || "",
-    episodes: (Array.isArray(m.episodes) ? m.episodes : []).map((e) => ({ num: e.num, free: !!e.free, date: e.date || "" })),
-  });
-});
-
 app.get("/data/data.json", (req, res) => {
   // ۶۰ ثانیه کش + نمایش نسخه‌ی قبلی هنگام به‌روزرسانی در پس‌زمینه (سرعت بیشتر، فشار کمتر روی سرور)
   res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=600");
