@@ -1,0 +1,219 @@
+/* home-v2.css — لایه‌ی طراحی جدید صفحه‌ی اصلی (مینیمال، سبک، هماهنگ با صفحه‌ی مانهوا و ردر)
+   جایگزین perf.css + home-fixes.css + home-sections.css (سه درخواست → یکی). باید آخرین CSS در <head> باشد. */
+
+:root{
+  --bg:#000; --s1:#0e0e0e; --s2:#151515; --s3:#1d1d1d;
+  --ln:rgba(255,255,255,.08); --tx:#ececec; --mu:#8c8c8c;
+  --pr:#dc2626; --pr2:#ef4444; --r:16px;
+}
+
+/* ================= پایه ================= */
+html,body{height:100%}
+.app{height:100vh;height:100dvh}
+.home-page{padding-bottom:8px}
+@media(min-width:1024px){.home-page{padding-inline:24px}}
+a:focus-visible,button:focus-visible{outline:2px solid var(--pr);outline-offset:2px}
+::selection{background:rgba(220,38,38,.45);color:#fff}
+.spider-container{display:none!important}               /* تم هالووین (انیمیشن سنگین) */
+@media(max-width:767px){.content{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}}
+
+/* هدر: بدون blur روی هر فریم اسکرول */
+header.sticky{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(8,8,8,.96)!important;border-color:var(--ln)!important}
+
+/* ================= اسلایدر ================= */
+.home-page .slider{margin:12px 12px 0;width:auto;border-radius:20px;border:1px solid var(--ln)}
+@media(max-width:767px){.home-page .slider{height:clamp(250px,72vw,350px)}}
+@media(min-width:768px){.home-page .slider{margin:16px 0 0}}
+@media(min-width:1024px){.home-page .slider{margin-top:20px;border-radius:24px}}
+.home-page .dots{padding-block:12px 2px;gap:6px;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.home-page .dot{width:8px;height:8px;background:rgba(255,255,255,.22);box-shadow:none}
+.home-page .dot.is-active{width:26px;background:var(--pr);box-shadow:none}
+.home-page .slider-nav{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.55);border-color:var(--ln);opacity:.85}
+.home-page .slider-nav:hover{background:var(--pr);border-color:transparent}
+.home-page .slider-nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ================= تب‌ها ================= */
+.mc-tabs{display:flex;gap:4px;padding:4px;margin:16px 12px 6px;background:var(--s1);border:1px solid var(--ln);border-radius:16px;overflow-x:auto;scrollbar-width:none}
+.mc-tabs::-webkit-scrollbar{display:none}
+.mc-tab{flex:1 0 auto;padding:10px 14px;border:0;border-radius:12px;background:transparent;color:var(--mu);font:600 13px/1 'Vazirmatn',sans-serif;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s}
+.mc-tab:hover{color:#fff}
+.mc-tab.is-on{background:var(--pr);color:#fff}
+.home-page .mc-panel{display:none}
+.home-page[data-tab="trending"] .mc-panel[data-panel="trending"],
+.home-page[data-tab="schedule"] .mc-panel[data-panel="schedule"],
+.home-page[data-tab="latest"] .mc-panel[data-panel="latest"]{display:block}
+.home-page[data-tab]:not([data-tab="home"]) .mc-home-only{display:none!important}
+
+/* ================= آمار سریع ================= */
+.mc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px;padding:0;list-style:none}
+.mc-stat{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;padding:14px 8px;border-radius:var(--r);background:var(--s1);border:1px solid var(--ln)}
+.mc-stat b{font:700 20px/1 'Vazirmatn',sans-serif;color:#fff;min-height:20px}
+.mc-stat:first-child b{color:var(--pr2)}
+.mc-stat span{font-size:12px;color:var(--mu)}
+
+/* ================= تیتر بخش‌ها ================= */
+.home-page .title{border:0;margin:28px 0 12px;padding:0 14px;display:flex;align-items:center}
+.home-page .title a{width:100%;height:auto;padding:0;overflow:visible;display:flex;align-items:center;font:700 17px/1.5 'Vazirmatn',sans-serif;color:#fff}
+.home-page .title a::before{content:"";position:static;transform:none;display:inline-block;width:4px;height:1.1em;border-radius:4px;background:var(--pr);margin-inline-end:10px;flex:none}
+.home-page .title a::after{content:"مشاهده همه ‹";position:static!important;transform:none!important;width:auto!important;height:auto!important;background:none!important;margin-inline-start:auto;font-size:12px;font-weight:600;color:var(--mu);transition:color .2s}
+.home-page .title a:hover::after{color:#fff}
+@media(min-width:1024px){.home-page .title{padding:0;margin:40px 0 16px}.home-page .title a{font-size:20px}}
+
+/* ================= ادامه‌ی مطالعه ================= */
+.mc-continue{margin:20px 0 4px}
+.mc-sec-head{display:flex;align-items:center;justify-content:space-between;padding:0 14px;margin-bottom:10px}
+.mc-sec-head h2{margin:0;font:700 17px/1.5 'Vazirmatn',sans-serif;color:#fff;display:flex;align-items:center}
+.mc-sec-head h2::before{content:"";width:4px;height:1.1em;border-radius:4px;background:var(--pr);margin-inline-end:10px}
+.mc-link-btn{border:0;background:none;color:var(--mu);font:600 12px 'Vazirmatn',sans-serif;cursor:pointer;padding:6px 8px;border-radius:8px}
+.mc-link-btn:hover{color:#fff;background:rgba(255,255,255,.06)}
+.mc-cont-list{display:flex;gap:12px;margin:0;padding:2px 14px 6px;list-style:none;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
+.mc-cont-list::-webkit-scrollbar{display:none}
+.mc-cont-list>li{flex:0 0 112px;scroll-snap-align:start}
+.mc-cont{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit}
+.mc-cont__pic{position:relative;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:var(--s2);border:1px solid var(--ln)}
+.mc-cont__pic img{width:100%;height:100%;object-fit:cover;display:block}
+.mc-cont__title{font:600 12.5px/1.5 'Vazirmatn',sans-serif;color:#fff;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.mc-cont__ch{font-size:11.5px;color:var(--pr2)}
+
+/* ================= چیپ‌های ژانر ================= */
+.mc-chips{display:flex;gap:8px;padding:14px 14px 2px;overflow-x:auto;scrollbar-width:none}
+.mc-chips::-webkit-scrollbar{display:none}
+.mc-chip{flex:0 0 auto;padding:8px 16px;border-radius:999px;border:1px solid var(--ln);background:var(--s1);color:#cfcfcf;font:500 13px/1 'Vazirmatn',sans-serif;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.mc-chip:hover{border-color:rgba(220,38,38,.5);color:#fff}
+.mc-chip.is-on{background:var(--pr);border-color:var(--pr);color:#fff}
+.mc-empty{padding:28px 12px;text-align:center;color:var(--mu);font-size:13px;list-style:none}
+
+/* ================= آخرین آپدیت‌ها (کارت‌ها) ================= */
+.home-page .daily_list{margin:0}
+.home-page .lst_type1,.home-page #todaysList{display:flex;gap:12px;padding:4px 14px 8px;margin:0;border:0;overflow-x:auto;overflow-y:hidden;scroll-behavior:auto;scroll-snap-type:x proximity;scrollbar-width:none;list-style:none}
+.home-page #todaysList::-webkit-scrollbar{display:none}
+.home-page #todaysList li{flex:0 0 136px;scroll-snap-align:start;margin:0}
+@media(min-width:768px){.home-page #todaysList li{flex-basis:164px}}
+@media(min-width:1024px){
+  .home-page .lst_type1,.home-page #todaysList{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;padding:4px 0 8px;overflow:visible}
+  .home-page #todaysList li{flex:none}
+}
+.home-page .comic-card{height:auto;background:var(--s2);border:1px solid var(--ln);border-radius:14px;box-shadow:none;transition:transform .2s ease,border-color .2s ease}
+@media(hover:hover){.home-page .comic-card:hover{transform:translateY(-3px);border-color:rgba(220,38,38,.5);box-shadow:none}.home-page .comic-card:hover .comic-pic img{transform:scale(1.04)}}
+.home-page .comic-pic{height:auto;aspect-ratio:3/4;background:var(--s3)}
+.home-page .comic-pic img{transition:transform .35s ease}
+.home-page .comic-pic::after{background:linear-gradient(to top,rgba(0,0,0,.8) 0,rgba(0,0,0,0) 48%)}
+.home-page .badge-access{top:8px;right:8px;padding:3px 9px;font-size:11px;font-weight:700;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;border:0}
+.home-page .badge-vip{background:var(--pr)}
+.home-page .badge-free{background:rgba(0,0,0,.62);border:1px solid var(--ln)}
+.home-page .badge-chapter-box{position:absolute;left:8px;right:8px;bottom:8px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0;background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.home-page .badge-chapter-num{font-size:12px;font-weight:700;color:#fff}
+.home-page .badge-chapter-date{font-size:10.5px;color:rgba(255,255,255,.7)}
+.home-page .comic-info{gap:6px;padding:10px}
+.home-page .comic-title{margin:0;font:600 13px/1.6 'Vazirmatn',sans-serif;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-page .comic-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11.5px}
+.home-page .comic-genre{padding:0;background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--mu);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-page .comic-score{color:#fbbf24;font-weight:600}
+
+/* جای‌نگهدار تا لیست‌ها لود شوند (جلوگیری از پرش صفحه) */
+#todaysList:empty{min-height:230px;margin-inline:14px;background:var(--s1);border-radius:16px}
+#topRatedList:empty{min-height:360px;margin-inline:14px;background:var(--s1);border-radius:16px}
+@media(min-width:1024px){#todaysList:empty,#topRatedList:empty{margin-inline:0}#todaysList:empty{min-height:340px}}
+
+/* ================= بهترین‌ها ================= */
+.home-page .toprated_list{margin:0}
+.home-page .lst_type2{display:grid;gap:8px;padding:2px 14px 10px;margin:0;list-style:none}
+@media(min-width:768px){.home-page .lst_type2{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+@media(min-width:1024px){.home-page .lst_type2{grid-template-columns:repeat(3,minmax(0,1fr));padding-inline:0;gap:14px}}
+.home-page .lst_type2>li{margin:0;border-radius:var(--r);background:var(--s1);border:1px solid var(--ln);transition:border-color .2s,background .2s}
+.home-page .lst_type2>li:first-child{background:linear-gradient(135deg,rgba(220,38,38,.14),var(--s1));border-color:rgba(220,38,38,.35)}
+@media(hover:hover){.home-page .lst_type2>li:hover{border-color:rgba(220,38,38,.5);background:var(--s2)}}
+.home-page .lst_type2 a{display:block;padding:8px 12px 8px 8px}
+.home-page .lst_type2 .row{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.home-page .lst_type2 .num{width:28px;height:auto;flex:none;text-align:center;font:700 17px/1 'Vazirmatn',sans-serif;color:#555}
+.home-page .lst_type2 .num .rank1{background:none!important;width:auto;height:auto;color:var(--pr2);font-size:20px}
+.home-page .lst_type2 li:first-child .num{-webkit-backdrop-filter:none;backdrop-filter:none}
+.home-page .lst_type2 .pic{width:54px;height:74px;flex:none;border-radius:10px;overflow:hidden;background:var(--s3)}
+.home-page .lst_type2 .pic span::before{display:none}
+.home-page .lst_type2 .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.home-page .lst_type2 .info{flex:1;min-width:0;padding:0}
+.home-page .lst_type2 .subj{margin:0 0 4px;font:600 14px/1.6 'Vazirmatn',sans-serif;color:#fff}
+.home-page .lst_type2 .genre{margin:0;font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:none;border:0;padding:0}
+
+/* ================= بنرها ================= */
+.home-page .mw-banner-wrapper{margin:26px 12px;border:1px solid var(--ln)!important;border-radius:20px;overflow:hidden}
+@media(min-width:1024px){.home-page .mw-banner-wrapper{margin:40px 0}}
+.home-page .telegram-banner,.home-page .instagram-banner{margin:14px 12px;padding:0}
+@media(min-width:1024px){.home-page .telegram-banner,.home-page .instagram-banner{margin:20px 0}}
+.home-page .telegram-banner-link,.home-page .instagram-banner-link{max-width:none;width:100%;display:flex;align-items:center;gap:14px;padding:16px;border-radius:20px;background:var(--s1);border:1px solid var(--ln);box-shadow:none;overflow:hidden}
+.home-page .telegram-banner-link::before,.home-page .instagram-banner-link::before{display:none}
+.home-page .telegram-icon,.home-page .instagram-icon{-webkit-backdrop-filter:none;backdrop-filter:none;flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center}
+.home-page .telegram-icon{background:rgba(34,158,217,.16)}
+.home-page .instagram-icon{background:rgba(220,39,67,.16)}
+.home-page .telegram-icon img,.home-page .instagram-icon img{width:28px;height:28px}
+.home-page .telegram-content,.home-page .instagram-content{flex:1;min-width:0}
+.home-page .telegram-title,.home-page .instagram-title{font:700 14px/1.7 'Vazirmatn',sans-serif;color:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;background:none}
+.home-page .telegram-subtitle,.home-page .instagram-subtitle{font-size:12px;color:var(--mu);opacity:1}
+.home-page .banner-btn-group{display:flex;flex-direction:column;gap:6px;flex:none}
+.home-page .telegram-btn,.home-page .instagram-btn,.home-page #copyTelegramBtn,.home-page #copyInstagramBtn{min-width:86px;padding:8px 14px;border-radius:12px;font:600 12px/1.4 'Vazirmatn',sans-serif;text-align:center;cursor:pointer;color:#fff;border:1px solid var(--ln);background:var(--s3)}
+.home-page .telegram-btn:first-child{background:#229ed9;border-color:transparent}
+.home-page .instagram-btn:first-child{background:var(--pr);border-color:transparent}
+@media(min-width:768px){.home-page .banner-btn-group{flex-direction:row}}
+
+/* ================= تب‌های داغ‌ترین / جدول زمانی / جدیدترین ================= */
+.mc-panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 4px}
+.mc-panel-head h2{margin:0;font:700 17px/1.5 'Vazirmatn',sans-serif;color:#fff}
+.mc-panel-head span{font-size:12px;color:var(--mu)}
+.mc-days{display:flex;gap:8px;padding:6px 14px 12px;overflow-x:auto;scrollbar-width:none}
+.mc-days::-webkit-scrollbar{display:none}
+.mc-day{position:relative;flex:0 0 auto;min-width:82px;display:flex;flex-direction:column;gap:4px;align-items:center;padding:12px 10px;border-radius:14px;border:1px solid var(--ln);background:var(--s1);color:#cfcfcf;cursor:pointer;font-family:'Vazirmatn',sans-serif;transition:background .2s,border-color .2s}
+.mc-day b{font-size:13px;font-weight:700}
+.mc-day i{font-style:normal;font-size:11px;color:var(--mu)}
+.mc-day u{position:absolute;top:-7px;text-decoration:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:#3f3f46;color:#fff}
+.mc-day.is-today{border-color:rgba(220,38,38,.55)}
+.mc-day.is-on{background:var(--pr);border-color:var(--pr);color:#fff}
+.mc-day.is-on i{color:rgba(255,255,255,.85)}
+.mc-day.is-on u{background:#fff;color:var(--pr)}
+.mc-list{list-style:none;margin:0;padding:4px 12px 10px;display:grid;gap:10px}
+.mc-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--r);background:var(--s1);border:1px solid var(--ln);text-decoration:none;color:inherit;transition:border-color .2s,background .2s}
+@media(hover:hover){.mc-row:hover{border-color:rgba(220,38,38,.5);background:var(--s2)}}
+.mc-row__pic{flex:none;width:58px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:var(--s3)}
+.mc-row__pic img{width:100%;height:100%;object-fit:cover;display:block}
+.mc-row__body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.mc-row__title{font:600 14px/1.5 'Vazirmatn',sans-serif;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-row__sub{font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-row__meta{font-size:11.5px;color:#6f6f78}
+.mc-row__end{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.mc-row__badge{padding:3px 10px;border-radius:999px;background:rgba(220,38,38,.15);color:#f87171;font:600 11.5px/1.5 'Vazirmatn',sans-serif}
+.mc-row__score{font-size:12px;color:#fbbf24;font-weight:600;direction:ltr}
+.mc-more{display:block;margin:6px auto 18px;padding:10px 28px;border-radius:999px;border:1px solid var(--ln);background:var(--s1);color:#fff;font:600 13px 'Vazirmatn',sans-serif;cursor:pointer;transition:background .2s,border-color .2s}
+.mc-more:hover{background:var(--pr);border-color:var(--pr)}
+.mc-more[hidden],.mc-continue[hidden],.mc-empty[hidden]{display:none!important}
+
+/* ================= نوار پایین موبایل ================= */
+.bottom-nav{width:calc(100% - 24px);max-width:440px;height:58px;bottom:calc(10px + env(safe-area-inset-bottom,0px));background:rgba(14,14,14,.97);border:1px solid var(--ln);border-radius:20px;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.8)}
+.nav-item{position:relative;padding:6px 0}
+.nav-text{font-size:11.5px}
+.nav-item.active .nav-text{font-size:11.5px;font-weight:700;transform:none}
+.nav-item.active .nav-icon{transform:none;filter:none}
+.nav-item.active::after{content:"";position:absolute;top:2px;width:18px;height:3px;border-radius:3px;background:var(--pr)}
+
+/* ================= دسکتاپ ================= */
+@media(min-width:1024px){
+  .mc-tabs{margin:24px 0 8px;width:fit-content;padding:5px;gap:6px}
+  .mc-tab{padding:11px 26px;font-size:14px}
+  .mc-stats{margin:14px 0;gap:16px}
+  .mc-stat{flex-direction:row;justify-content:center;gap:14px;padding:18px;border-radius:20px}
+  .mc-stat b{font-size:26px}
+  .mc-stat span{font-size:13.5px}
+  .mc-sec-head,.mc-panel-head,.mc-chips,.mc-days{padding-inline:0}
+  .mc-sec-head h2,.mc-panel-head h2{font-size:20px}
+  .mc-cont-list{padding-inline:0}
+  .mc-cont-list>li{flex-basis:140px}
+  .mc-chips{flex-wrap:wrap;overflow:visible;padding-top:18px;padding-bottom:6px}
+  .mc-list{grid-template-columns:repeat(2,minmax(0,1fr));padding-inline:0;gap:14px}
+  .mc-row{padding:12px 14px;gap:16px}
+  .mc-row__pic{width:72px}
+  .mc-row__title{font-size:15px}
+  .mc-days{gap:10px}
+  .mc-day{min-width:112px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}

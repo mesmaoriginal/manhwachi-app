@@ -84,20 +84,32 @@
     </script>
     <!-- اتصال زودهنگام به سرورهای فونت -->
 
-    <!-- دانلود data.json همین الان شروع می‌شه (قبل از لود home.js) و بین همه‌ی صفحه‌ها مشترکه -->
+    <!-- فید سبک صفحه‌ی اصلی (/api/home-feed) همین‌جا و زودتر از هر اسکریپتی شروع می‌شود.
+         data.json کامل فقط وقتی لازم شد (صفحه‌های دیگر) دانلود می‌شود. -->
     <script>
       (function () {
-        var p = null;
+        var full = null, feed = null;
         window.getManhwaData = function () {
-          if (!p) p = fetch('/data/data.json').then(function (r) {
+          if (!full) full = fetch('/data/data.json').then(function (r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
-          }).catch(function (e) { p = null; throw e; });
-          return p;
+          }).catch(function (e) { full = null; throw e; });
+          return full;
         };
-        window.getManhwaData().catch(function () {});
+        window.getHomeFeed = function () {
+          if (!feed) feed = fetch('/api/home-feed').then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          }).catch(function () { return window.getManhwaData(); })
+            .catch(function (e) { feed = null; throw e; });
+          return feed;
+        };
+        window.getHomeFeed().catch(function () {});
       })();
     </script>
+    <!-- اولین اسلاید (LCP) زودتر دانلود شود -->
+    <link rel="preload" as="image" href="src-mobi/slider/1/manhwa-back1.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="src-mobi/slider/1/manhwa-cover1.webp" fetchpriority="high">
 
     <!-- Tailwind: اگه فایل کامپایل‌شده‌ی /css/tailwind.css وجود داشته باشه از اون استفاده می‌شه (سریع و بدون CDN)،
          وگرنه خودکار به CDN برمی‌گرده. راهنمای ساخت فایل: tailwind.config.js -->
@@ -138,8 +150,6 @@
     <link rel="stylesheet" href="/css/vendor/vazirmatn.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&amp;display=swap'">
     <link rel="stylesheet" href="/css/vendor/montserrat.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400..800&amp;display=swap'">
     <link rel="stylesheet" href="/css/vendor/material-symbols.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block'">
-        <link rel="stylesheet" href="/css/vendor/fontawesome.css" onerror="this.onerror=null;this.media='print';this.onload=function(){this.media='all'};this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css'">
-    <link rel="stylesheet" href="/home-fixes.css?v=2">
         <noscript>
           </noscript>
 
@@ -152,7 +162,6 @@
     <link rel="stylesheet" href="/app-promo.css?v=1">
   <link rel="stylesheet" href="/mc-shared.css?v=1">
   <link rel="stylesheet" href="/vip-flair.css?v=2">
-<link rel="stylesheet" href="/perf.css">
 
     <style>
         * { 
@@ -355,7 +364,7 @@
         #mobileDrawer a[href*="telegram"] .material-symbols-outlined.text-2xl { font-size: 22px; }
     </style>
 <link rel="stylesheet" href="/mc-polish.css?v=1">
-<link rel="stylesheet" href="/home-sections.css?v=1">
+<link rel="stylesheet" href="/home-v2.css?v=1">
 </head>
 
 <body>
@@ -604,30 +613,14 @@
 
 
                 
-                <div class="spider-container">
-                <div class="left-legs">
-                    <div class="leg1"><div class="leg1"><div class="leg1"><div class="leg1"></div></div></div></div>
-                    <div class="leg2"><div class="leg2"><div class="leg2"><div class="leg2"></div></div></div></div>
-                    <div class="leg3"><div class="leg3"><div class="leg3"><div class="leg3"></div></div></div></div>
-                    <div class="leg4"><div class="leg4"><div class="leg4"><div class="leg4"></div></div></div></div>
-                </div>
-                <div class="right-legs">
-                    <div class="leg1"><div class="leg1"><div class="leg1"><div class="leg1"></div></div></div></div>
-                    <div class="leg2"><div class="leg2"><div class="leg2"><div class="leg2"></div></div></div></div>
-                    <div class="leg3"><div class="leg3"><div class="leg3"><div class="leg3"></div></div></div></div>
-                    <div class="leg4"><div class="leg4"><div class="leg4"><div class="leg4"></div></div></div></div>
-                </div>
-                </div>
-
-            
-                        <section class="slider" id="slider" aria-roledescription="carousel" aria-label="اسلایدر محصولات">
+                <section class="slider" id="slider" aria-roledescription="carousel" aria-label="اسلایدر محصولات">
                             <div class="track" id="track"></div>
 
                             <button type="button" class="slider-nav slider-nav-prev" id="sliderPrevBtn" aria-label="اسلاید قبلی">
-                                <i class="fa-solid fa-chevron-left"></i>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
                             </button>
                             <button type="button" class="slider-nav slider-nav-next" id="sliderNextBtn" aria-label="اسلاید بعدی">
-                                <i class="fa-solid fa-chevron-right"></i>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
                             </button>
 
                             <div class="slider-ui">
@@ -919,8 +912,8 @@
     
     <!-- اسکریپت پایه هوم (اسلایدر و کدهای اصلی هوم شما) فقط یک بار اینجا لود می‌شود -->
     <script src="/vip-flair.js?v=2" defer></script>
-    <script src="home.js?v=5" defer></script>
-    <script src="/home-sections.js?v=1" defer></script>
+    <script src="home.js?v=6" defer></script>
+    <script src="/home-sections.js?v=2" defer></script>
    <script>
 
 

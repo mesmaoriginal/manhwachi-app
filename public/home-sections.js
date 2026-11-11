@@ -213,8 +213,9 @@
   });
   window.addEventListener('pageshow', renderContinue);
 
-  if (typeof getManhwaData !== 'function') return;
-  getManhwaData().then(function (data) {
+  var feedFn = window.getHomeFeed || window.getManhwaData;
+  if (typeof feedFn !== 'function') return;
+  feedFn().then(function (data) {
     var all = Object.keys(data).map(function (slug) { return Object.assign({ slug: slug }, data[slug]); });
     renderStats(all);
     renderChips(all);
