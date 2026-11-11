@@ -24,7 +24,7 @@ function getSliderWidth() {
   return window.innerWidth;
 }
 
-const slides = [
+const DEFAULT_SLIDES = [
   {
     title: "",
     kicker: "",
@@ -59,6 +59,53 @@ const slides = [
   }
 ];
 
+// اسلایدها از فایل src-mobi/slider/slider.json خوانده می‌شوند (فقط ترتیب اسلاگ‌ها).
+// اگر فایل خوانده نشد، همین لیست پیش‌فرض نمایش داده می‌شود.
+// نکته: آرایه‌ی داخلی برعکسِ ترتیب نمایش است (اسلاید اول = آخرین عنصر)، پس بعد از خواندن JSON معکوس می‌شود.
+let slides = DEFAULT_SLIDES;
+const SLIDER_JSON_URL = "/src-mobi/slider/slider.json";
+
+function buildSlidesFromConfig(cfg) {
+  const list = cfg && Array.isArray(cfg.slides) ? cfg.slides : [];
+  const out = list.map((entry, i) => {
+    // هر مورد یا یک رشته (slug) است یا آبجکتی مثل { "slug": "...", "bg": "...", "product": "..." }
+    const e = typeof entry === "string" ? { slug: entry } : (entry || {});
+    if (!e.slug) return null;
+    const n = i + 1; // پوشه‌ی تصاویر بر اساس جایگاه در JSON: src-mobi/slider/<n>/
+    return {
+      title: e.title || "",
+      kicker: e.kicker || "",
+      subtitle: e.subtitle || "",
+      bg: e.bg || `src-mobi/slider/${n}/manhwa-back${n}.webp`,
+      product: e.product || `src-mobi/slider/${n}/manhwa-cover${n}.webp`,
+      link: e.link || `https://manhwachi.ir/comic/${encodeURIComponent(e.slug)}`
+    };
+  }).filter(Boolean);
+  return out.reverse();
+}
+
+function fetchSliderConfig() {
+  return fetch(SLIDER_JSON_URL, { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then((cfg) => {
+      const built = buildSlidesFromConfig(cfg);
+      return built.length ? built : DEFAULT_SLIDES;
+    })
+    .catch((err) => {
+      console.warn("slider.json لود نشد، اسلایدهای پیش‌فرض استفاده می‌شود:", err);
+      return DEFAULT_SLIDES;
+    });
+}
+
+// درخواست همان لحظه‌ی لود اسکریپت شروع می‌شود؛ بار اول از همین نتیجه استفاده می‌شود،
+// دفعات بعدی (جابه‌جایی بین صفحه‌ها) دوباره خوانده می‌شود.
+let sliderConfigPromise = fetchSliderConfig();
+function loadSliderConfig() {
+  const p = sliderConfigPromise || fetchSliderConfig();
+  sliderConfigPromise = null;
+  return p;
+}
+
 const genreNames = {
   "Fantasy": "فانتزی",
   "Action": "اکشن",
@@ -91,24 +138,9 @@ function escHtml(s) {
 }
 const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='4'%3E%3Crect width='3' height='4' fill='%23161616'/%3E%3C/svg%3E";
 
-// ==========================================
-// تابع اصلی راه‌اندازی و بازسازی صفحه خانه
-// ==========================================
-window.initHome = function() {
-  console.log("در حال راه‌اندازی مجدد اسکریپت‌های صفحه اصلی...");
+let initToken = 0;
 
-  // ۱. پاکسازی انیمیشن‌ها و رویدادهای قبلی جهت جلوگیری از تداخل
-  if (rafId) {
-    cancelAnimationFrame(rafId);
-    rafId = 0;
-  }
-  clearInterval(autoTimer);
-  
-  // بازنشانی متغیرها و آرایه‌ها
-  slideNodes = [];
-  pendingBg = [];
-  isDragging = false;
-
+function setupSlider() {
   // پیدا کردن المان‌های جدید از روی HTML رندر شده
   slider = document.getElementById("slider");
   track = document.getElementById("track");
@@ -124,9 +156,9 @@ window.initHome = function() {
     // مقداردهی اولیه موقعیت‌ها (بر اساس عرض واقعی خود اسلایدر،
     // نه کل پنجره؛ چون در صفحات بزرگ محتوا محدود به یک عرض حداکثری‌ست)
     width = getSliderWidth();
-    index = 3; 
-    current = -3 * width;
-    target = -3 * width;
+    index = slides.length - 1; // اسلاید اول نمایش (آخرین عنصر آرایه)
+    current = -index * width;
+    target = current;
 
     // ساخت اسلایدها و دکمه‌ها
     buildSlides();
@@ -161,6 +193,33 @@ window.initHome = function() {
   } else {
     console.warn("المان‌های اسلایدر یافت نشدند.");
   }
+}
+
+// ==========================================
+// تابع اصلی راه‌اندازی و بازسازی صفحه خانه
+// ==========================================
+window.initHome = function() {
+  console.log("در حال راه‌اندازی مجدد اسکریپت‌های صفحه اصلی...");
+
+  // ۱. پاکسازی انیمیشن‌ها و رویدادهای قبلی جهت جلوگیری از تداخل
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  clearInterval(autoTimer);
+  
+  // بازنشانی متغیرها و آرایه‌ها
+  slideNodes = [];
+  pendingBg = [];
+  isDragging = false;
+
+  // اسلایدر بعد از خواندن slider.json ساخته می‌شود؛ بقیه‌ی صفحه منتظرش نمی‌ماند
+  const myInit = ++initToken;
+  loadSliderConfig().then((list) => {
+    if (myInit !== initToken) return; // initHome دوباره صدا زده شده
+    slides = list;
+    setupSlider();
+  });
 
   // لود دیتاها از فایل‌های JSON و رندر آپدیت‌ها
   loadTopRated();
