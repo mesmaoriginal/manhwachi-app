@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <html class="dark" lang="fa" dir="rtl">
 <head>
-  <!-- Icons (ManhwaChi) -->
-  <link rel="icon" href="/ManhwaChi/favicon.ico?v=3" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png?v=3" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/ManhwaChi/favicon-48x48.png?v=3" />
-  <link rel="icon" type="image/png" sizes="96x96" href="/ManhwaChi/favicon-96x96.png?v=3" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/ManhwaChi/favicon-192x192.png?v=3" />
-  <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png?v=3" />
-  <link rel="manifest" href="/ManhwaChi/site.webmanifest?v=3" />
-  <meta name="theme-color" content="#0a0a0a" />
-
 <script>window.IMG_BASE=<%- JSON.stringify(IMG_BASE || "") %>;</script>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -40,6 +30,11 @@
     <meta name="twitter:image:alt" content="<%= title_fa ? ('مانهوا ' + title_fa) : title_en %>" />
     <% if (manhwa) { %><link rel="preload" as="image" href="<%= cover_url %>" fetchpriority="high" /><% } %>
 
+    <!-- Favicons -->
+    <link rel="icon" href="/ManhwaChi/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/ManhwaChi/favicon-192x192.png" />
+    <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png" />
 
     <!-- Google Structured Data (Schema.org) for SEO Rich Snippets -->
     <% if (manhwa) { %>
@@ -490,7 +485,7 @@
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
                 <a href="/" class="flex items-center gap-3 group">
-                    <img src="/ManhwaChi/logo-mark.webp?v=2" alt="ManhwaChi Logo" class="h-11 w-auto object-contain group-hover:scale-105 transition-transform" />
+                    <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
                     <span class="font-bold text-xl tracking-tight text-white font-['Montserrat'] hidden sm:inline">
                         Manhwa<span class="text-primary">Chi</span>
                     </span>
@@ -526,7 +521,7 @@
         <div>
             <div class="flex items-center justify-between pb-6 mb-6 border-b border-white/10">
                 <div class="flex items-center gap-3">
-                    <img src="/ManhwaChi/logo-mark.webp?v=2" alt="ManhwaChi Logo" class="h-9 w-auto object-contain" />
+                    <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-7 w-auto object-contain drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
                     <span class="font-bold text-lg text-white font-['Montserrat']">Manhwa<span class="text-primary">Chi</span></span>
                 </div>
                 <button id="closeDrawerBtn" class="w-9 h-9 rounded-xl bg-surface-container border border-white/10 flex items-center justify-center text-on-surface hover:text-primary active:scale-95 transition">
@@ -780,7 +775,7 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-8 pb-10 border-b border-white/10">
                 <div class="md:col-span-2 space-y-4">
                     <a href="/" class="flex items-center gap-3">
-                        <img src="/ManhwaChi/logo-mark.webp?v=2" alt="ManhwaChi Logo" class="h-11 w-auto object-contain" />
+                        <img src="/ManhwaChi/LOGO-main-white.webp" alt="ManhwaChi Logo" class="h-8 w-auto object-contain drop-shadow-[0_0_8px_rgba(220,38,38,0.3)]" />
                         <span class="font-bold text-2xl text-white font-['Montserrat']">Manhwa<span class="text-primary">Chi</span></span>
                     </a>
                     <p class="text-sm text-text-muted leading-relaxed max-w-md">
@@ -1642,7 +1637,7 @@
                     <div class="sim-cover">
                         <img src="${window.IMG_BASE || ''}/manhwas/${encodeURIComponent(item.slug)}/${item.cover_image}"
                              alt="${faTitle}" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='/ManhwaChi/favicon-192x192.png?v=3'" />
+                             onerror="this.onerror=null;this.src='/ManhwaChi/favicon-192x192.png'" />
                         <span class="sim-score"><span class="material-symbols-outlined">star</span>${escapeHtml(item.score || '—')}</span>
                         <div class="sim-overlay">
                             <h4 dir="rtl">${faTitle}</h4>
