@@ -1,3 +1,4 @@
+(function(){ if(!window.MCAvatarViewer && !document.querySelector('script[src*="avatar-viewer.js"]')){ var s=document.createElement('script'); s.src='/avatar-viewer.js?v=1'; s.defer=true; document.head.appendChild(s); } })();
 // پنجره‌ی تأیید هماهنگ با سایت (mc-ui.js)؛ اگه لود نشده بود confirm قدیمی
 // (var، نه const: این اسکریپت موقع هر بار باز شدن پروفایل دوباره تزریق می‌شه)
 var askConfirm = (m, o) => (typeof window.mcConfirm === 'function' ? window.mcConfirm(m, o) : Promise.resolve(window.confirm(m)));

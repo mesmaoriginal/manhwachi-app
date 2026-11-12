@@ -886,3 +886,44 @@
 @media (min-width: 1200px) {
     .profile .hero__inner { padding: 56px 64px 52px; }
 }
+
+
+/* ===================== خلوت‌سازی کارت اشتراک ===================== */
+.profile .vip-card { gap: 14px; }
+.profile .vip-note { display: none !important; }
+.profile .vip-card__status { font-size: 12.5px; line-height: 1.8; }
+.profile .vip-countdown { padding: 14px; }
+.profile .vip-countdown__number { font-size: 34px; }
+
+.profile .perks-fold { border-top: 1px solid var(--ln); padding-top: 4px; }
+.profile .perks-fold__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 2px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--soft);
+    transition: color 0.2s;
+}
+.profile .perks-fold__summary::-webkit-details-marker { display: none; }
+.profile .perks-fold__summary:hover { color: #fff; }
+.profile .perks-fold__summary .material-symbols-outlined { font-size: 22px; color: #ef4444; transition: transform 0.25s; }
+.profile .perks-fold[open] .perks-fold__summary .material-symbols-outlined { transform: rotate(180deg); }
+.profile .perks-fold .vip-perks { padding-bottom: 4px; }
+.profile .perk { padding: 8px 10px; }
+.profile .perk__text small { display: none; }
+
+/* تنظیمات: بدون بخش‌های پایینی، یک ستونه و مرتب */
+@media (min-width: 960px) {
+    .profile .settings__grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 1200px) {
+    .profile .settings__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* کلیک روی عکس پروفایل → نمایش بزرگ (avatar-viewer.js) */
+.profile .avatar__frame img:not(.hidden) { cursor: zoom-in; transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+@media (hover: hover) { .profile .avatar__frame:hover img:not(.hidden) { transform: scale(1.06); } }

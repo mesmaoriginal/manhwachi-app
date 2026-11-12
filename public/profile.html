@@ -119,7 +119,13 @@
 
                     <div id="vipStatusText" class="vip-card__status">در حال بررسی وضعیت اشتراک...</div>
 
-                    <div id="vipPerks" class="vip-perks" aria-label="امکانات حساب شما"></div>
+                    <details class="perks-fold">
+                        <summary class="perks-fold__summary">
+                            <span>امکانات حساب شما</span>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </summary>
+                        <div id="vipPerks" class="vip-perks" aria-label="امکانات حساب شما"></div>
+                    </details>
 
                     <div id="vipNote" class="vip-note hidden"></div>
 
@@ -130,48 +136,12 @@
             <!-- ============ ستون اصلی ============ -->
             <div class="layout__main">
 
-                <section id="bookmarksSection" class="shelf shelf--preview">
-                    <header class="sec-head">
-                        <h2 class="sec-head__title">نشان‌شده‌ها</h2>
-                        <a href="/bookmarks.html" class="link-btn sec-head__end">
-                            مشاهده همه
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </a>
-                    </header>
-                    <div id="bookmarksList" class="shelf-grid shelf-grid--preview">
-                        <p class="shelf-loading">در حال بارگذاری...</p>
-                    </div>
-                </section>
-
-                <section id="historySection" class="shelf shelf--preview">
-                    <header class="sec-head">
-                        <h2 class="sec-head__title">تاریخچه خواندن</h2>
-                        <a href="/history.html" class="link-btn sec-head__end">
-                            مشاهده همه
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </a>
-                    </header>
-                    <p class="note">
-                        <span class="material-symbols-outlined">info</span>
-                        فقط روی همین مرورگر ذخیره می‌شود.
-                    </p>
-                    <div id="historyList" class="shelf-grid shelf-grid--preview">
-                        <p class="shelf-loading">در حال بارگذاری...</p>
-                    </div>
-                </section>
-
-                <section id="commentsSection" class="shelf shelf--preview">
-                    <header class="sec-head">
-                        <h2 class="sec-head__title">دیدگاه‌های من</h2>
-                        <a href="/my-comments.html" class="link-btn sec-head__end">
-                            مشاهده همه
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </a>
-                    </header>
-                    <div id="commentsList" class="comments comments--preview">
-                        <p class="shelf-loading">در حال بارگذاری...</p>
-                    </div>
-                </section>
+                <!-- داده‌ی این سه بخش فقط برای شمارنده‌های نوار بالا لازم است؛ نمایش داده نمی‌شود -->
+                <div hidden aria-hidden="true">
+                    <div id="bookmarksSection"><div id="bookmarksList"></div></div>
+                    <div id="historySection"><div id="historyList"></div></div>
+                    <div id="commentsSection"><div id="commentsList"></div></div>
+                </div>
 
                 <!-- ============ تنظیمات ============ -->
                 <section class="settings">
