@@ -637,6 +637,25 @@
                             </div>
                             
                         </section>
+<script>
+/* عنکبوت فقط تا کمی پایین‌تر از وسط اسلایدر پایین می‌آید (۵۸٪ ارتفاع اسلایدر) */
+(function () {
+    function place() {
+        var sp = document.querySelector('.spider-container');
+        var sl = document.getElementById('slider');
+        if (!sp || !sl || !sp.offsetParent) return;
+        var pr = sp.offsetParent.getBoundingClientRect();
+        var sr = sl.getBoundingClientRect();
+        if (!sr.height) return;
+        sp.style.setProperty('--spider-stop', Math.round(sr.top - pr.top + sr.height * 0.58) + 'px');
+    }
+    place();
+    window.addEventListener('load', place);
+    window.addEventListener('resize', place);
+    if (window.ResizeObserver) { var s = document.getElementById('slider'); if (s) new ResizeObserver(place).observe(s); }
+})();
+</script>
+
                         <div class="dots" id="dots" aria-label="انتخاب اسلاید"></div>
 
                         <!-- نوار تب‌ها (هم‌مثل اپ) -->

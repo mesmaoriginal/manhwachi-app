@@ -1313,7 +1313,7 @@ text-align: right;   /* راست‌چین */
 
       @keyframes descend {
         100% {
-          top: 47%;
+          top: var(--spider-stop, 220px);
         }
       }
 
