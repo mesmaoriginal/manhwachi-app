@@ -7,11 +7,12 @@
     <div id="mainProfileContent" class="profile-enter">
 
         <!-- ===================== هدر پروفایل ===================== -->
-        <section class="hero">
+        <section class="hero" data-tier="free">
+            <!-- پس‌زمینه‌ی محو از روی عکس پروفایل (مثل صفحه‌ی مانهوا) -->
+            <div class="hero__backdrop" aria-hidden="true"><img id="heroBackdrop" src="" alt="" class="hidden" /></div>
             <div class="hero__glow" aria-hidden="true"></div>
 
             <div class="hero__inner">
-                <!-- عکس پروفایل با امکان آپلود / drag & drop -->
                 <div class="avatar" id="avatarDropZone">
                     <div id="avatarContainer" class="avatar__frame">
                         <span id="avatarFallback" class="material-symbols-outlined avatar__fallback">person</span>
@@ -23,7 +24,6 @@
                     </label>
                     <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" onchange="uploadAvatar(event)" />
 
-                    <!-- فقط وقتی عکسی ست شده باشه نمایش داده می‌شه -->
                     <button type="button" id="removeAvatarBtn" onclick="removeAvatar()" title="حذف عکس پروفایل" class="hidden avatar__btn avatar__btn--remove">
                         <span class="material-symbols-outlined">delete</span>
                     </button>
@@ -65,7 +65,7 @@
             </div>
         </section>
 
-        <!-- ===================== دسترسی سریع ===================== -->
+        <!-- ===================== دسترسی سریع (نوار آمار) ===================== -->
         <nav class="stats" aria-label="دسترسی سریع">
             <a href="/bookmarks.html" class="stat">
                 <span class="stat__icon stat__icon--red"><span class="material-symbols-outlined">bookmark</span></span>
@@ -74,7 +74,6 @@
                     <small id="bookmarksCountHint">مانهواهای ذخیره‌شده</small>
                 </span>
             </a>
-
             <a href="/history.html" class="stat">
                 <span class="stat__icon stat__icon--gold"><span class="material-symbols-outlined">history</span></span>
                 <span class="stat__text">
@@ -82,7 +81,6 @@
                     <small id="historyCountHint">آخرین چپترها</small>
                 </span>
             </a>
-
             <a href="/my-comments.html" class="stat">
                 <span class="stat__icon stat__icon--green"><span class="material-symbols-outlined">chat</span></span>
                 <span class="stat__text">
@@ -92,191 +90,190 @@
             </a>
         </nav>
 
-        <!-- لینک‌های مفید -->
-        <nav class="quick-links" aria-label="لینک‌های مفید">
-            <a href="/vip.html" class="qlink qlink--vip">
-                <span class="material-symbols-outlined">workspace_premium</span>
-                <span>خرید / مدیریت اشتراک</span>
-            </a>
-            <a href="/support.html" class="qlink">
-                <span class="material-symbols-outlined">support_agent</span>
-                <span>پشتیبانی</span>
-            </a>
-            <a href="/contact.html" class="qlink">
-                <span class="material-symbols-outlined">contact_support</span>
-                <span>درباره و ارتباط با ما</span>
-            </a>
-            <a href="/Careers.html" class="qlink">
-                <span class="material-symbols-outlined">work</span>
-                <span>همکاری با ما</span>
-            </a>
-        </nav>
+        <div class="layout">
 
-        <!-- ===================== اشتراک + تنظیمات ===================== -->
-        <div class="split">
+            <!-- ============ ستون کناری: اشتراک ============ -->
+            <aside class="layout__side">
+                <section class="vip-card" id="vipCard" data-tier="free">
+                    <div class="vip-card__shine" aria-hidden="true"></div>
 
-            <!-- کارت اشتراک ویژه (ظاهر و محتوا بر اساس سطح: پرمیوم / VIP / منقضی / بدون اشتراک؛ در profile.js پر می‌شود) -->
-            <section class="vip-card" id="vipCard" data-tier="free">
-                <div class="vip-card__shine" aria-hidden="true"></div>
-
-                <div class="vip-card__head">
-                    <div class="vip-card__icon">
-                        <span id="vipIcon" class="material-symbols-outlined text-zinc-500 text-3xl">workspace_premium</span>
+                    <div class="vip-card__head">
+                        <div class="vip-card__icon">
+                            <span id="vipIcon" class="material-symbols-outlined">workspace_premium</span>
+                        </div>
+                        <div class="vip-card__headtext">
+                            <h2 class="vip-card__title" id="vipTitle">اشتراک ویژه</h2>
+                            <p class="vip-card__sub" id="vipSub">وضعیت حساب شما</p>
+                        </div>
                     </div>
-                    <div class="vip-card__headtext">
-                        <h2 class="vip-card__title" id="vipTitle">اشتراک ویژه</h2>
-                        <p class="vip-card__sub" id="vipSub">وضعیت حساب شما</p>
+
+                    <div id="vipDaysWrap" class="vip-countdown hidden">
+                        <div class="vip-countdown__row">
+                            <span id="vipDaysNumber" class="vip-countdown__number">--</span>
+                            <span class="vip-countdown__label">روز تا پایان اشتراک</span>
+                        </div>
+                        <div class="vip-countdown__track">
+                            <div id="vipProgressBar" class="vip-countdown__fill" style="width: 0%;"></div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- شمارشگر روزهای باقی‌مانده -->
-                <div id="vipDaysWrap" class="vip-countdown hidden">
-                    <div class="vip-countdown__row">
-                        <span id="vipDaysNumber" class="vip-countdown__number">--</span>
-                        <span class="vip-countdown__label">روز تا پایان اشتراک</span>
-                    </div>
-                    <div class="vip-countdown__track">
-                        <div id="vipProgressBar" class="vip-countdown__fill" style="width: 0%;"></div>
-                    </div>
-                </div>
+                    <div id="vipStatusText" class="vip-card__status">در حال بررسی وضعیت اشتراک...</div>
 
-                <div id="vipStatusText" class="vip-card__status">
-                    در حال بررسی وضعیت اشتراک...
-                </div>
+                    <div id="vipPerks" class="vip-perks" aria-label="امکانات حساب شما"></div>
 
-                <!-- امکانات: فعال‌ها روشن، قفل‌ها با نشان پرمیوم -->
-                <div id="vipPerks" class="vip-perks" aria-label="امکانات حساب شما"></div>
+                    <div id="vipNote" class="vip-note hidden"></div>
 
-                <!-- پیشنهاد ارتقا / پیام قدردانی -->
-                <div id="vipNote" class="vip-note hidden"></div>
+                    <a href="/vip.html" id="vipActionBtn" class="vip-cta vip-cta--red">ارتقاء به VIP</a>
+                </section>
+            </aside>
 
-                <a href="/vip.html" id="vipActionBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs transition-all shadow-lg shadow-red-950/50 text-center block">
-                    ارتقاء به VIP
-                </a>
-            </section>
+            <!-- ============ ستون اصلی ============ -->
+            <div class="layout__main">
 
-            <!-- ستون تنظیمات -->
-            <div class="stack">
-
-                <!-- تنظیمات حساب -->
-                <section class="panel">
+                <section id="bookmarksSection" class="shelf shelf--preview">
                     <header class="sec-head">
-                        <span class="sec-head__icon"><span class="material-symbols-outlined">manage_accounts</span></span>
+                        <h2 class="sec-head__title">نشان‌شده‌ها</h2>
+                        <a href="/bookmarks.html" class="link-btn sec-head__end">
+                            مشاهده همه
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                    </header>
+                    <div id="bookmarksList" class="shelf-grid shelf-grid--preview">
+                        <p class="shelf-loading">در حال بارگذاری...</p>
+                    </div>
+                </section>
+
+                <section id="historySection" class="shelf shelf--preview">
+                    <header class="sec-head">
+                        <h2 class="sec-head__title">تاریخچه خواندن</h2>
+                        <a href="/history.html" class="link-btn sec-head__end">
+                            مشاهده همه
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                    </header>
+                    <p class="note">
+                        <span class="material-symbols-outlined">info</span>
+                        فقط روی همین مرورگر ذخیره می‌شود.
+                    </p>
+                    <div id="historyList" class="shelf-grid shelf-grid--preview">
+                        <p class="shelf-loading">در حال بارگذاری...</p>
+                    </div>
+                </section>
+
+                <section id="commentsSection" class="shelf shelf--preview">
+                    <header class="sec-head">
+                        <h2 class="sec-head__title">دیدگاه‌های من</h2>
+                        <a href="/my-comments.html" class="link-btn sec-head__end">
+                            مشاهده همه
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                    </header>
+                    <div id="commentsList" class="comments comments--preview">
+                        <p class="shelf-loading">در حال بارگذاری...</p>
+                    </div>
+                </section>
+
+                <!-- ============ تنظیمات ============ -->
+                <section class="settings">
+                    <header class="sec-head">
                         <h2 class="sec-head__title">تنظیمات حساب</h2>
                     </header>
 
-                    <form onsubmit="handleUpdateProfile(event)" class="form">
-                        <div id="msgBox" class="hidden p-3 rounded-xl text-xs"></div>
+                    <div class="settings__grid">
+                        <div class="panel">
+                            <header class="panel__head">
+                                <span class="panel__icon"><span class="material-symbols-outlined">manage_accounts</span></span>
+                                <b>اطلاعات نمایشی</b>
+                            </header>
 
-                        <div class="field">
-                            <label for="usernameInput">نام نمایشی</label>
-                            <input type="text" id="usernameInput" required class="input" placeholder="نام و نام خانوادگی" autocomplete="name" />
+                            <form onsubmit="handleUpdateProfile(event)" class="form">
+                                <div id="msgBox" class="hidden p-3 rounded-xl text-xs"></div>
+
+                                <div class="field">
+                                    <label for="usernameInput">نام نمایشی</label>
+                                    <input type="text" id="usernameInput" required class="input" placeholder="نام و نام خانوادگی" autocomplete="name" />
+                                </div>
+
+                                <div class="field">
+                                    <label for="avatarUrlInput">آدرس تصویر پروفایل <span class="field__opt">(اختیاری)</span></label>
+                                    <input type="url" id="avatarUrlInput" class="input" dir="ltr" placeholder="https://example.com/avatar.jpg" />
+                                    <span class="field__hint">می‌توانید مستقیم عکس آپلود کنید یا لینک عکس بگذارید.</span>
+                                </div>
+
+                                <div class="form__actions">
+                                    <button type="submit" id="saveBtn" class="btn btn--primary">ذخیره تغییرات</button>
+                                    <button type="button" onclick="handleLogout()" class="btn btn--ghost">
+                                        <span class="material-symbols-outlined">logout</span>
+                                        خروج
+                                    </button>
+                                </div>
+                            </form>
                         </div>
 
-                        <div class="field">
-                            <label for="avatarUrlInput">آدرس تصویر پروفایل <span class="field__opt">(اختیاری)</span></label>
-                            <input type="url" id="avatarUrlInput" class="input" dir="ltr" placeholder="https://example.com/avatar.jpg" />
-                            <span class="field__hint">می‌توانید مستقیم عکس آپلود کنید یا لینک عکس بگذارید.</span>
-                        </div>
+                        <div class="settings__stack">
+                            <details class="panel fold">
+                                <summary class="fold__summary">
+                                    <span class="panel__icon"><span class="material-symbols-outlined">lock</span></span>
+                                    <span class="fold__text">
+                                        <b>امنیت حساب</b>
+                                        <small>تغییر رمز عبور</small>
+                                    </span>
+                                    <span class="material-symbols-outlined fold__chev">expand_more</span>
+                                </summary>
 
-                        <div class="form__actions">
-                            <button type="submit" id="saveBtn" class="btn btn--primary">ذخیره تغییرات</button>
-                            <button type="button" onclick="handleLogout()" class="btn btn--ghost">
-                                <span class="material-symbols-outlined">logout</span>
-                                خروج
-                            </button>
+                                <form onsubmit="handleChangePassword(event)" class="form fold__body">
+                                    <div class="field">
+                                        <label for="newPasswordInput">رمز عبور جدید</label>
+                                        <input type="password" id="newPasswordInput" minlength="6" required autocomplete="new-password" class="input" dir="ltr" placeholder="حداقل ۶ کاراکتر" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="confirmPasswordInput">تکرار رمز عبور</label>
+                                        <input type="password" id="confirmPasswordInput" minlength="6" required autocomplete="new-password" class="input" dir="ltr" placeholder="تکرار رمز عبور" />
+                                    </div>
+                                    <button type="submit" id="changePasswordBtn" class="btn btn--outline">تغییر رمز عبور</button>
+                                </form>
+                            </details>
+
+                            <details class="panel fold" id="devicesFold">
+                                <summary class="fold__summary">
+                                    <span class="panel__icon"><span class="material-symbols-outlined">devices</span></span>
+                                    <span class="fold__text">
+                                        <b>دستگاه‌های من</b>
+                                        <small>هر حساب فقط روی ۲ دستگاه فعال می‌ماند</small>
+                                    </span>
+                                    <span class="material-symbols-outlined fold__chev">expand_more</span>
+                                </summary>
+                                <div class="fold__body">
+                                    <p class="field__hint" id="devicesHint">در حال بارگذاری...</p>
+                                    <div id="devicesList" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"></div>
+                                </div>
+                            </details>
                         </div>
-                    </form>
+                    </div>
                 </section>
 
-                <!-- امنیت حساب (جمع‌شونده) -->
-                <details class="panel fold">
-                    <summary class="fold__summary">
-                        <span class="sec-head__icon"><span class="material-symbols-outlined">lock</span></span>
-                        <span class="fold__text">
-                            <b>امنیت حساب</b>
-                            <small>تغییر رمز عبور</small>
-                        </span>
-                        <span class="material-symbols-outlined fold__chev">expand_more</span>
-                    </summary>
+                <!-- ============ لینک‌های مفید ============ -->
+                <nav class="quick-links" aria-label="لینک‌های مفید">
+                    <a href="/vip.html" class="qlink qlink--vip">
+                        <span class="material-symbols-outlined">workspace_premium</span>
+                        <span>خرید / مدیریت اشتراک</span>
+                    </a>
+                    <a href="/support.html" class="qlink">
+                        <span class="material-symbols-outlined">support_agent</span>
+                        <span>پشتیبانی</span>
+                    </a>
+                    <a href="/contact.html" class="qlink">
+                        <span class="material-symbols-outlined">contact_support</span>
+                        <span>درباره و ارتباط با ما</span>
+                    </a>
+                    <a href="/Careers.html" class="qlink">
+                        <span class="material-symbols-outlined">work</span>
+                        <span>همکاری با ما</span>
+                    </a>
+                </nav>
 
-                    <form onsubmit="handleChangePassword(event)" class="form fold__body">
-                        <div class="field">
-                            <label for="newPasswordInput">رمز عبور جدید</label>
-                            <input type="password" id="newPasswordInput" minlength="6" required autocomplete="new-password" class="input" dir="ltr" placeholder="حداقل ۶ کاراکتر" />
-                        </div>
-                        <div class="field">
-                            <label for="confirmPasswordInput">تکرار رمز عبور</label>
-                            <input type="password" id="confirmPasswordInput" minlength="6" required autocomplete="new-password" class="input" dir="ltr" placeholder="تکرار رمز عبور" />
-                        </div>
-                        <button type="submit" id="changePasswordBtn" class="btn btn--outline">تغییر رمز عبور</button>
-                    </form>
-                </details>
-
-                <!-- دستگاه‌های من (هر حساب حداکثر ۲ دستگاه) -->
-                <details class="panel fold" id="devicesFold">
-                    <summary class="fold__summary">
-                        <span class="sec-head__icon"><span class="material-symbols-outlined">devices</span></span>
-                        <span class="fold__text">
-                            <b>دستگاه‌های من</b>
-                            <small>هر حساب فقط روی ۲ دستگاه فعال می‌ماند</small>
-                        </span>
-                        <span class="material-symbols-outlined fold__chev">expand_more</span>
-                    </summary>
-                    <div class="fold__body">
-                        <p class="field__hint" id="devicesHint">در حال بارگذاری...</p>
-                        <div id="devicesList" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"></div>
-                    </div>
-                </details>
             </div>
         </div>
-
-        <!-- پیش‌نمایش فشرده + لینک به صفحه کامل (جستجو و مدیریت کامل در صفحات جدا) -->
-        <section id="bookmarksSection" class="panel shelf shelf--preview">
-            <header class="sec-head sec-head--wrap">
-                <span class="sec-head__icon"><span class="material-symbols-outlined">bookmark</span></span>
-                <h2 class="sec-head__title">نشان‌شده‌ها</h2>
-                <a href="/bookmarks.html" class="link-btn sec-head__end">
-                    مشاهده همه
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </a>
-            </header>
-            <div id="bookmarksList" class="shelf-grid shelf-grid--preview">
-                <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
-            </div>
-        </section>
-
-        <section id="historySection" class="panel shelf shelf--preview">
-            <header class="sec-head sec-head--wrap">
-                <span class="sec-head__icon"><span class="material-symbols-outlined">history</span></span>
-                <h2 class="sec-head__title">تاریخچه خواندن</h2>
-                <a href="/history.html" class="link-btn sec-head__end">
-                    مشاهده همه
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </a>
-            </header>
-            <p class="note">
-                <span class="material-symbols-outlined">info</span>
-                فقط روی همین مرورگر ذخیره می‌شود.
-            </p>
-            <div id="historyList" class="shelf-grid shelf-grid--preview">
-                <p class="col-span-full text-xs text-zinc-500">در حال بارگذاری...</p>
-            </div>
-        </section>
-
-        <section id="commentsSection" class="panel shelf shelf--preview">
-            <header class="sec-head sec-head--wrap">
-                <span class="sec-head__icon"><span class="material-symbols-outlined">chat</span></span>
-                <h2 class="sec-head__title">دیدگاه‌های من</h2>
-                <a href="/my-comments.html" class="link-btn sec-head__end">
-                    مشاهده همه
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </a>
-            </header>
-            <div id="commentsList" class="comments comments--preview">
-                <p class="text-xs text-zinc-500">در حال بارگذاری...</p>
-            </div>
-        </section>
 
     </div>
 </div>

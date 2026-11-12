@@ -1,686 +1,797 @@
 /* =====================================================================
-   ManhwaChi — Profile
-   تم: همان تم سایت و اپ (مشکی، قرمز #dc2626، وزیرمتن)، موبایل‌محور
-   نکته: همه‌ی کلاس‌هایی که profile.js می‌سازد حفظ شده‌اند
-   (shelf-item, shelf-item__remove, bubble, stamp, empty-panel,
-    vip-countdown*, toast*, is-dragover, hidden)
+   ManhwaChi — Profile (طراحی دوباره، هم‌زبان با صفحه‌ی مانهوا)
+   همان زبان بصری manga.ejs: پس‌زمینه‌ی محو، خط‌های نازک --ln، سطح‌های
+   شیشه‌ایِ rgba(255,255,255,.03)، دکمه‌ی گرادیانی قرمز، عنوان بخش با نوار قرمز،
+   لیست‌های افقیِ کارت‌ها و گوشه‌های گرد.
+   همه‌ی کلاس‌هایی که profile.js می‌سازد حفظ شده‌اند:
+   shelf-item, shelf-item__remove, bubble, stamp, empty-panel, vip-countdown*,
+   perk*, vip-cta*, vip-note, vip-status__*, toast*, is-dragover, hidden
    ===================================================================== */
 
 .profile {
-    --s0: #08080a;
-    --s1: #111114;
-    --s2: #18181c;
-    --s3: #222228;
-    --line: rgba(255, 255, 255, 0.07);
-    --line2: rgba(255, 255, 255, 0.13);
+    --ln: rgba(255, 255, 255, 0.08);
+    --ln2: rgba(255, 255, 255, 0.16);
+    --surf: rgba(255, 255, 255, 0.03);
+    --surf2: rgba(255, 255, 255, 0.06);
     --red: #dc2626;
     --red-hot: #ef4444;
-    --red-deep: #7f1d1d;
+    --red-deep: #b91c1c;
     --gold: #fbbf24;
-    --green: #34d399;
-    --text: #f4f4f5;
-    --dim: #a1a1aa;
-    --mute: #71717a;
+    --gold-soft: #f3c75f;
+    --green: #4ade80;
+    --text: #ffffff;
+    --soft: #bdb3b3;
+    --dim: #9a9a9a;
+    --mute: #7d7d7d;
 
-    max-width: 1040px;
+    max-width: 72rem;
     margin: 0 auto;
-    padding: 16px;
-    padding-bottom: 150px; /* فضای نوار پایین شناور */
-    font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding: 16px 16px 150px;
+    font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-weight: 400;
     color: var(--text);
     line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
 }
-
 .profile * { box-sizing: border-box; }
-
-/* کلاس hidden توسط JS روی خیلی از المان‌ها toggle می‌شود؛ باید همیشه برنده باشد */
 .profile .hidden { display: none !important; }
-
-.profile .mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    letter-spacing: 0.01em;
-}
-
+.profile .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.01em; }
 .profile .material-symbols-outlined { line-height: 1; }
+.profile ::selection { background: rgba(220, 38, 38, 0.45); color: #fff; }
 
-.profile .profile-enter { animation: profileEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes profileEnter {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+/* تنها حرکتِ ورودی صفحه */
+.profile .profile-enter { animation: pfIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes pfIn { from { opacity: 0; transform: translateY(12px); } }
 
-/* ===================== هدر پروفایل ===================== */
+/* ===================== هدر ===================== */
 .profile .hero {
     position: relative;
+    isolation: isolate;
     overflow: hidden;
     border-radius: 28px;
-    border: 1px solid var(--line);
-    background: var(--s1);
-    margin-bottom: 14px;
+    border: 1px solid var(--ln);
+    background: #0f0f11;
 }
-
+.profile .hero__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(#000 20%, transparent);
+    mask-image: linear-gradient(#000 20%, transparent);
+}
+.profile .hero__backdrop img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(38px) saturate(1.35);
+    opacity: 0.42;
+    transform: scale(1.4);
+}
 .profile .hero__glow {
     position: absolute;
     inset: 0;
+    z-index: -1;
     pointer-events: none;
     background:
-        radial-gradient(90% 120% at 100% 0%, rgba(220, 38, 38, 0.34), transparent 55%),
-        radial-gradient(70% 90% at 0% 110%, rgba(127, 29, 29, 0.32), transparent 60%);
+        radial-gradient(60% 90% at 100% 0%, rgba(220, 38, 38, 0.26), transparent 60%),
+        radial-gradient(50% 70% at 0% 100%, rgba(127, 29, 29, 0.28), transparent 65%);
 }
-
 .profile .hero__inner {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 22px;
+    padding: 36px 20px 30px;
     text-align: center;
-    gap: 20px;
-    padding: 32px 20px 24px;
 }
-
 .profile .hero__info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     min-width: 0;
 }
-
-.profile .hero__name-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
+.profile .hero__name-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .profile .hero__name {
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1.4;
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
     color: #fff;
     overflow-wrap: anywhere;
 }
 
-@media (min-width: 600px) {
-    .profile .hero__inner {
-        flex-direction: row;
-        text-align: start;
-        gap: 28px;
-        padding: 34px 34px 30px;
-    }
-    .profile .hero__info { align-items: flex-start; }
-    .profile .hero__name-row { justify-content: flex-start; }
-}
-
-/* --- آواتار --- */
-.profile .avatar {
-    position: relative;
-    width: 112px;
-    height: 112px;
-    flex-shrink: 0;
-}
-
-.profile .avatar::before {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: conic-gradient(from 200deg, #ef4444, #f59e0b, #dc2626, #7f1d1d, #ef4444);
-}
-
+/* --- آواتار (هم‌شکل کاور مانهوا: مربع گرد با درخششِ قرمز) --- */
+.profile .avatar { position: relative; width: 128px; height: 128px; flex-shrink: 0; }
 .profile .avatar__frame {
     position: relative;
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    background: var(--s2);
-    border: 4px solid var(--s1);
+    border-radius: 32px;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #1a1a1c;
+    border: 1px solid var(--ln2);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 30px 60px -26px #000, 0 0 70px -24px rgba(220, 38, 38, 0.55);
 }
-
-.profile .avatar__frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile .avatar__fallback {
-    font-size: 64px;
-    color: var(--red-hot);
-}
-
+.profile .avatar__frame img { width: 100%; height: 100%; object-fit: cover; }
+.profile .avatar__fallback { font-size: 64px; color: var(--red-hot); }
 .profile .avatar__btn {
     position: absolute;
-    bottom: -2px;
+    bottom: -8px;
     z-index: 2;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 3px solid var(--s1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+    border: 3px solid #0f0f11;
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition: transform 0.2s, background 0.2s;
 }
 .profile .avatar__btn .material-symbols-outlined { font-size: 18px; }
 .profile .avatar__btn:hover { transform: scale(1.1); }
-.profile .avatar__btn--edit   { inset-inline-end: -4px;   background: var(--red); color: #fff; }
+.profile .avatar__btn:active { transform: scale(0.94); }
+.profile .avatar__btn--edit { inset-inline-end: -8px; background: var(--red); color: #fff; }
 .profile .avatar__btn--edit:hover { background: var(--red-hot); }
-.profile .avatar__btn--remove { inset-inline-start: -4px; background: var(--s3); color: var(--dim); }
+.profile .avatar__btn--remove { inset-inline-start: -8px; background: #26262a; color: var(--soft); border: 3px solid #0f0f11; }
 .profile .avatar__btn--remove:hover { background: var(--red); color: #fff; }
 
-/* --- نشان اشتراک فعال --- */
+/* --- نشان اشتراک کنار نام --- */
 .profile .vip-pill {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 10px 4px 12px;
-    border-radius: 999px;
-    font-size: 11.5px;
-    font-weight: 700;
+    padding: 4px 12px 4px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--green);
-    background: rgba(52, 211, 153, 0.12);
-    border: 1px solid rgba(52, 211, 153, 0.3);
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.28);
 }
-.profile .vip-pill .material-symbols-outlined { font-size: 16px; }
+.profile .vip-pill .material-symbols-outlined { font-size: 16px; font-variation-settings: 'FILL' 1; }
+.profile .vip-pill--premium {
+    color: #2a1a00;
+    background: linear-gradient(135deg, #f8d77a, #e8b64a);
+    border-color: transparent;
+    box-shadow: 0 8px 22px -10px rgba(232, 182, 74, 0.9);
+}
 
 /* --- چیپ‌های تماس --- */
-.profile .chips {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-}
-@media (min-width: 600px) { .profile .chips { justify-content: flex-start; } }
-
+.profile .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .profile .chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--line);
-    font-size: 12px;
-    color: var(--dim);
     max-width: 100%;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--ln);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 12px;
+    color: var(--soft);
 }
 .profile .chip .material-symbols-outlined { font-size: 16px; color: var(--red-hot); }
 .profile .chip .mono { overflow: hidden; text-overflow: ellipsis; }
 
 /* --- متای عضویت --- */
-.profile .hero__meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 10px 14px;
-}
-@media (min-width: 600px) { .profile .hero__meta { justify-content: flex-start; } }
-
-.profile .meta {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 5px;
-    font-size: 12.5px;
-    color: var(--mute);
-}
+.profile .hero__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; }
+.profile .meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 13px; color: var(--dim); }
 .profile .meta .material-symbols-outlined { font-size: 17px; color: var(--red-hot); }
-.profile .meta__strong { color: var(--text); font-weight: 600; }
+.profile .meta__strong { color: #fff; font-weight: 500; }
 .profile .meta__dim { color: var(--mute); }
-
 .profile .id-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px dashed var(--line2);
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1px dashed var(--ln2);
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
     font-size: 12.5px;
-    font-weight: 700;
-    color: var(--text);
     cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color 0.2s, color 0.2s;
 }
-.profile .id-pill .material-symbols-outlined { font-size: 15px; opacity: 0.6; }
+.profile .id-pill .material-symbols-outlined { font-size: 15px; opacity: 0.55; }
 .profile .id-pill:hover { border-color: var(--red); color: #fca5a5; }
 
-/* ===================== دسترسی سریع ===================== */
+/* ===== رنگ هدر بر اساس سطح اشتراک ===== */
+.profile .hero[data-tier="premium"] { border-color: rgba(232, 182, 74, 0.35); }
+.profile .hero[data-tier="premium"] .hero__glow {
+    background:
+        radial-gradient(60% 90% at 100% 0%, rgba(243, 199, 95, 0.24), transparent 60%),
+        radial-gradient(50% 70% at 0% 100%, rgba(185, 130, 42, 0.22), transparent 65%);
+}
+.profile .hero[data-tier="premium"] .avatar__frame {
+    border-color: rgba(243, 199, 95, 0.6);
+    box-shadow: 0 30px 60px -26px #000, 0 0 80px -20px rgba(243, 199, 95, 0.6);
+}
+.profile .hero[data-tier="premium"] .hero__name {
+    background: linear-gradient(90deg, #fff, #f3c75f 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.profile .hero[data-tier="vip"] { border-color: rgba(74, 222, 128, 0.22); }
+.profile .hero[data-tier="vip"] .hero__glow {
+    background:
+        radial-gradient(60% 90% at 100% 0%, rgba(74, 222, 128, 0.16), transparent 60%),
+        radial-gradient(50% 70% at 0% 100%, rgba(127, 29, 29, 0.24), transparent 65%);
+}
+.profile .hero[data-tier="vip"] .avatar__frame { border-color: rgba(74, 222, 128, 0.5); }
+
+/* ===================== نوار آمار / دسترسی سریع ===================== */
 .profile .stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 14px;
+    margin: 14px 0 0;
+    border: 1px solid var(--ln);
+    border-radius: 20px;
+    background: var(--surf);
+    overflow: hidden;
 }
-
 .profile .stat {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px 12px;
-    border-radius: 20px;
-    background: var(--s1);
-    border: 1px solid var(--line);
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    text-align: center;
+    color: inherit;
     text-decoration: none;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: background 0.25s;
 }
-.profile .stat:hover { border-color: rgba(220, 38, 38, 0.45); background: var(--s2); }
-.profile .stat:active { background: var(--s2); }
-
+.profile .stat + .stat { border-inline-start: 1px solid var(--ln); }
+.profile .stat:hover { background: var(--surf2); }
+.profile .stat:active { background: rgba(220, 38, 38, 0.1); }
 .profile .stat__icon {
     width: 40px;
     height: 40px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.profile .stat__icon--red   { background: rgba(220, 38, 38, 0.14);  color: #f87171; }
-.profile .stat__icon--gold  { background: rgba(251, 191, 36, 0.14); color: var(--gold); }
-.profile .stat__icon--green { background: rgba(52, 211, 153, 0.14); color: var(--green); }
-
-.profile .stat__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.profile .stat__text b { font-size: 12.5px; font-weight: 700; color: var(--text); }
-.profile .stat__text small { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
-
-@media (min-width: 640px) {
-    .profile .stat { flex-direction: row; align-items: center; gap: 14px; padding: 16px; }
-    .profile .stat__text b { font-size: 13.5px; }
-}
-
-/* ===================== چیدمان دو ستونه ===================== */
-.profile .split {
+    border-radius: 13px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-    margin-bottom: 14px;
-}
-@media (min-width: 900px) {
-    .profile .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
-}
-.profile .stack { display: flex; flex-direction: column; gap: 14px; }
-
-/* ===================== پنل پایه ===================== */
-.profile .panel {
-    background: var(--s1);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    padding: 22px;
-}
-
-.profile .shelf { margin-bottom: 14px; }
-.profile .shelf:last-child { margin-bottom: 0; }
-
-.profile .sec-head {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 18px;
-}
-.profile .sec-head--wrap { flex-wrap: wrap; }
-.profile .sec-head__end { margin-inline-start: auto; }
-
-.profile .sec-head__icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: rgba(220, 38, 38, 0.14);
-    color: #f87171;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    place-items: center;
     flex-shrink: 0;
 }
-.profile .sec-head__icon .material-symbols-outlined { font-size: 20px; }
-.profile .sec-head__title { font-size: 15px; font-weight: 700; color: #fff; }
+.profile .stat__icon .material-symbols-outlined { font-size: 22px; }
+.profile .stat__icon--red   { background: rgba(220, 38, 38, 0.14); color: #f87171; }
+.profile .stat__icon--gold  { background: rgba(251, 191, 36, 0.13); color: var(--gold); }
+.profile .stat__icon--green { background: rgba(74, 222, 128, 0.12); color: var(--green); }
+.profile .stat__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.profile .stat__text b { font-size: 12.5px; font-weight: 500; color: #fff; }
+.profile .stat__text small { font-size: 11px; color: var(--dim); line-height: 1.6; }
+.profile .stat__text small .font-bold { font-weight: 600; }
 
-/* ===================== کارت اشتراک ویژه ===================== */
-.profile .vip-card {
+/* ===================== چیدمان ===================== */
+.profile .layout { display: flex; flex-direction: column; gap: 36px; margin-top: 32px; }
+.profile .layout__main { display: flex; flex-direction: column; gap: 40px; min-width: 0; }
+.profile .layout__side { min-width: 0; }
+
+/* ===================== عنوان بخش (نوار قرمز مثل صفحه‌ی مانهوا) ===================== */
+.profile .sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.profile .sec-head__title {
     position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    padding: 22px;
-    border-radius: 24px;
-    border: 1px solid rgba(251, 191, 36, 0.2);
-    background:
-        radial-gradient(120% 80% at 100% 0%, rgba(251, 191, 36, 0.13), transparent 55%),
-        linear-gradient(170deg, #260f0f 0%, var(--s1) 65%);
-}
-
-.profile .vip-card__head { display: flex; align-items: center; gap: 12px; }
-
-.profile .vip-card__icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--line);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.profile .vip-card__title { font-size: 16px; font-weight: 800; color: #fff; }
-.profile .vip-card__sub { font-size: 12px; color: var(--mute); margin-top: 1px; }
-.profile .vip-card__status { font-size: 12.5px; line-height: 1.9; color: var(--dim); }
-
-/* شمارشگر روزهای باقی‌مانده */
-.profile .vip-countdown__row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
-.profile .vip-countdown__number {
-    font-size: 40px;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-}
-.profile .vip-countdown__label { font-size: 12px; color: var(--dim); }
-
-.profile .vip-countdown__track {
-    width: 100%;
-    height: 8px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-}
-.profile .vip-countdown__fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #34d399, #10b981);
-    transition: width 0.4s ease;
-}
-
-.profile .vip-countdown.is-warning .vip-countdown__number { color: var(--gold); }
-.profile .vip-countdown.is-warning .vip-countdown__fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-
-.profile .vip-countdown.is-critical .vip-countdown__number { color: var(--red-hot); }
-.profile .vip-countdown.is-critical .vip-countdown__fill {
-    background: linear-gradient(90deg, #dc2626, #b91c1c);
-    animation: vipPulse 1.6s ease-in-out infinite;
-}
-@keyframes vipPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
-
-/* ===================== فرم‌ها ===================== */
-.profile .form { display: flex; flex-direction: column; gap: 16px; }
-.profile .field { display: flex; flex-direction: column; gap: 7px; }
-.profile .field label { font-size: 12.5px; font-weight: 600; color: var(--dim); }
-.profile .field__opt { color: var(--mute); font-weight: 400; }
-.profile .field__hint { font-size: 11.5px; color: var(--mute); }
-
-.profile .input {
-    width: 100%;
-    height: 48px;
-    padding: 0 14px;
-    border-radius: 14px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--line2);
-    color: var(--text);
-    font: inherit;
-    font-size: 14px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.profile .input::placeholder { color: #52525b; }
-.profile .input:focus {
-    outline: none;
-    border-color: var(--red);
-    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
-}
-.profile .input[dir="ltr"] { text-align: left; }
-
-.profile .form__actions { display: flex; gap: 10px; margin-top: 4px; }
-
-.profile .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    height: 48px;
-    padding: 0 22px;
-    border-radius: 14px;
-    border: 1px solid transparent;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: filter 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
-}
-.profile .btn .material-symbols-outlined { font-size: 18px; }
-.profile .btn:active { transform: scale(0.98); }
-.profile .btn:disabled { opacity: 0.6; cursor: wait; }
-
-.profile .btn--primary {
-    flex: 1;
+    margin: 0;
+    padding-inline-start: 14px;
+    font-size: 18px;
+    font-weight: 600;
     color: #fff;
-    background: linear-gradient(90deg, #dc2626, #b91c1c);
-    box-shadow: 0 8px 22px rgba(127, 29, 29, 0.45);
 }
-.profile .btn--primary:hover { filter: brightness(1.12); }
-
-.profile .btn--ghost {
-    color: var(--dim);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--line2);
+.profile .sec-head__title::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    width: 4px;
+    height: 20px;
+    transform: translateY(-50%);
+    border-radius: 4px;
+    background: linear-gradient(#ef4444, #b91c1c);
 }
-.profile .btn--ghost:hover { color: #fff; background: rgba(255, 255, 255, 0.09); }
-
-.profile .btn--outline {
-    color: var(--text);
-    background: rgba(255, 255, 255, 0.04);
-    border-color: var(--line2);
-}
-.profile .btn--outline:hover { background: var(--red); border-color: var(--red); color: #fff; }
-
-/* ===================== امنیت حساب (جمع‌شونده) ===================== */
-.profile .fold { padding: 0; }
-
-.profile .fold__summary {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 18px 22px;
-    cursor: pointer;
-    list-style: none;
-    border-radius: 24px;
-}
-.profile .fold__summary::-webkit-details-marker { display: none; }
-
-.profile .fold__text { display: flex; flex-direction: column; gap: 1px; flex: 1; }
-.profile .fold__text b { font-size: 15px; font-weight: 700; color: #fff; }
-.profile .fold__text small { font-size: 12px; color: var(--mute); }
-
-.profile .fold__chev { color: var(--mute); transition: transform 0.2s ease; }
-.profile .fold[open] .fold__chev { transform: rotate(180deg); }
-
-.profile .fold__body {
-    padding: 18px 22px 22px;
-    border-top: 1px solid var(--line);
-}
-
-/* ===================== قفسه‌ها (بوکمارک و تاریخچه) ===================== */
-.profile .note {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 14px;
-    font-size: 12px;
-    line-height: 1.8;
-    color: var(--mute);
-}
-.profile .note .material-symbols-outlined { font-size: 16px; margin-top: 3px; }
-
+.profile .sec-head__end { margin-inline-start: auto; }
 .profile .link-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--mute);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.15s ease;
+    gap: 2px;
+    font-size: 13px;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color 0.2s;
 }
-.profile .link-btn .material-symbols-outlined { font-size: 18px; }
-.profile .link-btn:hover { color: var(--red-hot); }
+.profile .link-btn .material-symbols-outlined { font-size: 19px; }
+.profile .link-btn:hover { color: #fff; }
 
-.profile .shelf-search {
+.profile .note {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 100%;
-    max-width: 240px;
-    height: 40px;
-    padding: 0 12px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--line);
-    color: var(--mute);
+    margin: -4px 0 14px;
+    padding: 9px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: rgba(245, 158, 11, 0.08);
+    font-size: 12.5px;
+    color: var(--gold);
 }
-.profile .shelf-search--block { max-width: none; margin-bottom: 16px; }
-.profile .shelf-search .material-symbols-outlined { font-size: 18px; }
-.profile .shelf-search:focus-within { border-color: rgba(220, 38, 38, 0.6); }
-.profile .shelf-search input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-}
-.profile .shelf-search input::placeholder { color: var(--mute); }
+.profile .note .material-symbols-outlined { font-size: 18px; }
 
+/* ===================== قفسه‌ها: ردیف افقی کارت‌ها ===================== */
+.profile .shelf-loading { margin: 0; font-size: 13px; color: var(--mute); }
 .profile .shelf-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 14px;
 }
+.profile .shelf-grid--preview {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 6px 2px 18px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+}
+.profile .shelf-grid--preview::-webkit-scrollbar { display: none; }
+.profile .shelf-grid--preview > .empty-panel,
+.profile .shelf-grid--preview > .shelf-loading { flex: 1 0 100%; }
 
 .profile .shelf-item {
     position: relative;
+    flex: none;
+    width: 148px;
     overflow: hidden;
-    border-radius: 16px;
-    background: var(--s2);
-    border: 1px solid var(--line);
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    scroll-snap-align: start;
+    border-radius: 18px;
+    background: #1a1a1a;
+    border: 1px solid var(--ln);
+    box-shadow: 0 16px 34px -22px #000;
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
 }
+.profile .shelf-item > a { display: block; aspect-ratio: 3 / 4.2; }
+.profile .shelf-item img { object-position: top; transition: transform 0.6s ease; }
 .profile .shelf-item:hover {
-    transform: translateY(-3px);
-    border-color: rgba(220, 38, 38, 0.5);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5);
+    transform: translateY(-6px);
+    border-color: rgba(220, 38, 38, 0.55);
+    box-shadow: 0 26px 44px -20px rgba(220, 38, 38, 0.45);
 }
-.profile .shelf-item img { transition: transform 0.4s ease; }
-.profile .shelf-item:hover img { transform: scale(1.06); }
-
-/* نوار عنوان روی کاور (ساخته‌شده توسط JS) */
-.profile .shelf-item > div { padding: 28px 10px 10px; pointer-events: none; }
-.profile .shelf-item > div p:first-child { font-size: 12px; }
-
+.profile .shelf-item:hover img { transform: scale(1.08); }
+.profile .shelf-item > div:not(.shelf-item__remove) { padding: 40px 12px 12px; pointer-events: none; }
+.profile .shelf-item > div p:first-child { font-size: 13px; font-weight: 600; }
 .profile .shelf-item__remove {
     position: absolute;
     top: 8px;
     inset-inline-start: 8px;
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 9px;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(6px);
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.62);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s ease, background 0.15s ease;
+    transition: opacity 0.2s, background 0.2s;
 }
 .profile .shelf-item:hover .shelf-item__remove,
 .profile .shelf-item__remove:focus-visible { opacity: 1; }
 .profile .shelf-item__remove:hover { background: var(--red); }
 @media (hover: none) { .profile .shelf-item__remove { opacity: 1; } }
 
+/* جستجوی داخل قفسه (در صورت استفاده) */
+.profile .shelf-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 320px;
+    padding: 0 14px;
+    min-height: 44px;
+    border-radius: 14px;
+    border: 1px solid var(--ln);
+    background: var(--surf);
+    transition: border-color 0.2s;
+}
+.profile .shelf-search--block { max-width: none; margin-bottom: 16px; }
+.profile .shelf-search .material-symbols-outlined { font-size: 18px; color: var(--dim); }
+.profile .shelf-search:focus-within { border-color: rgba(220, 38, 38, 0.6); }
+.profile .shelf-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; font-size: 14px; }
+.profile .shelf-search input::placeholder { color: var(--mute); }
+
 /* ===================== دیدگاه‌ها ===================== */
 .profile .comments { display: flex; flex-direction: column; gap: 12px; }
+.profile .comments--preview {
+    max-height: 300px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent);
+    mask-image: linear-gradient(to bottom, #000 62%, transparent);
+}
+.profile .comments--preview:has(.empty-panel) { max-height: none; -webkit-mask-image: none; mask-image: none; }
 
 .profile .bubble {
     position: relative;
-    background: var(--s2);
-    border: 1px solid var(--line);
+    padding: 16px 20px;
     border-radius: 18px;
-    padding: 16px 18px;
-    padding-inline-start: 22px;
-    transition: border-color 0.15s ease;
+    border: 1px solid var(--ln);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+    transition: border-color 0.25s, box-shadow 0.25s;
 }
 .profile .bubble::before {
     content: "";
     position: absolute;
-    inset-block: 14px;
+    inset-block: 16px;
     inset-inline-start: 0;
     width: 3px;
     border-radius: 3px;
-    background: var(--red);
-    opacity: 0.8;
+    background: linear-gradient(#ef4444, #b91c1c);
 }
-.profile .bubble:hover { border-color: var(--line2); }
-.profile .bubble p { font-size: 13px !important; line-height: 1.9; }
-
+.profile .bubble:hover { border-color: rgba(220, 38, 38, 0.4); box-shadow: 0 14px 30px -22px rgba(220, 38, 38, 0.6); }
+.profile .bubble p { font-size: 13.5px !important; line-height: 1.95; color: var(--soft) !important; }
 .profile .stamp {
     display: inline-flex;
     align-items: center;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 11.5px;
+    font-weight: 500;
 }
-.profile .stamp--ok   { color: var(--green); background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); }
-.profile .stamp--wait { color: var(--gold);  background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); }
+.profile .stamp--ok   { color: var(--green); background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.25); }
+.profile .stamp--wait { color: var(--gold);  background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.25); }
 
 /* ===================== حالت خالی ===================== */
 .profile .empty-panel {
-    padding: 32px 20px;
+    padding: 34px 20px;
     text-align: center;
-    border: 1px dashed var(--line2);
-    border-radius: 18px;
-    color: var(--mute);
-    font-size: 13px;
+    border: 1px dashed var(--ln2);
+    border-radius: 20px;
+    background: var(--surf);
+    color: var(--dim);
+    font-size: 13.5px;
     line-height: 2;
 }
 
+/* ===================== کارت اشتراک ===================== */
+.profile .vip-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 22px 20px 20px;
+    border-radius: 26px;
+    border: 1px solid var(--ln);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+}
+.profile .vip-card::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: 320px;
+    height: 320px;
+    top: -170px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: var(--red);
+    opacity: 0.16;
+    filter: blur(90px);
+    pointer-events: none;
+}
+.profile .vip-card__shine { display: none; }
+.profile .vip-card__head { display: flex; align-items: center; gap: 14px; }
+.profile .vip-card__icon {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 17px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--ln);
+}
+.profile .vip-card__icon .material-symbols-outlined { font-size: 30px; color: var(--dim); }
+.profile .vip-card__icon .text-red-500 { color: var(--red-hot); }
+.profile .vip-card__headtext { flex: 1; min-width: 0; }
+.profile .vip-card__title { margin: 0; font-size: 17px; font-weight: 600; color: #fff; }
+.profile .vip-card__sub { margin: 2px 0 0; font-size: 12.5px; color: var(--dim); }
+.profile .vip-card__status { font-size: 13px; line-height: 1.95; color: var(--soft); }
+.profile .vip-icon--gold  { color: var(--gold-soft) !important; font-variation-settings: 'FILL' 1; text-shadow: 0 0 18px rgba(243, 199, 95, 0.55); }
+.profile .vip-icon--green { color: var(--green) !important; font-variation-settings: 'FILL' 1; }
+
+.profile .vip-status__line { display: block; }
+.profile .vip-status__line b { color: #fff; font-weight: 500; }
+.profile .vip-status__nudge {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--gold);
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.22);
+}
+.profile .vip-status__nudge.is-critical { color: #fca5a5; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+
+/* شمارشگر روزها */
+.profile .vip-countdown { padding: 16px; border-radius: 18px; border: 1px solid var(--ln); background: rgba(0, 0, 0, 0.25); }
+.profile .vip-countdown__row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+.profile .vip-countdown__number { font-size: 40px; font-weight: 600; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
+.profile .vip-countdown__label { font-size: 12.5px; color: var(--dim); }
+.profile .vip-countdown__track { height: 7px; border-radius: 99px; overflow: hidden; background: rgba(255, 255, 255, 0.07); }
+.profile .vip-countdown__fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #22c55e, #4ade80); transition: width 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.profile .vip-countdown.is-warning .vip-countdown__number { color: var(--gold); }
+.profile .vip-countdown.is-warning .vip-countdown__fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.profile .vip-countdown.is-critical .vip-countdown__number { color: var(--red-hot); }
+.profile .vip-countdown.is-critical .vip-countdown__fill { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+
+/* امکانات */
+.profile .vip-perks { display: flex; flex-direction: column; gap: 8px; }
+.profile .perk {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--ln);
+    background: rgba(255, 255, 255, 0.025);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.25s, border-color 0.25s, opacity 0.25s;
+}
+.profile a.perk:hover { background: var(--surf2); border-color: var(--ln2); }
+.profile a.perk:active { transform: scale(0.985); }
+.profile .perk__icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--dim);
+}
+.profile .perk__icon .material-symbols-outlined { font-size: 20px; }
+.profile .perk__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.profile .perk__text b { font-size: 13px; font-weight: 500; color: #fff; }
+.profile .perk__text small { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
+.profile .perk__state {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.profile .perk__state .material-symbols-outlined { font-size: 14px; }
+.profile .perk__state--on   { color: var(--green); background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.25); }
+.profile .perk__state--lock { color: var(--gold-soft); background: rgba(232, 182, 74, 0.1); border: 1px solid rgba(232, 182, 74, 0.25); }
+.profile .perk.is-locked { opacity: 0.6; }
+.profile .perk.is-locked:hover { opacity: 0.95; }
+.profile .perk.is-on .perk__icon { color: var(--green); background: rgba(74, 222, 128, 0.12); }
+
+.profile .vip-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 14px;
+    border: 1px dashed rgba(232, 182, 74, 0.35);
+    background: rgba(232, 182, 74, 0.06);
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: var(--soft);
+}
+.profile .vip-note .material-symbols-outlined { flex-shrink: 0; margin-top: 4px; font-size: 18px; color: var(--gold-soft); }
+.profile .vip-note b { color: var(--gold-soft); font-weight: 600; }
+
+/* دکمه‌ی اقدام (هم‌شکل #readBtn صفحه‌ی مانهوا) */
+.profile .vip-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    border-radius: 14px;
+    border: 0;
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: transform 0.2s, filter 0.2s;
+}
+.profile .vip-cta:hover { filter: brightness(1.1); }
+.profile .vip-cta:active { transform: scale(0.97); }
+.profile .vip-cta--red {
+    background: linear-gradient(135deg, #ef4444, #dc2626 60%, #b91c1c);
+    box-shadow: 0 14px 30px -12px rgba(220, 38, 38, 0.75);
+}
+.profile .vip-cta--gold {
+    color: #2a1a00;
+    font-weight: 600;
+    background: linear-gradient(135deg, #f8d77a, #e8b64a 60%, #b9822a);
+    box-shadow: 0 14px 30px -12px rgba(232, 182, 74, 0.7);
+}
+.profile .vip-cta--green {
+    color: #052e16;
+    font-weight: 600;
+    background: linear-gradient(135deg, #86efac, #4ade80 60%, #22c55e);
+    box-shadow: 0 14px 30px -12px rgba(74, 222, 128, 0.55);
+}
+
+/* سطح‌ها */
+.profile .vip-card[data-tier="premium"] { border-color: rgba(232, 182, 74, 0.4); background: linear-gradient(160deg, rgba(232, 182, 74, 0.12), rgba(255, 255, 255, 0.015) 60%); }
+.profile .vip-card[data-tier="premium"]::before { background: #e8b64a; opacity: 0.22; }
+.profile .vip-card[data-tier="premium"] .vip-card__icon { background: rgba(232, 182, 74, 0.14); border-color: rgba(232, 182, 74, 0.4); }
+.profile .vip-card[data-tier="premium"] .vip-card__title {
+    background: linear-gradient(90deg, #fff, #f3c75f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.profile .vip-card[data-tier="premium"] .vip-countdown__number { color: var(--gold-soft); }
+.profile .vip-card[data-tier="premium"] .vip-countdown.is-safe .vip-countdown__fill { background: linear-gradient(90deg, #b9822a, #f3c75f); }
+.profile .vip-card[data-tier="premium"] .perk.is-on { border-color: rgba(232, 182, 74, 0.28); background: rgba(232, 182, 74, 0.06); }
+.profile .vip-card[data-tier="premium"] .perk.is-on .perk__icon { color: #2a1a00; background: linear-gradient(135deg, #f8d77a, #e8b64a); }
+.profile .vip-card[data-tier="premium"] .vip-note { border-style: solid; border-color: rgba(232, 182, 74, 0.3); }
+.profile .vip-card[data-tier="vip"] { border-color: rgba(74, 222, 128, 0.28); }
+.profile .vip-card[data-tier="vip"]::before { background: #22c55e; opacity: 0.16; }
+.profile .vip-card[data-tier="vip"] .vip-card__icon { background: rgba(74, 222, 128, 0.12); border-color: rgba(74, 222, 128, 0.3); }
+.profile .vip-card[data-tier="vip"] .perk.is-on { border-color: rgba(74, 222, 128, 0.25); background: rgba(74, 222, 128, 0.05); }
+.profile .vip-card[data-tier="expired"] { border-color: rgba(220, 38, 38, 0.3); }
+
+/* ===================== تنظیمات ===================== */
+.profile .settings__grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.profile .settings__stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.profile .panel {
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid var(--ln);
+    background: var(--surf);
+}
+.profile .panel__head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.profile .panel__head b { font-size: 15px; font-weight: 600; color: #fff; }
+.profile .panel__icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(220, 38, 38, 0.13);
+    color: #f87171;
+}
+.profile .panel__icon .material-symbols-outlined { font-size: 20px; }
+
+.profile .form { display: flex; flex-direction: column; gap: 16px; }
+.profile .field { display: flex; flex-direction: column; gap: 7px; }
+.profile .field label { font-size: 13px; font-weight: 500; color: var(--soft); }
+.profile .field__opt { color: var(--mute); font-weight: 400; }
+.profile .field__hint { margin: 0; font-size: 12px; color: var(--mute); line-height: 1.9; }
+.profile .input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1px solid var(--ln);
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    outline: 0;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.profile .input::placeholder { color: #55555b; }
+.profile .input:focus { border-color: rgba(220, 38, 38, 0.65); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14); }
+.profile .input[dir="ltr"] { text-align: left; }
+
+.profile .form__actions { display: flex; gap: 10px; margin-top: 4px; }
+.profile .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.2s, filter 0.2s, background 0.2s, border-color 0.2s, color 0.2s;
+}
+.profile .btn .material-symbols-outlined { font-size: 18px; }
+.profile .btn:active { transform: scale(0.97); }
+.profile .btn:disabled { opacity: 0.6; cursor: wait; }
+.profile .btn--primary {
+    flex: 1;
+    color: #fff;
+    background: linear-gradient(135deg, #ef4444, #dc2626 60%, #b91c1c);
+    box-shadow: 0 14px 30px -14px rgba(220, 38, 38, 0.75);
+}
+.profile .btn--primary:hover { filter: brightness(1.1); }
+.profile .btn--ghost { color: var(--soft); background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.14); }
+.profile .btn--ghost:hover { color: #fff; border-color: rgba(255, 255, 255, 0.35); }
+.profile .btn--outline { color: #fff; background: transparent; border-color: var(--ln2); }
+.profile .btn--outline:hover { background: var(--red); border-color: var(--red); }
+
+/* بخش‌های جمع‌شونده */
+.profile .fold { padding: 0; overflow: hidden; }
+.profile .fold__summary { display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; list-style: none; }
+.profile .fold__summary::-webkit-details-marker { display: none; }
+.profile .fold__text { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.profile .fold__text b { font-size: 15px; font-weight: 600; color: #fff; }
+.profile .fold__text small { font-size: 12px; color: var(--dim); }
+.profile .fold__chev { color: #ef4444; transition: transform 0.25s; }
+.profile .fold[open] .fold__chev { transform: rotate(180deg); }
+.profile .fold[open] .fold__summary { border-bottom: 1px solid var(--ln); }
+.profile .fold__body { padding: 18px; }
+
+.profile #msgBox { line-height: 1.8; }
+.profile #devicesList > div {
+    border-radius: 16px !important;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+.profile #devicesList .btn { height: 38px; padding: 0 14px; font-size: 12.5px; }
+
+/* ===================== لینک‌های مفید ===================== */
+.profile .quick-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.profile .qlink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--ln);
+    background: var(--surf);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: background 0.25s, border-color 0.25s, transform 0.2s;
+}
+.profile .qlink .material-symbols-outlined { font-size: 22px; color: var(--dim); transition: color 0.25s; }
+.profile .qlink:hover { background: var(--surf2); border-color: rgba(220, 38, 38, 0.45); }
+.profile .qlink:hover .material-symbols-outlined { color: var(--red-hot); }
+.profile .qlink:active { transform: scale(0.98); }
+.profile .qlink--vip { border-color: rgba(251, 191, 36, 0.28); background: linear-gradient(135deg, rgba(251, 191, 36, 0.09), var(--surf)); }
+.profile .qlink--vip .material-symbols-outlined { color: var(--gold); }
+
 /* ===================== drag & drop آواتار ===================== */
-.profile #avatarDropZone.is-dragover::before { filter: brightness(1.4); }
+.profile #avatarDropZone.is-dragover .avatar__frame { border-color: var(--red-hot); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.3), 0 0 70px -10px rgba(220, 38, 38, 0.8); }
 .profile #avatarDropZone.is-dragover::after {
     content: "رها کن";
     position: absolute;
     inset: 0;
     z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border-radius: 32px;
     background: rgba(8, 8, 10, 0.78);
     color: var(--gold);
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 600;
     pointer-events: none;
 }
-
-/* ===================== پیام فرم (msgBox) ===================== */
-.profile #msgBox { line-height: 1.8; }
 
 /* ===================== toast ===================== */
 .profile .toast-container {
     position: fixed;
     inset-inline: 16px;
-    bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* بالاتر از نوار پایین */
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     z-index: 200;
     display: flex;
     flex-direction: column;
@@ -688,21 +799,22 @@
     gap: 10px;
     pointer-events: none;
 }
-
 .profile .toast {
     width: max-content;
     max-width: min(360px, 100%);
     padding: 12px 16px;
     border-radius: 14px;
-    background: var(--s2);
-    border: 1px solid var(--line2);
+    border: 1px solid var(--ln2);
     border-inline-start: 3px solid var(--mute);
+    background: rgba(24, 24, 27, 0.92);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     font-size: 13px;
-    color: var(--text);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    color: #fff;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
     opacity: 0;
     transform: translateY(8px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.25s, transform 0.25s;
 }
 .profile .toast.is-visible { opacity: 1; transform: translateY(0); }
 .profile .toast--success { border-inline-start-color: var(--green); }
@@ -714,652 +826,63 @@
 .profile button:focus-visible,
 .profile input:focus-visible,
 .profile summary:focus-visible,
-.profile label:focus-visible {
-    outline: 2px solid var(--red-hot);
-    outline-offset: 2px;
-}
+.profile label:focus-visible { outline: 2px solid var(--red-hot); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-    .profile * { transition: none !important; animation: none !important; }
+    .profile *, .profile *::before, .profile *::after { animation: none !important; transition: none !important; }
 }
 
-/* ==========================================================================
-   DESKTOP ONLY (>=1024px) — پروفایل (نسخه‌ی جمع‌وجور)  |  موبایل/تبلت دست‌نخورده
-   ========================================================================== */
-@media (min-width: 1024px) {
-
-  .profile { max-width: 1520px; padding: 24px clamp(20px, 2.5vw, 48px) 60px; }
-
-  .profile #mainProfileContent {
-    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 16px; align-items: stretch;
-  }
-  .profile .split { display: contents; }
-
-  .profile .hero             { grid-column: 1 / 9;  grid-row: 1; margin: 0; }
-  .profile .vip-card         { grid-column: 9 / 13; grid-row: 1; }
-  .profile .stats            { grid-column: 1 / -1; grid-row: 2; margin: 0; }
-  .profile .stack            { grid-column: 9 / 13; grid-row: 3 / 5; align-self: start;
-                               position: sticky; top: 80px; gap: 16px; }
-  .profile #bookmarksSection { grid-column: 1 / 9;  grid-row: 3; margin: 0; }
-  .profile #historySection   { grid-column: 1 / 9;  grid-row: 4; margin: 0; }
-  .profile #commentsSection  { grid-column: 1 / -1; grid-row: 5; margin: 0; }
-
-  /* ---------- هدر ---------- */
-  .profile .hero { border-radius: 26px; display: flex; }
-  .profile .hero::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
-    background-size: 20px 20px;
-    -webkit-mask-image: linear-gradient(to left, #000, transparent 70%);
-            mask-image: linear-gradient(to left, #000, transparent 70%);
-  }
-  .profile .hero__inner { width: 100%; align-items: center; padding: 28px 36px; gap: 28px; z-index: 1; }
-  .profile .avatar { width: 120px; height: 120px; }
-  .profile .avatar__btn { width: 34px; height: 34px; }
-  .profile .hero__info { gap: 10px; }
-  .profile .hero__name { font-size: 26px; }
-
-  /* ---------- کارت اشتراک ---------- */
-  .profile .vip-card {
-    display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
-    padding: 24px; border-radius: 26px;
-    background:
-      radial-gradient(110% 80% at 100% 0%, rgba(220,38,38,.28), transparent 60%),
-      linear-gradient(180deg, var(--s1), #0b0b0e);
-  }
-  .profile .vip-card__icon { width: 52px; height: 52px; }
-  .profile .vip-countdown__number { font-size: 42px; line-height: 1; }
-
-  /* ---------- دسترسی سریع ---------- */
-  .profile .stats { gap: 16px; }
-  .profile .stat {
-    position: relative; padding: 16px 22px; gap: 16px; border-radius: 22px;
-    background: linear-gradient(135deg, var(--s2), var(--s1));
-    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-  }
-  .profile .stat::after {
-    content: "‹"; margin-inline-start: auto; font-size: 26px; line-height: 1;
-    color: var(--mute); transition: transform .25s ease, color .25s ease;
-  }
-  .profile .stat:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.5); }
-  .profile .stat:hover::after { color: var(--red-hot); transform: translateX(-5px); }
-  .profile .stat__icon { width: 46px; height: 46px; border-radius: 16px; }
-  .profile .stat__icon .material-symbols-outlined { font-size: 24px; }
-
-  /* ---------- پنل‌ها ---------- */
-  .profile .panel { border-radius: 24px; padding: 22px; background: linear-gradient(180deg, var(--s1), #0c0c0f); }
-  .profile .fold { padding: 0; }
-  .profile .sec-head { margin-bottom: 18px; }
-
-  /* ---------- قفسه‌ها و دیدگاه‌ها ---------- */
-  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 14px; }
-  .profile .shelf-item { border-radius: 16px; }
-  .profile .comments { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-}
-
-/* ==========================================================================
-   DESKTOP POLISH (>=1024px) — پروفایل | موبایل/تبلت دست‌نخورده
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .profile { max-width: 1560px; }
-
-  .profile .hero { min-height: 210px; }
-  .profile .hero::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(100deg, transparent 45%, rgba(220,38,38,.12));
-  }
-  .profile .hero__inner { padding: 36px 48px; gap: 36px; }
-  .profile .avatar { width: 140px; height: 140px; }
-  .profile .hero__name { font-size: 32px; }
-
-  .profile .sec-head__title { font-size: 18px; font-weight: 800; }
-  .profile .panel { transition: border-color .3s ease, box-shadow .3s ease; }
-  .profile .panel:hover { border-color: var(--line2); box-shadow: 0 18px 36px -20px rgba(0,0,0,.9); }
-
-  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
-  .profile .shelf-item {
-    border: 1px solid var(--line);
-    box-shadow: 0 12px 24px -14px rgba(0,0,0,.9);
-    transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease;
-  }
-  .profile .shelf-item:hover {
-    transform: translateY(-6px); border-color: rgba(239,68,68,.55);
-    box-shadow: 0 22px 38px -12px rgba(220,38,38,.35);
-  }
-  .profile .shelf-item img { transition: transform .7s cubic-bezier(.16,1,.3,1); }
-  .profile .shelf-item:hover img { transform: scale(1.07); }
-
-  .profile .bubble { transition: transform .25s ease, border-color .25s ease; }
-  .profile .bubble:hover { transform: translateY(-3px); border-color: var(--line2); }
-}
-
-/* ==========================================================================
-   DESKTOP PREMIUM (>=1024px) — پروفایل، هم‌سبک اسلایدر صفحه‌ی اصلی
-   فقط دسکتاپ؛ موبایل/تبلت دست‌نخورده. این بلاک باید آخر فایل بماند.
-   ========================================================================== */
-@media (min-width: 1024px) {
-
-  .profile { max-width: 1600px; padding-top: 32px; padding-bottom: 80px; }
-  .profile #mainProfileContent { gap: 22px; }
-  .profile .stack { top: 96px; gap: 22px; }
-
-  /* ---------- هدر (سینمایی مثل اسلایدر) ---------- */
-  .profile .hero {
-    min-height: 310px;
-    border-radius: 28px;
-    border-color: transparent;
-    background: linear-gradient(135deg, #1a0a0c 0%, #0e0e11 55%, #09090b 100%);
-    box-shadow: 0 30px 70px -22px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.07);
-  }
-  .profile .hero__glow {
-    background:
-      radial-gradient(70% 130% at 100% 0%, rgba(220,38,38,.42), transparent 60%),
-      radial-gradient(60% 100% at 0% 115%, rgba(127,29,29,.45), transparent 62%);
-    animation: profileAura 6s ease-in-out infinite alternate;
-  }
-  @keyframes profileAura { from { opacity: .75; } to { opacity: 1; } }
-
-  .profile .hero__inner { padding: 48px 60px; gap: 48px; }
-  .profile .hero__inner::after {
-    content: ""; position: absolute; bottom: 0; inset-inline: 60px; height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(239,68,68,.7), transparent);
-    opacity: .6;
-  }
-  .profile .hero__info { gap: 14px; }
-  .profile .hero__name {
-    font-size: 42px; font-weight: 900; letter-spacing: -.01em;
-    text-shadow: 0 0 34px rgba(239,68,68,.35);
-  }
-
-  .profile .avatar { width: 176px; height: 176px; }
-  .profile .avatar::before {
-    inset: -6px;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 0 46px rgba(239,68,68,.45);
-  }
-  .profile .avatar__frame { border-width: 6px; background: #0d0d10; }
-  .profile .avatar__fallback { font-size: 88px; }
-  .profile .avatar__btn { width: 42px; height: 42px; border-width: 4px; bottom: 2px; }
-  .profile .avatar__btn .material-symbols-outlined { font-size: 20px; }
-
-  .profile .vip-pill { padding: 6px 14px 6px 16px; font-size: 12.5px; box-shadow: 0 0 22px rgba(52,211,153,.18); }
-
-  .profile .chips { gap: 10px; }
-  .profile .chip {
-    padding: 9px 18px; font-size: 13px; color: #d4d4d8;
-    background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  }
-  .profile .meta { font-size: 13.5px; }
-  .profile .id-pill { padding: 7px 16px; font-size: 13px; background: rgba(0,0,0,.45); }
-
-  /* ---------- کارت اشتراک ---------- */
-  .profile .vip-card {
-    padding: 32px; gap: 20px; border-radius: 28px;
-    border-color: rgba(251,191,36,.3);
-    background:
-      radial-gradient(90% 70% at 100% 0%, rgba(251,191,36,.2), transparent 60%),
-      radial-gradient(80% 60% at 0% 100%, rgba(220,38,38,.22), transparent 60%),
-      linear-gradient(180deg, #17120b, #0b0b0e);
-    box-shadow: 0 30px 70px -26px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
-  }
-  .profile .vip-card::before {
-    content: ""; position: absolute; top: 0; inset-inline: 32px; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(251,191,36,.8), transparent);
-  }
-  .profile .vip-card__icon {
-    width: 64px; height: 64px; border-radius: 20px;
-    background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.28);
-    box-shadow: 0 0 30px rgba(251,191,36,.15);
-  }
-  .profile .vip-card__title { font-size: 21px; font-weight: 900; }
-  .profile .vip-card__sub { font-size: 13px; }
-  .profile .vip-card__status { font-size: 13.5px; }
-  .profile .vip-countdown__number { font-size: 68px; font-weight: 900; }
-  .profile .vip-countdown__label { font-size: 13.5px; }
-  .profile .vip-countdown__track { height: 10px; }
-  .profile .vip-card > a {
-    padding-block: 15px; border-radius: 16px; font-size: 14px;
-    box-shadow: 0 14px 30px -10px rgba(220,38,38,.6);
-  }
-
-  /* ---------- دسترسی سریع ---------- */
-  .profile .stats { gap: 22px; }
-  .profile .stat {
-    padding: 22px 28px; gap: 18px; border-radius: 24px;
-    background: linear-gradient(135deg, #17171b, #0e0e11);
-    box-shadow: 0 18px 40px -26px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
-  }
-  .profile .stat__icon { width: 58px; height: 58px; border-radius: 18px; }
-  .profile .stat__icon .material-symbols-outlined { font-size: 28px; }
-  .profile .stat__text b { font-size: 15.5px; }
-  .profile .stat__text small { font-size: 12.5px; }
-  .profile .stat:nth-child(1):hover { border-color: rgba(239,68,68,.55);  box-shadow: 0 20px 40px -16px rgba(220,38,38,.4); }
-  .profile .stat:nth-child(2):hover { border-color: rgba(251,191,36,.55); box-shadow: 0 20px 40px -16px rgba(251,191,36,.3); }
-  .profile .stat:nth-child(3):hover { border-color: rgba(52,211,153,.55); box-shadow: 0 20px 40px -16px rgba(52,211,153,.3); }
-
-  /* ---------- پنل‌ها ---------- */
-  .profile .panel {
-    padding: 30px; border-radius: 28px;
-    background: linear-gradient(180deg, #131317 0%, #0b0b0e 100%);
-    box-shadow: 0 24px 50px -28px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
-  }
-  .profile .sec-head {
-    gap: 14px; margin-bottom: 24px; padding-bottom: 18px;
-    border-bottom: 1px solid var(--line);
-  }
-  .profile .sec-head__icon {
-    width: 46px; height: 46px; border-radius: 15px;
-    background: linear-gradient(135deg, rgba(220,38,38,.28), rgba(220,38,38,.08));
-    border: 1px solid rgba(239,68,68,.25);
-  }
-  .profile .sec-head__icon .material-symbols-outlined { font-size: 23px; }
-  .profile .sec-head__title { font-size: 20px; font-weight: 900; }
-
-  .profile .fold__summary { padding: 24px 30px; border-radius: 28px; }
-  .profile .fold__text b { font-size: 17px; font-weight: 800; }
-  .profile .fold__text small { font-size: 12.5px; }
-  .profile .fold__body { padding: 24px 30px 30px; }
-
-  /* ---------- فرم‌ها ---------- */
-  .profile .form { gap: 20px; }
-  .profile .field label { font-size: 13px; }
-  .profile .input { height: 52px; border-radius: 16px; font-size: 14.5px; background: rgba(0,0,0,.45); }
-  .profile .btn { height: 52px; border-radius: 16px; font-size: 13.5px; }
-  .profile .btn--primary { box-shadow: 0 14px 30px -10px rgba(220,38,38,.6); }
-
-  /* ---------- قفسه‌ها ---------- */
-  .profile .note {
-    padding: 12px 16px; border-radius: 14px; font-size: 12.5px;
-    background: rgba(255,255,255,.03); border: 1px solid var(--line);
-  }
-  .profile .link-btn {
-    padding: 9px 18px; border-radius: 999px; font-size: 12.5px;
-    border: 1px solid var(--line2); background: rgba(255,255,255,.03);
-    transition: color .2s ease, background .2s ease, border-color .2s ease;
-  }
-  .profile .link-btn:hover { background: rgba(220,38,38,.12); border-color: rgba(239,68,68,.5); }
-
-  .profile .shelf-search { max-width: 300px; height: 44px; padding: 0 18px; border-radius: 999px; background: rgba(0,0,0,.45); }
-  .profile .shelf-search--block { max-width: none; margin-bottom: 22px; }
-  .profile .shelf-search:focus-within { border-color: var(--red); box-shadow: 0 0 0 4px rgba(220,38,38,.14); }
-
-  .profile .shelf-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 22px; }
-  .profile .shelf-item {
-    border-radius: 20px; border-color: rgba(255,255,255,.08);
-    box-shadow: 0 16px 30px -16px rgba(0,0,0,.95);
-  }
-  .profile .shelf-item:hover {
-    transform: translateY(-8px); border-color: rgba(239,68,68,.6);
-    box-shadow: 0 26px 44px -14px rgba(220,38,38,.4), 0 0 0 1px rgba(239,68,68,.25);
-  }
-  .profile .shelf-item > div {
-    padding: 56px 14px 14px;
-    background: linear-gradient(to top, rgba(0,0,0,.96) 0%, rgba(0,0,0,.6) 50%, transparent 100%);
-  }
-  .profile .shelf-item > div p:first-child { font-size: 13px; font-weight: 800; }
-  .profile .shelf-item > div p + p { font-size: 11px; margin-top: 2px; }
-  .profile .shelf-item__remove { width: 34px; height: 34px; top: 10px; inset-inline-start: 10px; border-radius: 11px; }
-
-  /* ---------- دیدگاه‌ها ---------- */
-  .profile .comments { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 18px; }
-  .profile .bubble {
-    padding: 22px 26px; padding-inline-start: 30px; border-radius: 22px;
-    background: linear-gradient(160deg, #1a1a1f, #121215);
-  }
-  .profile .bubble::before { inset-block: 20px; width: 4px; }
-  .profile .bubble p { font-size: 13.5px !important; }
-  .profile .bubble:hover { border-color: rgba(239,68,68,.35); box-shadow: 0 18px 34px -20px rgba(0,0,0,.95); }
-
-  .profile .empty-panel { padding: 56px 24px; border-radius: 22px; font-size: 14px; background: rgba(255,255,255,.02); }
-
-  /* ---------- toast (نوار پایین موبایل در دسکتاپ نیست) ---------- */
-  .profile .toast-container { bottom: 32px; }
-  .profile .toast { padding: 14px 20px; font-size: 13.5px; border-radius: 16px; }
-}
-
-/* ==========================================================================
-   DESKTOP FIX (>=1024px) — رفع تداخل ستون تنظیمات/امنیت با باکس‌های دیگر
-   ستون تنظیمات حالا تا انتهای صفحه امتداد دارد و ردیف‌ها با ارتفاعش بزرگ می‌شوند.
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .profile .stack            { grid-row: 3 / 6; }
-  .profile #commentsSection  { grid-column: 1 / 9; grid-row: 5; }
-  .profile .comments         { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-  .profile { padding-bottom: 160px; }
-  .profile #mainProfileContent { padding-bottom: 40px; }
-}
-
-/* ==========================================================================
-   PREMIUM / VIP — ظاهر پروفایل بر اساس سطح اشتراک
-   data-tier روی .hero و .vip-card: premium | vip | expired | free
-   (در انتهای فایل است تا روی استایل‌های دسکتاپ هم برنده شود)
-   ========================================================================== */
-.profile { --vf-gold: #f3c75f; --vf-gold-2: #e8b64a; --vf-gold-deep: #b9822a; }
-
-/* ---------- هدر: هاله، حلقه‌ی آواتار، تاج، اسم ---------- */
-.profile .hero[data-tier="premium"] {
-    border-color: rgba(232, 182, 74, 0.38);
-    box-shadow: 0 24px 60px -30px rgba(232, 182, 74, 0.35);
-}
-.profile .hero[data-tier="premium"] .hero__glow {
-    background:
-        radial-gradient(90% 120% at 100% 0%, rgba(232, 182, 74, 0.30), transparent 55%),
-        radial-gradient(70% 90% at 0% 110%, rgba(185, 130, 42, 0.28), transparent 60%);
-}
-.profile .hero[data-tier="premium"] .avatar::before {
-    background: conic-gradient(from 0deg, #f7d778, #b9822a, #fff3c4, #e8b64a, #8a5a14, #f7d778);
-    box-shadow: 0 0 30px rgba(232, 182, 74, 0.5);
-    animation: pfSpin 10s linear infinite;
-}
-.profile .hero[data-tier="premium"] .avatar::after {
-    content: "👑";
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    z-index: 3;
-    font-size: 26px;
-    line-height: 1;
-    transform: translateX(-50%) rotate(-10deg);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.65));
-    animation: pfCrown 3.2s ease-in-out infinite;
-}
-.profile .hero[data-tier="premium"] .hero__name {
-    background: linear-gradient(100deg, #f7d778 0%, #fff3c4 45%, #e8b64a 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    text-shadow: none;
-    filter: drop-shadow(0 0 18px rgba(232, 182, 74, 0.35));
-}
-.profile .hero[data-tier="vip"] .hero__glow {
-    background:
-        radial-gradient(90% 120% at 100% 0%, rgba(52, 211, 153, 0.20), transparent 55%),
-        radial-gradient(70% 90% at 0% 110%, rgba(220, 38, 38, 0.26), transparent 60%);
-}
-.profile .hero[data-tier="vip"] .avatar::before {
-    background: conic-gradient(from 200deg, #34d399, #10b981, #065f46, #34d399);
-    box-shadow: 0 0 26px rgba(52, 211, 153, 0.35);
-}
-@keyframes pfSpin { to { transform: rotate(360deg); } }
-@keyframes pfCrown {
-    0%, 100% { transform: translateX(-50%) rotate(-10deg) translateY(0); }
-    50%      { transform: translateX(-50%) rotate(-6deg) translateY(-3px); }
-}
-@media (min-width: 1024px) {
-    .profile .hero[data-tier="premium"] .avatar::after { font-size: 40px; top: -34px; }
-    .profile .hero[data-tier="premium"] .avatar::before { box-shadow: 0 0 52px rgba(232, 182, 74, 0.55); }
-    .profile .hero[data-tier="vip"] .avatar::before { box-shadow: 0 0 40px rgba(52, 211, 153, 0.35); }
-}
-
-/* نشان کنار اسم */
-.profile .vip-pill--premium {
-    color: #2a1a00;
-    border-color: rgba(255, 255, 255, 0.3);
-    background: linear-gradient(110deg, #e8b64a 0%, #f7d778 35%, #fff3c4 50%, #f7d778 65%, #e8b64a 100%);
-    background-size: 240% 100%;
-    animation: vfShine 4.5s linear infinite;
-    box-shadow: 0 0 22px rgba(232, 182, 74, 0.4);
-}
-
-/* ---------- کارت اشتراک ---------- */
-.profile .vip-card__headtext { flex: 1; min-width: 0; }
-.profile .vip-icon--gold  { color: var(--vf-gold); font-variation-settings: 'FILL' 1; text-shadow: 0 0 18px rgba(232, 182, 74, 0.6); }
-.profile .vip-icon--green { color: #34d399; font-variation-settings: 'FILL' 1; }
-
-.profile .vip-card__shine { display: none; }
-
-.profile .vip-card[data-tier="premium"] {
-    border-color: rgba(232, 182, 74, 0.45);
-    background:
-        radial-gradient(110% 80% at 100% 0%, rgba(232, 182, 74, 0.24), transparent 58%),
-        radial-gradient(90% 70% at 0% 100%, rgba(185, 130, 42, 0.18), transparent 60%),
-        linear-gradient(175deg, #1d1507 0%, #0d0c0a 70%);
-    box-shadow: 0 30px 70px -28px rgba(232, 182, 74, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-}
-.profile .vip-card[data-tier="premium"] .vip-card__shine {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: -50%;
-    width: 38%;
-    height: 100%;
-    pointer-events: none;
-    background: linear-gradient(105deg, transparent, rgba(255, 244, 200, 0.12), transparent);
-    transform: skewX(-18deg);
-    animation: pfSheen 6s ease-in-out 1.5s infinite;
-}
-@keyframes pfSheen { 0%, 65% { left: -50%; } 100% { left: 140%; } }
-.profile .vip-card > *:not(.vip-card__shine) { position: relative; z-index: 1; }
-
-.profile .vip-card[data-tier="premium"] .vip-card__icon {
-    background: rgba(232, 182, 74, 0.14);
-    border-color: rgba(232, 182, 74, 0.45);
-    box-shadow: 0 0 30px rgba(232, 182, 74, 0.25);
-}
-.profile .vip-card[data-tier="premium"] .vip-card__title {
-    background: linear-gradient(100deg, #f7d778, #fff3c4 50%, #e8b64a);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.profile .vip-card[data-tier="premium"] .vip-countdown__number { color: var(--vf-gold); text-shadow: 0 0 26px rgba(232, 182, 74, 0.4); }
-.profile .vip-card[data-tier="premium"] .vip-countdown.is-safe .vip-countdown__fill { background: linear-gradient(90deg, #b9822a, #f7d778); }
-
-.profile .vip-card[data-tier="vip"] {
-    border-color: rgba(52, 211, 153, 0.3);
-    background:
-        radial-gradient(110% 80% at 100% 0%, rgba(52, 211, 153, 0.15), transparent 58%),
-        linear-gradient(175deg, #0b1a15 0%, #0b0b0e 70%);
-}
-.profile .vip-card[data-tier="vip"] .vip-card__icon { background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.35); }
-.profile .vip-card[data-tier="vip"]::before { background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.7), transparent) !important; }
-
-/* وضعیت (تاریخ و یادآوری) */
-.profile .vip-status__line { display: block; }
-.profile .vip-status__line b { color: #fff; font-weight: 700; }
-.profile .vip-status__nudge {
-    display: block;
-    margin-top: 6px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    line-height: 1.8;
-    color: #fdba74;
-    background: rgba(251, 146, 60, 0.1);
-    border: 1px solid rgba(251, 146, 60, 0.25);
-}
-.profile .vip-status__nudge.is-critical { color: #fca5a5; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
-
-/* ---------- امکانات ---------- */
-.profile .vip-perks { display: flex; flex-direction: column; gap: 8px; }
-.profile .perk {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 10px 12px;
-    border-radius: 15px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.03);
-    color: inherit;
-    text-decoration: none;
-    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
-}
-.profile a.perk:hover { transform: translateY(-1px); border-color: var(--line2); background: rgba(255, 255, 255, 0.06); }
-.profile a.perk:active { transform: scale(0.985); }
-
-.profile .perk__icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--dim);
-}
-.profile .perk__icon .material-symbols-outlined { font-size: 20px; }
-.profile .perk__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.profile .perk__text b { font-size: 12.5px; font-weight: 700; color: #fff; }
-.profile .perk__text small { font-size: 11px; color: var(--mute); line-height: 1.6; }
-
-.profile .perk__state {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 3px 9px 3px 7px;
-    border-radius: 999px;
-    font-size: 10.5px;
-    font-weight: 800;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.profile .perk__state .material-symbols-outlined { font-size: 13px; }
-.profile .perk__state--on   { color: #6ee7b7; background: rgba(52, 211, 153, 0.12); }
-.profile .perk__state--lock { color: var(--vf-gold); background: rgba(232, 182, 74, 0.1); }
-
-.profile .perk.is-locked { opacity: 0.6; }
-.profile .perk.is-locked:hover { opacity: 0.95; }
-
-/* فعال‌ها بر اساس سطح رنگ می‌گیرند */
-.profile .vip-card[data-tier="premium"] .perk.is-on { border-color: rgba(232, 182, 74, 0.28); background: rgba(232, 182, 74, 0.07); }
-.profile .vip-card[data-tier="premium"] .perk.is-on .perk__icon { color: #2a1a00; background: linear-gradient(135deg, #f7d778, #e8b64a); }
-.profile .vip-card[data-tier="vip"] .perk.is-on { border-color: rgba(52, 211, 153, 0.25); background: rgba(52, 211, 153, 0.06); }
-.profile .vip-card[data-tier="vip"] .perk.is-on .perk__icon { color: #6ee7b7; background: rgba(52, 211, 153, 0.14); }
-
-/* ---------- پیشنهاد ارتقا / قدردانی ---------- */
-.profile .vip-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    padding: 11px 13px;
-    border-radius: 14px;
-    font-size: 12px;
-    line-height: 1.9;
-    color: #e4e4e7;
-    background: rgba(232, 182, 74, 0.08);
-    border: 1px dashed rgba(232, 182, 74, 0.35);
-}
-.profile .vip-note .material-symbols-outlined { font-size: 18px; color: var(--vf-gold); flex-shrink: 0; margin-top: 3px; font-variation-settings: 'FILL' 1; }
-.profile .vip-note b { color: var(--vf-gold); }
-.profile .vip-card[data-tier="premium"] .vip-note { border-style: solid; border-color: rgba(232, 182, 74, 0.22); }
-
-/* ---------- دکمه‌ی اصلی کارت ---------- */
-.profile .vip-card .vip-cta {
-    display: block;
-    width: 100%;
-    padding: 13px 16px;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 800;
-    text-align: center;
-    text-decoration: none;
-    transition: transform 0.15s ease, filter 0.15s ease;
-}
-.profile .vip-card .vip-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
-.profile .vip-card .vip-cta:active { transform: scale(0.98); }
-.profile .vip-card .vip-cta--gold {
-    color: #2a1a00;
-    background: linear-gradient(110deg, #e8b64a, #f7d778 50%, #e8b64a);
-    box-shadow: 0 14px 30px -12px rgba(232, 182, 74, 0.6);
-}
-.profile .vip-card .vip-cta--green {
-    color: #6ee7b7;
-    background: rgba(52, 211, 153, 0.14);
-    border: 1px solid rgba(52, 211, 153, 0.35);
-    box-shadow: none;
-}
-.profile .vip-card .vip-cta--red {
-    color: #fff;
-    background: linear-gradient(90deg, #dc2626, #b91c1c);
-    box-shadow: 0 14px 30px -12px rgba(220, 38, 38, 0.6);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .profile .hero[data-tier="premium"] .avatar::before,
-    .profile .hero[data-tier="premium"] .avatar::after,
-    .profile .vip-card__shine,
-    .profile .vip-pill--premium { animation: none !important; }
-}
-
-/* =====================================================================
-   Phase 2 — quick links + preview shelves
-   ===================================================================== */
-.profile .quick-links {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 0 0 16px;
-}
-.profile .qlink {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 14px;
-    border-radius: 16px;
-    background: var(--s1);
-    border: 1px solid var(--line);
-    color: var(--text);
-    font: 700 13px/1.3 'Vazirmatn', sans-serif;
-    text-decoration: none;
-    transition: border-color .15s, background .15s, transform .12s;
-}
-.profile .qlink:hover {
-    border-color: rgba(220, 38, 38, 0.4);
-    background: var(--s2);
-}
-.profile .qlink:active { transform: scale(0.98); }
-.profile .qlink .material-symbols-outlined {
-    font-size: 22px;
-    color: var(--dim);
-}
-.profile .qlink--vip {
-    border-color: rgba(251, 191, 36, 0.28);
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), var(--s1));
-}
-.profile .qlink--vip .material-symbols-outlined { color: var(--gold); }
-
-@media (min-width: 720px) {
-    .profile .quick-links {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-    }
-}
-
-/* پیش‌نمایش فشرده روی پروفایل — لیست کامل در صفحات جدا */
-.profile .shelf--preview .shelf-grid--preview {
-    max-height: 220px;
-    overflow: hidden;
-    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
-}
-.profile .comments--preview {
-    max-height: 280px;
-    overflow: hidden;
-    mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
-}
-.profile .shelf--preview .shelf-grid--preview:has(.empty-panel),
-.profile .comments--preview:has(.empty-panel) {
-    max-height: none;
-    mask-image: none;
-    -webkit-mask-image: none;
-}
-
-/* بهبود فاصله‌ها روی موبایل */
-@media (max-width: 640px) {
+/* ===================== موبایل کوچک ===================== */
+@media (max-width: 480px) {
     .profile { padding: 12px 12px 140px; }
-    .profile .hero__inner { padding: 24px 16px 20px; gap: 16px; }
-    .profile .stats { gap: 8px; }
-    .profile .stat { padding: 12px 8px; }
+    .profile .hero { border-radius: 24px; }
+    .profile .hero__inner { padding: 30px 16px 24px; }
+    .profile .hero__name { font-size: 23px; }
+    .profile .stat { padding: 14px 4px; }
     .profile .stat__text b { font-size: 12px; }
-    .profile .stat__text small { font-size: 10px; }
-    .profile .qlink { padding: 12px 10px; font-size: 12px; gap: 8px; }
-    .profile .qlink .material-symbols-outlined { font-size: 20px; }
+    .profile .stat__text small { font-size: 10.5px; }
+    .profile .form__actions { flex-direction: column; }
+    .profile .shelf-item { width: 136px; }
 }
 
-@media (min-width: 900px) {
-    .profile .split { gap: 18px; }
+/* ===================== تبلت ===================== */
+@media (min-width: 640px) {
+    .profile .hero__inner { flex-direction: row; align-items: center; gap: 32px; padding: 40px 36px 36px; text-align: start; }
+    .profile .hero__info { align-items: flex-start; }
+    .profile .hero__name-row, .profile .chips, .profile .hero__meta { justify-content: flex-start; }
+    .profile .stat { flex-direction: row; justify-content: center; gap: 12px; text-align: start; padding: 18px 12px; }
+    .profile .shelf-item { width: 172px; }
+    .profile .shelf-grid--preview { gap: 18px; }
+}
+@media (min-width: 720px) {
+    .profile .quick-links { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* ===================== دسکتاپ ===================== */
+@media (min-width: 960px) {
+    .profile { padding: 28px 32px 120px; }
+    .profile .hero { border-radius: 32px; }
+    .profile .hero__inner { gap: 44px; padding: 52px 52px 48px; }
+    .profile .avatar { width: 168px; height: 168px; }
+    .profile .avatar__frame { border-radius: 40px; }
+    .profile #avatarDropZone.is-dragover::after { border-radius: 40px; }
+    .profile .avatar__fallback { font-size: 84px; }
+    .profile .hero__name { font-size: 34px; }
+    .profile .stats { max-width: none; }
+
+    .profile .layout {
+        display: grid;
+        grid-template-columns: 372px minmax(0, 1fr);
+        gap: 44px;
+        align-items: start;
+        margin-top: 44px;
+    }
+    .profile .layout__side { position: sticky; top: 92px; }
+    .profile .vip-card { padding: 26px 24px 24px; }
+    .profile .settings__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .profile .shelf-item { width: 178px; }
+    .profile .comments--preview { max-height: 340px; }
+}
+@media (min-width: 1200px) {
+    .profile .hero__inner { padding: 56px 64px 52px; }
 }

@@ -737,6 +737,8 @@ async function clearReadingHistory() {
             const removeBtn = document.getElementById('removeAvatarBtn');
             if (url) {
                 avatarImg.src = url;
+                const bd = document.getElementById('heroBackdrop');
+                if (bd) { bd.src = url; bd.classList.remove('hidden'); }
                 avatarImg.classList.remove('hidden');
                 avatarFallback.classList.add('hidden');
                 if (removeBtn) removeBtn.classList.remove('hidden');
@@ -750,6 +752,8 @@ async function clearReadingHistory() {
             const removeBtn = document.getElementById('removeAvatarBtn');
             avatarImg.classList.add('hidden');
             avatarImg.src = '';
+            const bd = document.getElementById('heroBackdrop');
+            if (bd) { bd.classList.add('hidden'); bd.removeAttribute('src'); }
             avatarFallback.classList.remove('hidden');
             if (removeBtn) removeBtn.classList.add('hidden');
         }
