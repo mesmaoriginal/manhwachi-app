@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
+  <!-- Icons (ManhwaChi) -->
+  <link rel="icon" href="/ManhwaChi/favicon.ico?v=3" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/ManhwaChi/favicon-32x32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/ManhwaChi/favicon-48x48.png?v=3" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/ManhwaChi/favicon-96x96.png?v=3" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/ManhwaChi/favicon-192x192.png?v=3" />
+  <link rel="apple-touch-icon" href="/ManhwaChi/apple-touch-icon.png?v=3" />
+  <link rel="manifest" href="/ManhwaChi/site.webmanifest?v=3" />
+  <meta name="theme-color" content="#0a0a0a" />
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
@@ -92,7 +102,7 @@ function login(){$('#app').innerHTML='<div class="login"><h2>پنل دیتابی
   $('#go').onclick=go;$('#tk').onkeydown=e=>{if(e.key==='Enter')go()}}
 
 const NAV=[['ov','◉','نمای کلی'],['us','☺','کاربران'],['tb','▦','جدول‌ها'],['sq','⌘','کوئری SQL'],['au','✎','گزارش عملیات']];
-function shell(){$('#app').innerHTML='<div class="layout"><aside><div class="brand"><i></i>پنل دیتابیس</div>'+NAV.map(n=>'<button data-v="'+n[0]+'"><span aria-hidden="true">'+n[1]+'</span>'+n[2]+'</button>').join('')+'<div class="sp"></div><button id="lo">⎋ خروج</button></aside><main id="m"></main></div>';
+function shell(){$('#app').innerHTML='<div class="layout"><aside><div class="brand"><img src="/ManhwaChi/logo-mark.webp?v=2" alt="" style="height:30px;width:auto">پنل دیتابیس</div>'+NAV.map(n=>'<button data-v="'+n[0]+'"><span aria-hidden="true">'+n[1]+'</span>'+n[2]+'</button>').join('')+'<div class="sp"></div><button id="lo">⎋ خروج</button></aside><main id="m"></main></div>';
   $$('aside [data-v]').forEach(b=>b.onclick=()=>view(b.dataset.v));
   $('#lo').onclick=async()=>{await fetch('/dbadmin/logout',{method:'POST',headers:H}).catch(()=>{});login()};
   const h=location.hash.slice(1);view(NAV.some(n=>n[0]===h)?h:'ov')}
