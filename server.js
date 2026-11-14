@@ -251,18 +251,32 @@ const LOCAL_ASSET_RE = /\b(href|src)=(["'])(\/?[A-Za-z0-9_\-./]+\.(?:css|js))(?:
 const { IMG_BASE, IMG_SNIPPET } = require("./lib/imgBase");
 app.locals.IMG_BASE = IMG_BASE; // برای قالب‌های EJS (views/manga.ejs)
 const htmlCache = new Map();
+// ⚡ ?v=<زمان آخرین تغییر فایل> برای هر css/js محلی داخل یک HTML (هم صفحه‌های استاتیک و هم خروجی EJS).
+// زمان تغییر فایل‌ها ۱۰ ثانیه کش می‌شود تا برای هر درخواست stat اجرا نشود.
+const assetMtimeCache = new Map();
+function assetVersion(url) {
+  const hit = assetMtimeCache.get(url);
+  if (hit && Date.now() - hit.at < 10000) return hit.v;
+  let v = null;
+  try {
+    v = Math.floor(fs.statSync(path.join(PUBLIC_DIR, url.replace(/^\//, ""))).mtimeMs / 1000).toString(36);
+  } catch (e) {
+    v = null;
+  }
+  assetMtimeCache.set(url, { at: Date.now(), v });
+  return v;
+}
+function versionAssets(html) {
+  return html.replace(LOCAL_ASSET_RE, (m, attr, q, url) => {
+    if (url.startsWith("//")) return m;
+    const v = assetVersion(url);
+    return v ? `${attr}=${q}${url}?v=${v}${q}` : m;
+  });
+}
 function versionedHtml(file) {
   const hit = htmlCache.get(file);
   if (hit && Date.now() - hit.at < 10000) return hit.body;
-  const html = fs.readFileSync(file, "utf8").replace(LOCAL_ASSET_RE, (m, attr, q, url) => {
-    if (url.startsWith("//")) return m;
-    try {
-      const st = fs.statSync(path.join(PUBLIC_DIR, url.replace(/^\//, "")));
-      return `${attr}=${q}${url}?v=${Math.floor(st.mtimeMs / 1000).toString(36)}${q}`;
-    } catch (e) {
-      return m;
-    }
-  });
+  const html = versionAssets(fs.readFileSync(file, "utf8"));
   let out = seoPolicy.enhance("/" + path.basename(file), html); // 🔎 canonical/robots برای صفحاتی که ندارند
   if (IMG_SNIPPET) out = out.replace(/<head[^>]*>/i, (m) => m + IMG_SNIPPET); // آدرس پایه‌ی CDN عکس برای فرانت
   htmlCache.set(file, { at: Date.now(), body: out });
@@ -511,7 +525,7 @@ function renderMangaPage(req, res, slugRaw) {
       seo_title: "مانهوا یافت نشد | مانهواچی",
       seo_desc: "خواندن آنلاین جدیدترین مانهواها، مانگاها و مانهواهای جذاب با ترجمه فارسی در مانهواچی.",
       canonical_url: "https://manhwachi.ir/comic",
-      full_cover_url: "https://manhwachi.ir/ManhwaChi/favicon-192x192.png",
+      full_cover_url: "https://manhwachi.ir/ManhwaChi/favicon-192x192.png?v=3",
       title_en: "Not Found",
       title_fa: "",
       raw_desc: "مانهوا مورد نظر پیدا نشد.",
@@ -531,7 +545,11 @@ function renderMangaPage(req, res, slugRaw) {
   }
 
   if (!manhwa) res.status(404); // صفحه‌ی «پیدا نشد» نباید با 200 (soft-404) سرو شود
-  res.render("manga", vars);
+  // ⚡ خروجی EJS هم از مسیر نسخه‌دهی خودکار رد می‌شود (قبلاً ?v=1 دستی بود و تا یک سال کش می‌ماند)
+  res.render("manga", vars, (err, html) => {
+    if (err) return req.next(err);
+    res.send(versionAssets(html));
+  });
 }
 
 app.get("/comic/:slug", (req, res) => {
@@ -1344,7 +1362,20 @@ app.post("/purchase/request", async (req, res) => {
 // (reconcilePendingPayments پایین‌تر) صداش بزنیم؛ اون job هر چند
 // دقیقه یک‌بار پرداخت‌های pending رو مستقل از مرورگر کاربر با
 // استعلام زیبال چک و در صورت موفقیت VIP رو فعال می‌کنه.
+// trackIdهایی که همین الان در همین پروسه در حال پردازش‌اند (برای این‌که reconciler
+// ردیف‌های «processing» زنده را با ردیف‌های گیرکرده‌ی بعد از ریستارت اشتباه نگیرد)
+const paymentsInFlight = new Set();
 async function verifyAndCreditPayment(trackId) {
+  const key = (trackId || "").toString();
+  paymentsInFlight.add(key);
+  try {
+    return await verifyAndCreditPaymentCore(trackId);
+  } finally {
+    paymentsInFlight.delete(key);
+  }
+}
+
+async function verifyAndCreditPaymentCore(trackId) {
   trackId = (trackId || "").toString();
   if (!trackId) {
     return { httpStatus: 400, body: { message: "کد پیگیری ارائه نشده است." } };
@@ -1361,7 +1392,12 @@ async function verifyAndCreditPayment(trackId) {
 
     if (![100, 101, 201].includes(zibalData.result)) {
       const declineErr = new Error(`پرداخت تایید نشد (کد خطا: ${zibalData.result})`);
-      declineErr.final = true; // زیبال قطعاً رد کرده - دیگه لازم نیست reconciler دوباره امتحان کنه
+      // 🐛 رفع باگ «پول کم شد ولی failed خورد»: قبلاً هر کدی غیر از 100/101/201 «قطعی» حساب می‌شد.
+      // ولی کد 202 (پرداخت‌نشده/ناموفق) برای کسی که هنوز توی صفحه‌ی بانکه هم برمی‌گرده؛
+      // اگه این‌جا ردیف failed می‌شد و کاربر بعدش پرداخت رو تموم می‌کرد، دیگه هیچ مسیری
+      // اشتراکش رو فعال نمی‌کرد. حالا فقط trackId نامعتبر (203) قطعیه؛ بقیه موقت‌اند و
+      // reconciler بعد از مهلت RECONCILE_ABANDON_MS ردیف رهاشده رو failed می‌کنه.
+      declineErr.final = zibalData.result === 203;
       throw declineErr;
     }
     // زیبال نتیجه‌ی 102 (trackId نامعتبر)، 201 (قبلاً تایید شده - بی‌ضرره،
@@ -1380,7 +1416,7 @@ async function verifyAndCreditPayment(trackId) {
     // می‌شه - این کوئری در سطح دیتابیس روی همون ردیف lock می‌گیره، پس
     // فقط یکی از دو ریکوئست هم‌زمان می‌تونه واقعاً match/آپدیت کنه.
     const claimRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=eq.pending&select=*`,
+      `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(trackId)}&status=in.(pending,failed)&select=*`,
       {
         method: "PATCH",
         headers: supabaseAdminHeaders({
@@ -1595,6 +1631,12 @@ app.post("/purchase/verify", async (req, res) => {
 const RECONCILE_INTERVAL_MS = 5 * 60 * 1000; // هر ۵ دقیقه
 const RECONCILE_MIN_AGE_MS = 3 * 60 * 1000; // حداقل ۳ دقیقه از ساخته‌شدنش گذشته باشه
 const RECONCILE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000; // حداکثر تا ۳ روز قبل
+// ردیف pending که بعد از این مدت هنوز زیبال «پرداخت‌نشده» می‌گه رها شده → failed
+// (نشست درگاه بانک‌ها چند ده دقیقه بیشتر دووم نمیاره)
+const RECONCILE_ABANDON_MS = 2 * 60 * 60 * 1000;
+// بازیابی ردیف‌هایی که قبلاً با باگ اشتباهاً failed شدن (فقط اونایی که ref_number ندارن)
+const RECOVER_FAILED_INTERVAL_MS = 60 * 60 * 1000;
+const RECOVER_FAILED_MAX_AGE_MS = 2 * 24 * 60 * 60 * 1000;
 
 async function reconcilePendingPayments() {
   try {
@@ -1602,10 +1644,34 @@ async function reconcilePendingPayments() {
     const oldestIso = new Date(now - RECONCILE_MAX_AGE_MS).toISOString();
     const newestIso = new Date(now - RECONCILE_MIN_AGE_MS).toISOString();
 
+    // ردیف‌های «processing» گیرکرده (مثلاً سرور وسط پردازش ریستارت شده) → برگردون به pending
+    try {
+      const procRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/payments?status=eq.processing&created_at=gte.${encodeURIComponent(oldestIso)}&select=track_id`,
+        { headers: supabaseAdminHeaders() }
+      );
+      if (procRes.ok) {
+        for (const r of await procRes.json()) {
+          if (paymentsInFlight.has(String(r.track_id))) continue;
+          await fetch(
+            `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(r.track_id)}&status=eq.processing`,
+            {
+              method: "PATCH",
+              headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+              body: JSON.stringify({ status: "pending" }),
+            }
+          ).catch(() => {});
+          console.warn(`reconcilePendingPayments: ردیف processing گیرکرده trackId=${r.track_id} به pending برگشت`);
+        }
+      }
+    } catch (e) {
+      console.error("reconcilePendingPayments: خطا در آزادسازی processing", e);
+    }
+
     const pendingRes = await fetch(
       `${SUPABASE_URL}/rest/v1/payments?status=eq.pending&created_at=gte.${encodeURIComponent(
         oldestIso
-      )}&created_at=lte.${encodeURIComponent(newestIso)}&select=track_id`,
+      )}&created_at=lte.${encodeURIComponent(newestIso)}&select=track_id,created_at`,
       { headers: supabaseAdminHeaders() }
     );
     if (!pendingRes.ok) {
@@ -1622,6 +1688,18 @@ async function reconcilePendingPayments() {
         console.log(
           `reconcilePendingPayments: trackId=${row.track_id} -> ${result.httpStatus} ${result.body?.message || ""}`
         );
+        // پرداخت‌نشده و قدیمی‌تر از مهلت → رهاشده؛ فقط حالا failed می‌شه
+        const age = now - new Date(row.created_at).getTime();
+        if (result.httpStatus !== 200 && !result.body?.final && age > RECONCILE_ABANDON_MS) {
+          await fetch(
+            `${SUPABASE_URL}/rest/v1/payments?track_id=eq.${encodeURIComponent(row.track_id)}&status=eq.pending`,
+            {
+              method: "PATCH",
+              headers: supabaseAdminHeaders({ "Content-Type": "application/json" }),
+              body: JSON.stringify({ status: "failed" }),
+            }
+          ).catch(() => {});
+        }
       } catch (rowErr) {
         console.error(`reconcilePendingPayments: خطای غیرمنتظره روی trackId=${row.track_id}`, rowErr);
       }
@@ -1631,10 +1709,36 @@ async function reconcilePendingPayments() {
   }
 }
 
+// ردیف‌های failed (بدون ref_number) رو دوباره از زیبال می‌پرسه؛ اگه واقعاً پرداخت‌شده بودن،
+// verifyAndCreditPayment همین‌جا اشتراک رو فعال می‌کنه. برای رکوردهای واقعاً ناموفق هیچ تغییری نمی‌ده.
+async function recoverFailedPayments() {
+  try {
+    const oldestIso = new Date(Date.now() - RECOVER_FAILED_MAX_AGE_MS).toISOString();
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/payments?status=eq.failed&ref_number=is.null&created_at=gte.${encodeURIComponent(oldestIso)}&select=track_id`,
+      { headers: supabaseAdminHeaders() }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!rows.length) return;
+    console.log(`recoverFailedPayments: بررسی ${rows.length} پرداخت failed...`);
+    for (const row of rows) {
+      const result = await verifyAndCreditPayment(row.track_id);
+      if (result.httpStatus === 200) {
+        console.warn(`recoverFailedPayments: trackId=${row.track_id} پرداخت‌شده بود و اشتراکش فعال شد`);
+      }
+    }
+  } catch (err) {
+    console.error("recoverFailedPayments: خطای کلی", err);
+  }
+}
+
 setInterval(reconcilePendingPayments, RECONCILE_INTERVAL_MS);
+setInterval(recoverFailedPayments, RECOVER_FAILED_INTERVAL_MS);
 // یک بار هم کمی بعد از بالا اومدن سرور اجرا می‌شه (نه بلافاصله، تا
 // startup رو کند نکنه).
 setTimeout(reconcilePendingPayments, 30 * 1000);
+setTimeout(recoverFailedPayments, 90 * 1000);
 
 // ---------- بخش ۴: رله‌ی قدیمی زیبال (نگه داشته شده برای سازگاری) ----------
 
