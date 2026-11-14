@@ -1,8 +1,0 @@
-/* css/local-fonts.css — فونت‌های محلی سایت */
-@font-face {
-  font-family: 'zangar';
-  src: url('/fonts/zangar.ttf') format('truetype');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
